@@ -17,6 +17,11 @@ contract DigitalaxGenesisNFTMock is DigitalaxGenesisNFT {
     DigitalaxGenesisNFT(_accessControls, _fundsMultisig, _genesisStart, _genesisEnd, _tokenURI)
     public {}
 
+    function addContribution(uint256 _contributionAmount) external {
+        contribution[_msgSender()] = _contributionAmount;
+        totalContributions = totalContributions.add(_contributionAmount);
+    }
+
     function setNowOverride(uint256 _now) external {
         nowOverride = _now;
     }

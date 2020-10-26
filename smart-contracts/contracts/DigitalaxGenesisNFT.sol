@@ -48,7 +48,7 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
     uint256 public maximumContributionAmount = 2 ether;
 
     mapping(address => uint256) public contribution;
-    uint256 public totalContribution;
+    uint256 public totalContributions;
 
     constructor(
         DigitalaxAccessControls _accessControls,
@@ -92,7 +92,7 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
         );
 
         contribution[_msgSender()] = _contributionAmount;
-        totalContribution = totalContribution.add(_contributionAmount);
+        totalContributions = totalContributions.add(_contributionAmount);
 
         (bool fundsTransferSuccess,) = fundsMultisig.call{value: _contributionAmount}("");
         require(fundsTransferSuccess, "DigitalaxGenesisNFT.buy: Unable to send contribution to funds multisig");
@@ -122,7 +122,7 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
             "DigitalaxGenesisNFT.increaseContribution: You cannot exceed the maximum contribution amount"
         );
 
-        totalContribution = totalContribution.add(_amountToIncrease);
+        totalContributions = totalContributions.add(_amountToIncrease);
 
         (bool fundsTransferSuccess,) = fundsMultisig.call{value: _amountToIncrease}("");
         require(
