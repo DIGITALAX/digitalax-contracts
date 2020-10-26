@@ -6,9 +6,9 @@
     "codegen": "graph codegen",
     "prep:rinkeby": "mustache networks/rinkeby.json subgraph.template.yaml > subgraph.yaml && yarn codegen;",
     "prep:ropsten": "mustache networks/ropsten.json subgraph.template.yaml > subgraph.yaml && yarn codegen;",
-    "create": "graph create blockrockettech/digitalax --node https://api.thegraph.com/deploy/",
+    "create": "graph create digitalax/digitalaxropsten --node https://api.thegraph.com/deploy/",
     "create-local": "graph create blockrockettech/digitalax --node http://127.0.0.1:8020",
-    "deploy": "graph deploy blockrockettech/digitalax --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
+    "deploy": "graph deploy digitalax/digitalaxropsten --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
     "deploy-local": "graph deploy blockrockettech/digitalax --ipfs http://localhost:5001 --node http://127.0.0.1:8020"
   },
   "devDependencies": {

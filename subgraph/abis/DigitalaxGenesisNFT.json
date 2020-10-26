@@ -36,6 +36,19 @@
       {
         "indexed": true,
         "internalType": "address",
+        "name": "newAdress",
+        "type": "address"
+      }
+    ],
+    "name": "AccessControlsUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "beneficiary",
         "type": "address"
       },
@@ -620,7 +633,7 @@
   },
   {
     "inputs": [],
-    "name": "totalContribution",
+    "name": "totalContributions",
     "outputs": [
       {
         "internalType": "uint256",

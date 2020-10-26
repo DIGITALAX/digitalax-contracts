@@ -30,7 +30,7 @@ export function handleGenesisPurchased(event: GenesisPurchased): void {
 
     // update contract info
     let digitalaxGenesis = DigitalaxGenesis.load(event.address.toHexString());
-    digitalaxGenesis.totalContribution = DigitalaxGenesisNFTContract.bind(event.address).totalContribution();
+    digitalaxGenesis.totalContributions = DigitalaxGenesisNFTContract.bind(event.address).totalContributions();
     digitalaxGenesis.save();
 }
 
@@ -50,7 +50,7 @@ export function handleContributionIncreased(event: ContributionIncreased): void 
 
     // update contract info
     let digitalaxGenesis = DigitalaxGenesis.load(event.address.toHexString());
-    digitalaxGenesis.totalContribution = DigitalaxGenesisNFTContract.bind(event.address).totalContribution();
+    digitalaxGenesis.totalContributions = DigitalaxGenesisNFTContract.bind(event.address).totalContributions();
     digitalaxGenesis.save();
 }
 
@@ -66,6 +66,6 @@ export function handleGenesisDeployed(event: DigitalaxGenesisNFTContractDeployed
     digitalaxGenesis.genesisEnd = contract.genesisEnd();
     digitalaxGenesis.minimumContributionAmount = contract.minimumContributionAmount();
     digitalaxGenesis.maximumContributionAmount = contract.maximumContributionAmount();
-    digitalaxGenesis.totalContribution = contract.totalContribution();
+    digitalaxGenesis.totalContributions = contract.totalContributions();
     digitalaxGenesis.save();
 }
