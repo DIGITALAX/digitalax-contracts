@@ -15,7 +15,7 @@
 ### Ropsten Deployments
 ```
 DigitalaxAccessControls: 0x5c9526E67d2C7b2658d0A510f4cFcc28edc4cC96
-DigitalaxGenesisNFT: 0xF50D99539F3d2330c9F555C04d5c210Ca3FD6B91
+DigitalaxGenesisNFT: 0x42321F5443480cbAA0FE76187f73Bd06Db125111
 ```
 
 ## Genesis Metadata
