@@ -33,6 +33,10 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
         address indexed admin
     );
 
+    event AccessControlsUpdated(
+        address indexed newAdress
+    );
+
     DigitalaxAccessControls public accessControls;
 
     address payable public fundsMultisig;
@@ -44,7 +48,7 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
     uint256 public maximumContributionAmount = 2 ether;
 
     mapping(address => uint256) public contribution;
-    uint256 public totalContribution;
+    uint256 public totalContributions;
 
     constructor(
         DigitalaxAccessControls _accessControls,
@@ -70,10 +74,10 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
     }
 
     function buy() public payable {
-        require(balanceOf(_msgSender()) == 0, "DigitalaxGenesisNFT.buy: You already own a genesis NFT");
+        require(contribution[_msgSender()] == 0, "DigitalaxGenesisNFT.buy: You already own a genesis NFT");
         require(
             _getNow() >= genesisStart && _getNow() <= genesisEnd,
-            "DigitalaxGenesisNFT.buy: No Genesis are available outside of the genesis window"
+            "DigitalaxGenesisNFT.buy: No genesis are available outside of the genesis window"
         );
 
         uint256 _contributionAmount = msg.value;
@@ -88,7 +92,7 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
         );
 
         contribution[_msgSender()] = _contributionAmount;
-        totalContribution = totalContribution.add(_contributionAmount);
+        totalContributions = totalContributions.add(_contributionAmount);
 
         (bool fundsTransferSuccess,) = fundsMultisig.call{value: _contributionAmount}("");
         require(fundsTransferSuccess, "DigitalaxGenesisNFT.buy: Unable to send contribution to funds multisig");
@@ -106,28 +110,27 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
         );
 
         require(
-            balanceOf(_msgSender()) == 1,
-            "DigitalaxGenesisNFT.increaseContribution: You dont own a Genesis"
+            contribution[_msgSender()] > 0,
+            "DigitalaxGenesisNFT.increaseContribution: You do not own a genesis NFT"
         );
 
-        uint256 _increasedAmount = msg.value;
-        uint256 currentContribution = contribution[_msgSender()];
-        contribution[_msgSender()] = currentContribution.add(_increasedAmount);
+        uint256 _amountToIncrease = msg.value;
+        contribution[_msgSender()] = contribution[_msgSender()].add(_amountToIncrease);
 
         require(
             contribution[_msgSender()] <= maximumContributionAmount,
             "DigitalaxGenesisNFT.increaseContribution: You cannot exceed the maximum contribution amount"
         );
 
-        totalContribution = totalContribution.add(_increasedAmount);
+        totalContributions = totalContributions.add(_amountToIncrease);
 
-        (bool fundsTransferSuccess,) = fundsMultisig.call{value: _increasedAmount}("");
+        (bool fundsTransferSuccess,) = fundsMultisig.call{value: _amountToIncrease}("");
         require(
             fundsTransferSuccess,
             "DigitalaxGenesisNFT.increaseContribution: Unable to send contribution to funds multisig"
         );
 
-        emit ContributionIncreased(_msgSender(), _increasedAmount);
+        emit ContributionIncreased(_msgSender(), _amountToIncrease);
     }
 
     // Admin
@@ -138,6 +141,7 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
             "DigitalaxGenesisNFT.adminBuy: Sender must be admin"
         );
         require(_beneficiary != address(0), "DigitalaxGenesisNFT.adminBuy: Beneficiary cannot be ZERO");
+        require(balanceOf(_beneficiary) == 0, "DigitalaxGenesisNFT.adminBuy: Beneficiary already owns a genesis NFT");
 
         uint256 tokenId = totalSupply().add(1);
         _safeMint(_beneficiary, tokenId);
@@ -163,6 +167,8 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
         );
         require(address(_accessControls) != address(0), "DigitalaxGenesisNFT.updateAccessControls: Zero Address");
         accessControls = _accessControls;
+
+        emit AccessControlsUpdated(address(_accessControls));
     }
 
     // Internal
@@ -172,7 +178,7 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override {
-        if (from != address(0) && _getNow() < genesisEnd) {
+        if (from != address(0) && _getNow() <= genesisEnd) {
             revert("DigitalaxGenesisNFT._beforeTokenTransfer: Transfers are currently locked at this time");
         }
     }

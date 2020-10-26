@@ -8,9 +8,7 @@ const DigitalaxGenesisNFT = artifacts.require('DigitalaxGenesisNFT');
 const DigitalaxGenesisNFTMock = artifacts.require('DigitalaxGenesisNFTMock');
 const AlwaysRevertingEthReceiver = artifacts.require('AlwaysRevertingEthReceiver');
 
-//TODO: add assertions on `totalContributions`
-//TODO: add tests for max contribution for buy and increase()
-contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, buyer, owner, smart_contract]) {
+contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, buyer, buyer2, owner, smart_contract]) {
     const ONE_ETH = ether('1');
 
     const TOKEN_ONE_ID = new BN('1');
@@ -61,6 +59,13 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
            expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.equal(buyer);
            expect(await this.token.contribution(buyer)).to.be.bignumber.equal(ONE_ETH);
            expect(await multisigBalanceTracker.delta()).to.be.bignumber.equal(ONE_ETH);
+           expect(await this.token.totalContributions()).to.be.bignumber.equal(ONE_ETH);
+       });
+
+       it('total contributions are correct for multiple buyers', async () => {
+         await this.token.buy({from: buyer, value: ONE_ETH})
+         await this.token.buy({from: buyer2, value: ether('0.5')});
+         expect(await this.token.totalContributions()).to.be.bignumber.equal(ONE_ETH.add(ether('0.5')));
        });
 
        it('Reverts when trying to contribute more than the maximum permitted', async () => {
@@ -119,7 +124,7 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
 
            await expectRevert(
                this.token.buy({from: buyer, value: ONE_ETH}),
-               "DigitalaxGenesisNFT.buy: No Genesis are available outside of the genesis window"
+               "DigitalaxGenesisNFT.buy: No genesis are available outside of the genesis window"
            );
        });
     });
@@ -148,12 +153,20 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
            );
        });
 
-       it('Reverts when beneficiary is adress zero', async () => {
+       it('Reverts when beneficiary is address zero', async () => {
            await expectRevert(
                this.token.adminBuy(ZERO_ADDRESS, {from: admin}),
                "DigitalaxGenesisNFT.adminBuy: Beneficiary cannot be ZERO"
            );
        });
+
+      it('Reverts when beneficiary already owns a genesis NFT', async () => {
+        await this.token.adminBuy(owner, {from: admin});
+        await expectRevert(
+          this.token.adminBuy(owner, {from: admin}),
+          "DigitalaxGenesisNFT.adminBuy: Beneficiary already owns a genesis NFT"
+        );
+      });
     });
 
     describe('increaseContribution()', () => {
@@ -169,6 +182,7 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
             });
 
             expect(await this.token.contribution(buyer)).to.be.bignumber.equal(ONE_ETH);
+            expect(await this.token.totalContributions()).to.be.bignumber.equal(ONE_ETH);
         });
 
         it('Successfully increases the total contribution after a buy and a previous contribution', async () => {
@@ -206,7 +220,7 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
             );
             await this.tokenWithRevertingMultisig.setNowOverride('5');
 
-            await this.tokenWithRevertingMultisig.adminBuy(buyer, {from: admin});
+            await this.tokenWithRevertingMultisig.addContribution(await this.token.minimumContributionAmount(), {from: buyer});
 
             await expectRevert(
                 this.tokenWithRevertingMultisig.increaseContribution({from: buyer, value: ONE_ETH}),
@@ -217,7 +231,7 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
         it('Reverts when the sender does not own a genesis', async () => {
             await expectRevert(
                 this.token.increaseContribution({from: buyer, value: ONE_ETH}),
-                "DigitalaxGenesisNFT.increaseContribution: You dont own a Genesis"
+                "DigitalaxGenesisNFT.increaseContribution: You do not own a genesis NFT"
             );
         });
 
@@ -245,6 +259,7 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
            expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.equal(buyer);
            expect(await this.token.contribution(buyer)).to.be.bignumber.equal(ONE_ETH);
            expect(await multisigBalanceTracker.delta()).to.be.bignumber.equal(ONE_ETH);
+           expect(await this.token.totalContributions()).to.be.bignumber.equal(ONE_ETH);
        })
 
         it('Increases contribution when user already owns a Genesis', async () => {
