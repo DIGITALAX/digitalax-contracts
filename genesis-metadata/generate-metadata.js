@@ -14,7 +14,7 @@ const PinataIpfsService = require('./services/PinataIpfsService');
   console.log('Image uploaded! Uploading ERC721 JSON now...');
   const metadata = {
     name: 'MEET MONA',
-    description: 'Mona Vir is crypto’s first digital. She isn’t real like you or me— she exists within the digital economy and is native to the Ethereum blockchain. Mona is our mirror into digital-only self expression— she has her own personality, her own likes and dislikes, her own aspirations and goals. Follow her journey.',
+    description: 'Mona Vir is crypto\'s first digital. She isn\'t real like you or me— she exists within the digital economy and is native to the Ethereum blockchain. Mona is our mirror into digital-only self expression. She has her own personality, her own likes and dislikes, her own aspirations and goals. Follow her journey.',
     image: imageResult.pinataIpfsUrl,
     attributes: [
       {
