@@ -8,9 +8,9 @@ dataSources:
     name: DigitalaxGenesisNFT
     network: 'ropsten'
     source:
-      address: '0xF1e022ace2d0B273da34Cbb32aC07AA43E24F497'
+      address: '0x42321F5443480cbAA0FE76187f73Bd06Db125111'
       abi: DigitalaxGenesisNFT
-      startBlock: 8915363
+      startBlock: 8951857
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

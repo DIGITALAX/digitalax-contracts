@@ -14,5 +14,5 @@ type DigitalaxGenesis @entity {
   genesisEnd: BigInt!
   minimumContributionAmount: BigInt!
   maximumContributionAmount: BigInt!
-  totalContribution: BigInt!
+  totalContributions: BigInt!
 }
