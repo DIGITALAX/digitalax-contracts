@@ -1,0 +1,32 @@
+specVersion: 0.0.2
+description: Digitalax Smart Contract Indexing
+repository: https://github.com/graphprotocol/example-subgraph
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: DigitalaxGenesisNFT
+    network: 'ropsten'
+    source:
+      address: '0xF1e022ace2d0B273da34Cbb32aC07AA43E24F497'
+      abi: DigitalaxGenesisNFT
+      startBlock: 8915363
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - GenesisPurchased
+        - ContributionIncreased
+        - DigitalaxGenesisNFTContractDeployed
+      abis:
+        - name: DigitalaxGenesisNFT
+          file: ./abis/DigitalaxGenesisNFT.json
+      eventHandlers:
+        - event: GenesisPurchased(indexed address,indexed uint256,uint256)
+          handler: handleGenesisPurchased
+        - event: ContributionIncreased(indexed address,uint256)
+          handler: handleContributionIncreased
+        - event: DigitalaxGenesisNFTContractDeployed()
+          handler: handleGenesisDeployed
+      file: ./src/DigitalaxGenesisNFT.mapping.ts

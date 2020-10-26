@@ -1,0 +1,18 @@
+type GenesisContributor @entity {
+  id: ID!
+  contributor: Bytes! # address
+  totalContribtuionInWei: BigInt!
+  firstContributedTimestamp: BigInt!
+  lastContributedTimestamp: BigInt!
+}
+
+type DigitalaxGenesis @entity {
+  id: ID!
+  accessControls: Bytes!
+  fundsMultisig: Bytes!
+  genesisStart: BigInt!
+  genesisEnd: BigInt!
+  minimumContributionAmount: BigInt!
+  maximumContributionAmount: BigInt!
+  totalContribution: BigInt!
+}
