@@ -9,7 +9,6 @@ const DigitalaxGenesisNFTMock = artifacts.require('DigitalaxGenesisNFTMock');
 const AlwaysRevertingEthReceiver = artifacts.require('AlwaysRevertingEthReceiver');
 
 //TODO: add assertions on `totalContributions`
-//TODO: add tests for max contribution for buy and increase()
 contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, buyer, owner, smart_contract]) {
     const ONE_ETH = ether('1');
 
@@ -31,7 +30,7 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
         await this.token.setNowOverride('5');
     });
 
-    describe('Transfers', () => {
+    describe.only('Transfers', () => {
         it('Reverts when trying to transfer before the end of the genesis', async () => {
             await this.token.buy({from: buyer, value: ONE_ETH});
             await expectRevert(
@@ -41,7 +40,7 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
         });
     });
 
-    describe('buy()', () => {
+    describe.only('buy()', () => {
        it('Successfully buys a genesis NFT', async () => {
            const multisigBalanceTracker = await balance.tracker(multisig);
 
@@ -119,12 +118,12 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
 
            await expectRevert(
                this.token.buy({from: buyer, value: ONE_ETH}),
-               "DigitalaxGenesisNFT.buy: No Genesis are available outside of the genesis window"
+               "DigitalaxGenesisNFT.buy: No genesis are available outside of the genesis window"
            );
        });
     });
 
-    describe('adminBuy()', () => {
+    describe.only('adminBuy()', () => {
        it('Can successfully buy a genesis as an admin without contribution', async () => {
           const multisigTracker = await balance.tracker(multisig);
           const {receipt} = await this.token.adminBuy(owner, {from: admin});
@@ -148,15 +147,23 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
            );
        });
 
-       it('Reverts when beneficiary is adress zero', async () => {
+       it('Reverts when beneficiary is address zero', async () => {
            await expectRevert(
                this.token.adminBuy(ZERO_ADDRESS, {from: admin}),
                "DigitalaxGenesisNFT.adminBuy: Beneficiary cannot be ZERO"
            );
        });
+
+      it('Reverts when beneficiary already owns a genesis NFT', async () => {
+        await this.token.adminBuy(owner, {from: admin});
+        await expectRevert(
+          this.token.adminBuy(owner, {from: admin}),
+          "DigitalaxGenesisNFT.adminBuy: Beneficiary already owns a genesis NFT"
+        );
+      });
     });
 
-    describe('increaseContribution()', () => {
+    describe.only('increaseContribution()', () => {
         it('Successfully increases a previous contribution after buy()', async () => {
             await this.token.buy({from: buyer, value: ONE_ETH.div(new BN('2'))});
 
@@ -217,7 +224,7 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
         it('Reverts when the sender does not own a genesis', async () => {
             await expectRevert(
                 this.token.increaseContribution({from: buyer, value: ONE_ETH}),
-                "DigitalaxGenesisNFT.increaseContribution: You dont own a Genesis"
+                "DigitalaxGenesisNFT.increaseContribution: You do not own a genesis NFT"
             );
         });
 
@@ -230,7 +237,7 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
         });
     });
 
-    describe('buyOrIncreaseContribution()', () => {
+    describe.only('buyOrIncreaseContribution()', () => {
        it('Buys a genesis when the user does not own one', async () => {
            expect(await this.token.balanceOf(buyer)).to.be.bignumber.equal('0');
            const multisigBalanceTracker = await balance.tracker(multisig);
@@ -266,7 +273,7 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
         })
     });
 
-    describe('updateGenesisEnd()', () => {
+    describe.only('updateGenesisEnd()', () => {
         it('Successfully updates end', async () => {
             const newEnd = '900';
             const {receipt} = await this.token.updateGenesisEnd(newEnd, {from: admin});
@@ -285,7 +292,7 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
         });
     });
 
-    describe('updateAccessControls()', () => {
+    describe.only('updateAccessControls()', () => {
         it('Successfully updates access controls as admin', async () => {
             const currentAccessControlsAddress = await this.token.accessControls();
             await this.token.updateAccessControls(smart_contract, {from: admin});
