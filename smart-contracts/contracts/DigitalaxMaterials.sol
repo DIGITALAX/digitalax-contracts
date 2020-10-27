@@ -44,14 +44,14 @@ contract DigitalaxMaterials is ERC1155 {
         return strandId;
     }
 
-    function batchCreateStrand(
+    function batchCreateStrands(
         uint256[] calldata _initialSupplies,
         address _beneficiary,
         string[] calldata _uris
     ) external returns (uint256[] memory strandIds) {
-        require(accessControls.hasMinterRole(_msgSender()), "DigitalaxMaterials.batchCreateStrand: Sender must be minter");
-        require(_initialSupplies.length == _uris.length, "DigitalaxMaterials.batchCreateStrand: Array lengths are invalid");
-        require(_initialSupplies.length > 0, "DigitalaxMaterials.batchCreateStrand: No data supplied in arrays");
+        require(accessControls.hasMinterRole(_msgSender()), "DigitalaxMaterials.batchCreateStrands: Sender must be minter");
+        require(_initialSupplies.length == _uris.length, "DigitalaxMaterials.batchCreateStrands: Array lengths are invalid");
+        require(_initialSupplies.length > 0, "DigitalaxMaterials.batchCreateStrands: No data supplied in arrays");
 
         strandIds = new uint256[](_initialSupplies.length);
         for(uint i = 0; i < _initialSupplies.length; i++) {
@@ -59,10 +59,10 @@ contract DigitalaxMaterials is ERC1155 {
 
             uint256 strandId = tokenIdPointer;
             uint256 initialSupply = _initialSupplies[i];
-            require(initialSupply > 0, "DigitalaxMaterials.batchCreateStrand: No initial supply");
+            require(initialSupply > 0, "DigitalaxMaterials.batchCreateStrands: No initial supply");
 
             string memory uri = _uris[i];
-            require(bytes(uri).length > 0, "DigitalaxMaterials.batchCreateStrand: URI is a blank string");
+            require(bytes(uri).length > 0, "DigitalaxMaterials.batchCreateStrands: URI is a blank string");
 
             _mint(_beneficiary, strandId, initialSupply, abi.encodePacked(""));
             _setURI(strandId, uri);

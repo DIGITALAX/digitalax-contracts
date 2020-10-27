@@ -50,39 +50,39 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, minter, to
     });
   });
 
-  describe('batchCreateStrand()', function() {
+  describe('batchCreateStrands()', function() {
     it('Reverts when sender is not minter', async function() {
       await expectRevert(
-        this.token.batchCreateStrand([], tokenBatchHolder, [], {from: tokenBatchHolder}),
-        "DigitalaxMaterials.batchCreateStrand: Sender must be minter"
+        this.token.batchCreateStrands([], tokenBatchHolder, [], {from: tokenBatchHolder}),
+        "DigitalaxMaterials.batchCreateStrands: Sender must be minter"
       );
     });
 
     it('Reverts when array lengths differ', async function() {
       await expectRevert(
-        this.token.batchCreateStrand(['1'], tokenBatchHolder, [], {from: minter}),
-        "DigitalaxMaterials.batchCreateStrand: Array lengths are invalid"
+        this.token.batchCreateStrands(['1'], tokenBatchHolder, [], {from: minter}),
+        "DigitalaxMaterials.batchCreateStrands: Array lengths are invalid"
       );
     });
 
     it('Reverts when arrays are empty', async function() {
       await expectRevert(
-        this.token.batchCreateStrand([], tokenBatchHolder, [], {from: minter}),
-        "DigitalaxMaterials.batchCreateStrand: No data supplied in arrays"
+        this.token.batchCreateStrands([], tokenBatchHolder, [], {from: minter}),
+        "DigitalaxMaterials.batchCreateStrands: No data supplied in arrays"
       );
     });
 
     it('Reverts when any elem in the _initialSupplies is zero', async function() {
       await expectRevert(
-        this.token.batchCreateStrand(['1', '0'], tokenBatchHolder, [initialURI, initialURI], {from: minter}),
-        "DigitalaxMaterials.batchCreateStrand: No initial supply"
+        this.token.batchCreateStrands(['1', '0'], tokenBatchHolder, [initialURI, initialURI], {from: minter}),
+        "DigitalaxMaterials.batchCreateStrands: No initial supply"
       );
     });
 
     it('Reverts when any elem in the _uris is empty', async function() {
       await expectRevert(
-        this.token.batchCreateStrand(['1', '1'], tokenBatchHolder, [initialURI, ""], {from: minter}),
-        "DigitalaxMaterials.batchCreateStrand: URI is a blank string"
+        this.token.batchCreateStrands(['1', '1'], tokenBatchHolder, [initialURI, ""], {from: minter}),
+        "DigitalaxMaterials.batchCreateStrands: URI is a blank string"
       );
     });
   });
@@ -120,6 +120,44 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, minter, to
       await expectRevert(
         this.token.mintStrand(STRAND_ONE_ID, '0', tokenHolder, {from: minter}),
         "DigitalaxMaterials.mintStrand: No amount specified"
+      );
+    });
+  });
+
+  describe('batchMintStrands()', function() {
+    it('Reverts when sender is not a minter', async function() {
+      await expectRevert(
+        this.token.batchMintStrands([], [], tokenBatchHolder, {from: tokenBatchHolder}),
+        "DigitalaxMaterials.batchMintStrands: Sender must be minter"
+      );
+    });
+
+    it('Reverts when any strand does not exist', async function() {
+      await expectRevert(
+        this.token.batchMintStrands(['1'], ['1'], tokenBatchHolder, {from: minter}),
+        "DigitalaxMaterials.batchMintStrands: Strand does not exist"
+      );
+    });
+
+    it('Reverts when any amount is zero', async function() {
+      await this.token.createStrand('1', tokenBatchHolder, initialURI, {from: minter});
+      await expectRevert(
+        this.token.batchMintStrands(['1'], ['0'], tokenBatchHolder, {from: minter}),
+        "DigitalaxMaterials.batchMintStrands: Invalid amount"
+      );
+    });
+
+    it('Reverts when array lengths are inconsistent', async function() {
+      await expectRevert(
+        this.token.batchMintStrands(['1'], [], tokenBatchHolder, {from: minter}),
+        "DigitalaxMaterials.batchMintStrands: Array lengths are invalid"
+      );
+    });
+
+    it('Reverts when arrays are empty', async function() {
+      await expectRevert(
+        this.token.batchMintStrands([], [], tokenBatchHolder, {from: minter}),
+        "DigitalaxMaterials.batchMintStrands: No data supplied in arrays"
       );
     });
   });
