@@ -80,12 +80,16 @@ contract DigitalaxMaterials is ERC1155 {
 
     function batchMintStrands(uint256[] calldata _strandIds, uint256[] calldata _amounts, address _beneficiary) external {
         require(accessControls.hasMinterRole(_msgSender()), "DigitalaxMaterials.batchMintStrands: Sender must be minter");
+        require(_strandIds.length == _amounts.length, "DigitalaxMaterials.batchMintStrands: Array lengths are invalid");
         require(_strandIds.length > 0, "DigitalaxMaterials.batchMintStrands: No data supplied in arrays");
 
-        // Check the strands exist
+        // Check the strands exist and no zero amounts
         for(uint i = 0; i < _strandIds.length; i++) {
             uint256 strandId = _strandIds[i];
             require(bytes(tokenUris[strandId]).length > 0, "DigitalaxMaterials.batchMintStrands: Strand does not exist");
+
+            uint256 amount = _amounts[i];
+            require(amount > 0, "DigitalaxMaterials.batchMintStrands: Invalid amount");
         }
 
         _mintBatch(_beneficiary, _strandIds, _amounts, abi.encodePacked(""));

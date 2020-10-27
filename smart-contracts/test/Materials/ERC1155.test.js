@@ -90,12 +90,12 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
       it('reverts if length of inputs do not match', async function () {
         await expectRevert(
           this.token.batchMintStrands(tokenBatchIds, mintAmounts.slice(1), tokenBatchHolder, {from: operator}),
-          'ERC1155: ids and amounts length mismatch',
+          'DigitalaxMaterials.batchMintStrands: Array lengths are invalid',
         );
 
         await expectRevert(
           this.token.batchMintStrands(tokenBatchIds.slice(1), mintAmounts, tokenBatchHolder, {from: operator}),
-          'ERC1155: ids and amounts length mismatch',
+          'DigitalaxMaterials.batchMintStrands: Array lengths are invalid',
         );
       });
 
