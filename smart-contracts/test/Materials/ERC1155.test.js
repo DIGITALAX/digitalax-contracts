@@ -24,6 +24,9 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
       this.accessControls.address,
       {from: admin}
     );
+
+    expect(await this.token.name()).to.be.equal(name);
+    expect(await this.token.symbol()).to.be.equal(symbol);
   });
 
   shouldBehaveLikeERC1155(otherAccounts);

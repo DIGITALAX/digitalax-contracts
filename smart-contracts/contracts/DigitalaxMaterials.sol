@@ -74,6 +74,7 @@ contract DigitalaxMaterials is ERC1155 {
     function mintStrand(uint256 _strandId, uint256 _amount, address _beneficiary) external {
         require(accessControls.hasMinterRole(_msgSender()), "DigitalaxMaterials.mintStrand: Sender must be minter");
         require(bytes(tokenUris[_strandId]).length > 0, "DigitalaxMaterials.mintStrand: Strand does not exist");
+        require(_amount > 0, "DigitalaxMaterials.mintStrand: No amount specified");
         _mint(_beneficiary, _strandId, _amount, abi.encodePacked(""));
     }
 
