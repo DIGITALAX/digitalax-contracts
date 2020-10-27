@@ -99,9 +99,8 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX") {
      @param _salePrice The primary Ether sale price in WEI
      */
     function setPrimarySalePrice(uint256 _tokenId, uint256 _salePrice) external {
-        bool isAdmin = accessControls.hasAdminRole(_msgSender());
-        bool isSmartContract = accessControls.hasSmartContractRole(_msgSender());
-        require(isAdmin || isSmartContract, "DigitalaxGarmentNFT.setPrimarySalePrice: Sender must be an authorised contract or admin");
+        require(accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxGarmentNFT.setPrimarySalePrice: Sender must be an authorised contract or admin");
         require(_exists(_tokenId), "DigitalaxGarmentNFT.setPrimarySalePrice: Token does not exist");
         require(_salePrice > 0, "DigitalaxGarmentNFT.setPrimarySalePrice: Invalid sale price");
 
