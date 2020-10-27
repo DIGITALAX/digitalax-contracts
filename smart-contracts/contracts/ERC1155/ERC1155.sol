@@ -34,7 +34,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     mapping (address => mapping(address => bool)) private _operatorApprovals;
 
     // Token ID to its URI
-    mapping (uint256 => string) private tokenUris;
+    mapping (uint256 => string) internal tokenUris;
 
     /*
      *     bytes4(keccak256('balanceOf(address,uint256)')) == 0x00fdd58e
