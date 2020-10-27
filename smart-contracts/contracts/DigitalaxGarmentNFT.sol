@@ -7,6 +7,7 @@ import "./DigitalaxAccessControls.sol";
 //TODO: update access controls admin method
 // TODO: secondary sale mechanics need to be built into core NFT twisted sister style - modify 721 to add payable
 // TODO: before each hook could also implement do not transfer to self
+// TODO: need a burn method returning 1155s to burner
 contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX") {
 
     // TODO: events for updating token URI and updating access controls
@@ -29,6 +30,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX") {
         accessControls = _accessControls;
     }
 
+    //todo: maybe we can drop mint? just use safe mint under the hood like the genesis
     /**
      @notice Mints a DigitalaxGarmentNFT but does not check if the beneficiary is a 721 compatible contract
      @dev Only senders with either the minter or smart contract role can invoke this method
