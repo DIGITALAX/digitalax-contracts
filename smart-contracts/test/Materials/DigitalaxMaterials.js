@@ -27,6 +27,66 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, minter, to
     );
   });
 
+  describe('createStrand()', function () {
+    it('Reverts when sender is not minter', async function() {
+      await expectRevert(
+        this.token.createStrand('1', tokenHolder, initialURI, {from: tokenHolder}),
+        "DigitalaxMaterials.createStrand: Sender must be minter"
+      );
+    });
+
+    it('Reverts when zero supply specified', async function() {
+      await expectRevert(
+        this.token.createStrand('0', tokenHolder, initialURI, {from: minter}),
+        "DigitalaxMaterials.createStrand: No initial supply"
+      );
+    });
+
+    it('Reverts when empty uri specified', async function() {
+      await expectRevert(
+        this.token.createStrand('1', tokenHolder, "", {from: minter}),
+        "DigitalaxMaterials.createStrand: URI is a blank string"
+      );
+    });
+  });
+
+  describe('batchCreateStrand()', function() {
+    it('Reverts when sender is not minter', async function() {
+      await expectRevert(
+        this.token.batchCreateStrand([], tokenBatchHolder, [], {from: tokenBatchHolder}),
+        "DigitalaxMaterials.batchCreateStrand: Sender must be minter"
+      );
+    });
+
+    it('Reverts when array lengths differ', async function() {
+      await expectRevert(
+        this.token.batchCreateStrand(['1'], tokenBatchHolder, [], {from: minter}),
+        "DigitalaxMaterials.batchCreateStrand: Array lengths are invalid"
+      );
+    });
+
+    it('Reverts when arrays are empty', async function() {
+      await expectRevert(
+        this.token.batchCreateStrand([], tokenBatchHolder, [], {from: minter}),
+        "DigitalaxMaterials.batchCreateStrand: No data supplied in arrays"
+      );
+    });
+
+    it('Reverts when any elem in the _initialSupplies is zero', async function() {
+      await expectRevert(
+        this.token.batchCreateStrand(['1', '0'], tokenBatchHolder, [initialURI, initialURI], {from: minter}),
+        "DigitalaxMaterials.batchCreateStrand: No initial supply"
+      );
+    });
+
+    it('Reverts when any elem in the _uris is empty', async function() {
+      await expectRevert(
+        this.token.batchCreateStrand(['1', '1'], tokenBatchHolder, [initialURI, ""], {from: minter}),
+        "DigitalaxMaterials.batchCreateStrand: URI is a blank string"
+      );
+    });
+  });
+
   describe('mintStrand()', function() {
     beforeEach(async function() {
       await this.token.createStrand(
