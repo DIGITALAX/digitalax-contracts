@@ -72,7 +72,7 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
 
     describe('_mintBatch', function () {
       beforeEach(async function () {
-        await this.token.batchCreateStrand(
+        await this.token.batchCreateStrands(
           ['1', '1', '1'],
           tokenBatchHolder,
           [initialURI, initialURI, initialURI],
