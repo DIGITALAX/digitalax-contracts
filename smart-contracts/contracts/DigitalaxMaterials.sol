@@ -53,6 +53,7 @@ contract DigitalaxMaterials is ERC1155 {
     ) external returns (uint256[] memory strandIds) {
         require(accessControls.hasMinterRole(_msgSender()), "DigitalaxMaterials.batchCreateStrands: Sender must be minter");
         require(_initialSupplies.length == _uris.length, "DigitalaxMaterials.batchCreateStrands: Array lengths are invalid");
+        require(_initialSupplies.length == _datas.length, "DigitalaxMaterials.batchCreateStrands: Array lengths are invalid");
         require(_initialSupplies.length > 0, "DigitalaxMaterials.batchCreateStrands: No data supplied in arrays");
 
         strandIds = new uint256[](_initialSupplies.length);

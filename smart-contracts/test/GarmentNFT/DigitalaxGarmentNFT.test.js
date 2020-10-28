@@ -138,7 +138,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
     });
 
     describe('Wrapping 1155 Child Tokens', () => {
-       it.only('Given a garment, can mint a new strand and automatically link to the garment', async () => {
+       it('Given a garment, can mint a new strand and automatically link to the garment', async () => {
           // Mint the garment - ERC721 Token ID [1]
           await this.token.mint(
             owner,
@@ -176,6 +176,9 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
 
            expect(garment1StrandIdsOwned.length).to.be.equal(1);
            expect(garment1StrandIdsOwned[0]).to.be.bignumber.equal(STRAND_ONE_ID);
+
+           // Check that the 1155 correctly reports the balance on the ERC721
+          expect(await this.digitalaxMaterials.balanceOf(this.token.address, STRAND_ONE_ID)).to.be.bignumber.equal(initialSupply);
        });
     });
 })
