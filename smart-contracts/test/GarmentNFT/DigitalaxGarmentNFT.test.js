@@ -8,7 +8,7 @@ const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
 const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
 const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
 
-contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, owner, smart_contract, designer]) {
+contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, owner, smart_contract, designer,random]) {
     const randomURI = 'rand';
 
     const TOKEN_ONE_ID = new BN('1');
@@ -39,7 +39,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
         describe('Minting', () => {
             it('When sender does not have a MINTER or SMART_CONTRACT role', async () => {
                 await expectRevert(
-                    this.token.mint(minter, randomURI, designer, {from: admin}),
+                    this.token.mint(minter, randomURI, designer, {from: random}),
                     "DigitalaxGarmentNFT.mint: Sender must have the minter or contract role"
                 );
             });
@@ -140,7 +140,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
        })
     });
 
-    describe.only('Wrapping 1155 Child Tokens', () => {
+    describe('Wrapping 1155 Child Tokens', () => {
        describe('When the garment or strand dont exist', () => {
          it('Given a garment, can mint a new strand and automatically link to the garment', async () => {
            // Mint the garment - ERC721 Token ID [1]
