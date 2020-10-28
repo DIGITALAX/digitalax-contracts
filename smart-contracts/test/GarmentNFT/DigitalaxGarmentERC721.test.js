@@ -390,7 +390,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([owner, minter, 
             describe('via safeMint', function () { // regular minting is tested in ERC721Mintable.test.js and others
                 it.skip('calls onERC721Received — with data', async function () {
                     this.receiver = await ERC721ReceiverMock.new(RECEIVER_MAGIC_VALUE, false);
-                    const receipt = await this.token.safeMint(this.receiver.address, tokenId, data);
+                    const receipt = await this.token.mint(this.receiver.address, tokenId, data);
 
                     await expectEvent.inTransaction(receipt.tx, ERC721ReceiverMock, 'Received', {
                         from: ZERO_ADDRESS,
@@ -401,7 +401,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([owner, minter, 
 
                 it('calls onERC721Received — without data', async function () {
                     this.receiver = await ERC721ReceiverMock.new(RECEIVER_MAGIC_VALUE, false);
-                    const receipt = await this.token.safeMint(this.receiver.address, randomTokenURI, artist, {from: minter});
+                    const receipt = await this.token.mint(this.receiver.address, randomTokenURI, artist, {from: minter});
 
                     await expectEvent.inTransaction(receipt.tx, ERC721ReceiverMock, 'Received', {
                         from: ZERO_ADDRESS,
@@ -413,7 +413,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([owner, minter, 
                     it('reverts', async function () {
                         const invalidReceiver = await ERC721ReceiverMock.new('0x42', false);
                         await expectRevert(
-                            this.token.safeMint(invalidReceiver.address, randomTokenURI, artist, {from: minter}),
+                            this.token.mint(invalidReceiver.address, randomTokenURI, artist, {from: minter}),
                             'ERC721: transfer to non ERC721Receiver implementer',
                         );
                     });
@@ -423,7 +423,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([owner, minter, 
                     it('reverts', async function () {
                         const revertingReceiver = await ERC721ReceiverMock.new(RECEIVER_MAGIC_VALUE, true);
                         await expectRevert(
-                            this.token.safeMint(revertingReceiver.address, randomTokenURI, artist, {from: minter}),
+                            this.token.mint(revertingReceiver.address, randomTokenURI, artist, {from: minter}),
                             'ERC721ReceiverMock: reverting',
                         );
                     });
@@ -433,7 +433,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([owner, minter, 
                     it('reverts', async function () {
                         const nonReceiver = this.token;
                         await expectRevert(
-                            this.token.safeMint(nonReceiver.address, randomTokenURI, artist, {from: minter}),
+                            this.token.mint(nonReceiver.address, randomTokenURI, artist, {from: minter}),
                             'ERC721: transfer to non ERC721Receiver implementer',
                         );
                     });

@@ -50,6 +50,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     /**
      @param _accessControls Address of the Digitalax access control contract
      */
+    //TODO: new param for 1155 child contract
     constructor(DigitalaxAccessControls _accessControls) public {
         accessControls = _accessControls;
     }
@@ -65,7 +66,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     function mint(address _beneficiary, string calldata _tokenUri, address _designer) external returns(uint256) {
         bool isMinter = accessControls.hasMinterRole(_msgSender());
         bool isSmartContract = accessControls.hasSmartContractRole(_msgSender());
-        require(isMinter || isSmartContract, "DigitalaxGarmentNFT.safeMint: Sender must have the minter or contract role");
+        require(isMinter || isSmartContract, "DigitalaxGarmentNFT.mint: Sender must have the minter or contract role");
 
         assertMintingParamsValid(_tokenUri, _designer);
 

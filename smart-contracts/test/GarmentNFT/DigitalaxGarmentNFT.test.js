@@ -41,29 +41,6 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
             });
         });
 
-        describe('Safe minting', () => {
-            it('When sender does not have a MINTER or SMART_CONTRACT role', async () => {
-                await expectRevert(
-                    this.token.safeMint(minter, randomURI, designer, {from: admin}),
-                    "DigitalaxGarmentNFT.safeMint: Sender must have the minter or contract role"
-                );
-            });
-
-            it('When token URI is empty', async () => {
-                await expectRevert(
-                    this.token.safeMint(minter, '', designer, {from: minter}),
-                    "DigitalaxGarmentNFT.assertMintingParamsValid: Token URI is empty"
-                );
-            });
-
-            it('When designer is address ZERO', async () => {
-                await expectRevert(
-                    this.token.safeMint(minter, randomURI, ZERO_ADDRESS, {from: minter}),
-                    "DigitalaxGarmentNFT.assertMintingParamsValid: Designer is zero address"
-                );
-            });
-        });
-
         describe('Admin function', () => {
             it('When sender does not have a DEFAULT_ADMIN_ROLE role', async () => {
                 await this.token.mint(minter, randomURI, designer, {from: minter});
