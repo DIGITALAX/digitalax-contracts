@@ -11,7 +11,6 @@ import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "./DigitalaxAccessControls.sol";
 import "./ERC998/IERC998ERC1155TopDown.sol";
 
-//TODO: update access controls admin method
 // TODO: secondary sale mechanics need to be built into core NFT twisted sister style - modify 721 to add payable
 // TODO: before each hook could also implement do not transfer to self
 // TODO: need a burn method returning 1155s to burner
@@ -274,13 +273,13 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     }
 
     function _beforeChildTransfer(
-        address operator,
-        uint256 fromTokenId,
-        address to,
-        address childContract,
-        uint256[] memory ids,
-        uint256[] memory amounts,
-        bytes memory data
+        address _operator,
+        uint256 _fromTokenId,
+        address _to,
+        address _childContract,
+        uint256[] memory _ids,
+        uint256[] memory _amounts,
+        bytes memory _data
     )
     internal virtual
     { }
