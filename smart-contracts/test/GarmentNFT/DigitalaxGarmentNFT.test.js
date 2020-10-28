@@ -223,6 +223,10 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
 
            // Check that the 1155 correctly reports the balance on the ERC721
            expect(await this.digitalaxMaterials.balanceOf(this.token.address, STRAND_ONE_ID)).to.be.bignumber.equal(initialSupply);
+
+           const childContracts = await this.token.childContractsFor(TOKEN_ONE_ID);
+           expect(childContracts.length).to.be.equal(1);
+           expect(childContracts[0]).to.be.equal(this.digitalaxMaterials.address);
          });
        });
 
