@@ -45,12 +45,25 @@ contract('DigitalaxAuction', (accounts) => {
     describe('Auction resulting', () => {
       it('Successfully results the auction', async () => {
         await this.auction.setNowOverride('12');
+
         const {receipt} = await this.auction.resultAuction(TOKEN_ONE_ID, {from: admin});
+
         await expectEvent(receipt, 'AuctionResulted', {
           garmentTokenId: TOKEN_ONE_ID,
           winner: bidder,
           winningBid: ether('0.2')
         });
+
+        const {_bidder, _bid} = await this.auction.getHighestBidder(TOKEN_ONE_ID);
+        expect(_bid).to.be.bignumber.equal('0');
+        expect(_bidder).to.equal(constants.ZERO_ADDRESS);
+
+        const {_reservePrice, _startTime, _endTime, _lister, _resulted} = await this.auction.getAuction(TOKEN_ONE_ID);
+        expect(_reservePrice).to.be.bignumber.equal('1');
+        expect(_startTime).to.be.bignumber.equal('0');
+        expect(_endTime).to.be.bignumber.equal('10');
+        expect(_lister).to.be.equal(minter);
+        expect(_resulted).to.be.equal(true);
       });
     });
 
@@ -282,10 +295,12 @@ contract('DigitalaxAuction', (accounts) => {
         expect(_bid).to.be.bignumber.equal(ether('0.2'));
         expect(_bidder).to.equal(bidder);
 
-        const {_reservePrice, _startTime, _endTime} = await this.auction.getAuction(TOKEN_ONE_ID);
+        const {_reservePrice, _startTime, _endTime, _lister, _resulted} = await this.auction.getAuction(TOKEN_ONE_ID);
         expect(_reservePrice).to.be.bignumber.equal('1');
         expect(_startTime).to.be.bignumber.equal('1');
         expect(_endTime).to.be.bignumber.equal('10');
+        expect(_lister).to.be.equal(minter);
+        expect(_resulted).to.be.equal(false);
       });
 
       it('will refund the top bidder if found', async () => {
@@ -351,6 +366,163 @@ contract('DigitalaxAuction', (accounts) => {
       expect(_bid).to.be.bignumber.equal('0');
       expect(_bidder).to.equal(constants.ZERO_ADDRESS);
     });
+  });
+
+  describe('resultAuction()', async () => {
+
+    describe('validation', () => {
+
+      beforeEach(async () => {
+        await this.token.mint(minter, randomTokenURI, designer, {from: minter});
+        await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
+        await this.auction.setNowOverride('2');
+        await this.auction.createAuction(
+          TOKEN_ONE_ID,
+          '1',
+          '0',
+          '10',
+          {from: minter}
+        );
+      });
+
+      it('cannot result if not an admin', async () => {
+        await expectRevert(
+          this.auction.resultAuction(TOKEN_ONE_ID, {from: bidder}),
+          'DigitalaxAuction.resultAuction: Sender must be admin'
+        );
+      });
+
+      it('cannot result if auction has not ended', async () => {
+        await expectRevert(
+          this.auction.resultAuction(TOKEN_ONE_ID, {from: admin}),
+          'DigitalaxAuction.resultAuction: The auction has not ended'
+        );
+      });
+
+      it('cannot result if auction does not exist', async () => {
+        await expectRevert(
+          this.auction.resultAuction(9999, {from: admin}),
+          'DigitalaxAuction.resultAuction: Auction does not exist'
+        );
+      });
+
+      it('cannot result if the auction has no winner', async () => {
+        await this.auction.setNowOverride('12');
+        await expectRevert(
+          this.auction.resultAuction(TOKEN_ONE_ID, {from: admin}),
+          'DigitalaxAuction.resultAuction: No one has bid'
+        );
+      });
+
+      it('cannot result if the auction if its already resulted', async () => {
+        await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.2')});
+        await this.auction.setNowOverride('12');
+
+        // result it
+        await this.auction.resultAuction(TOKEN_ONE_ID, {from: admin});
+
+        // try result it again
+        await expectRevert(
+          this.auction.resultAuction(TOKEN_ONE_ID, {from: admin}),
+          'DigitalaxAuction.resultAuction: auction already resulted'
+        );
+      });
+    });
+
+    describe('successfully resulting an auction', async () => {
+
+      beforeEach(async () => {
+        await this.token.mint(minter, randomTokenURI, designer, {from: minter});
+        await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
+        await this.auction.setNowOverride('2');
+        await this.auction.createAuction(
+          TOKEN_ONE_ID,
+          '1',
+          '0',
+          '10',
+          {from: minter}
+        );
+      });
+
+      it('transfer token to the winner', async () => {
+        await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.2')});
+        await this.auction.setNowOverride('12');
+
+        expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.equal(this.auction.address);
+
+        await this.auction.resultAuction(TOKEN_ONE_ID, {from: admin});
+
+        expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.equal(bidder);
+      });
+
+      it('transfer funds to the token owner creator', async () => {
+        // TODO funds handling tests
+      });
+
+    });
+
+  });
+
+  describe('cancelAuction()', async () => {
+
+    beforeEach(async () => {
+      await this.token.mint(minter, randomTokenURI, designer, {from: minter});
+      await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
+      await this.auction.setNowOverride('2');
+      await this.auction.createAuction(
+        TOKEN_ONE_ID,
+        '1',
+        '0',
+        '10',
+        {from: minter}
+      );
+    });
+
+    describe('validation', async () => {
+
+      it('cannot cancel if not an admin', async () => {
+        await expectRevert(
+          this.auction.cancelAuction(TOKEN_ONE_ID, {from: bidder}),
+          'DigitalaxAuction.cancelAuction: Sender must be admin'
+        );
+      });
+
+      it('cannot cancel if auction already cancelled', async () => {
+        await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.2')});
+        await this.auction.setNowOverride('12');
+
+        await this.auction.cancelAuction(TOKEN_ONE_ID, {from: admin});
+
+        await expectRevert(
+          this.auction.cancelAuction(TOKEN_ONE_ID, {from: admin}),
+          'DigitalaxAuction.cancelAuction: auction already resulted'
+        );
+      });
+
+      it('cannot cancel if auction already resulted', async () => {
+        await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.2')});
+        await this.auction.setNowOverride('12');
+
+        await this.auction.resultAuction(TOKEN_ONE_ID, {from: admin});
+
+        await expectRevert(
+          this.auction.cancelAuction(TOKEN_ONE_ID, {from: admin}),
+          'DigitalaxAuction.cancelAuction: auction already resulted'
+        );
+      });
+
+      it('cannot cancel if auction does not exist', async () => {
+        await expectRevert(
+          this.auction.cancelAuction(9999, {from: admin}),
+          'DigitalaxAuction.cancelAuction: Auction does not exist'
+        );
+      });
+
+      it('funds are sent back to the highest bidder if found', async () => {
+        // TODO funds handling tests
+      });
+    });
+
   });
 
 });
