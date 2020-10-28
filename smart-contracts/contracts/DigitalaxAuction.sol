@@ -36,10 +36,16 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         uint256 winningBid
     );
 
+    event AuctionCancelled(
+        uint256 indexed garmentTokenId
+    );
+
     struct Auction {
         uint256 reservePrice;
         uint256 startTime;
         uint256 endTime;
+        address lister;
+        bool resulted;
     }
 
     struct HighestBid {
@@ -64,6 +70,8 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         garmentNft = _garmentNft;
     }
 
+    // TODO add test for creating an action, cancelling it, creating it again
+
     function createAuction(
         uint256 _garmentTokenId,
         uint256 _reservePrice,
@@ -76,7 +84,6 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         );
 
         // FIXME allow zero price reserve - ensure other checks dont use zero as validation property
-
         require(_reservePrice > 0, "DigitalaxAuction.createAuction: Invalid reserve price");
 
         require(_endTime > _startTime, "DigitalaxAuction.createAuction: End time must be greater than start");
@@ -86,10 +93,13 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
             "DigitalaxAuction.createAuction: Cannot create an auction in the middle of another"
         );
 
+        // Setup the auction
         auctions[_garmentTokenId] = Auction({
         reservePrice : _reservePrice,
         startTime : _startTime,
-        endTime : _endTime
+        endTime : _endTime,
+        lister : _msgSender(),
+        resulted : false
         });
 
         // Escrow in NFT
@@ -148,20 +158,24 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
 
         // Check the auction to see if it can be resulted
         Auction storage auction = auctions[_garmentTokenId];
-        require(auction.endTime > 0, "DigitalaxAuction.placeBid: Auction does not exist");
-        require(
-            _getNow() > auction.endTime,
-            "DigitalaxAuction.resultAuction: The auction has not ended"
-        );
+        require(auction.lister != address(0), "DigitalaxAuction.resultAuction: Auction does not exist");
+        require(_getNow() > auction.endTime, "DigitalaxAuction.resultAuction: The auction has not ended");
+
+        // Ensure auction not already resulted
+        require(!auction.resulted, "DigitalaxAuction.resultAuction: auction already resulted");
+
+        // Result the auction
+        auctions[_garmentTokenId].resulted = true;
 
         // Get info on who the highest bidder is
         HighestBid storage highestBid = highestBids[_garmentTokenId];
         address winner = highestBid.bidder;
         uint256 winningBid = highestBid.bid;
 
+        // Ensure there is a winner
         require(winner != address(0), "DigitalaxAuction.resultAuction: No one has bid");
 
-        // For future auctions on this token, clear down the highest bid info
+        // Clean up the highest winner
         delete highestBids[_garmentTokenId];
 
         // Record the primary sale price for the garment
@@ -171,9 +185,33 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         (bool designerTransferSuccess,) = garmentNft.garmentDesigners(_garmentTokenId).call{value : winningBid}("");
         require(designerTransferSuccess, "DigitalaxAuction.resultAuction: Failed to send the designer their royalties");
 
+        // Transfer the token to the winner
         garmentNft.transferFrom(address(this), winner, _garmentTokenId);
 
         emit AuctionResulted(_garmentTokenId, winner, winningBid);
+    }
+
+    function cancelAuction(uint256 _garmentTokenId) external nonReentrant {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxAuction.cancelAuction: Sender must be admin");
+
+        // Check valida and not resulted
+        Auction storage auction = auctions[_garmentTokenId];
+        require(auction.lister != address(0), "DigitalaxAuction.cancelAuction: Auction does not exist");
+        require(!auction.resulted, "DigitalaxAuction.cancelAuction: auction already resulted");
+
+        // Result the auction
+        auctions[_garmentTokenId].resulted = true;
+
+        // refund existing top bidder if found
+        HighestBid storage highestBid = highestBids[_garmentTokenId];
+        if (highestBid.bidder != address(0)) {
+            _refundHighestBidder(highestBid.bidder, highestBid.bid);
+        }
+
+        // Transfer the token back to the lister
+        garmentNft.transferFrom(address(this), auction.lister, _garmentTokenId);
+
+        emit AuctionCancelled(_garmentTokenId);
     }
 
     /**
@@ -233,15 +271,25 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     // Accessors //
     ///////////////
 
-    function getAuction(uint256 _garmentTokenId) external view returns (uint256 _reservePrice, uint256 _startTime, uint256 _endTime) {
+    /**
+     @notice Method for getting all info about the auction
+     @param _garmentTokenId Token ID of the garment being auctioned
+     */
+    function getAuction(uint256 _garmentTokenId) external view returns (uint256 _reservePrice, uint256 _startTime, uint256 _endTime, address _lister, bool _resulted) {
         Auction storage auction = auctions[_garmentTokenId];
         return (
         auction.reservePrice,
         auction.startTime,
-        auction.endTime
+        auction.endTime,
+        auction.lister,
+        auction.resulted
         );
     }
 
+    /**
+     @notice Method for getting all info about the highest bidder
+     @param _garmentTokenId Token ID of the garment being auctioned
+     */
     function getHighestBidder(uint256 _garmentTokenId) external view returns (address payable _bidder, uint256 _bid) {
         HighestBid storage highestBid = highestBids[_garmentTokenId];
         return (

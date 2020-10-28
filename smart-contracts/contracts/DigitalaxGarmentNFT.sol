@@ -39,10 +39,11 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX") {
      @param _designer Garment designer - will be required for issuing royalties from secondary sales
      @return uint256 The token ID of the token that was minted
      */
-    function mint(address _beneficiary, string calldata _tokenUri, address _designer) external returns(uint256) {
-        bool isMinter = accessControls.hasMinterRole(_msgSender());
-        bool isSmartContract = accessControls.hasSmartContractRole(_msgSender());
-        require(isMinter || isSmartContract, "DigitalaxGarmentNFT.mint: Sender must have the minter or contract role");
+    function mint(address _beneficiary, string calldata _tokenUri, address _designer) external returns (uint256) {
+        require(
+            accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasMinterRole(_msgSender()),
+            "DigitalaxGarmentNFT.mint: Sender must have the minter or contract role"
+        );
 
         assertMintingParamsValid(_tokenUri, _designer);
 
@@ -63,10 +64,11 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX") {
      @param _designer Garment designer - will be required for issuing royalties from secondary sales
      @return uint256 The token ID of the token that was minted
      */
-    function safeMint(address _beneficiary, string calldata _tokenUri, address _designer) external returns(uint256) {
-        bool isMinter = accessControls.hasMinterRole(_msgSender());
-        bool isSmartContract = accessControls.hasSmartContractRole(_msgSender());
-        require(isMinter || isSmartContract, "DigitalaxGarmentNFT.safeMint: Sender must have the minter or contract role");
+    function safeMint(address _beneficiary, string calldata _tokenUri, address _designer) external returns (uint256) {
+        require(
+            accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasMinterRole(_msgSender()),
+            "DigitalaxGarmentNFT.safeMint: Sender must have the minter or contract role"
+        );
 
         assertMintingParamsValid(_tokenUri, _designer);
 
@@ -101,8 +103,10 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX") {
      @param _salePrice The primary Ether sale price in WEI
      */
     function setPrimarySalePrice(uint256 _tokenId, uint256 _salePrice) external {
-        require(accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxGarmentNFT.setPrimarySalePrice: Sender must be an authorised contract or admin");
+        require(
+            accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxGarmentNFT.setPrimarySalePrice: Sender must be an authorised contract or admin"
+        );
         require(_exists(_tokenId), "DigitalaxGarmentNFT.setPrimarySalePrice: Token does not exist");
         require(_salePrice > 0, "DigitalaxGarmentNFT.setPrimarySalePrice: Invalid sale price");
 
