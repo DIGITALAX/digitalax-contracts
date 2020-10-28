@@ -204,7 +204,9 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     // Internal and Private /
     /////////////////////////
 
-    function safeTransferChildFrom(uint256 _fromTokenId, address _to, uint256 _childTokenId, uint256 _amount, bytes memory _data) private {
+    // TODO; should this function be public?
+    function safeTransferChildFrom(uint256 _fromTokenId, address _to, address _childContract, uint256 _childTokenId, uint256 _amount, bytes memory _data) public override {
+        require(msg.sender == address(this));
         require(_to != address(0), "ERC998: transfer to the zero address");
 
         address operator = _msgSender();
@@ -229,7 +231,9 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         TransferSingleChild(_fromTokenId, _to, address(childContract), _childTokenId, _amount);
     }
 
-    function safeBatchTransferChildFrom(uint256 _fromTokenId, address _to, uint256[] memory _childTokenIds, uint256[] memory _amounts, bytes memory _data) private {
+    // TODO; should this function be public?
+    function safeBatchTransferChildFrom(uint256 _fromTokenId, address _to, address _childContract, uint256[] memory _childTokenIds, uint256[] memory _amounts, bytes memory _data) public override {
+        require(msg.sender == address(this));
         require(_childTokenIds.length == _amounts.length, "ERC998: ids and amounts length mismatch");
         require(_to != address(0), "ERC998: transfer to the zero address");
 
