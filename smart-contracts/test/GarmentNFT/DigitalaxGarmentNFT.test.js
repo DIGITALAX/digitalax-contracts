@@ -161,12 +161,24 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
           });
         });
 
-        //TODO
-        // describe('When batch wrapping multiple strands', () => {
-        //   it('If referencing a token that does not exist', async () => {
-        //
-        //   });
-        // });
+        describe('When batch wrapping multiple strands', () => {
+          it('If referencing a token that does not exist', async () => {
+            const garmentTokenIdEncoded = web3.utils.encodePacked(TOKEN_ONE_ID.toString());
+            const strand1Supply = '1';
+            const strand2Supply = '2';
+            const strand3Supply = '2';
+            await expectRevert(
+              this.digitalaxMaterials.batchCreateStrands(
+                [strand1Supply, strand2Supply, strand3Supply],
+                this.token.address,
+                ['strand1', 'strand2', 'strand3'],
+                [garmentTokenIdEncoded, garmentTokenIdEncoded, garmentTokenIdEncoded],
+                {from: admin}
+              ),
+              "Token does not exist"
+            );
+          });
+        });
       });
 
        describe('When the garment or strand dont exist', () => {
