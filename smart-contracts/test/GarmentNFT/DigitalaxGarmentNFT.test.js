@@ -1,5 +1,8 @@
 const { BN, constants, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { ZERO_ADDRESS } = constants;
+const web3 = require('web3');
+
+const { expect } = require('chai');
 
 const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
 const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
@@ -132,5 +135,47 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
            expect(await this.token.accessControls()).to.be.equal(smart_contract);
            expect(await this.token.accessControls()).to.not.equal(currentAccessControlsAddress);
        })
+    });
+
+    describe('Wrapping 1155 Child Tokens', () => {
+       it.only('Given a garment, can mint a new strand and automatically link to the garment', async () => {
+          // Mint the garment - ERC721 Token ID [1]
+          await this.token.mint(
+            owner,
+            randomURI,
+            designer,
+            {from: minter}
+          );
+
+          // Create a new strand and link it to Garment ID [1]
+           const initialSupply = '2';
+           const beneficiary = this.token.address; // as we want to 'link'
+           const strandUri = 'strand1'; // not important for this test
+           const garmentTokenIdEncoded = web3.utils.encodePacked(TOKEN_ONE_ID.toString());
+           await this.digitalaxMaterials.createStrand(
+             initialSupply,
+             beneficiary,
+             strandUri,
+             garmentTokenIdEncoded,
+             {from: minter}
+           ); // This will create strand ID [1]
+
+           const STRAND_ONE_ID = TOKEN_ONE_ID;
+           const garment1Strand1Balance = await this.token.childBalance(
+             TOKEN_ONE_ID,
+             this.digitalaxMaterials.address,
+             STRAND_ONE_ID
+           );
+
+           expect(garment1Strand1Balance).to.be.bignumber.equal(initialSupply);
+
+           const garment1StrandIdsOwned = await this.token.childIdsForOn(
+             TOKEN_ONE_ID,
+             this.digitalaxMaterials.address
+           );
+
+           expect(garment1StrandIdsOwned.length).to.be.equal(1);
+           expect(garment1StrandIdsOwned[0]).to.be.bignumber.equal(STRAND_ONE_ID);
+       });
     });
 })
