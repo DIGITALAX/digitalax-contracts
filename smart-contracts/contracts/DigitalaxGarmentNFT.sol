@@ -88,6 +88,8 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         uint256 _index = msg.data.length - 32;
         assembly {_receiverTokenId := calldataload(_index)}
 
+        require(_exists(_receiverTokenId), "Token does not exist");
+
         _receiveChild(_receiverTokenId, msg.sender, _id, _amount);
         ReceivedChild(_from, _receiverTokenId, msg.sender, _id, _amount);
 
@@ -102,6 +104,9 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         uint256 _receiverTokenId;
         uint256 _index = msg.data.length - 32;
         assembly {_receiverTokenId := calldataload(_index)}
+
+        require(_exists(_receiverTokenId), "Token does not exist");
+
         for(uint256 i = 0; i < _ids.length; i++) {
             _receiveChild(_receiverTokenId, msg.sender, _ids[i], values[i]);
             ReceivedChild(_from, _receiverTokenId, msg.sender, _ids[i], values[i]);
