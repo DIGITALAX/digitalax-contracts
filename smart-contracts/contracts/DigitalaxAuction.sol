@@ -83,9 +83,6 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
             "DigitalaxAuction.createAuction: Sender must have the minter role"
         );
 
-        // FIXME allow zero price reserve - ensure other checks dont use zero as validation property
-        require(_reservePrice > 0, "DigitalaxAuction.createAuction: Invalid reserve price");
-
         require(_endTime > _startTime, "DigitalaxAuction.createAuction: End time must be greater than start");
 
         require(
@@ -153,6 +150,11 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     // Admin /
     //////////
 
+    /**
+     @notice Results a finished auction, sending the token to the winner, sending all funds to the original designer
+     @dev Only admin
+     @param _garmentTokenId Token ID of the garment being auctioned
+     */
     function resultAuction(uint256 _garmentTokenId) external nonReentrant {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxAuction.resultAuction: Sender must be admin");
 
@@ -191,25 +193,31 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         emit AuctionResulted(_garmentTokenId, winner, winningBid);
     }
 
+    /**
+     @notice Cancels and inflight and un-resulted auctions, returning the funds to the top bidder if found and sending the token back to the lister
+     @dev Only admin
+     @param _garmentTokenId Token ID of the garment being auctioned
+     */
     function cancelAuction(uint256 _garmentTokenId) external nonReentrant {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxAuction.cancelAuction: Sender must be admin");
 
-        // Check valida and not resulted
+        // Check valid and not resulted
         Auction storage auction = auctions[_garmentTokenId];
         require(auction.lister != address(0), "DigitalaxAuction.cancelAuction: Auction does not exist");
         require(!auction.resulted, "DigitalaxAuction.cancelAuction: auction already resulted");
-
-        // Result the auction
-        auctions[_garmentTokenId].resulted = true;
 
         // refund existing top bidder if found
         HighestBid storage highestBid = highestBids[_garmentTokenId];
         if (highestBid.bidder != address(0)) {
             _refundHighestBidder(highestBid.bidder, highestBid.bid);
+            delete highestBids[_garmentTokenId];
         }
 
         // Transfer the token back to the lister
         garmentNft.transferFrom(address(this), auction.lister, _garmentTokenId);
+
+        // Remove auction and top bidder
+        delete auctions[_garmentTokenId];
 
         emit AuctionCancelled(_garmentTokenId);
     }
