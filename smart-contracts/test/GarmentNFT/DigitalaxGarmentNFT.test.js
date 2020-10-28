@@ -2,6 +2,7 @@ const { BN, constants, expectEvent, expectRevert } = require('@openzeppelin/test
 const { ZERO_ADDRESS } = constants;
 
 const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
+const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
 const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
 
 contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, owner, smart_contract, designer]) {
@@ -14,7 +15,18 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
         await this.accessControls.addMinterRole(minter, {from: admin});
         await this.accessControls.addSmartContractRole(smart_contract, {from: admin});
 
-        this.token = await DigitalaxGarmentNFT.new(this.accessControls.address, {from: admin});
+        this.digitalaxMaterials = await DigitalaxMaterials.new(
+          'DigitalaxMaterials',
+          'DXM',
+          this.accessControls.address,
+          {from: owner}
+        );
+
+        this.token = await DigitalaxGarmentNFT.new(
+          this.accessControls.address,
+          this.digitalaxMaterials.address,
+          {from: admin}
+        );
     });
 
     describe('Reverts', () => {

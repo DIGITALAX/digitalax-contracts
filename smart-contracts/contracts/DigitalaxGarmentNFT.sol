@@ -42,7 +42,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     mapping(uint256 => EnumerableSet.UintSet) private holdersOf;
 
     /// @notice Child ERC1155 contract address
-    address public childContract;
+    ERC1155 public childContract;
 
     /// @notice ERC721 Token ID -> ERC1155 child IDs owned by the token ID
     mapping(uint256 => EnumerableSet.UintSet) private childsForChildContract;
@@ -51,8 +51,9 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
      @param _accessControls Address of the Digitalax access control contract
      */
     //TODO: new param for 1155 child contract
-    constructor(DigitalaxAccessControls _accessControls) public {
+    constructor(DigitalaxAccessControls _accessControls, ERC1155 _childContract) public {
         accessControls = _accessControls;
+        childContract = _childContract;
     }
 
     /**
@@ -166,7 +167,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         address _childContract,
         uint256 _childTokenId
     ) external view override returns(uint256) {
-        if (_childContract != childContract) {
+        if (_childContract != address(childContract)) {
             return 0;
         }
 
@@ -180,12 +181,12 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         }
 
         address[] memory childContracts = new address[](1);
-        childContracts[0] = childContract;
+        childContracts[0] = address(childContract);
         return childContracts;
     }
 
     function childIdsForOn(uint256 _tokenId, address _childContract) override external view returns (uint256[] memory) {
-        if (_childContract != childContract) {
+        if (_childContract != address(childContract)) {
             uint256[] memory childTokenIds = new uint256[](0);
             return childTokenIds;
         }
@@ -204,7 +205,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     // Internal and Private /
     /////////////////////////
 
-    function safeTransferChildFrom(uint256 _fromTokenId, address _to, address _childContract, uint256 _childTokenId, uint256 _amount, bytes memory _data) private {
+    function safeTransferChildFrom(uint256 _fromTokenId, address _to, uint256 _childTokenId, uint256 _amount, bytes memory _data) private {
         require(_to != address(0), "ERC998: transfer to the zero address");
 
         address operator = _msgSender();
@@ -220,16 +221,16 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
             "ERC1155: caller is not owner nor approved"
         );
         */
-        _beforeChildTransfer(operator, _fromTokenId, _to, _childContract, _asSingletonArray(_childTokenId), _asSingletonArray(_amount), _data);
+        _beforeChildTransfer(operator, _fromTokenId, _to, address(childContract), _asSingletonArray(_childTokenId), _asSingletonArray(_amount), _data);
 
-        _removeChild(_fromTokenId, _childContract, _childTokenId, _amount);
+        _removeChild(_fromTokenId, address(childContract), _childTokenId, _amount);
 
         // TODO: maybe check if to == this
-        ERC1155(_childContract).safeTransferFrom(address(this), _to, _childTokenId, _amount, _data);
-        TransferSingleChild(_fromTokenId, _to, _childContract, _childTokenId, _amount);
+        childContract.safeTransferFrom(address(this), _to, _childTokenId, _amount, _data);
+        TransferSingleChild(_fromTokenId, _to, address(childContract), _childTokenId, _amount);
     }
 
-    function safeBatchTransferChildFrom(uint256 _fromTokenId, address _to, address _childContract, uint256[] memory _childTokenIds, uint256[] memory _amounts, bytes memory _data) private {
+    function safeBatchTransferChildFrom(uint256 _fromTokenId, address _to, uint256[] memory _childTokenIds, uint256[] memory _amounts, bytes memory _data) private {
         require(_childTokenIds.length == _amounts.length, "ERC998: ids and amounts length mismatch");
         require(_to != address(0), "ERC998: transfer to the zero address");
 
@@ -240,16 +241,16 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
             "ERC998: caller is not owner nor approved"
         );
 
-        _beforeChildTransfer(operator, _fromTokenId, _to, _childContract, _childTokenIds, _amounts, _data);
+        _beforeChildTransfer(operator, _fromTokenId, _to, address(childContract), _childTokenIds, _amounts, _data);
 
         for (uint256 i = 0; i < _childTokenIds.length; ++i) {
             uint256 _childTokenId = _childTokenIds[i];
             uint256 amount = _amounts[i];
 
-            _removeChild(_fromTokenId, _childContract, _childTokenId, amount);
+            _removeChild(_fromTokenId, address(childContract), _childTokenId, amount);
         }
-        ERC1155(_childContract).safeBatchTransferFrom(address(this), _to, _childTokenIds, _amounts, _data);
-        TransferBatchChild(_fromTokenId, _to, _childContract, _childTokenIds, _amounts);
+        childContract.safeBatchTransferFrom(address(this), _to, _childTokenIds, _amounts, _data);
+        TransferBatchChild(_fromTokenId, _to, address(childContract), _childTokenIds, _amounts);
     }
 
     function _receiveChild(uint256 _tokenId, address _childContract, uint256 _childTokenId, uint256 _amount) private {
