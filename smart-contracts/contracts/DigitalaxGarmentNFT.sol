@@ -171,17 +171,13 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         address _childContract,
         uint256 _childTokenId
     ) external view override returns(uint256) {
-        if (_childContract != address(childContract)) {
-            return 0;
-        }
-
-        return balances[_tokenId][_childTokenId];
+        return _childContract == address(childContract) ?
+                balances[_tokenId][_childTokenId] : 0;
     }
 
     function childContractsFor(uint256 _tokenId) override external view returns (address[] memory) {
         if (!_exists(_tokenId)) {
-            address[] memory childContracts = new address[](0);
-            return childContracts;
+            return new address[](0);
         }
 
         address[] memory childContracts = new address[](1);
@@ -191,8 +187,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
 
     function childIdsForOn(uint256 _tokenId, address _childContract) override external view returns (uint256[] memory) {
         if (_childContract != address(childContract)) {
-            uint256[] memory childTokenIds = new uint256[](0);
-            return childTokenIds;
+            return new uint256[](0);
         }
 
         uint256[] memory childTokenIds = new uint256[](childsForChildContract[_tokenId].length());
