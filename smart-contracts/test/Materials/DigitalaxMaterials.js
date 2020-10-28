@@ -4,7 +4,6 @@ const { ZERO_ADDRESS } = constants;
 const { expect } = require('chai');
 const web3 = require('web3');
 
-const { shouldBehaveLikeERC1155 } = require('./ERC1155.behavior');
 const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
 const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
 

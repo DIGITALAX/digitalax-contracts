@@ -96,10 +96,10 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         return this.onERC1155Received.selector;
     }
 
-    function onERC1155BatchReceived(address _operator, address _from, uint256[] memory _ids, uint256[] memory values, bytes memory _data) virtual public override returns(bytes4) {
+    function onERC1155BatchReceived(address _operator, address _from, uint256[] memory _ids, uint256[] memory _values, bytes memory _data) virtual public override returns(bytes4) {
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
-        require(_ids.length == values.length, "ERC1155: ids and values length mismatch");
-        _beforeChildTransfer(_operator, 0, address(this), _from, _ids, values, _data);
+        require(_ids.length == _values.length, "ERC1155: ids and values length mismatch");
+        _beforeChildTransfer(_operator, 0, address(this), _from, _ids, _values, _data);
 
         uint256 _receiverTokenId;
         uint256 _index = msg.data.length - 32;
@@ -108,8 +108,8 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         require(_exists(_receiverTokenId), "Token does not exist");
 
         for(uint256 i = 0; i < _ids.length; i++) {
-            _receiveChild(_receiverTokenId, msg.sender, _ids[i], values[i]);
-            ReceivedChild(_from, _receiverTokenId, msg.sender, _ids[i], values[i]);
+            _receiveChild(_receiverTokenId, msg.sender, _ids[i], _values[i]);
+            ReceivedChild(_from, _receiverTokenId, msg.sender, _ids[i], _values[i]);
         }
         return this.onERC1155BatchReceived.selector;
     }
