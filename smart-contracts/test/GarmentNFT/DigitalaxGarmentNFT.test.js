@@ -141,6 +141,34 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
     });
 
     describe('Wrapping 1155 Child Tokens', () => {
+      describe('Reverts', () => {
+        describe('When wrapping a single strand', () => {
+          it('If referencing a token that does not exist', async () => {
+            const initialSupply = '2';
+            const beneficiary = this.token.address; // as we want to 'link'
+            const strandUri = 'strand1'; // not important for this test
+            const garmentTokenIdEncoded = web3.utils.encodePacked(TOKEN_ONE_ID.toString());
+            await expectRevert(
+              this.digitalaxMaterials.createStrand(
+                initialSupply,
+                beneficiary,
+                strandUri,
+                garmentTokenIdEncoded,
+                {from: minter}
+              ),
+              "Token does not exist"
+            );
+          });
+        });
+
+        //TODO
+        // describe('When batch wrapping multiple strands', () => {
+        //   it('If referencing a token that does not exist', async () => {
+        //
+        //   });
+        // });
+      });
+
        describe('When the garment or strand dont exist', () => {
          it('Given a garment, can mint a new strand and automatically link to the garment', async () => {
            // Mint the garment - ERC721 Token ID [1]

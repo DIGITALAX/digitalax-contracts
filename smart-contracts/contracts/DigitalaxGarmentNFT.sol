@@ -64,9 +64,10 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
      @return uint256 The token ID of the token that was minted
      */
     function mint(address _beneficiary, string calldata _tokenUri, address _designer) external returns(uint256) {
-        bool isMinter = accessControls.hasMinterRole(_msgSender());
-        bool isSmartContract = accessControls.hasSmartContractRole(_msgSender());
-        require(isMinter || isSmartContract, "DigitalaxGarmentNFT.mint: Sender must have the minter or contract role");
+        require(
+            accessControls.hasMinterRole(_msgSender()) || accessControls.hasSmartContractRole(_msgSender()),
+            "DigitalaxGarmentNFT.mint: Sender must have the minter or contract role"
+        );
 
         assertMintingParamsValid(_tokenUri, _designer);
 
