@@ -17,6 +17,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 /**
  * @title ERC721 Non-Fungible Token Standard basic implementation
  * @dev see https://eips.ethereum.org/EIPS/eip-721
+ * @dev This is a modified OZ ERC721 base contract with one change where all tokens have the same token URI
  */
 contract ERC721WithSameTokenURIForAllTokens is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable {
     using SafeMath for uint256;
