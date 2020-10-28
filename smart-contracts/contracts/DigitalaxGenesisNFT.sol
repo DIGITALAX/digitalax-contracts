@@ -176,6 +176,11 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
 
     // Admin
 
+    /**
+     * @dev Allows a whitelisted admin to mint a token and issue it to a beneficiary
+     * @dev One token per holder
+     * @dev All holders contribution as set o zero on creation
+     */
     function adminBuy(address _beneficiary) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
@@ -190,6 +195,9 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
         emit AdminGenesisMinted(_beneficiary, _msgSender(), tokenId);
     }
 
+    /**
+     * @dev Allows a whitelisted admin to update the end date of the genesis
+     */
     function updateGenesisEnd(uint256 _end) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
@@ -201,6 +209,9 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
         emit GenesisEndUpdated(genesisEnd, _msgSender());
     }
 
+    /**
+     * @dev Allows a whitelisted admin to update the start date of the genesis
+     */
     function updateAccessControls(DigitalaxAccessControls _accessControls) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
@@ -218,6 +229,9 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
         return now;
     }
 
+    /**
+     * @dev Before token transfer hook to enforce that no token can be moved to another address until the genesis sale has ended
+     */
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override {
         if (from != address(0) && _getNow() <= genesisEnd) {
             revert("DigitalaxGenesisNFT._beforeTokenTransfer: Transfers are currently locked at this time");
