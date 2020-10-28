@@ -6,6 +6,7 @@ const { expect } = require('chai');
 const { shouldSupportInterfaces } = require('../SupportsInterface.behavior');
 
 const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
+const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
 const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
 const ERC721ReceiverMock = artifacts.require('ERC721ReceiverMock');
 
@@ -24,9 +25,20 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([owner, minter, 
 
     beforeEach(async function () {
         this.accessControls = await DigitalaxAccessControls.new({from: owner});
-        await this.accessControls.addMinterRole(minter, {from: owner})
+        await this.accessControls.addMinterRole(minter, {from: owner});
 
-        this.token = await DigitalaxGarmentNFT.new(this.accessControls.address, {from: owner});
+        this.digitalaxMaterials = await DigitalaxMaterials.new(
+          'DigitalaxMaterials',
+          'DXM',
+          this.accessControls.address,
+          {from: owner}
+        );
+
+        this.token = await DigitalaxGarmentNFT.new(
+          this.accessControls.address,
+          this.digitalaxMaterials.address,
+          {from: owner}
+        );
     });
 
     shouldSupportInterfaces([
