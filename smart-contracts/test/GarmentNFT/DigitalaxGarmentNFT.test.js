@@ -202,20 +202,46 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
         });
 
         describe('When batch wrapping multiple strands', () => {
+          beforeEach(async () => {
+            await this.digitalaxMaterials.batchCreateStrands(
+              ['1', '1', '1'],
+              admin,
+              ['strand1', 'strand2', 'strand3'],
+              [emptyData, emptyData, emptyData],
+              {from: admin}
+            ); // This will create strand IDs [1, 2, 3]
+          });
+
           it('If referencing a token that does not exist', async () => {
             const garmentTokenIdEncoded = web3.utils.encodePacked(TOKEN_ONE_ID.toString());
             const strand1Supply = '1';
             const strand2Supply = '2';
             const strand3Supply = '2';
             await expectRevert(
-              this.digitalaxMaterials.batchCreateStrands(
+              this.digitalaxMaterials.batchMintStrands(
+                [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID],
                 [strand1Supply, strand2Supply, strand3Supply],
                 this.token.address,
-                ['strand1', 'strand2', 'strand3'],
-                [garmentTokenIdEncoded, garmentTokenIdEncoded, garmentTokenIdEncoded],
+                garmentTokenIdEncoded,
                 {from: admin}
               ),
               "Token does not exist"
+            );
+          });
+
+          it('If not supplying a token reference', async () => {
+            const strand1Supply = '1';
+            const strand2Supply = '2';
+            const strand3Supply = '2';
+            await expectRevert(
+              this.digitalaxMaterials.batchMintStrands(
+                [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID],
+                [strand1Supply, strand2Supply, strand3Supply],
+                this.token.address,
+                '0x0',
+                {from: admin}
+              ),
+              "ERC998: data must contain the unique uint256 tokenId to transfer the child token to"
             );
           });
         });
