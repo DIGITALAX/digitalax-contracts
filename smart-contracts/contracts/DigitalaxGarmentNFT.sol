@@ -187,7 +187,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     }
 
     function childIdsForOn(uint256 _tokenId, address _childContract) override external view returns (uint256[] memory) {
-        if (_childContract != address(childContract)) {
+        if (!_exists(_tokenId) || _childContract != address(childContract)) {
             return new uint256[](0);
         }
 

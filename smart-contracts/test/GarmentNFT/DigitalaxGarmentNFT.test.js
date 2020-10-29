@@ -141,10 +141,30 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
            await this.token.updateAccessControls(smart_contract, {from: admin});
            expect(await this.token.accessControls()).to.be.equal(smart_contract);
            expect(await this.token.accessControls()).to.not.equal(currentAccessControlsAddress);
-       })
+       });
+
+       it('Reverts when sender is not admin', async () => {
+         await expectRevert(
+           this.token.updateAccessControls(smart_contract, {from: random}),
+           "DigitalaxGarmentNFT.updateAccessControls: Sender must be admin"
+         );
+       });
     });
 
     describe('Wrapping 1155 Child Tokens', () => {
+      describe('General', () => {
+        describe('Given a garment token that does not exist', () => {
+          it('Returns an empty array for childContractsFor()', async () => {
+            expect(await this.token.childContractsFor('999')).to.be.deep.equal([]);
+          });
+
+          it('Returns an empty array for childIdsForOn()', async () => {
+            expect(await this.token.childIdsForOn('999', this.digitalaxMaterials.address)).to.be.deep.equal([]);
+            expect(await this.token.childIdsForOn('999', smart_contract)).to.be.deep.equal([]);
+          });
+        });
+      });
+
       describe('Reverts', () => {
         describe('When wrapping a single strand', () => {
           it('If referencing a token that does not exist', async () => {
