@@ -286,16 +286,32 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
             const newEnd = '900';
             const {receipt} = await this.token.updateGenesisEnd(newEnd, {from: admin});
             expectEvent(receipt, 'GenesisEndUpdated', {
-                genesisEnd: newEnd
+                genesisEndTimestamp: newEnd
             });
 
-            expect(await this.token.genesisEnd()).to.be.bignumber.equal(newEnd);
+            expect(await this.token.genesisEndTimestamp()).to.be.bignumber.equal(newEnd);
         });
 
         it('Reverts when not admin', async () => {
            await expectRevert(
                this.token.updateGenesisEnd('99', {from: buyer}),
                "DigitalaxGenesisNFT.updateGenesisEnd: Sender must be admin"
+           )
+        });
+
+        it('Reverts when being changed for a second time', async () => {
+          await this.token.updateGenesisEnd('900', {from: admin});
+           await expectRevert(
+               this.token.updateGenesisEnd('99', {from: admin}),
+               "DigitalaxGenesisNFT.updateGenesisEnd: End time locked"
+           )
+        });
+
+        it('Reverts when end time already passed and trying to reopen', async () => {
+          await this.token.setNowOverride('99');
+          await expectRevert(
+               this.token.updateGenesisEnd('99', {from: admin}),
+               "DigitalaxGenesisNFT.updateGenesisEnd: End time already passed"
            )
         });
     });
