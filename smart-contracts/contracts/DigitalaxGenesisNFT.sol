@@ -82,14 +82,14 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
     constructor(
         DigitalaxAccessControls _accessControls,
         address payable _fundsMultisig,
-        uint256 _genesisStart,
-        uint256 _genesisEnd,
+        uint256 _genesisStartTimestamp,
+        uint256 _genesisEndTimestamp,
         string memory _tokenURI
     ) public {
         accessControls = _accessControls;
         fundsMultisig = _fundsMultisig;
-        genesisStartTimestamp = _genesisStart;
-        genesisEndTimestamp = _genesisEnd;
+        genesisStartTimestamp = _genesisStartTimestamp;
+        genesisEndTimestamp = _genesisEndTimestamp;
         tokenURI_ = _tokenURI;
         emit DigitalaxGenesisNFTContractDeployed();
     }
