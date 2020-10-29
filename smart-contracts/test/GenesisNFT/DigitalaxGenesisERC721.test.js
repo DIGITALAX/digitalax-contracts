@@ -37,6 +37,7 @@ contract('Core ERC721 behaviour tests for DigitalaxGenesisNFT', function ([owner
 
         // within the genesis sale window
         await this.token.setNowOverride('5');
+        await this.token.setMaxGenesisContributionTokensOverride('10');
     });
 
     shouldSupportInterfaces([
