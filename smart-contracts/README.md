@@ -5,10 +5,13 @@
 
 ### Config changes for mainnet
 
+Start = Monday 2nd Nov 11pm UTC
+End = TODO Nov 15th 11pm UTC
+
 ```
 ACCESS_CONTROLS_ADDRESS=    ....?
-GENESIS_START=1603843200     10/28/2020 @ 12:00am (UTC)
-GENESIS_END=1606694400      11/30/2020 @ 12:00am (UTC)
+GENESIS_START=1604358000
+GENESIS_END=1605481200
 ```
 
 ### Coverage
