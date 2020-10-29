@@ -99,7 +99,8 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
 
     function onERC1155BatchReceived(address _operator, address _from, uint256[] memory _ids, uint256[] memory _values, bytes memory _data) virtual public override returns(bytes4) {
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
-        require(_ids.length == _values.length, "ERC1155: ids and values length mismatch");
+        //TODO; check this but I believe that with our 1155, this is not a possibility
+        //require(_ids.length == _values.length, "ERC1155: ids and values length mismatch");
         _beforeChildTransfer(_operator, 0, address(this), _from, _ids, _values, _data);
 
         uint256 _receiverTokenId;
