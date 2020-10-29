@@ -81,6 +81,29 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         return tokenId;
     }
 
+    function burn(uint256 _tokenId) external {
+        require(ownerOf(_tokenId) == _msgSender(), "DigitalaxGarmentNFT.burn: Only Garment Owner");
+
+        address childContractAddress = address(childContract);
+        uint256[] memory childIds = childIdsForOn(_tokenId, childContractAddress);
+        uint256[] memory balanceOfChilds = new uint256[](childIds.length);
+
+        for(uint i = 0; i < childIds.length; i++) {
+            balanceOfChilds[i] = childBalance(_tokenId, childContractAddress, childIds[i]);
+        }
+
+        _burn(_tokenId);
+
+        safeBatchTransferChildFrom(
+            _tokenId,
+            _msgSender(),
+            childContractAddress,
+            childIds,
+            balanceOfChilds,
+            abi.encodePacked("")
+        );
+    }
+
     function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _amount, bytes memory _data) virtual public override returns(bytes4) {
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
         _beforeChildTransfer(_operator, 0, address(this), _from, _asSingletonArray(_id), _asSingletonArray(_amount), _data);
@@ -172,7 +195,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         uint256 _tokenId,
         address _childContract,
         uint256 _childTokenId
-    ) external view override returns(uint256) {
+    ) public view override returns(uint256) {
         return _childContract == address(childContract) ?
                 balances[_tokenId][_childTokenId] : 0;
     }
@@ -187,7 +210,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         return childContracts;
     }
 
-    function childIdsForOn(uint256 _tokenId, address _childContract) override external view returns (uint256[] memory) {
+    function childIdsForOn(uint256 _tokenId, address _childContract) override public view returns (uint256[] memory) {
         if (!_exists(_tokenId) || _childContract != address(childContract)) {
             return new uint256[](0);
         }
