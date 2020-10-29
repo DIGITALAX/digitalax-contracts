@@ -5,9 +5,9 @@
 pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
+import "./ERC1155/ERC1155.sol";
 import "./DigitalaxAccessControls.sol";
 import "./ERC998/IERC998ERC1155TopDown.sol";
 
@@ -18,7 +18,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
 
     // TODO: events for updating token URI and updating access controls
 
-    /// @notice Required to govern who can call certain functions
+    /// @dev Required to govern who can call certain functions
     DigitalaxAccessControls public accessControls;
 
     uint256 public tokenIdPointer;
@@ -26,24 +26,24 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     // TODO: add platform address
     // TODO: add platform percentage of secondary sales
 
-    /// @notice TokenID -> Designer address
+    /// @dev TokenID -> Designer address
     mapping(uint256 => address) public garmentDesigners;
 
-    /// @notice TokenID -> Primary Ether Sale Price in Wei
+    /// @dev TokenID -> Primary Ether Sale Price in Wei
     mapping(uint256 => uint256) public primarySalePrice;
 
     //TODO: check whether this should there be last sale price too?
 
-    /// @notice ERC721 Token ID -> ERC1155 ID -> Balance
+    /// @dev ERC721 Token ID -> ERC1155 ID -> Balance
     mapping(uint256 => mapping(uint256 => uint256)) private balances;
 
-    /// @notice ERC1155 ID -> ERC721 Token IDs that have a balance
+    /// @dev ERC1155 ID -> ERC721 Token IDs that have a balance
     mapping(uint256 => EnumerableSet.UintSet) private holdersOf;
 
-    /// @notice Child ERC1155 contract address
+    /// @dev Child ERC1155 contract address
     ERC1155 public childContract;
 
-    /// @notice ERC721 Token ID -> ERC1155 child IDs owned by the token ID
+    /// @dev ERC721 Token ID -> ERC1155 child IDs owned by the token ID
     mapping(uint256 => EnumerableSet.UintSet) private childsForChildContract;
 
     /**
@@ -230,7 +230,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     /////////////////////////
 
     // TODO; should this function be public?
-    function safeTransferChildFrom(uint256 _fromTokenId, address _to, address _childContract, uint256 _childTokenId, uint256 _amount, bytes memory _data) public override {
+    function safeTransferChildFrom(uint256 _fromTokenId, address _to, address, uint256 _childTokenId, uint256 _amount, bytes memory _data) public override {
         require(msg.sender == address(this));
         require(_to != address(0), "ERC998: transfer to the zero address");
 
@@ -257,7 +257,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     }
 
     // TODO; should this function be public?
-    function safeBatchTransferChildFrom(uint256 _fromTokenId, address _to, address _childContract, uint256[] memory _childTokenIds, uint256[] memory _amounts, bytes memory _data) public override {
+    function safeBatchTransferChildFrom(uint256 _fromTokenId, address _to, address, uint256[] memory _childTokenIds, uint256[] memory _amounts, bytes memory _data) public override {
         require(msg.sender == address(this));
         require(_childTokenIds.length == _amounts.length, "ERC998: ids and amounts length mismatch");
         require(_to != address(0), "ERC998: transfer to the zero address");
@@ -281,7 +281,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         emit TransferBatchChild(_fromTokenId, _to, address(childContract), _childTokenIds, _amounts);
     }
 
-    function _receiveChild(uint256 _tokenId, address _childContract, uint256 _childTokenId, uint256 _amount) private {
+    function _receiveChild(uint256 _tokenId, address, uint256 _childTokenId, uint256 _amount) private {
         //todo add below check
         //require(_childContract == childContract)
 
@@ -292,7 +292,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         balances[_tokenId][_childTokenId] = balances[_tokenId][_childTokenId].add(_amount);
     }
 
-    function _removeChild(uint256 _tokenId, address _childContract, uint256 _childTokenId, uint256 _amount) private {
+    function _removeChild(uint256 _tokenId, address, uint256 _childTokenId, uint256 _amount) private {
         require(_amount != 0 || balances[_tokenId][_childTokenId] >= _amount, "ERC998: insufficient child balance for transfer");
         balances[_tokenId][_childTokenId] = balances[_tokenId][_childTokenId].sub(_amount);
         if(balances[_tokenId][_childTokenId] == 0) {
