@@ -71,7 +71,7 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
 
           let startingTokenId = TOKEN_ONE_ID;
 
-          // Buy all genesis NFTs up to max 5
+          // Buy all genesis NFTs up to max
           for (let i = 1; i <= 3; i++) {
             const buyer = otherAccounts[i];
 
