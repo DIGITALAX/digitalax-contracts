@@ -92,8 +92,6 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
             balanceOfChilds[i] = childBalance(_tokenId, childContractAddress, childIds[i]);
         }
 
-        _burn(_tokenId);
-
         safeBatchTransferChildFrom(
             _tokenId,
             _msgSender(),
@@ -102,6 +100,8 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
             balanceOfChilds,
             abi.encodePacked("")
         );
+
+        _burn(_tokenId);
     }
 
     function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _amount, bytes memory _data) virtual public override returns(bytes4) {
@@ -115,7 +115,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         require(_exists(_receiverTokenId), "Token does not exist");
 
         _receiveChild(_receiverTokenId, msg.sender, _id, _amount);
-        ReceivedChild(_from, _receiverTokenId, msg.sender, _id, _amount);
+        emit ReceivedChild(_from, _receiverTokenId, msg.sender, _id, _amount);
 
         return this.onERC1155Received.selector;
     }
@@ -134,7 +134,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
 
         for(uint256 i = 0; i < _ids.length; i++) {
             _receiveChild(_receiverTokenId, msg.sender, _ids[i], _values[i]);
-            ReceivedChild(_from, _receiverTokenId, msg.sender, _ids[i], _values[i]);
+            emit ReceivedChild(_from, _receiverTokenId, msg.sender, _ids[i], _values[i]);
         }
         return this.onERC1155BatchReceived.selector;
     }
@@ -253,7 +253,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
 
         // TODO: maybe check if to == this
         childContract.safeTransferFrom(address(this), _to, _childTokenId, _amount, _data);
-        TransferSingleChild(_fromTokenId, _to, address(childContract), _childTokenId, _amount);
+        emit TransferSingleChild(_fromTokenId, _to, address(childContract), _childTokenId, _amount);
     }
 
     // TODO; should this function be public?
@@ -278,7 +278,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
             _removeChild(_fromTokenId, address(childContract), _childTokenId, amount);
         }
         childContract.safeBatchTransferFrom(address(this), _to, _childTokenIds, _amounts, _data);
-        TransferBatchChild(_fromTokenId, _to, address(childContract), _childTokenIds, _amounts);
+        emit TransferBatchChild(_fromTokenId, _to, address(childContract), _childTokenIds, _amounts);
     }
 
     function _receiveChild(uint256 _tokenId, address _childContract, uint256 _childTokenId, uint256 _amount) private {
