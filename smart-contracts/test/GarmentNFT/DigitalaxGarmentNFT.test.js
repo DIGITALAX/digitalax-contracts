@@ -13,6 +13,10 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
 
     const TOKEN_ONE_ID = new BN('1');
 
+    const STRAND_ONE_ID = new BN('1');
+    const STRAND_TWO_ID = new BN('2');
+    const STRAND_THREE_ID = new BN('3');
+
     const emptyData = web3.utils.encodePacked("");
 
     beforeEach(async () => {
@@ -140,7 +144,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
        })
     });
 
-    describe('Wrapping 1155 Child Tokens', () => {
+    describe.only('Wrapping 1155 Child Tokens', () => {
       describe('Reverts', () => {
         describe('When wrapping a single strand', () => {
           it('If referencing a token that does not exist', async () => {
@@ -181,7 +185,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
         });
       });
 
-       describe('When the garment or strand dont exist', () => {
+       describe('When a garment or a single strand dont exist', () => {
          it('Given a garment, can mint a new strand and automatically link to the garment', async () => {
            // Mint the garment - ERC721 Token ID [1]
            await this.token.mint(
@@ -231,7 +235,9 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
        });
 
        describe('Multiple strands', () => {
-         it('Can link multiple strands to a garment', async () => {
+         const garmentTokenIdEncoded = web3.utils.encodePacked(TOKEN_ONE_ID.toString());
+
+         beforeEach(async () => {
            // Mint the garment - ERC721 Token ID [1]
            await this.token.mint(
              owner,
@@ -239,11 +245,17 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
              designer,
              {from: minter}
            );
+         });
 
-           const garmentTokenIdEncoded = web3.utils.encodePacked(TOKEN_ONE_ID.toString());
+         it('Can link multiple strands to a garment at creation of strands', async () => {
+           await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, '0');
+           await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_TWO_ID, '0');
+           await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_THREE_ID, '0');
+
            const strand1Supply = '1';
            const strand2Supply = '2';
            const strand3Supply = '2';
+
            await this.digitalaxMaterials.batchCreateStrands(
              [strand1Supply, strand2Supply, strand3Supply],
              this.token.address,
@@ -252,46 +264,78 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
              {from: admin}
            ); // This will create strand IDs [1, 2, 3] and link to Garment Token ID 1
 
-           const STRAND_ONE_ID = new BN('1');
-           const STRAND_TWO_ID = new BN('2');
-           const STRAND_THREE_ID = new BN('3');
+           await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, strand1Supply);
+           await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_TWO_ID, strand2Supply);
+           await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_THREE_ID, strand3Supply);
 
-           const garment1Strand1Balance = await this.token.childBalance(
-             TOKEN_ONE_ID,
-             this.digitalaxMaterials.address,
-             STRAND_ONE_ID
-           );
-           expect(garment1Strand1Balance).to.be.bignumber.equal(strand1Supply);
-
-           const garment1Strand2Balance = await this.token.childBalance(
-             TOKEN_ONE_ID,
-             this.digitalaxMaterials.address,
-             STRAND_TWO_ID
-           );
-           expect(garment1Strand2Balance).to.be.bignumber.equal(strand2Supply);
-
-           const garment1Strand3Balance = await this.token.childBalance(
-             TOKEN_ONE_ID,
-             this.digitalaxMaterials.address,
+           await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, [
+             STRAND_ONE_ID,
+             STRAND_TWO_ID,
              STRAND_THREE_ID
-           );
-           expect(garment1Strand3Balance).to.be.bignumber.equal(strand3Supply);
-
-           const garment1StrandIdsOwned = await this.token.childIdsForOn(
-             TOKEN_ONE_ID,
-             this.digitalaxMaterials.address
-           );
-
-           expect(garment1StrandIdsOwned.length).to.be.equal(3);
-           expect(garment1StrandIdsOwned[0]).to.be.bignumber.equal(STRAND_ONE_ID);
-           expect(garment1StrandIdsOwned[1]).to.be.bignumber.equal(STRAND_TWO_ID);
-           expect(garment1StrandIdsOwned[2]).to.be.bignumber.equal(STRAND_THREE_ID);
+           ]);
 
            // Check that the 1155 correctly reports the balance on the ERC721 for each strand
            expect(await this.digitalaxMaterials.balanceOf(this.token.address, STRAND_ONE_ID)).to.be.bignumber.equal(strand1Supply);
            expect(await this.digitalaxMaterials.balanceOf(this.token.address, STRAND_TWO_ID)).to.be.bignumber.equal(strand2Supply);
            expect(await this.digitalaxMaterials.balanceOf(this.token.address, STRAND_THREE_ID)).to.be.bignumber.equal(strand3Supply);
          });
+
+         describe('Given multiple strands are created', () => {
+           beforeEach(async () => {
+             await this.digitalaxMaterials.batchCreateStrands(
+               ['1', '1', '1'],
+               admin,
+               ['strand1', 'strand2', 'strand3'],
+               [emptyData, emptyData, emptyData],
+               {from: admin}
+             ); // This will create strand IDs [1, 2, 3]
+           });
+
+           it('use batchMintStrands() to link to a garment', async () => {
+             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, '0');
+             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_TWO_ID, '0');
+             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_THREE_ID, '0');
+
+             await this.digitalaxMaterials.batchMintStrands(
+               [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID],
+               ['1', '1', '1'], // mint one of each
+               this.token.address,
+               garmentTokenIdEncoded,
+               {from: minter}
+             ); // This will mint 1 of strand IDs [1, 2, 3] and link to garment ID [1]
+
+             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, '1');
+             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_TWO_ID, '1');
+             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_THREE_ID, '1');
+
+             await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, [
+               STRAND_ONE_ID,
+               STRAND_TWO_ID,
+               STRAND_THREE_ID
+             ]);
+           });
+         });
        });
     });
+
+    const expectStrandBalanceOfGarmentToBe = async (garmentTokenId, strandId, expectedStrandBalance) => {
+      const garmentStrandBalance = await this.token.childBalance(
+        garmentTokenId,
+        this.digitalaxMaterials.address,
+        strandId
+      );
+      expect(garmentStrandBalance).to.be.bignumber.equal(expectedStrandBalance);
+    };
+
+    const expectGarmentToOwnAGivenSetOfStrandIds = async (garmentId, strandIds) => {
+      const garmentStrandIdsOwned = await this.token.childIdsForOn(
+        garmentId,
+        this.digitalaxMaterials.address
+      );
+
+      expect(garmentStrandIdsOwned.length).to.be.equal(strandIds.length);
+      garmentStrandIdsOwned.forEach((strandId, idx) => {
+        expect(strandId).to.be.bignumber.equal(strandIds[idx]);
+      });
+    };
 })
