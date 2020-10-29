@@ -203,7 +203,7 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
         _safeMint(_beneficiary, tokenId);
 
         // Increase admin mint counts
-        totalAdminMints++;
+        totalAdminMints = totalAdminMints.add(1);
 
         emit AdminGenesisMinted(_beneficiary, _msgSender(), tokenId);
     }
