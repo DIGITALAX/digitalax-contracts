@@ -6,6 +6,7 @@ import "../DigitalaxGenesisNFT.sol";
 
 contract DigitalaxGenesisNFTMock is DigitalaxGenesisNFT {
     uint256 public nowOverride;
+    uint256 public maxGenesisContributionTokensOverride;
 
     constructor(
         DigitalaxAccessControls _accessControls,
@@ -26,7 +27,15 @@ contract DigitalaxGenesisNFTMock is DigitalaxGenesisNFT {
         nowOverride = _now;
     }
 
+    function setMaxGenesisContributionTokensOverride(uint256 _maxGenesisContributionTokensOverride) external {
+        maxGenesisContributionTokensOverride = _maxGenesisContributionTokensOverride;
+    }
+
     function _getNow() internal override view returns (uint256) {
         return nowOverride;
+    }
+
+    function _getMaxGenesisContributionTokens() internal override view returns (uint256) {
+        return maxGenesisContributionTokensOverride;
     }
 }

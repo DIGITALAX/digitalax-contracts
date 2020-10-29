@@ -45,14 +45,6 @@ contract DigitalaxAccessControls is AccessControl {
     );
 
     /**
-     * @dev when applied to a function, ensures that the sender has the admin role
-     */
-    modifier onlyAdminRole() {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "DigitalaxAccessControls: sender must be an admin");
-        _;
-    }
-
-    /**
      * @notice The deployer is automatically given the admin role which will allow them to then grant roles to other addresses
      */
     constructor() public {
@@ -96,60 +88,60 @@ contract DigitalaxAccessControls is AccessControl {
 
     /**
      * @notice Grants the admin role to an address
-     * @dev The sender must have the admin role - enforced by onlyAdminRole
+     * @dev The sender must have the admin role
      * @param _address EOA or contract receiving the new role
      */
-    function addAdminRole(address _address) external onlyAdminRole {
-        _setupRole(DEFAULT_ADMIN_ROLE, _address);
+    function addAdminRole(address _address) external {
+        grantRole(DEFAULT_ADMIN_ROLE, _address);
         emit AdminRoleGranted(_address, _msgSender());
     }
 
     /**
      * @notice Removes the admin role from an address
-     * @dev The sender must have the admin role - enforced by onlyAdminRole
+     * @dev The sender must have the admin role
      * @param _address EOA or contract affected
      */
-    function removeAdminRole(address _address) external onlyAdminRole {
+    function removeAdminRole(address _address) external {
         revokeRole(DEFAULT_ADMIN_ROLE, _address);
         emit AdminRoleRemoved(_address, _msgSender());
     }
 
     /**
      * @notice Grants the minter role to an address
-     * @dev The sender must have the admin role - enforced by onlyAdminRole
+     * @dev The sender must have the admin role
      * @param _address EOA or contract receiving the new role
      */
-    function addMinterRole(address _address) external onlyAdminRole {
-        _setupRole(MINTER_ROLE, _address);
+    function addMinterRole(address _address) external {
+        grantRole(MINTER_ROLE, _address);
         emit MinterRoleGranted(_address, _msgSender());
     }
 
     /**
      * @notice Removes the minter role from an address
-     * @dev The sender must have the admin role - enforced by onlyAdminRole
+     * @dev The sender must have the admin role
      * @param _address EOA or contract affected
      */
-    function removeMinterRole(address _address) external onlyAdminRole {
+    function removeMinterRole(address _address) external {
         revokeRole(MINTER_ROLE, _address);
         emit MinterRoleRemoved(_address, _msgSender());
     }
 
     /**
      * @notice Grants the smart contract role to an address
-     * @dev The sender must have the admin role - enforced by onlyAdminRole
+     * @dev The sender must have the admin role
      * @param _address EOA or contract receiving the new role
      */
-    function addSmartContractRole(address _address) external onlyAdminRole {
-        _setupRole(SMART_CONTRACT_ROLE, _address);
+    function addSmartContractRole(address _address) external {
+        grantRole(SMART_CONTRACT_ROLE, _address);
         emit SmartContractRoleGranted(_address, _msgSender());
     }
 
     /**
      * @notice Removes the smart contract role from an address
-     * @dev The sender must have the admin role - enforced by onlyAdminRole
+     * @dev The sender must have the admin role
      * @param _address EOA or contract affected
      */
-    function removeSmartContractRole(address _address) external onlyAdminRole {
+    function removeSmartContractRole(address _address) external {
         revokeRole(SMART_CONTRACT_ROLE, _address);
         emit SmartContractRoleRemoved(_address, _msgSender());
     }
