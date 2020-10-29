@@ -74,6 +74,11 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
     // @notice global accumulative contribution amount
     uint256 public totalContributions;
 
+    // @notice max number of paid contributions to the genesis sale
+    uint256 public constant maxGenesisContributionTokens = 460;
+
+    uint256 public totalAdminMints;
+
     constructor(
         DigitalaxAccessControls _accessControls,
         address payable _fundsMultisig,
@@ -127,6 +132,8 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
             _contributionAmount <= maximumContributionAmount,
             "DigitalaxGenesisNFT.buy: You cannot exceed the maximum contribution amount"
         );
+
+        require(remainingGenesisTokens() > 0, "DigitalaxGenesisNFT.buy: Total number of genesis token holders reached");
 
         contribution[_msgSender()] = _contributionAmount;
         totalContributions = totalContributions.add(_contributionAmount);
@@ -195,6 +202,9 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
         uint256 tokenId = totalSupply().add(1);
         _safeMint(_beneficiary, tokenId);
 
+        // Increase admin mint counts
+        totalAdminMints++;
+
         emit AdminGenesisMinted(_beneficiary, _msgSender(), tokenId);
     }
 
@@ -234,10 +244,21 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
         emit AccessControlsUpdated(address(_accessControls));
     }
 
+    /**
+    * @dev Returns total remaining number of tokens available in the Genesis sale
+    */
+    function remainingGenesisTokens() public view returns (uint256) {
+        return _getMaxGenesisContributionTokens() - (totalSupply() - totalAdminMints);
+    }
+
     // Internal
 
     function _getNow() internal virtual view returns (uint256) {
         return block.timestamp;
+    }
+
+    function _getMaxGenesisContributionTokens() internal virtual view returns (uint256) {
+        return maxGenesisContributionTokens;
     }
 
     /**
