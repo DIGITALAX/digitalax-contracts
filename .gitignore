@@ -108,3 +108,4 @@ build
 .coverage_artifacts
 .coverage_cache
 .coverage_contracts
+solc-sjw-macos-x64
