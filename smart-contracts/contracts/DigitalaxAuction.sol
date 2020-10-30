@@ -11,7 +11,9 @@ import "./DigitalaxGarmentNFT.sol";
 contract DigitalaxAuction is Context, ReentrancyGuard {
     using SafeMath for uint256;
 
-    event AuctionCreated(uint256 indexed garmentTokenId);
+    event AuctionCreated(
+        uint256 indexed garmentTokenId
+    );
 
     event BidPlaced(
         uint256 indexed garmentTokenId,
@@ -59,32 +61,45 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     /// @notice Garment Token ID -> highest bidder info
     mapping(uint256 => HighestBid) public highestBids;
 
-    DigitalaxAccessControls public accessControls;
+    /// @notice The NFT contract backing the tokens for auction
     DigitalaxGarmentNFT public garmentNft;
 
+    // @notice responsible for enforcing admin access
+    DigitalaxAccessControls public accessControls;
+
     /// @notice globally and across all auctions, the amount by which a bid has to increase
-    uint256 public minBidIncrement = 0.01 ether;
+    uint256 public minBidIncrement = 0.1 ether;
 
     constructor(DigitalaxAccessControls _accessControls, DigitalaxGarmentNFT _garmentNft) public {
         accessControls = _accessControls;
         garmentNft = _garmentNft;
     }
 
-    // TODO add test for creating an action, cancelling it, creating it again
+    // TODO add test for creating an action, cancelling it, creating it again - confirm flow works as expected
 
+    /**
+     @notice Creates a new auction for the given token
+     @dev Only callable when the auction is open
+     @param _garmentTokenId Token ID of the garment being auctioned
+     */
     function createAuction(
         uint256 _garmentTokenId,
         uint256 _reservePrice,
         uint256 _startTime,
         uint256 _endTime
+    // TODO may need to take in lister is setup is done from a orchestrating contract
     ) external {
+        // Ensure caller has privileges
         require(
+        // TODO change this to smart contract check assuming something else is orchestrating it
             accessControls.hasMinterRole(_msgSender()),
             "DigitalaxAuction.createAuction: Sender must have the minter role"
         );
 
+        // Check end time not before start time
         require(_endTime > _startTime, "DigitalaxAuction.createAuction: End time must be greater than start");
 
+        // Check another auction not already flight
         require(
             _getNow() > auctions[_garmentTokenId].endTime,
             "DigitalaxAuction.createAuction: Cannot create an auction in the middle of another"
@@ -99,16 +114,28 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         resulted : false
         });
 
+        // TODO confirm escrow vs approve and pull pattern preference
         // Escrow in NFT
         garmentNft.transferFrom(_msgSender(), address(this), _garmentTokenId);
 
         emit AuctionCreated(_garmentTokenId);
     }
 
-    function placeBid(uint256 _garmentTokenId) external payable {
+    // TODO add test for increasing bid -> placeBid() -> placeBid() again to bump it
+
+    /**
+     @notice Places a new bid, out bidding the existing bidder if found and criteria is reached
+     @dev Only callable when the auction is open
+     @param _garmentTokenId Token ID of the garment being auctioned
+     */
+    function placeBid(uint256 _garmentTokenId) external payable nonReentrant {
         // Check the auction to see if this is a valid bid
         Auction storage auction = auctions[_garmentTokenId];
+
+        // TODO is this check needed as the one below would fail if endtime was not in the future
         require(auction.endTime > 0, "DigitalaxAuction.placeBid: Auction does not exist");
+
+        // Ensure auction is in flight
         require(
             _getNow() >= auction.startTime && _getNow() <= auction.endTime,
             "DigitalaxAuction.placeBid: Bidding outside of the auction window"
@@ -116,12 +143,12 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
 
         uint256 bidAmount = msg.value;
 
-        // check bid outbids someone else
+        // Ensure bid adheres to outbid increment and threshold
         HighestBid storage highestBid = highestBids[_garmentTokenId];
         uint256 minBidRequired = highestBid.bid.add(minBidIncrement);
         require(bidAmount >= minBidRequired, "DigitalaxAuction.placeBid: Failed to outbid highest bidder");
 
-        // refund existing top bidder
+        // Refund existing top bidder if found
         if (highestBid.bidder != address(0)) {
             _refundHighestBidder(highestBid.bidder, highestBid.bid);
         }
@@ -133,14 +160,25 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         emit BidPlaced(_garmentTokenId, _msgSender(), bidAmount);
     }
 
+    /**
+     @notice Withdraws the top bidders winning bid from the contract, removing them as the current winner
+     @dev Only callable by the existing top bidder
+     @param _garmentTokenId Token ID of the garment being auctioned
+     */
     function withdrawBid(uint256 _garmentTokenId) external nonReentrant {
         HighestBid storage highestBid = highestBids[_garmentTokenId];
+
+        // TODO add hold time for bidder cannot withdraw there bid quickly
+
+        // Ensure highest bidder is the caller
         require(highestBid.bidder == _msgSender(), "DigitalaxAuction.withdrawBid: You are not the highest bidder");
 
         uint256 previousBid = highestBid.bid;
 
+        // Clean up the existing top bid
         delete highestBids[_garmentTokenId];
 
+        // Refund the top bidder
         _refundHighestBidder(_msgSender(), previousBid);
 
         emit BidWithdrawn(_garmentTokenId, _msgSender(), previousBid);
@@ -156,11 +194,18 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
      @param _garmentTokenId Token ID of the garment being auctioned
      */
     function resultAuction(uint256 _garmentTokenId) external nonReentrant {
+
+        // TODO check this should be admin and smart contract role check
+        // Admin only resulting function
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxAuction.resultAuction: Sender must be admin");
 
         // Check the auction to see if it can be resulted
         Auction storage auction = auctions[_garmentTokenId];
+
+        // Check the auction real
         require(auction.lister != address(0), "DigitalaxAuction.resultAuction: Auction does not exist");
+
+        // Check the auction has ended
         require(_getNow() > auction.endTime, "DigitalaxAuction.resultAuction: The auction has not ended");
 
         // Ensure auction not already resulted
@@ -180,6 +225,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         // Clean up the highest winner
         delete highestBids[_garmentTokenId];
 
+        // TODO check this feature against the spec
         // Record the primary sale price for the garment
         garmentNft.setPrimarySalePrice(_garmentTokenId, winningBid);
 
@@ -199,17 +245,25 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
      @param _garmentTokenId Token ID of the garment being auctioned
      */
     function cancelAuction(uint256 _garmentTokenId) external nonReentrant {
+        // TODO check this should be admin and smart contract role check
+        // Admin only resulting function
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxAuction.cancelAuction: Sender must be admin");
 
         // Check valid and not resulted
         Auction storage auction = auctions[_garmentTokenId];
+
+        // Check auction is real
         require(auction.lister != address(0), "DigitalaxAuction.cancelAuction: Auction does not exist");
+
+        // Check auction not already resulted
         require(!auction.resulted, "DigitalaxAuction.cancelAuction: auction already resulted");
 
         // refund existing top bidder if found
         HighestBid storage highestBid = highestBids[_garmentTokenId];
         if (highestBid.bidder != address(0)) {
             _refundHighestBidder(highestBid.bidder, highestBid.bid);
+
+            // Clear up highest bid
             delete highestBids[_garmentTokenId];
         }
 
@@ -283,7 +337,10 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
      @notice Method for getting all info about the auction
      @param _garmentTokenId Token ID of the garment being auctioned
      */
-    function getAuction(uint256 _garmentTokenId) external view returns (uint256 _reservePrice, uint256 _startTime, uint256 _endTime, address _lister, bool _resulted) {
+    function getAuction(uint256 _garmentTokenId)
+    external
+    view
+    returns (uint256 _reservePrice, uint256 _startTime, uint256 _endTime, address _lister, bool _resulted) {
         Auction storage auction = auctions[_garmentTokenId];
         return (
         auction.reservePrice,
