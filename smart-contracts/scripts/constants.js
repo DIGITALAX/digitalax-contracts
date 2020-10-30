@@ -1,0 +1,4 @@
+module.exports = {
+  FUND_MULTISIG_ADDRESS: '0x10C0B0DA2A682C12bD36516A95CB8474C02d83De',
+  GENESIS_TOKEN_URI: 'https://gateway.pinata.cloud/ipfs/QmRjiYPGEm3GkWYW6Mpp3ZGHvYA6odo8pHbPNvtTjLfYF4'
+};
