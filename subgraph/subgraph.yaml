@@ -6,11 +6,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DigitalaxGenesisNFT
-    network: 'ropsten'
+    network: 'mainnet'
     source:
-      address: '0x42321F5443480cbAA0FE76187f73Bd06Db125111'
+      address: '0x89505d2a27b7e8ac56252081d721ecd525e4241e'
       abi: DigitalaxGenesisNFT
-      startBlock: 8951857
+      startBlock: 11157574
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

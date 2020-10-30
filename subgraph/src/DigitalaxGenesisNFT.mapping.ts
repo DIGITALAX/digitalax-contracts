@@ -62,8 +62,8 @@ export function handleGenesisDeployed(event: DigitalaxGenesisNFTContractDeployed
     let digitalaxGenesis = new DigitalaxGenesis(event.address.toHexString());
     digitalaxGenesis.accessControls = contract.accessControls();
     digitalaxGenesis.fundsMultisig = contract.fundsMultisig();
-    digitalaxGenesis.genesisStart = contract.genesisStart();
-    digitalaxGenesis.genesisEnd = contract.genesisEnd();
+    digitalaxGenesis.genesisStart = contract.genesisStartTimestamp();
+    digitalaxGenesis.genesisEnd = contract.genesisEndTimestamp();
     digitalaxGenesis.minimumContributionAmount = contract.minimumContributionAmount();
     digitalaxGenesis.maximumContributionAmount = contract.maximumContributionAmount();
     digitalaxGenesis.totalContributions = contract.totalContributions();

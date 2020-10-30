@@ -83,7 +83,7 @@ contract('DigitalaxAuction', (accounts) => {
       });
       it('successfully updates min bid', async () => {
         const original = await this.auction.minBidIncrement();
-        expect(original).to.be.bignumber.equal(ether('0.01'));
+        expect(original).to.be.bignumber.equal(ether('0.1'));
 
         await this.auction.updateMinBidIncrement(ether('0.2'), {from: admin});
 

@@ -15,9 +15,9 @@ async function main() {
         DigitalaxGenesisNFTContract.abi,
         deployer //provider
     );
+    const beneficiary = prompt('Genesis admin NFT beneficiary? ');
 
-    const _2Ether = '2000000000000000000';
-    await genesis.buy({from: deployerAddress, value: _2Ether});
+    await genesis.adminBuy(beneficiary, {from: deployerAddress});
 }
 
 // We recommend this pattern to be able to use async/await everywhere
