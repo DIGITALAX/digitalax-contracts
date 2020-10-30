@@ -1,5 +1,5 @@
 {
   "network": "mainnet",
-  "DigitalaxGenesisNFTAddress": "",
-  "DigitalaxGenesisNFTStartBlock": 0
+  "DigitalaxGenesisNFTAddress": "0x89505d2a27b7e8ac56252081d721ecd525e4241e",
+  "DigitalaxGenesisNFTStartBlock": 11157574
 }
