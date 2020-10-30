@@ -5,13 +5,22 @@
 
 ### Config changes for mainnet
 
-Start = Monday 2nd Nov 11pm UTC
-End = TODO Nov 15th 11pm UTC
-
 ```
-ACCESS_CONTROLS_ADDRESS=    ....?
+ACCESS_CONTROLS_ADDRESS=0x165Eec91620b7Bb96d02890d8a3F8Cb79a29195c
 GENESIS_START=1604358000
 GENESIS_END=1605481200
+```
+
+### Rinkeby Deployment
+```
+DigitalaxAccessControls: 0x165Eec91620b7Bb96d02890d8a3F8Cb79a29195c
+DigitalaxGenesisNFT: 0x064A6151F99ba2610f2D6600Dcb2b2Ed3a276356
+```
+
+### Mainnet Deployment
+```
+DigitalaxAccessControls: 
+DigitalaxGenesisNFT: 
 ```
 
 ### Coverage
