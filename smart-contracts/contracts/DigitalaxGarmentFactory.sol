@@ -10,18 +10,12 @@ contract DigitalaxGarmentFactory {
     DigitalaxGarmentNFT public garmentToken;
     DigitalaxMaterials public materials;
 
-    function createNewStrands(
-        uint256[] calldata _initialSupplies,
-        address _beneficiary,
-        string[] calldata _uris,
-        bytes[] calldata _datas
-    ) external {
-        materials.batchCreateStrands(
-            _initialSupplies,
-            _beneficiary,
-            _uris,
-            _datas
-        );
+    function createNewStrand(string calldata _uri) external returns (uint256 strandId) {
+        return materials.createStrand(_uri);
+    }
+
+    function createNewStrands(string[] calldata _uris) external returns (uint256[] memory strandIds) {
+        return materials.batchCreateStrands(_uris);
     }
 
     function createGarmentAndMintStrands(
@@ -31,7 +25,6 @@ contract DigitalaxGarmentFactory {
         uint256[] calldata strandAmounts,
         address beneficary
     ) external {
-        // Mint the garment - ERC721 Token ID [1]
         uint256 tokenId = garmentToken.mint(beneficary, garmentTokenUri, designer);
         materials.batchMintStrands(strandIds, strandAmounts, address(garmentToken), abi.encodePacked(tokenId));
     }
