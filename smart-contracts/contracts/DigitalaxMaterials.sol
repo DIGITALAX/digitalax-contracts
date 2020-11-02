@@ -15,7 +15,7 @@ contract DigitalaxMaterials is ERC1155 {
     string public name;
     string public symbol;
 
-    uint256 internal tokenIdPointer;
+    uint256 public strandIdPointer;
 
     DigitalaxAccessControls public accessControls;
 
@@ -35,9 +35,9 @@ contract DigitalaxMaterials is ERC1155 {
 
         require(bytes(_uri).length > 0, "DigitalaxMaterials.createStrand: URI is a blank string");
 
-        tokenIdPointer = tokenIdPointer.add(1);
+        strandIdPointer = strandIdPointer.add(1);
 
-        uint256 strandId = tokenIdPointer;
+        uint256 strandId = strandIdPointer;
         _setURI(strandId, _uri);
 
         return strandId;
@@ -56,8 +56,8 @@ contract DigitalaxMaterials is ERC1155 {
             string memory uri = _uris[i];
             require(bytes(uri).length > 0, "DigitalaxMaterials.batchCreateStrands: URI is a blank string");
 
-            tokenIdPointer = tokenIdPointer.add(1);
-            uint256 strandId = tokenIdPointer;
+            strandIdPointer = strandIdPointer.add(1);
+            uint256 strandId = strandIdPointer;
 
             _setURI(strandId, uri);
 
