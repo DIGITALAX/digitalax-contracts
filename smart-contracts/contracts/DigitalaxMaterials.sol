@@ -26,6 +26,7 @@ contract DigitalaxMaterials is ERC1155 {
         emit DigitalaxMaterialsDeployed();
     }
 
+    //TODO: do we need a reverse lookup to ensure a token URI
     function createStrand(string calldata _uri) external returns (uint256) {
         require(
             accessControls.hasSmartContractRole(_msgSender()),
