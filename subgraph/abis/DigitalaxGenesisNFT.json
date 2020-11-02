@@ -13,12 +13,12 @@
       },
       {
         "internalType": "uint256",
-        "name": "_genesisStart",
+        "name": "_genesisStartTimestamp",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "_genesisEnd",
+        "name": "_genesisEndTimestamp",
         "type": "uint256"
       },
       {
@@ -149,7 +149,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "genesisEnd",
+        "name": "genesisEndTimestamp",
         "type": "uint256"
       },
       {
@@ -323,7 +323,7 @@
   },
   {
     "inputs": [],
-    "name": "genesisEnd",
+    "name": "genesisEndTimestamp",
     "outputs": [
       {
         "internalType": "uint256",
@@ -336,7 +336,20 @@
   },
   {
     "inputs": [],
-    "name": "genesisStart",
+    "name": "genesisEndTimestampLocked",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "genesisStartTimestamp",
     "outputs": [
       {
         "internalType": "uint256",
@@ -399,6 +412,19 @@
   },
   {
     "inputs": [],
+    "name": "maxGenesisContributionTokens",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "maximumContributionAmount",
     "outputs": [
       {
@@ -450,6 +476,19 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "remainingGenesisTokens",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -626,6 +665,19 @@
         "internalType": "string",
         "name": "",
         "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalAdminMints",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

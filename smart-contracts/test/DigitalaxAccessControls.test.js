@@ -3,7 +3,8 @@ const {expectRevert} = require('@openzeppelin/test-helpers');
 const {expect} = require('chai');
 
 const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
-const onlyAdminRoleErrorMsg = "DigitalaxAccessControls: sender must be an admin";
+const onlyAdminRoleErrorGrantMsg = "AccessControl: sender must be an admin to grant";
+const onlyAdminRoleErrorRevokeMsg = "AccessControl: sender must be an admin to revoke";
 
 contract('DigitalaxAccessControls', (accounts) => {
     const [admin, minter, smart_contract, anotherAccount] = accounts;
@@ -32,7 +33,14 @@ contract('DigitalaxAccessControls', (accounts) => {
         it('should revert if not admin', async function () {
             await expectRevert(
                 this.accessControls.addMinterRole(minter, {from: anotherAccount}),
-                onlyAdminRoleErrorMsg
+                onlyAdminRoleErrorGrantMsg
+            );
+        });
+
+        it('should revert even if minter is adding already a minter', async function () {
+            await expectRevert(
+                this.accessControls.addMinterRole(anotherAccount, {from: minter}),
+                onlyAdminRoleErrorGrantMsg
             );
         });
 
@@ -41,7 +49,7 @@ contract('DigitalaxAccessControls', (accounts) => {
             await this.accessControls.removeMinterRole(minter, {from: admin});
             await expectRevert(
                 this.accessControls.removeMinterRole(minter, {from: anotherAccount}),
-                onlyAdminRoleErrorMsg
+                onlyAdminRoleErrorRevokeMsg
             );
         });
     });
@@ -66,15 +74,22 @@ contract('DigitalaxAccessControls', (accounts) => {
         it('should revert if not admin when adding', async function () {
             await expectRevert(
                 this.accessControls.addSmartContractRole(smart_contract, {from: anotherAccount}),
-                onlyAdminRoleErrorMsg
+                onlyAdminRoleErrorGrantMsg
             );
+        });
+
+        it('should revert even if smart_contract is adding already a smart_contract', async function () {
+          await expectRevert(
+            this.accessControls.addMinterRole(anotherAccount, {from: smart_contract}),
+            onlyAdminRoleErrorGrantMsg
+          );
         });
 
         it('should revert if not admin when removing', async function () {
             expect(await this.accessControls.hasSmartContractRole(smart_contract)).to.equal(true);
             await expectRevert(
                 this.accessControls.removeSmartContractRole(smart_contract, {from: anotherAccount}),
-                onlyAdminRoleErrorMsg
+                onlyAdminRoleErrorRevokeMsg
             );
         });
     });
@@ -99,7 +114,7 @@ contract('DigitalaxAccessControls', (accounts) => {
         it('should revert if already has minter role', async function () {
             await expectRevert(
                 this.accessControls.addAdminRole(minter, {from: anotherAccount}),
-                onlyAdminRoleErrorMsg
+                onlyAdminRoleErrorGrantMsg
             );
         });
 
@@ -108,7 +123,7 @@ contract('DigitalaxAccessControls', (accounts) => {
             await this.accessControls.removeAdminRole(minter, {from: admin});
             await expectRevert(
                 this.accessControls.removeAdminRole(minter, {from: anotherAccount}),
-                onlyAdminRoleErrorMsg
+                onlyAdminRoleErrorRevokeMsg
             );
         });
     });
