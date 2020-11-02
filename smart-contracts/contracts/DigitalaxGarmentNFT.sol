@@ -81,6 +81,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         return tokenId;
     }
 
+    //todo: needs to handle no children scenario with test
     function burn(uint256 _tokenId) external {
         require(ownerOf(_tokenId) == _msgSender(), "DigitalaxGarmentNFT.burn: Only Garment Owner");
 
