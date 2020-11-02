@@ -10,6 +10,7 @@ const {
 const {expect} = require('chai');
 
 const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
+const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
 const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
 const DigitalaxAuction = artifacts.require('DigitalaxAuctionMock');
 
@@ -24,7 +25,19 @@ contract('DigitalaxAuction', (accounts) => {
     this.accessControls = await DigitalaxAccessControls.new({from: admin});
     await this.accessControls.addMinterRole(minter, {from: admin});
 
-    this.token = await DigitalaxGarmentNFT.new(this.accessControls.address, {from: admin});
+    this.digitalaxMaterials = await DigitalaxMaterials.new(
+      'DigitalaxMaterials',
+      'DXM',
+      this.accessControls.address,
+      {from: owner}
+    );
+
+    this.token = await DigitalaxGarmentNFT.new(
+      this.accessControls.address,
+      this.digitalaxMaterials.address,
+      {from: admin}
+    );
+
     this.auction = await DigitalaxAuction.new(
       this.accessControls.address,
       this.token.address,
