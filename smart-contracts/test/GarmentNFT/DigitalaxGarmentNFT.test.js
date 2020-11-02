@@ -17,8 +17,6 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
     const STRAND_TWO_ID = new BN('2');
     const STRAND_THREE_ID = new BN('3');
 
-    const emptyData = web3.utils.encodePacked("");
-
     beforeEach(async () => {
         this.accessControls = await DigitalaxAccessControls.new({from: admin});
         await this.accessControls.addMinterRole(admin, {from: admin});
@@ -172,13 +170,19 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
             const beneficiary = this.token.address; // as we want to 'link'
             const strandUri = 'strand1'; // not important for this test
             const garmentTokenIdEncoded = web3.utils.encodePacked(TOKEN_ONE_ID.toString());
+
+            await this.digitalaxMaterials.createStrand(
+              strandUri,
+              {from: smart_contract}
+            );
+
             await expectRevert(
-              this.digitalaxMaterials.createStrand(
+              this.digitalaxMaterials.mintStrand(
+                STRAND_ONE_ID,
                 initialSupply,
                 beneficiary,
-                strandUri,
                 garmentTokenIdEncoded,
-                {from: minter}
+                {from: smart_contract}
               ),
               "Token does not exist"
             );
@@ -188,13 +192,19 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
             const initialSupply = '2';
             const beneficiary = this.token.address; // as we want to 'link'
             const strandUri = 'strand1'; // not important for this test
+
+            await this.digitalaxMaterials.createStrand(
+              strandUri,
+              {from: smart_contract}
+            );
+
             await expectRevert(
-              this.digitalaxMaterials.createStrand(
+              this.digitalaxMaterials.mintStrand(
+                STRAND_ONE_ID,
                 initialSupply,
                 beneficiary,
-                strandUri,
                 "0x0",
-                {from: minter}
+                {from: smart_contract}
               ),
               "ERC998: data must contain the unique uint256 tokenId to transfer the child token to"
             );
@@ -204,11 +214,8 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
         describe('When batch wrapping multiple strands', () => {
           beforeEach(async () => {
             await this.digitalaxMaterials.batchCreateStrands(
-              ['1', '1', '1'],
-              admin,
               ['strand1', 'strand2', 'strand3'],
-              [emptyData, emptyData, emptyData],
-              {from: admin}
+              {from: smart_contract}
             ); // This will create strand IDs [1, 2, 3]
           });
 
@@ -263,13 +270,19 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
             const beneficiary = this.token.address; // as we want to 'link'
             const strandUri = 'strand1'; // not important for this test
             const garmentTokenIdEncoded = web3.utils.encodePacked(TOKEN_ONE_ID.toString());
+
             await this.digitalaxMaterials.createStrand(
+              strandUri,
+              {from: smart_contract}
+            ); // This will create strand ID [1]
+
+            await this.digitalaxMaterials.mintStrand(
+              STRAND_ONE_ID,
               initialSupply,
               beneficiary,
-              strandUri,
               garmentTokenIdEncoded,
-              {from: minter}
-            ); // This will create strand ID [1]
+              {from: smart_contract}
+            );
 
             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, initialSupply);
             await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, [STRAND_ONE_ID]);
@@ -306,12 +319,16 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
             const strand3Supply = '2';
 
             await this.digitalaxMaterials.batchCreateStrands(
-              [strand1Supply, strand2Supply, strand3Supply],
-              this.token.address,
               ['strand1', 'strand2', 'strand3'],
-              [garmentTokenIdEncoded, garmentTokenIdEncoded, garmentTokenIdEncoded],
-              {from: admin}
-            ); // This will create strand IDs [1, 2, 3] and link to Garment Token ID 1
+              {from: smart_contract}
+            ); // This will create strand IDs [1, 2, 3]
+
+            await this.digitalaxMaterials.batchMintStrands(
+              [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID],
+              [strand1Supply, strand2Supply, strand3Supply],
+              garmentTokenIdEncoded,
+              {from: smart_contract}
+            ); // This will mint for strand IDs [1, 2, 3] and link to Garment Token ID 1
 
             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, strand1Supply);
             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_TWO_ID, strand2Supply);
@@ -332,11 +349,8 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
           describe('Given multiple strands are created', () => {
             beforeEach(async () => {
               await this.digitalaxMaterials.batchCreateStrands(
-                ['1', '1', '1'],
-                admin,
                 ['strand1', 'strand2', 'strand3'],
-                [emptyData, emptyData, emptyData],
-                {from: admin}
+                {from: smart_contract}
               ); // This will create strand IDs [1, 2, 3]
             });
 
@@ -378,12 +392,16 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
           );
 
           await this.digitalaxMaterials.batchCreateStrands(
+            ['strand1', 'strand2', 'strand3'],
+            {from: smart_contract}
+          ); // This will create strand IDs [1, 2, 3]
+
+          await this.digitalaxMaterials.batchMintStrands(
+            [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID],
             ['1', '1', '1'],
             admin,
-            ['strand1', 'strand2', 'strand3'],
-            [emptyData, emptyData, emptyData],
-            {from: admin}
-          ); // This will create strand IDs [1, 2, 3]
+            {from: smart_contract}
+          );
         });
 
         describe('Single strand', () => {

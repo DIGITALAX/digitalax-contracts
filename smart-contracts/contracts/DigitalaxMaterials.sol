@@ -26,48 +26,38 @@ contract DigitalaxMaterials is ERC1155 {
         emit DigitalaxMaterialsDeployed();
     }
 
-    function createStrand(
-        uint256 _initialSupply,
-        address _beneficiary,
-        string calldata _uri,
-        bytes calldata _data
-    ) external returns (uint256) {
-        require(accessControls.hasMinterRole(_msgSender()), "DigitalaxMaterials.createStrand: Sender must be minter");
-        require(_initialSupply > 0, "DigitalaxMaterials.createStrand: No initial supply");
+    function createStrand(string calldata _uri) external returns (uint256) {
+        require(
+            accessControls.hasSmartContractRole(_msgSender()),
+            "DigitalaxMaterials.createStrand: Sender must be smart contract"
+        );
+
         require(bytes(_uri).length > 0, "DigitalaxMaterials.createStrand: URI is a blank string");
 
         tokenIdPointer = tokenIdPointer.add(1);
 
         uint256 strandId = tokenIdPointer;
-        _mint(_beneficiary, strandId, _initialSupply, _data);
         _setURI(strandId, _uri);
 
         return strandId;
     }
 
-    function batchCreateStrands(
-        uint256[] calldata _initialSupplies,
-        address _beneficiary,
-        string[] calldata _uris,
-        bytes[] calldata _datas
-    ) external returns (uint256[] memory strandIds) {
-        require(accessControls.hasMinterRole(_msgSender()), "DigitalaxMaterials.batchCreateStrands: Sender must be minter");
-        require(_initialSupplies.length == _uris.length, "DigitalaxMaterials.batchCreateStrands: Array lengths are invalid");
-        require(_initialSupplies.length == _datas.length, "DigitalaxMaterials.batchCreateStrands: Array lengths are invalid");
-        require(_initialSupplies.length > 0, "DigitalaxMaterials.batchCreateStrands: No data supplied in arrays");
+    function batchCreateStrands(string[] calldata _uris) external returns (uint256[] memory strandIds) {
+        require(
+            accessControls.hasSmartContractRole(_msgSender()),
+            "DigitalaxMaterials.batchCreateStrands: Sender must be smart contract"
+        );
 
-        strandIds = new uint256[](_initialSupplies.length);
-        for(uint i = 0; i < _initialSupplies.length; i++) {
-            tokenIdPointer = tokenIdPointer.add(1);
+        require(_uris.length > 0, "DigitalaxMaterials.batchCreateStrands: No data supplied in array");
 
-            uint256 strandId = tokenIdPointer;
-            uint256 initialSupply = _initialSupplies[i];
-            require(initialSupply > 0, "DigitalaxMaterials.batchCreateStrands: No initial supply");
-
+        strandIds = new uint256[](_uris.length);
+        for(uint i = 0; i < _uris.length; i++) {
             string memory uri = _uris[i];
             require(bytes(uri).length > 0, "DigitalaxMaterials.batchCreateStrands: URI is a blank string");
 
-            _mint(_beneficiary, strandId, initialSupply, _datas[i]);
+            tokenIdPointer = tokenIdPointer.add(1);
+            uint256 strandId = tokenIdPointer;
+
             _setURI(strandId, uri);
 
             strandIds[i] = strandId;
@@ -75,7 +65,11 @@ contract DigitalaxMaterials is ERC1155 {
     }
 
     function mintStrand(uint256 _strandId, uint256 _amount, address _beneficiary, bytes calldata _data) external {
-        require(accessControls.hasMinterRole(_msgSender()), "DigitalaxMaterials.mintStrand: Sender must be minter");
+        require(
+            accessControls.hasSmartContractRole(_msgSender()),
+            "DigitalaxMaterials.mintStrand: Sender must be smart contract"
+        );
+
         require(bytes(tokenUris[_strandId]).length > 0, "DigitalaxMaterials.mintStrand: Strand does not exist");
         require(_amount > 0, "DigitalaxMaterials.mintStrand: No amount specified");
         _mint(_beneficiary, _strandId, _amount, _data);
@@ -87,7 +81,11 @@ contract DigitalaxMaterials is ERC1155 {
         address _beneficiary,
         bytes calldata _data
     ) external {
-        require(accessControls.hasMinterRole(_msgSender()), "DigitalaxMaterials.batchMintStrands: Sender must be minter");
+        require(
+            accessControls.hasSmartContractRole(_msgSender()),
+            "DigitalaxMaterials.batchMintStrands: Sender must be smart contract"
+        );
+
         require(_strandIds.length == _amounts.length, "DigitalaxMaterials.batchMintStrands: Array lengths are invalid");
         require(_strandIds.length > 0, "DigitalaxMaterials.batchMintStrands: No data supplied in arrays");
 

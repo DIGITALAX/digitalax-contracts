@@ -18,6 +18,7 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, minter, to
   beforeEach(async function () {
     this.accessControls = await DigitalaxAccessControls.new({from: admin});
     await this.accessControls.addMinterRole(minter, {from: admin});
+    await this.accessControls.addSmartContractRole(smart_contract, {from: admin});
 
     this.token = await DigitalaxMaterials.new(
       name,
@@ -27,144 +28,119 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, minter, to
     );
   });
 
-  describe('createStrand()', function () {
-    it('Reverts when sender is not minter', async function() {
+  describe.only('createStrand()', function () {
+    it('Reverts when sender is not smart contract', async function() {
       await expectRevert(
-        this.token.createStrand('1', tokenHolder, initialURI, web3.utils.encodePacked(''), {from: tokenHolder}),
-        "DigitalaxMaterials.createStrand: Sender must be minter"
-      );
-    });
-
-    it('Reverts when zero supply specified', async function() {
-      await expectRevert(
-        this.token.createStrand('0', tokenHolder, initialURI, web3.utils.encodePacked(''), {from: minter}),
-        "DigitalaxMaterials.createStrand: No initial supply"
+        this.token.createStrand(initialURI, {from: tokenHolder}),
+        "DigitalaxMaterials.createStrand: Sender must be smart contract"
       );
     });
 
     it('Reverts when empty uri specified', async function() {
       await expectRevert(
-        this.token.createStrand('1', tokenHolder, "", web3.utils.encodePacked(''), {from: minter}),
+        this.token.createStrand("", {from: smart_contract}),
         "DigitalaxMaterials.createStrand: URI is a blank string"
       );
     });
   });
 
-  describe('batchCreateStrands()', function() {
-    const emptyData = web3.utils.encodePacked('');
-    it('Reverts when sender is not minter', async function() {
+  describe.only('batchCreateStrands()', function() {
+    it('Reverts when sender is not smart contract', async function() {
       await expectRevert(
-        this.token.batchCreateStrands([], tokenBatchHolder, [], [], {from: tokenBatchHolder}),
-        "DigitalaxMaterials.batchCreateStrands: Sender must be minter"
-      );
-    });
-
-    it('Reverts when array lengths differ', async function() {
-      await expectRevert(
-        this.token.batchCreateStrands(['1'], tokenBatchHolder, [], [], {from: minter}),
-        "DigitalaxMaterials.batchCreateStrands: Array lengths are invalid"
+        this.token.batchCreateStrands([], {from: tokenBatchHolder}),
+        "DigitalaxMaterials.batchCreateStrands: Sender must be smart contract"
       );
     });
 
     it('Reverts when arrays are empty', async function() {
       await expectRevert(
-        this.token.batchCreateStrands([], tokenBatchHolder, [], [], {from: minter}),
-        "DigitalaxMaterials.batchCreateStrands: No data supplied in arrays"
-      );
-    });
-
-    it('Reverts when any elem in the _initialSupplies is zero', async function() {
-      await expectRevert(
-        this.token.batchCreateStrands(['1', '0'], tokenBatchHolder, [initialURI, initialURI], [emptyData, emptyData], {from: minter}),
-        "DigitalaxMaterials.batchCreateStrands: No initial supply"
+        this.token.batchCreateStrands([], {from: smart_contract}),
+        "DigitalaxMaterials.batchCreateStrands: No data supplied in array"
       );
     });
 
     it('Reverts when any elem in the _uris is empty', async function() {
       await expectRevert(
-        this.token.batchCreateStrands(['1', '1'], tokenBatchHolder, [initialURI, ""], [emptyData, emptyData], {from: minter}),
+        this.token.batchCreateStrands([initialURI, ""], {from: smart_contract}),
         "DigitalaxMaterials.batchCreateStrands: URI is a blank string"
       );
     });
   });
 
-  describe('mintStrand()', function() {
+  describe.only('mintStrand()', function() {
     beforeEach(async function() {
       await this.token.createStrand(
-        '1',
-        tokenHolder,
         initialURI,
-        web3.utils.encodePacked(''),
-        {from: minter}
+        {from: smart_contract}
       );
     });
 
     it('Can successfully mint', async function() {
-      await this.token.mintStrand(STRAND_ONE_ID, '4', tokenHolder, web3.utils.encodePacked(''), {from: minter});
-      expect(await this.token.balanceOf(tokenHolder, STRAND_ONE_ID)).to.be.bignumber.equal('5');
+      await this.token.mintStrand(STRAND_ONE_ID, '4', tokenHolder, web3.utils.encodePacked(''), {from: smart_contract});
+      expect(await this.token.balanceOf(tokenHolder, STRAND_ONE_ID)).to.be.bignumber.equal('4');
     });
 
-    it('Reverts when sender does not have minter role', async function() {
+    it('Reverts when sender does not have smart contract role', async function() {
       await expectRevert(
-        this.token.mintStrand(STRAND_ONE_ID, '4', tokenHolder, web3.utils.encodePacked(''), {from: tokenHolder}),
-        "DigitalaxMaterials.mintStrand: Sender must be minter"
+        this.token.mintStrand(STRAND_ONE_ID, '4', tokenHolder, web3.utils.encodePacked(''), {from: tokenBatchHolder}),
+        "DigitalaxMaterials.mintStrand: Sender must be smart contract"
       )
     });
 
     it('Reverts when strand has not been created', async function() {
       await expectRevert(
-        this.token.mintStrand('2', '5', tokenHolder, web3.utils.encodePacked(''), {from: minter}),
+        this.token.mintStrand('2', '5', tokenHolder, web3.utils.encodePacked(''), {from: smart_contract}),
         "DigitalaxMaterials.mintStrand: Strand does not exist"
       );
     });
 
     it('Reverts when amount is specified as zero', async function() {
       await expectRevert(
-        this.token.mintStrand(STRAND_ONE_ID, '0', tokenHolder, web3.utils.encodePacked(''), {from: minter}),
+        this.token.mintStrand(STRAND_ONE_ID, '0', tokenHolder, web3.utils.encodePacked(''), {from: smart_contract}),
         "DigitalaxMaterials.mintStrand: No amount specified"
       );
     });
   });
 
-  describe('batchMintStrands()', function() {
-    it('Reverts when sender is not a minter', async function() {
+  describe.only('batchMintStrands()', function() {
+    it('Reverts when sender is not a smart contract', async function() {
       await expectRevert(
         this.token.batchMintStrands([], [], tokenBatchHolder, web3.utils.encodePacked(''), {from: tokenBatchHolder}),
-        "DigitalaxMaterials.batchMintStrands: Sender must be minter"
+        "DigitalaxMaterials.batchMintStrands: Sender must be smart contract"
       );
     });
 
     it('Reverts when any strand does not exist', async function() {
       await expectRevert(
-        this.token.batchMintStrands(['1'], ['1'], tokenBatchHolder, web3.utils.encodePacked(''), {from: minter}),
+        this.token.batchMintStrands(['1'], ['1'], tokenBatchHolder, web3.utils.encodePacked(''), {from: smart_contract}),
         "DigitalaxMaterials.batchMintStrands: Strand does not exist"
       );
     });
 
     it('Reverts when any amount is zero', async function() {
-      await this.token.createStrand('1', tokenBatchHolder, initialURI, web3.utils.encodePacked(''), {from: minter});
+      await this.token.createStrand(initialURI, {from: smart_contract});
       await expectRevert(
-        this.token.batchMintStrands(['1'], ['0'], tokenBatchHolder, web3.utils.encodePacked(''), {from: minter}),
+        this.token.batchMintStrands(['1'], ['0'], tokenBatchHolder, web3.utils.encodePacked(''), {from: smart_contract}),
         "DigitalaxMaterials.batchMintStrands: Invalid amount"
       );
     });
 
     it('Reverts when array lengths are inconsistent', async function() {
       await expectRevert(
-        this.token.batchMintStrands(['1'], [], tokenBatchHolder, web3.utils.encodePacked(''), {from: minter}),
+        this.token.batchMintStrands(['1'], [], tokenBatchHolder, web3.utils.encodePacked(''), {from: smart_contract}),
         "DigitalaxMaterials.batchMintStrands: Array lengths are invalid"
       );
     });
 
     it('Reverts when arrays are empty', async function() {
       await expectRevert(
-        this.token.batchMintStrands([], [], tokenBatchHolder, web3.utils.encodePacked(''), {from: minter}),
+        this.token.batchMintStrands([], [], tokenBatchHolder, web3.utils.encodePacked(''), {from: smart_contract}),
         "DigitalaxMaterials.batchMintStrands: No data supplied in arrays"
       );
     });
   });
 
-  describe('updateAccessControls()', function() {
+  describe.only('updateAccessControls()', function() {
     it('Successfully updates access controls as admin', async function() {
       const currentAccessControlsAddress = await this.token.accessControls();
       await this.token.updateAccessControls(smart_contract, {from: admin});
