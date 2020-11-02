@@ -237,33 +237,6 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     /////////////////////////
 
     // TODO; should this function be public?
-    function safeTransferChildFrom(uint256 _fromTokenId, address _to, address, uint256 _childTokenId, uint256 _amount, bytes memory _data) public override {
-        require(msg.sender == address(this));
-        require(_to != address(0), "ERC998: transfer to the zero address");
-
-        address operator = _msgSender();
-        require(
-            ownerOf(_fromTokenId) == operator ||
-            isApprovedForAll(ownerOf(_fromTokenId), operator),
-            "ERC998: caller is not owner nor approved"
-        );
-
-        // TODO: sender is owner || operator for sender ||  approved Address for sender
-        /* require(
-            from == _msgSender() || isApprovedForAll(from, _msgSender()),
-            "ERC1155: caller is not owner nor approved"
-        );
-        */
-        _beforeChildTransfer(operator, _fromTokenId, _to, address(childContract), _asSingletonArray(_childTokenId), _asSingletonArray(_amount), _data);
-
-        _removeChild(_fromTokenId, address(childContract), _childTokenId, _amount);
-
-        // TODO: maybe check if to == this
-        childContract.safeTransferFrom(address(this), _to, _childTokenId, _amount, _data);
-        emit TransferSingleChild(_fromTokenId, _to, address(childContract), _childTokenId, _amount);
-    }
-
-    // TODO; should this function be public?
     function safeBatchTransferChildFrom(uint256 _fromTokenId, address _to, address, uint256[] memory _childTokenIds, uint256[] memory _amounts, bytes memory _data) public override {
         //TODO: require does not work
         //require(msg.sender == address(this), "Only contract");
