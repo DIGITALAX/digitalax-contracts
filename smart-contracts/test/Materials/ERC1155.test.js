@@ -12,11 +12,14 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
   const symbol = "DXM";
 
   const initialURI = 'https://token-cdn-domain/{id}.json';
+  const emptyData = web3.utils.encodePacked('');
+
+  const STRAND_ONE_ID = '1';
 
   beforeEach(async function () {
     this.accessControls = await DigitalaxAccessControls.new({from: admin});
-    await this.accessControls.addMinterRole(operator, {from: admin});
-    await this.accessControls.addMinterRole(otherAccounts[0], {from: admin}); // zero index is minter in the behaviour test
+    await this.accessControls.addSmartContractRole(operator, {from: admin});
+    await this.accessControls.addSmartContractRole(otherAccounts[0], {from: admin}); // zero index is minter in the behaviour test
 
     this.token = await DigitalaxMaterials.new(
       name,
@@ -27,6 +30,8 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
 
     expect(await this.token.name()).to.be.equal(name);
     expect(await this.token.symbol()).to.be.equal(symbol);
+
+    await this.token.createStrand(initialURI, {from: operator});
   });
 
   shouldBehaveLikeERC1155(otherAccounts);
@@ -44,14 +49,21 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
     describe('_mint', function () {
       it('reverts with a zero destination address', async function () {
         await expectRevert(
-          this.token.createStrand(mintAmount, ZERO_ADDRESS, initialURI, web3.utils.encodePacked(''), {from: operator}),
+          this.token.mintStrand(STRAND_ONE_ID, mintAmount, ZERO_ADDRESS, emptyData, {from: operator}),
           'ERC1155: mint to the zero address',
         );
       });
 
       context('with minted tokens', function () {
         beforeEach(async function () {
-          ({ logs: this.logs } = await this.token.createStrand(mintAmount, tokenHolder, initialURI, web3.utils.encodePacked(''), { from: operator }));
+          ({ logs: this.logs } = await this.token.mintStrand(
+              STRAND_ONE_ID,
+              mintAmount,
+              tokenHolder,
+              emptyData,
+              { from: operator }
+            )
+          );
         });
 
         it('emits a TransferSingle event', function () {
@@ -73,10 +85,7 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
     describe('_mintBatch', function () {
       beforeEach(async function () {
         await this.token.batchCreateStrands(
-          ['1', '1', '1'],
-          tokenBatchHolder,
           [initialURI, initialURI, initialURI],
-          [web3.utils.encodePacked(''), web3.utils.encodePacked(''), web3.utils.encodePacked('')],
           {from: operator}
         );
       });
@@ -127,7 +136,7 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
 
           for (let i = 0; i < holderBatchBalances.length; i++) {
             // add one because of batchCreateStrand
-            expect(holderBatchBalances[i]).to.be.bignumber.equal(mintAmounts[i].add(new BN('1')));
+            expect(holderBatchBalances[i]).to.be.bignumber.equal(mintAmounts[i]);
           }
         });
       });
@@ -135,21 +144,18 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
   });
 
   describe('ERC1155MetadataURI', function () {
-    const firstTokenID = new BN('1');
     const secondTokenID = new BN('2');
 
     const secondTokenURI = 'random';
 
     it('sets the first token URI correctly', async function() {
-      await this.token.createStrand('1', tokenHolder, initialURI, web3.utils.encodePacked(''), {from: otherAccounts[0]});
-      expect(await this.token.uri(firstTokenID)).to.be.equal(initialURI);
+      expect(await this.token.uri(STRAND_ONE_ID)).to.be.equal(initialURI);
     });
 
     it('sets the first and second token URI correctly', async function() {
-      await this.token.createStrand('1', tokenHolder, initialURI, web3.utils.encodePacked(''), {from: otherAccounts[0]});
-      expect(await this.token.uri(firstTokenID)).to.be.equal(initialURI);
+      expect(await this.token.uri(STRAND_ONE_ID)).to.be.equal(initialURI);
 
-      await this.token.createStrand('1', tokenHolder, secondTokenURI, web3.utils.encodePacked(''), {from: otherAccounts[0]});
+      await this.token.createStrand(secondTokenURI, {from: otherAccounts[0]});
       expect(await this.token.uri(secondTokenID)).to.be.equal(secondTokenURI);
     });
   });

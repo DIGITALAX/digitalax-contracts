@@ -50,13 +50,15 @@ function shouldBehaveLikeERC1155 ([minter, firstTokenHolder, secondTokenHolder, 
 
       context('when accounts own some tokens', function () {
         beforeEach(async function () {
-          await this.token.createStrand(firstAmount, firstTokenHolder, initialURI, web3.utils.encodePacked(''), {
+          await this.token.batchCreateStrands([initialURI, initialURI], {from: minter});
+
+          await this.token.mintStrand(firstTokenId, firstAmount, firstTokenHolder, web3.utils.encodePacked(''), {
             from: minter,
           });
-          await this.token.createStrand(
+          await this.token.mintStrand(
+            secondTokenId,
             secondAmount,
             secondTokenHolder,
-            initialURI,
             web3.utils.encodePacked(''),
             {
               from: minter,
@@ -127,13 +129,15 @@ function shouldBehaveLikeERC1155 ([minter, firstTokenHolder, secondTokenHolder, 
 
       context('when accounts own some tokens', function () {
         beforeEach(async function () {
-          await this.token.createStrand(firstAmount, firstTokenHolder, initialURI, web3.utils.encodePacked(''), {
+          await this.token.batchCreateStrands([initialURI, initialURI], {from: minter});
+
+          await this.token.mintStrand(firstTokenId, firstAmount, firstTokenHolder, web3.utils.encodePacked(''), {
             from: minter,
           });
-          await this.token.createStrand(
+          await this.token.mintStrand(
+            secondTokenId,
             secondAmount,
             secondTokenHolder,
-            initialURI,
             web3.utils.encodePacked(''),
             {
               from: minter,
@@ -195,13 +199,15 @@ function shouldBehaveLikeERC1155 ([minter, firstTokenHolder, secondTokenHolder, 
 
     describe('safeTransferFrom', function () {
       beforeEach(async function () {
-        await this.token.createStrand(firstAmount, multiTokenHolder, initialURI, web3.utils.encodePacked(''), {
+        await this.token.batchCreateStrands([initialURI, initialURI], {from: minter});
+
+        await this.token.mintStrand(firstTokenId, firstAmount, multiTokenHolder, web3.utils.encodePacked(''), {
           from: minter,
         });
-        await this.token.createStrand(
+        await this.token.mintStrand(
+          secondTokenId,
           secondAmount,
           multiTokenHolder,
-          initialURI,
           web3.utils.encodePacked(''),
           {
             from: minter,
@@ -451,13 +457,15 @@ function shouldBehaveLikeERC1155 ([minter, firstTokenHolder, secondTokenHolder, 
 
     describe('safeBatchTransferFrom', function () {
       beforeEach(async function () {
-        await this.token.createStrand(firstAmount, multiTokenHolder, initialURI, web3.utils.encodePacked(''), {
+        await this.token.batchCreateStrands([initialURI, initialURI], {from: minter});
+
+        await this.token.mintStrand(firstTokenId, firstAmount, multiTokenHolder, web3.utils.encodePacked(''), {
           from: minter,
         });
-        await this.token.createStrand(
+        await this.token.mintStrand(
+          secondTokenId,
           secondAmount,
           multiTokenHolder,
-          initialURI,
           web3.utils.encodePacked(''),
           {
             from: minter,

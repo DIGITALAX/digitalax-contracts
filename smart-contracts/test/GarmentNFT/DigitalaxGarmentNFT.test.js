@@ -230,7 +230,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
                 [strand1Supply, strand2Supply, strand3Supply],
                 this.token.address,
                 garmentTokenIdEncoded,
-                {from: admin}
+                {from: smart_contract}
               ),
               "Token does not exist"
             );
@@ -246,7 +246,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
                 [strand1Supply, strand2Supply, strand3Supply],
                 this.token.address,
                 '0x0',
-                {from: admin}
+                {from: smart_contract}
               ),
               "ERC998: data must contain the unique uint256 tokenId to transfer the child token to"
             );
@@ -326,6 +326,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
             await this.digitalaxMaterials.batchMintStrands(
               [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID],
               [strand1Supply, strand2Supply, strand3Supply],
+              this.token.address,
               garmentTokenIdEncoded,
               {from: smart_contract}
             ); // This will mint for strand IDs [1, 2, 3] and link to Garment Token ID 1
@@ -364,7 +365,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
                 ['1', '1', '1'], // mint one of each
                 this.token.address,
                 garmentTokenIdEncoded,
-                {from: minter}
+                {from: smart_contract}
               ); // This will mint 1 of strand IDs [1, 2, 3] and link to garment ID [1]
 
               await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, '1');
@@ -400,6 +401,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
             [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID],
             ['1', '1', '1'],
             admin,
+            web3.utils.encodePacked(""),
             {from: smart_contract}
           );
         });

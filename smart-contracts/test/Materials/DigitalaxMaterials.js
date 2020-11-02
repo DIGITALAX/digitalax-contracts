@@ -28,7 +28,7 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, minter, to
     );
   });
 
-  describe.only('createStrand()', function () {
+  describe('createStrand()', function () {
     it('Reverts when sender is not smart contract', async function() {
       await expectRevert(
         this.token.createStrand(initialURI, {from: tokenHolder}),
@@ -44,7 +44,7 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, minter, to
     });
   });
 
-  describe.only('batchCreateStrands()', function() {
+  describe('batchCreateStrands()', function() {
     it('Reverts when sender is not smart contract', async function() {
       await expectRevert(
         this.token.batchCreateStrands([], {from: tokenBatchHolder}),
@@ -67,7 +67,7 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, minter, to
     });
   });
 
-  describe.only('mintStrand()', function() {
+  describe('mintStrand()', function() {
     beforeEach(async function() {
       await this.token.createStrand(
         initialURI,
@@ -102,7 +102,7 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, minter, to
     });
   });
 
-  describe.only('batchMintStrands()', function() {
+  describe('batchMintStrands()', function() {
     it('Reverts when sender is not a smart contract', async function() {
       await expectRevert(
         this.token.batchMintStrands([], [], tokenBatchHolder, web3.utils.encodePacked(''), {from: tokenBatchHolder}),
@@ -140,7 +140,7 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, minter, to
     });
   });
 
-  describe.only('updateAccessControls()', function() {
+  describe('updateAccessControls()', function() {
     it('Successfully updates access controls as admin', async function() {
       const currentAccessControlsAddress = await this.token.accessControls();
       await this.token.updateAccessControls(smart_contract, {from: admin});
