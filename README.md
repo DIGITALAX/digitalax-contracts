@@ -12,12 +12,6 @@
 * Run tests `yarn test`
 * Run test with `GAS` profiling `yarn test-with-gas`
 
-### Ropsten Deployments
-```
-DigitalaxAccessControls: 0x5c9526E67d2C7b2658d0A510f4cFcc28edc4cC96
-DigitalaxGenesisNFT: 0x42321F5443480cbAA0FE76187f73Bd06Db125111
-```
-
 ## Genesis Metadata
 
 * Located in `./genesis-metadata/`

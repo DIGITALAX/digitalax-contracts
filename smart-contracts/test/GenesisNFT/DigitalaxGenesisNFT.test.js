@@ -1,4 +1,4 @@
-const { BN, constants, expectEvent, expectRevert, ether, balance } = require('@openzeppelin/test-helpers');
+const { BN, constants, expectEvent, expectRevert, ether, balance, send} = require('@openzeppelin/test-helpers');
 const { ZERO_ADDRESS } = constants;
 
 const { expect } = require('chai');
@@ -8,12 +8,14 @@ const DigitalaxGenesisNFT = artifacts.require('DigitalaxGenesisNFT');
 const DigitalaxGenesisNFTMock = artifacts.require('DigitalaxGenesisNFTMock');
 const AlwaysRevertingEthReceiver = artifacts.require('AlwaysRevertingEthReceiver');
 
-contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, buyer, buyer2, owner, smart_contract]) {
+contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, buyer, buyer2, owner, smart_contract, ...otherAccounts]) {
     const ONE_ETH = ether('1');
 
     const TOKEN_ONE_ID = new BN('1');
 
     const randomTokenURI = 'ipfs';
+
+    const defaultMaxTokens = '10';
 
     beforeEach(async () => {
         this.accessControls = await DigitalaxAccessControls.new({from: admin});
@@ -27,6 +29,7 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
             {from: admin}
         );
         await this.token.setNowOverride('5');
+        await this.token.setMaxGenesisContributionTokensOverride(defaultMaxTokens);
     });
 
     describe('Transfers', () => {
@@ -62,6 +65,35 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
            expect(await this.token.totalContributions()).to.be.bignumber.equal(ONE_ETH);
        });
 
+        it('cannot buy() more than max total genesis contribution NFTs', async () => {
+          // Set max to 3 for the test
+          await this.token.setMaxGenesisContributionTokensOverride("3");
+
+          let startingTokenId = TOKEN_ONE_ID;
+
+          // Buy all genesis NFTs up to max
+          for (let i = 1; i <= 3; i++) {
+            const buyer = otherAccounts[i];
+
+            // Buy token
+            const {receipt} = await this.token.buy({from: buyer, value: ONE_ETH});
+            await expectEvent(receipt, 'GenesisPurchased', {
+              buyer: buyer,
+              tokenId: startingTokenId.toString(),
+              contribution: ONE_ETH
+            });
+            startingTokenId++;
+          }
+
+          expect(await this.token.remainingGenesisTokens()).to.be.bignumber.equal('0');
+
+          // expect failure on the 6th as max exceeded
+          await expectRevert(
+            this.token.buy({from: otherAccounts[6], value: ONE_ETH}),
+            "DigitalaxGenesisNFT.buy: Total number of genesis token holders reached"
+          );
+        });
+
        it('total contributions are correct for multiple buyers', async () => {
          await this.token.buy({from: buyer, value: ONE_ETH})
          await this.token.buy({from: buyer2, value: ether('0.5')});
@@ -87,10 +119,11 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
                {from: admin}
            );
            await this.tokenWithRevertingMultisig.setNowOverride('5');
+           await this.tokenWithRevertingMultisig.setMaxGenesisContributionTokensOverride(defaultMaxTokens);
 
            await expectRevert(
-               this.tokenWithRevertingMultisig.buy({from: buyer, value: ONE_ETH}),
-               "DigitalaxGenesisNFT.buy: Unable to send contribution to funds multisig"
+                this.tokenWithRevertingMultisig.buy({from: buyer, value: ONE_ETH}),
+                "DigitalaxGenesisNFT.buy: Unable to send contribution to funds multisig"
            );
        });
 
@@ -144,6 +177,12 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
           expect(await multisigTracker.delta()).to.be.bignumber.equal('0');
           expect(await this.token.balanceOf(owner)).to.be.bignumber.equal('1');
           expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.equal(owner);
+
+          // Tally up admin mint
+          expect(await this.token.totalAdminMints()).to.be.bignumber.equal('1');
+
+          // Still max left to buy
+          expect(await this.token.remainingGenesisTokens()).to.be.bignumber.equal(defaultMaxTokens);
        });
 
        it('Reverts when caller is not admin', async () => {
@@ -286,16 +325,32 @@ contract('Core NFT tests for DigitalaxGenesisNFT', function ([admin, multisig, b
             const newEnd = '900';
             const {receipt} = await this.token.updateGenesisEnd(newEnd, {from: admin});
             expectEvent(receipt, 'GenesisEndUpdated', {
-                genesisEnd: newEnd
+                genesisEndTimestamp: newEnd
             });
 
-            expect(await this.token.genesisEnd()).to.be.bignumber.equal(newEnd);
+            expect(await this.token.genesisEndTimestamp()).to.be.bignumber.equal(newEnd);
         });
 
         it('Reverts when not admin', async () => {
            await expectRevert(
                this.token.updateGenesisEnd('99', {from: buyer}),
                "DigitalaxGenesisNFT.updateGenesisEnd: Sender must be admin"
+           )
+        });
+
+        it('Reverts when being changed for a second time', async () => {
+          await this.token.updateGenesisEnd('900', {from: admin});
+           await expectRevert(
+               this.token.updateGenesisEnd('99', {from: admin}),
+               "DigitalaxGenesisNFT.updateGenesisEnd: End time locked"
+           )
+        });
+
+        it('Reverts when end time already passed and trying to reopen', async () => {
+          await this.token.setNowOverride('99');
+          await expectRevert(
+               this.token.updateGenesisEnd('99', {from: admin}),
+               "DigitalaxGenesisNFT.updateGenesisEnd: End time already passed"
            )
         });
     });

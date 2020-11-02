@@ -38,7 +38,7 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
 
     // @notice event emitted when end date is changed
     event GenesisEndUpdated(
-        uint256 genesisEnd,
+        uint256 genesisEndTimestamp,
         address indexed admin
     );
 
@@ -54,16 +54,19 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
     address payable public fundsMultisig;
 
     // @notice start date for them the Genesis sale is open to the public, before this data no purchases can be made
-    uint256 public genesisStart;
+    uint256 public genesisStartTimestamp;
 
     // @notice end date for them the Genesis sale is closed, no more purchased can be made after this point
-    uint256 public genesisEnd;
+    uint256 public genesisEndTimestamp;
+
+    // @notice set after end time has been changed once, prevents further changes to end timestamp
+    bool public genesisEndTimestampLocked;
 
     // @notice the minimum amount a buyer can contribute in a single go
-    uint256 public minimumContributionAmount = 0.01 ether;
+    uint256 public constant minimumContributionAmount = 0.1 ether;
 
     // @notice the maximum accumulative amount a user can contribute to the genesis sale
-    uint256 public maximumContributionAmount = 2 ether;
+    uint256 public constant maximumContributionAmount = 2 ether;
 
     // @notice accumulative => contribution total
     mapping(address => uint256) public contribution;
@@ -71,17 +74,22 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
     // @notice global accumulative contribution amount
     uint256 public totalContributions;
 
+    // @notice max number of paid contributions to the genesis sale
+    uint256 public constant maxGenesisContributionTokens = 460;
+
+    uint256 public totalAdminMints;
+
     constructor(
         DigitalaxAccessControls _accessControls,
         address payable _fundsMultisig,
-        uint256 _genesisStart,
-        uint256 _genesisEnd,
+        uint256 _genesisStartTimestamp,
+        uint256 _genesisEndTimestamp,
         string memory _tokenURI
     ) public {
         accessControls = _accessControls;
         fundsMultisig = _fundsMultisig;
-        genesisStart = _genesisStart;
-        genesisEnd = _genesisEnd;
+        genesisStartTimestamp = _genesisStartTimestamp;
+        genesisEndTimestamp = _genesisEndTimestamp;
         tokenURI_ = _tokenURI;
         emit DigitalaxGenesisNFTContractDeployed();
     }
@@ -110,7 +118,7 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
     function buy() public payable {
         require(contribution[_msgSender()] == 0, "DigitalaxGenesisNFT.buy: You already own a genesis NFT");
         require(
-            _getNow() >= genesisStart && _getNow() <= genesisEnd,
+            _getNow() >= genesisStartTimestamp && _getNow() <= genesisEndTimestamp,
             "DigitalaxGenesisNFT.buy: No genesis are available outside of the genesis window"
         );
 
@@ -124,6 +132,8 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
             _contributionAmount <= maximumContributionAmount,
             "DigitalaxGenesisNFT.buy: You cannot exceed the maximum contribution amount"
         );
+
+        require(remainingGenesisTokens() > 0, "DigitalaxGenesisNFT.buy: Total number of genesis token holders reached");
 
         contribution[_msgSender()] = _contributionAmount;
         totalContributions = totalContributions.add(_contributionAmount);
@@ -146,7 +156,7 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
      */
     function increaseContribution() public payable {
         require(
-            _getNow() >= genesisStart && _getNow() <= genesisEnd,
+            _getNow() >= genesisStartTimestamp && _getNow() <= genesisEndTimestamp,
             "DigitalaxGenesisNFT.increaseContribution: No increases are possible outside of the genesis window"
         );
 
@@ -192,6 +202,9 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
         uint256 tokenId = totalSupply().add(1);
         _safeMint(_beneficiary, tokenId);
 
+        // Increase admin mint counts
+        totalAdminMints = totalAdminMints.add(1);
+
         emit AdminGenesisMinted(_beneficiary, _msgSender(), tokenId);
     }
 
@@ -203,10 +216,18 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
             accessControls.hasAdminRole(_msgSender()),
             "DigitalaxGenesisNFT.updateGenesisEnd: Sender must be admin"
         );
+        // If already passed, dont allow opening again
+        require(genesisEndTimestamp > _getNow(), "DigitalaxGenesisNFT.updateGenesisEnd: End time already passed");
 
-        genesisEnd = _end;
+        // Only allow setting this once
+        require(!genesisEndTimestampLocked, "DigitalaxGenesisNFT.updateGenesisEnd: End time locked");
 
-        emit GenesisEndUpdated(genesisEnd, _msgSender());
+        genesisEndTimestamp = _end;
+
+        // Lock future end time modifications
+        genesisEndTimestampLocked = true;
+
+        emit GenesisEndUpdated(genesisEndTimestamp, _msgSender());
     }
 
     /**
@@ -223,17 +244,28 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
         emit AccessControlsUpdated(address(_accessControls));
     }
 
+    /**
+    * @dev Returns total remaining number of tokens available in the Genesis sale
+    */
+    function remainingGenesisTokens() public view returns (uint256) {
+        return _getMaxGenesisContributionTokens() - (totalSupply() - totalAdminMints);
+    }
+
     // Internal
 
     function _getNow() internal virtual view returns (uint256) {
-        return now;
+        return block.timestamp;
+    }
+
+    function _getMaxGenesisContributionTokens() internal virtual view returns (uint256) {
+        return maxGenesisContributionTokens;
     }
 
     /**
      * @dev Before token transfer hook to enforce that no token can be moved to another address until the genesis sale has ended
      */
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override {
-        if (from != address(0) && _getNow() <= genesisEnd) {
+        if (from != address(0) && _getNow() <= genesisEndTimestamp) {
             revert("DigitalaxGenesisNFT._beforeTokenTransfer: Transfers are currently locked at this time");
         }
     }

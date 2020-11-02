@@ -105,3 +105,7 @@ generated
 build
 /smart-contracts/slither.output.log
 .DS_Store
+.coverage_artifacts
+.coverage_cache
+.coverage_contracts
+solc-sjw-macos-x64
