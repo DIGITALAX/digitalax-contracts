@@ -7,8 +7,9 @@ const { expect } = require('chai');
 const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
 const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
 const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
+const DigitalaxGarmentFactory = artifacts.require('DigitalaxGarmentFactory');
 
-contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, owner, smart_contract, designer,random]) {
+contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, owner, smart_contract, designer, random]) {
     const randomURI = 'rand';
 
     const TOKEN_ONE_ID = new BN('1');
@@ -16,6 +17,8 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
     const STRAND_ONE_ID = new BN('1');
     const STRAND_TWO_ID = new BN('2');
     const STRAND_THREE_ID = new BN('3');
+
+    const randomStrandId = 'randomStrandId';
 
     beforeEach(async () => {
         this.accessControls = await DigitalaxAccessControls.new({from: admin});
@@ -35,6 +38,15 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
           this.digitalaxMaterials.address,
           {from: admin}
         );
+
+        this.factory = await DigitalaxGarmentFactory.new(
+          this.token.address,
+          this.digitalaxMaterials.address,
+          this.accessControls.address,
+          {from: admin}
+        );
+
+        await this.accessControls.addSmartContractRole(this.factory.address, {from: admin});
     });
 
     describe('Reverts', () => {
@@ -437,6 +449,46 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
             await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, [STRAND_ONE_ID, STRAND_TWO_ID]);
           });
         });
+      });
+    });
+
+    describe('burn()', () => {
+      beforeEach(async () => {
+        await this.factory.createNewStrands(
+          [randomStrandId,randomStrandId,randomStrandId],
+          {from: minter}
+        ); // will create strand ID [1], [2], [3]
+      });
+
+      it('Can obtain the strands of a garment by burning', async () => {
+        const strand1Amount = '2';
+        const strand2Amount = '9';
+        const strand3Amount = '6';
+
+        const strandIds = [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID];
+        await this.factory.createGarmentAndMintStrands(
+          randomURI,
+          random,
+          strandIds,
+          [strand1Amount, strand2Amount, strand3Amount],
+          owner,
+          {from: minter}
+        );
+
+        await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, strand1Amount);
+        await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_TWO_ID, strand2Amount);
+        await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_THREE_ID, strand3Amount);
+        await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, strandIds);
+
+        expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_ONE_ID)).to.be.bignumber.equal('0');
+        expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_TWO_ID)).to.be.bignumber.equal('0');
+        expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_THREE_ID)).to.be.bignumber.equal('0');
+
+        await this.token.burn(TOKEN_ONE_ID, {from: owner});
+
+        expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_ONE_ID)).to.be.bignumber.equal(strand1Amount);
+        expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_TWO_ID)).to.be.bignumber.equal(strand2Amount);
+        expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_THREE_ID)).to.be.bignumber.equal(strand3Amount);
       });
     });
 

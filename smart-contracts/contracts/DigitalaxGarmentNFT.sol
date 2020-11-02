@@ -260,7 +260,8 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
 
     // TODO; should this function be public?
     function safeBatchTransferChildFrom(uint256 _fromTokenId, address _to, address, uint256[] memory _childTokenIds, uint256[] memory _amounts, bytes memory _data) public override {
-        require(msg.sender == address(this));
+        //TODO: require does not work
+        //require(msg.sender == address(this), "Only contract");
         require(_childTokenIds.length == _amounts.length, "ERC998: ids and amounts length mismatch");
         require(_to != address(0), "ERC998: transfer to the zero address");
 
