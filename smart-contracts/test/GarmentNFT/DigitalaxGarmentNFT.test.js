@@ -453,14 +453,16 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
     });
 
     describe('burn()', () => {
-      beforeEach(async () => {
+      it('Can obtain the strands of a garment by burning', async () => {
+        expect(await this.digitalaxMaterials.strandIdPointer()).to.be.bignumber.equal('0');
+
         await this.factory.createNewStrands(
           [randomStrandId,randomStrandId,randomStrandId],
           {from: minter}
         ); // will create strand ID [1], [2], [3]
-      });
 
-      it('Can obtain the strands of a garment by burning', async () => {
+        expect(await this.digitalaxMaterials.strandIdPointer()).to.be.bignumber.equal('3');
+
         const strand1Amount = '2';
         const strand2Amount = '9';
         const strand3Amount = '6';
@@ -489,6 +491,22 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
         expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_ONE_ID)).to.be.bignumber.equal(strand1Amount);
         expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_TWO_ID)).to.be.bignumber.equal(strand2Amount);
         expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_THREE_ID)).to.be.bignumber.equal(strand3Amount);
+      });
+
+      it('Can burn a garment that does not have any strands', async () => {
+        expect(await this.digitalaxMaterials.strandIdPointer()).to.be.bignumber.equal('0');
+
+        await this.token.mint(owner, randomURI, designer);
+
+        expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.equal(owner);
+        expect(await this.digitalaxMaterials.strandIdPointer()).to.be.bignumber.equal('0');
+
+        await this.token.burn(TOKEN_ONE_ID, {from: owner});
+
+        await expectRevert(
+          this.token.ownerOf(TOKEN_ONE_ID),
+          "ERC721: owner query for nonexistent token"
+        );
       });
     });
 

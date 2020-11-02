@@ -87,20 +87,24 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
 
         address childContractAddress = address(childContract);
         uint256[] memory childIds = childIdsForOn(_tokenId, childContractAddress);
-        uint256[] memory balanceOfChilds = new uint256[](childIds.length);
 
-        for(uint i = 0; i < childIds.length; i++) {
-            balanceOfChilds[i] = childBalance(_tokenId, childContractAddress, childIds[i]);
+        // If there are any children tokens then send them as part of the burn
+        if (childIds.length > 0) {
+            uint256[] memory balanceOfChilds = new uint256[](childIds.length);
+
+            for(uint i = 0; i < childIds.length; i++) {
+                balanceOfChilds[i] = childBalance(_tokenId, childContractAddress, childIds[i]);
+            }
+
+            safeBatchTransferChildFrom(
+                _tokenId,
+                _msgSender(),
+                childContractAddress,
+                childIds,
+                balanceOfChilds,
+                abi.encodePacked("")
+            );
         }
-
-        safeBatchTransferChildFrom(
-            _tokenId,
-            _msgSender(),
-            childContractAddress,
-            childIds,
-            balanceOfChilds,
-            abi.encodePacked("")
-        );
 
         _burn(_tokenId);
     }
