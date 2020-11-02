@@ -29,7 +29,8 @@ contract DigitalaxMaterials is ERC1155 {
     function createStrand(
         uint256 _initialSupply,
         address _beneficiary,
-        string calldata _uri
+        string calldata _uri,
+        bytes calldata _data
     ) external returns (uint256) {
         require(accessControls.hasMinterRole(_msgSender()), "DigitalaxMaterials.createStrand: Sender must be minter");
         require(_initialSupply > 0, "DigitalaxMaterials.createStrand: No initial supply");
@@ -38,7 +39,7 @@ contract DigitalaxMaterials is ERC1155 {
         tokenIdPointer = tokenIdPointer.add(1);
 
         uint256 strandId = tokenIdPointer;
-        _mint(_beneficiary, strandId, _initialSupply, abi.encodePacked(""));
+        _mint(_beneficiary, strandId, _initialSupply, _data);
         _setURI(strandId, _uri);
 
         return strandId;
@@ -47,10 +48,12 @@ contract DigitalaxMaterials is ERC1155 {
     function batchCreateStrands(
         uint256[] calldata _initialSupplies,
         address _beneficiary,
-        string[] calldata _uris
+        string[] calldata _uris,
+        bytes[] calldata _datas
     ) external returns (uint256[] memory strandIds) {
         require(accessControls.hasMinterRole(_msgSender()), "DigitalaxMaterials.batchCreateStrands: Sender must be minter");
         require(_initialSupplies.length == _uris.length, "DigitalaxMaterials.batchCreateStrands: Array lengths are invalid");
+        require(_initialSupplies.length == _datas.length, "DigitalaxMaterials.batchCreateStrands: Array lengths are invalid");
         require(_initialSupplies.length > 0, "DigitalaxMaterials.batchCreateStrands: No data supplied in arrays");
 
         strandIds = new uint256[](_initialSupplies.length);
@@ -64,21 +67,26 @@ contract DigitalaxMaterials is ERC1155 {
             string memory uri = _uris[i];
             require(bytes(uri).length > 0, "DigitalaxMaterials.batchCreateStrands: URI is a blank string");
 
-            _mint(_beneficiary, strandId, initialSupply, abi.encodePacked(""));
+            _mint(_beneficiary, strandId, initialSupply, _datas[i]);
             _setURI(strandId, uri);
 
             strandIds[i] = strandId;
         }
     }
 
-    function mintStrand(uint256 _strandId, uint256 _amount, address _beneficiary) external {
+    function mintStrand(uint256 _strandId, uint256 _amount, address _beneficiary, bytes calldata _data) external {
         require(accessControls.hasMinterRole(_msgSender()), "DigitalaxMaterials.mintStrand: Sender must be minter");
         require(bytes(tokenUris[_strandId]).length > 0, "DigitalaxMaterials.mintStrand: Strand does not exist");
         require(_amount > 0, "DigitalaxMaterials.mintStrand: No amount specified");
-        _mint(_beneficiary, _strandId, _amount, abi.encodePacked(""));
+        _mint(_beneficiary, _strandId, _amount, _data);
     }
 
-    function batchMintStrands(uint256[] calldata _strandIds, uint256[] calldata _amounts, address _beneficiary) external {
+    function batchMintStrands(
+        uint256[] calldata _strandIds,
+        uint256[] calldata _amounts,
+        address _beneficiary,
+        bytes calldata _data
+    ) external {
         require(accessControls.hasMinterRole(_msgSender()), "DigitalaxMaterials.batchMintStrands: Sender must be minter");
         require(_strandIds.length == _amounts.length, "DigitalaxMaterials.batchMintStrands: Array lengths are invalid");
         require(_strandIds.length > 0, "DigitalaxMaterials.batchMintStrands: No data supplied in arrays");
@@ -92,7 +100,7 @@ contract DigitalaxMaterials is ERC1155 {
             require(amount > 0, "DigitalaxMaterials.batchMintStrands: Invalid amount");
         }
 
-        _mintBatch(_beneficiary, _strandIds, _amounts, abi.encodePacked(""));
+        _mintBatch(_beneficiary, _strandIds, _amounts, _data);
     }
 
     // todo admin update tokenURI
