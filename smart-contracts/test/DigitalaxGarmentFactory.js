@@ -49,6 +49,36 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
     await this.accessControls.addSmartContractRole(this.factory.address, {from: admin});
   });
 
+  describe('createNewStrand()', () => {
+    it('Creates a new strand successfully', async () => {
+      await this.factory.createNewStrand(randomStrandURI, {from: minter});
+      expect(await this.digitalaxMaterials.uri(STRAND_ONE_ID)).to.be.equal(randomStrandURI);
+    });
+
+    it('Reverts when sender is not a minter', async () => {
+      await expectRevert(
+        this.factory.createNewStrand(randomStrandURI, {from: tokenHolder}),
+        "DigitalaxGarmentFactory.createNewStrand: Sender must be minter"
+      );
+    });
+  });
+
+  describe('createNewStrands()', () => {
+    it('Creates a multiple strands successfully', async () => {
+      const strand2Uri = 'strand2uri';
+      await this.factory.createNewStrands([randomStrandURI, strand2Uri], {from: minter});
+      expect(await this.digitalaxMaterials.uri(STRAND_ONE_ID)).to.be.equal(randomStrandURI);
+      expect(await this.digitalaxMaterials.uri(STRAND_TWO_ID)).to.be.equal(strand2Uri);
+    });
+
+    it('Reverts when sender is not a minter', async () => {
+      await expectRevert(
+        this.factory.createNewStrands([randomStrandURI, randomStrandURI], {from: tokenHolder}),
+        "DigitalaxGarmentFactory.createNewStrands: Sender must be minter"
+      );
+    });
+  });
+
   describe('createGarmentAndMintStrands()', () => {
     beforeEach(async () => {
       await this.factory.createNewStrands(
@@ -76,6 +106,20 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
       await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_TWO_ID, strand2Amount);
       await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_THREE_ID, strand3Amount);
       await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID]);
+    });
+
+    it('Reverts when sender does not have the minter role', async () => {
+      await expectRevert(
+        this.factory.createGarmentAndMintStrands(
+          randomGarmentURI,
+          designer,
+          [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID],
+          ['1', '1','1'],
+          tokenHolder,
+          {from: tokenHolder}
+        ),
+        "DigitalaxGarmentFactory.createGarmentAndMintStrands: Sender must be minter"
+      );
     });
   });
 
