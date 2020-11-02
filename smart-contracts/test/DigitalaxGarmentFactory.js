@@ -108,6 +108,8 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
       await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID]);
     });
 
+
+
     it('Reverts when sender does not have the minter role', async () => {
       await expectRevert(
         this.factory.createGarmentAndMintStrands(
