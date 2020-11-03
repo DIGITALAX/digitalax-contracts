@@ -81,25 +81,30 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         return tokenId;
     }
 
+    //todo: needs to handle no children scenario with test
     function burn(uint256 _tokenId) external {
         require(ownerOf(_tokenId) == _msgSender(), "DigitalaxGarmentNFT.burn: Only Garment Owner");
 
         address childContractAddress = address(childContract);
         uint256[] memory childIds = childIdsForOn(_tokenId, childContractAddress);
-        uint256[] memory balanceOfChilds = new uint256[](childIds.length);
 
-        for(uint i = 0; i < childIds.length; i++) {
-            balanceOfChilds[i] = childBalance(_tokenId, childContractAddress, childIds[i]);
+        // If there are any children tokens then send them as part of the burn
+        if (childIds.length > 0) {
+            uint256[] memory balanceOfChilds = new uint256[](childIds.length);
+
+            for(uint i = 0; i < childIds.length; i++) {
+                balanceOfChilds[i] = childBalance(_tokenId, childContractAddress, childIds[i]);
+            }
+
+            safeBatchTransferChildFrom(
+                _tokenId,
+                _msgSender(),
+                childContractAddress,
+                childIds,
+                balanceOfChilds,
+                abi.encodePacked("")
+            );
         }
-
-        safeBatchTransferChildFrom(
-            _tokenId,
-            _msgSender(),
-            childContractAddress,
-            childIds,
-            balanceOfChilds,
-            abi.encodePacked("")
-        );
 
         _burn(_tokenId);
     }
@@ -232,35 +237,9 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     /////////////////////////
 
     // TODO; should this function be public?
-    function safeTransferChildFrom(uint256 _fromTokenId, address _to, address, uint256 _childTokenId, uint256 _amount, bytes memory _data) public override {
-        require(msg.sender == address(this));
-        require(_to != address(0), "ERC998: transfer to the zero address");
-
-        address operator = _msgSender();
-        require(
-            ownerOf(_fromTokenId) == operator ||
-            isApprovedForAll(ownerOf(_fromTokenId), operator),
-            "ERC998: caller is not owner nor approved"
-        );
-
-        // TODO: sender is owner || operator for sender ||  approved Address for sender
-        /* require(
-            from == _msgSender() || isApprovedForAll(from, _msgSender()),
-            "ERC1155: caller is not owner nor approved"
-        );
-        */
-        _beforeChildTransfer(operator, _fromTokenId, _to, address(childContract), _asSingletonArray(_childTokenId), _asSingletonArray(_amount), _data);
-
-        _removeChild(_fromTokenId, address(childContract), _childTokenId, _amount);
-
-        // TODO: maybe check if to == this
-        childContract.safeTransferFrom(address(this), _to, _childTokenId, _amount, _data);
-        emit TransferSingleChild(_fromTokenId, _to, address(childContract), _childTokenId, _amount);
-    }
-
-    // TODO; should this function be public?
     function safeBatchTransferChildFrom(uint256 _fromTokenId, address _to, address, uint256[] memory _childTokenIds, uint256[] memory _amounts, bytes memory _data) public override {
-        require(msg.sender == address(this));
+        //TODO: require does not work
+        //require(msg.sender == address(this), "Only contract");
         require(_childTokenIds.length == _amounts.length, "ERC998: ids and amounts length mismatch");
         require(_to != address(0), "ERC998: transfer to the zero address");
 

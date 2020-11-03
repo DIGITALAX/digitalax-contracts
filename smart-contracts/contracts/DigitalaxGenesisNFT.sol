@@ -264,7 +264,7 @@ contract DigitalaxGenesisNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxGen
     /**
      * @dev Before token transfer hook to enforce that no token can be moved to another address until the genesis sale has ended
      */
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override {
+    function _beforeTokenTransfer(address from, address, uint256) internal override {
         if (from != address(0) && _getNow() <= genesisEndTimestamp) {
             revert("DigitalaxGenesisNFT._beforeTokenTransfer: Transfers are currently locked at this time");
         }

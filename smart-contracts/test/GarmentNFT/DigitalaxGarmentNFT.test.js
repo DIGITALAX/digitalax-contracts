@@ -7,8 +7,9 @@ const { expect } = require('chai');
 const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
 const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
 const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
+const DigitalaxGarmentFactory = artifacts.require('DigitalaxGarmentFactory');
 
-contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, owner, smart_contract, designer,random]) {
+contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, owner, smart_contract, designer, random]) {
     const randomURI = 'rand';
 
     const TOKEN_ONE_ID = new BN('1');
@@ -17,7 +18,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
     const STRAND_TWO_ID = new BN('2');
     const STRAND_THREE_ID = new BN('3');
 
-    const emptyData = web3.utils.encodePacked("");
+    const randomStrandId = 'randomStrandId';
 
     beforeEach(async () => {
         this.accessControls = await DigitalaxAccessControls.new({from: admin});
@@ -37,6 +38,15 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
           this.digitalaxMaterials.address,
           {from: admin}
         );
+
+        this.factory = await DigitalaxGarmentFactory.new(
+          this.token.address,
+          this.digitalaxMaterials.address,
+          this.accessControls.address,
+          {from: admin}
+        );
+
+        await this.accessControls.addSmartContractRole(this.factory.address, {from: admin});
     });
 
     describe('Reverts', () => {
@@ -172,13 +182,19 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
             const beneficiary = this.token.address; // as we want to 'link'
             const strandUri = 'strand1'; // not important for this test
             const garmentTokenIdEncoded = web3.utils.encodePacked(TOKEN_ONE_ID.toString());
+
+            await this.digitalaxMaterials.createStrand(
+              strandUri,
+              {from: smart_contract}
+            );
+
             await expectRevert(
-              this.digitalaxMaterials.createStrand(
+              this.digitalaxMaterials.mintStrand(
+                STRAND_ONE_ID,
                 initialSupply,
                 beneficiary,
-                strandUri,
                 garmentTokenIdEncoded,
-                {from: minter}
+                {from: smart_contract}
               ),
               "Token does not exist"
             );
@@ -188,13 +204,19 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
             const initialSupply = '2';
             const beneficiary = this.token.address; // as we want to 'link'
             const strandUri = 'strand1'; // not important for this test
+
+            await this.digitalaxMaterials.createStrand(
+              strandUri,
+              {from: smart_contract}
+            );
+
             await expectRevert(
-              this.digitalaxMaterials.createStrand(
+              this.digitalaxMaterials.mintStrand(
+                STRAND_ONE_ID,
                 initialSupply,
                 beneficiary,
-                strandUri,
                 "0x0",
-                {from: minter}
+                {from: smart_contract}
               ),
               "ERC998: data must contain the unique uint256 tokenId to transfer the child token to"
             );
@@ -204,11 +226,8 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
         describe('When batch wrapping multiple strands', () => {
           beforeEach(async () => {
             await this.digitalaxMaterials.batchCreateStrands(
-              ['1', '1', '1'],
-              admin,
               ['strand1', 'strand2', 'strand3'],
-              [emptyData, emptyData, emptyData],
-              {from: admin}
+              {from: smart_contract}
             ); // This will create strand IDs [1, 2, 3]
           });
 
@@ -223,7 +242,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
                 [strand1Supply, strand2Supply, strand3Supply],
                 this.token.address,
                 garmentTokenIdEncoded,
-                {from: admin}
+                {from: smart_contract}
               ),
               "Token does not exist"
             );
@@ -239,7 +258,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
                 [strand1Supply, strand2Supply, strand3Supply],
                 this.token.address,
                 '0x0',
-                {from: admin}
+                {from: smart_contract}
               ),
               "ERC998: data must contain the unique uint256 tokenId to transfer the child token to"
             );
@@ -263,13 +282,19 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
             const beneficiary = this.token.address; // as we want to 'link'
             const strandUri = 'strand1'; // not important for this test
             const garmentTokenIdEncoded = web3.utils.encodePacked(TOKEN_ONE_ID.toString());
+
             await this.digitalaxMaterials.createStrand(
+              strandUri,
+              {from: smart_contract}
+            ); // This will create strand ID [1]
+
+            await this.digitalaxMaterials.mintStrand(
+              STRAND_ONE_ID,
               initialSupply,
               beneficiary,
-              strandUri,
               garmentTokenIdEncoded,
-              {from: minter}
-            ); // This will create strand ID [1]
+              {from: smart_contract}
+            );
 
             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, initialSupply);
             await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, [STRAND_ONE_ID]);
@@ -306,12 +331,17 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
             const strand3Supply = '2';
 
             await this.digitalaxMaterials.batchCreateStrands(
+              ['strand1', 'strand2', 'strand3'],
+              {from: smart_contract}
+            ); // This will create strand IDs [1, 2, 3]
+
+            await this.digitalaxMaterials.batchMintStrands(
+              [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID],
               [strand1Supply, strand2Supply, strand3Supply],
               this.token.address,
-              ['strand1', 'strand2', 'strand3'],
-              [garmentTokenIdEncoded, garmentTokenIdEncoded, garmentTokenIdEncoded],
-              {from: admin}
-            ); // This will create strand IDs [1, 2, 3] and link to Garment Token ID 1
+              garmentTokenIdEncoded,
+              {from: smart_contract}
+            ); // This will mint for strand IDs [1, 2, 3] and link to Garment Token ID 1
 
             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, strand1Supply);
             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_TWO_ID, strand2Supply);
@@ -332,11 +362,8 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
           describe('Given multiple strands are created', () => {
             beforeEach(async () => {
               await this.digitalaxMaterials.batchCreateStrands(
-                ['1', '1', '1'],
-                admin,
                 ['strand1', 'strand2', 'strand3'],
-                [emptyData, emptyData, emptyData],
-                {from: admin}
+                {from: smart_contract}
               ); // This will create strand IDs [1, 2, 3]
             });
 
@@ -350,7 +377,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
                 ['1', '1', '1'], // mint one of each
                 this.token.address,
                 garmentTokenIdEncoded,
-                {from: minter}
+                {from: smart_contract}
               ); // This will mint 1 of strand IDs [1, 2, 3] and link to garment ID [1]
 
               await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, '1');
@@ -378,12 +405,17 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
           );
 
           await this.digitalaxMaterials.batchCreateStrands(
+            ['strand1', 'strand2', 'strand3'],
+            {from: smart_contract}
+          ); // This will create strand IDs [1, 2, 3]
+
+          await this.digitalaxMaterials.batchMintStrands(
+            [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID],
             ['1', '1', '1'],
             admin,
-            ['strand1', 'strand2', 'strand3'],
-            [emptyData, emptyData, emptyData],
-            {from: admin}
-          ); // This will create strand IDs [1, 2, 3]
+            web3.utils.encodePacked(""),
+            {from: smart_contract}
+          );
         });
 
         describe('Single strand', () => {
@@ -417,6 +449,96 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
             await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, [STRAND_ONE_ID, STRAND_TWO_ID]);
           });
         });
+      });
+    });
+
+    describe('burn()', () => {
+      it('Can obtain the strands of a garment by burning', async () => {
+        expect(await this.digitalaxMaterials.strandIdPointer()).to.be.bignumber.equal('0');
+
+        await this.factory.createNewStrands(
+          [randomStrandId,randomStrandId,randomStrandId],
+          {from: minter}
+        ); // will create strand ID [1], [2], [3]
+
+        expect(await this.digitalaxMaterials.strandIdPointer()).to.be.bignumber.equal('3');
+
+        const strand1Amount = '2';
+        const strand2Amount = '9';
+        const strand3Amount = '6';
+
+        const strandIds = [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID];
+        await this.factory.createGarmentAndMintStrands(
+          randomURI,
+          random,
+          strandIds,
+          [strand1Amount, strand2Amount, strand3Amount],
+          owner,
+          {from: minter}
+        );
+
+        await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, strand1Amount);
+        await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_TWO_ID, strand2Amount);
+        await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_THREE_ID, strand3Amount);
+        await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, strandIds);
+
+        expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_ONE_ID)).to.be.bignumber.equal('0');
+        expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_TWO_ID)).to.be.bignumber.equal('0');
+        expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_THREE_ID)).to.be.bignumber.equal('0');
+
+        await this.token.burn(TOKEN_ONE_ID, {from: owner});
+
+        expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_ONE_ID)).to.be.bignumber.equal(strand1Amount);
+        expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_TWO_ID)).to.be.bignumber.equal(strand2Amount);
+        expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_THREE_ID)).to.be.bignumber.equal(strand3Amount);
+      });
+
+      it('Can obtain a single strand of a garment by burning', async () => {
+        expect(await this.digitalaxMaterials.strandIdPointer()).to.be.bignumber.equal('0');
+
+        await this.factory.createNewStrand(
+          randomURI,
+          {from: minter}
+        ); // will create strand ID [1]
+
+        expect(await this.digitalaxMaterials.strandIdPointer()).to.be.bignumber.equal('1');
+
+        const strand1Amount = '6';
+
+        const strandIds = [STRAND_ONE_ID];
+        await this.factory.createGarmentAndMintStrands(
+          randomURI,
+          random,
+          strandIds,
+          [strand1Amount],
+          owner,
+          {from: minter}
+        );
+
+        await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, strand1Amount);
+        await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, strandIds);
+
+        expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_ONE_ID)).to.be.bignumber.equal('0');
+
+        await this.token.burn(TOKEN_ONE_ID, {from: owner});
+
+        expect(await this.digitalaxMaterials.balanceOf(owner, STRAND_ONE_ID)).to.be.bignumber.equal(strand1Amount);
+      });
+
+      it('Can burn a garment that does not have any strands', async () => {
+        expect(await this.digitalaxMaterials.strandIdPointer()).to.be.bignumber.equal('0');
+
+        await this.token.mint(owner, randomURI, designer);
+
+        expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.equal(owner);
+        expect(await this.digitalaxMaterials.strandIdPointer()).to.be.bignumber.equal('0');
+
+        await this.token.burn(TOKEN_ONE_ID, {from: owner});
+
+        await expectRevert(
+          this.token.ownerOf(TOKEN_ONE_ID),
+          "ERC721: owner query for nonexistent token"
+        );
       });
     });
 
