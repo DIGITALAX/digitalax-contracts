@@ -38,6 +38,10 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         uint256 minBidIncrement
     );
 
+    event UpdateBidWithdrawalLockTime(
+        uint256 bidWithdrawalLockTime
+    );
+
     event BidPlaced(
         uint256 indexed garmentTokenId,
         address indexed bidder,
@@ -76,6 +80,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     struct HighestBid {
         address payable bidder;
         uint256 bid;
+        uint256 lastBidTime;
     }
 
     /// @notice Garment Token ID -> Auction info
@@ -92,6 +97,9 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
 
     /// @notice globally and across all auctions, the amount by which a bid has to increase
     uint256 public minBidIncrement = 0.1 ether;
+
+    /// @notice global bid withdrawal lock time
+    uint256 public bidWithdrawalLockTime = 20 minutes;
 
     constructor(DigitalaxAccessControls _accessControls, DigitalaxGarmentNFT _garmentNft) public {
         accessControls = _accessControls;
@@ -163,9 +171,10 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
             _refundHighestBidder(highestBid.bidder, highestBid.bid);
         }
 
-        // assign top bidder
+        // assign top bidder and bid time
         highestBid.bidder = _msgSender();
         highestBid.bid = bidAmount;
+        highestBid.lastBidTime = _getNow();
 
         emit BidPlaced(_garmentTokenId, _msgSender(), bidAmount);
     }
@@ -178,10 +187,14 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     function withdrawBid(uint256 _garmentTokenId) external nonReentrant {
         HighestBid storage highestBid = highestBids[_garmentTokenId];
 
-        // TODO add hold time for bidder cannot withdraw there bid quickly
-
         // Ensure highest bidder is the caller
         require(highestBid.bidder == _msgSender(), "DigitalaxAuction.withdrawBid: You are not the highest bidder");
+
+        // Check withdrawal after delay time
+        require(
+            _getNow() >= highestBid.lastBidTime.add(bidWithdrawalLockTime),
+            "DigitalaxAuction.withdrawBid: Cannot withdraw until lock time has passed"
+        );
 
         uint256 previousBid = highestBid.bid;
 
@@ -302,6 +315,17 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxAuction.updateMinBidIncrement: Sender must be admin");
         minBidIncrement = _minBidIncrement;
         emit UpdateMinBidIncrement(_minBidIncrement);
+    }
+
+    /**
+     @notice Update the global bid withdrawal lockout time
+     @dev Only admin
+     @param _bidWithdrawalLockTime New bid withdrawal lock time
+     */
+    function updateBidWithdrawalLockTime(uint256 _bidWithdrawalLockTime) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxAuction.updateBidWithdrawalLockTime: Sender must be admin");
+        bidWithdrawalLockTime = _bidWithdrawalLockTime;
+        emit UpdateBidWithdrawalLockTime(_bidWithdrawalLockTime);
     }
 
     /**
