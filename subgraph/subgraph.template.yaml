@@ -49,6 +49,6 @@ dataSources:
       eventHandlers:
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
-        - event: ReceivedChild(indexed address, indexed uint256, indexed address,uint256,uin256)
+        - event: ReceivedChild(indexed address,indexed uint256,indexed address,uint256,uint256)
           handler: handleChildReceived
       file: ./src/DigitalaxGarmentNFT.mapping.ts
