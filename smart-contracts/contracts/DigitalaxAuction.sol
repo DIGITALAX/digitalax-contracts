@@ -202,6 +202,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         // Check the auction to see if it can be resulted
         Auction storage auction = auctions[_garmentTokenId];
 
+        // FIXME AMG - drop this require as the next one will do the job?
         // Check the auction real
         require(auction.lister != address(0), "DigitalaxAuction.resultAuction: Auction does not exist");
 
@@ -222,10 +223,14 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         // Ensure there is a winner
         require(winner != address(0), "DigitalaxAuction.resultAuction: No one has bid");
 
+        // FIXME check to ensure reserve is met
+
         // Clean up the highest winner
         delete highestBids[_garmentTokenId];
 
-        // TODO check this feature against the spec
+        // FIXME delete auction too?
+
+        // TODO check this feature against the spec? Does this need to be on-chain?
         // Record the primary sale price for the garment
         garmentNft.setPrimarySalePrice(_garmentTokenId, winningBid);
 
@@ -378,6 +383,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
      */
     function _refundHighestBidder(address payable _currentHighestBidder, uint256 _currentHighestBid) private {
         // refund previous best (if bid exists)
+        // FIXME this check is already being made or not required - drop
         if (_currentHighestBidder != address(0)) {
             (bool successRefund,) = _currentHighestBidder.call{value : _currentHighestBid}("");
             require(successRefund, "DigitalaxAuction._refundHighestBidder: failed to refund previous bidder");
