@@ -30,3 +30,25 @@ dataSources:
         - event: DigitalaxGenesisNFTContractDeployed()
           handler: handleGenesisDeployed
       file: ./src/DigitalaxGenesisNFT.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxGarmentNFT
+    network: '{{network}}'
+    source:
+      address: '{{DigitalaxGarmentNFTAddress}}'
+      abi: DigitalaxGarmentNFT
+      startBlock: {{DigitalaxGarmentNFTStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: DigitalaxGarmentNFT
+          file: ./abis/DigitalaxGarmentNFT.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: ReceivedChild(indexed address, indexed uint256, indexed address,uint256,uin256)
+          handler: handleChildReceived
+      file: ./src/DigitalaxGarmentNFT.mapping.ts

@@ -16,3 +16,13 @@ type DigitalaxGenesis @entity {
   maximumContributionAmount: BigInt!
   totalContributions: BigInt!
 }
+
+type DigitalaxGarmentChild @entity {
+  id: ID!
+  amount: BigInt!
+}
+
+type DigitalaxGarment @entity {
+  id: ID!
+  strands: [DigitalaxGarmentChild!]
+}
