@@ -8,6 +8,8 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./DigitalaxAccessControls.sol";
 import "./DigitalaxGarmentNFT.sol";
 
+// TODO add 721 receiver hook
+
 contract DigitalaxAuction is Context, ReentrancyGuard {
     using SafeMath for uint256;
 
@@ -114,6 +116,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         resulted : false
         });
 
+        // TODO use safeTransferFrom
         // TODO confirm escrow vs approve and pull pattern preference
         // Escrow in NFT
         garmentNft.transferFrom(_msgSender(), address(this), _garmentTokenId);
@@ -228,7 +231,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         // Clean up the highest winner
         delete highestBids[_garmentTokenId];
 
-        // FIXME delete auction too?
+        // FIXME delete auction too (maybe)?
 
         // TODO check this feature against the spec? Does this need to be on-chain?
         // Record the primary sale price for the garment
@@ -238,6 +241,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         (bool designerTransferSuccess,) = garmentNft.garmentDesigners(_garmentTokenId).call{value : winningBid}("");
         require(designerTransferSuccess, "DigitalaxAuction.resultAuction: Failed to send the designer their royalties");
 
+        // TODO use safeTransferFrom
         // Transfer the token to the winner
         garmentNft.transferFrom(address(this), winner, _garmentTokenId);
 
