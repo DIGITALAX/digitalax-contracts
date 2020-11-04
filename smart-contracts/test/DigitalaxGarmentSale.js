@@ -1,10 +1,6 @@
 const {
-  expectRevert,
   expectEvent,
   BN,
-  ether,
-  constants,
-  balance
 } = require('@openzeppelin/test-helpers');
 
 const {expect} = require('chai');
@@ -23,6 +19,8 @@ contract('Digitalax Garment Sale', (accounts) => {
   const STRAND_ONE_ID = new BN('1');
   const STRAND_TWO_ID = new BN('2');
   const STRAND_THREE_ID = new BN('3');
+  const STRAND_FOUR_ID = new BN('4');
+  const STRAND_FIVE_ID = new BN('5');
 
   const randomStrandURI = 'randStrand';
   const randomTokenURI = 'rand';
@@ -69,23 +67,25 @@ contract('Digitalax Garment Sale', (accounts) => {
     expect(await this.digitalaxMaterials.strandIdPointer()).to.be.bignumber.equal('0'); //No strands exist
 
     await this.factory.createNewStrands(
-      [randomStrandURI, randomStrandURI, randomStrandURI],
+      [randomStrandURI, randomStrandURI, randomStrandURI, randomStrandURI, randomStrandURI],
       {from: minter}
     ); // this will create strand with IDs [1], [2], [3]
 
-    expect(await this.digitalaxMaterials.strandIdPointer()).to.be.bignumber.equal('3'); //3 strands exist
+    expect(await this.digitalaxMaterials.strandIdPointer()).to.be.bignumber.equal('5'); //5 strands exist
     expect(await this.token.balanceOf(minter)).to.be.bignumber.equal('0'); // no garments minted to owner
 
     // Create the garment and wrap strands
-    const strandIds = [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID];
+    const strandIds = [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID, STRAND_FOUR_ID, STRAND_FIVE_ID];
     const strand1Amount = '4';
     const strand2Amount = '2';
     const strand3Amount = '1';
+    const strand4Amount = '1';
+    const strand5Amount = '1';
     await this.factory.createGarmentAndMintStrands(
       randomTokenURI,
       designer,
       strandIds,
-      [strand1Amount, strand2Amount, strand3Amount],
+      [strand1Amount, strand2Amount, strand3Amount, strand4Amount, strand5Amount],
       minter,
       {from: minter}
     );
@@ -97,6 +97,8 @@ contract('Digitalax Garment Sale', (accounts) => {
     await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, strand1Amount);
     await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_TWO_ID, strand2Amount);
     await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_THREE_ID, strand3Amount);
+    await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_FOUR_ID, strand4Amount);
+    await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_FIVE_ID, strand5Amount);
 
     // Setup auction
     await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
