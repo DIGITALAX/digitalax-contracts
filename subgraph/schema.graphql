@@ -17,7 +17,7 @@ type DigitalaxGenesis @entity {
   totalContributions: BigInt!
 }
 
-type DigitalaxGarmentChild @entity {
+type DigitalaxMaterialOwner @entity {
   id: ID!
   amount: BigInt!
   contract: Bytes!
@@ -29,11 +29,17 @@ type DigitalaxGarment @entity {
   designer: Bytes!
   primarySalePrice: BigInt!
   tokenUri: String!
-  strands: [DigitalaxGarmentChild!]
+  strands: [DigitalaxMaterialOwner!]!
 }
 
-type DigitalaxMaterials @entity {
+type DigitalaxMaterial @entity {
   id: ID!
   tokenUri: String!
   totalSupply: BigInt!
+}
+
+type DigitalaxCollector @entity {
+  id: ID!
+  garmentsOwned: [DigitalaxGarment!]!
+  strandsOwned: [DigitalaxMaterialOwner!]!
 }
