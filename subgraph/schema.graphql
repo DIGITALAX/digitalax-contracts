@@ -24,5 +24,7 @@ type DigitalaxGarmentChild @entity {
 
 type DigitalaxGarment @entity {
   id: ID!
+  designer: Bytes!
+  primarySalePrice: BigInt!
   strands: [DigitalaxGarmentChild!]
 }
