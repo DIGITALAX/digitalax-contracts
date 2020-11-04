@@ -20,11 +20,20 @@ type DigitalaxGenesis @entity {
 type DigitalaxGarmentChild @entity {
   id: ID!
   amount: BigInt!
+  contract: Bytes!
+  tokenUri: String!
 }
 
 type DigitalaxGarment @entity {
   id: ID!
   designer: Bytes!
   primarySalePrice: BigInt!
+  tokenUri: String!
   strands: [DigitalaxGarmentChild!]
 }
+
+#type DigitalaxMaterials @entity {
+#  id: ID!
+#  uri
+#  totalSupply
+#}

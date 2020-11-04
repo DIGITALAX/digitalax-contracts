@@ -21,11 +21,16 @@ export function handleTransfer(event: Transfer): void {
         let garment = new DigitalaxGarment(event.params.tokenId.toString());
         garment.designer = contract.garmentDesigners(event.params.tokenId);
         garment.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
+        garment.tokenUri = contract.tokenURI(event.params.tokenId);
         garment.save();
     }
+
+    // todo handle burn
 }
 
 export function handleChildReceived(event: ReceivedChild): void {
+    let contract = DigitalaxGarmentNFTContract.bind(event.address);
+
     let garment = DigitalaxGarment.load(event.params.toTokenId.toString());
 
     let childId = event.params.toTokenId.toString() + '-' + event.params.childTokenId.toString();
@@ -38,6 +43,8 @@ export function handleChildReceived(event: ReceivedChild): void {
         child.amount = child.amount + event.params.amount;
     }
 
+    child.contract = contract.childContract();
+    //child.tokenUri =
     child.save();
 
     let strands = garment.strands;

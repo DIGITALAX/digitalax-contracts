@@ -52,3 +52,23 @@ dataSources:
         - event: ReceivedChild(indexed address,indexed uint256,indexed address,uint256,uint256)
           handler: handleChildReceived
       file: ./src/DigitalaxGarmentNFT.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxMaterials
+    network: '{{network}}'
+    source:
+      address: '{{DigitalaxMaterialsAddress}}'
+      abi: DigitalaxMaterials
+      startBlock: {{DigitalaxMaterialsStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: DigitalaxMaterials
+          file: ./abis/DigitalaxMaterials.json
+      eventHandlers:
+        - event: StrandCreated(indexed uint256)
+          handler: handleStrandCreated
+      file: ./src/DigitalaxMaterials.mapping.ts
