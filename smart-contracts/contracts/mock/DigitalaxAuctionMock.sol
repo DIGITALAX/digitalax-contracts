@@ -9,9 +9,10 @@ contract DigitalaxAuctionMock is DigitalaxAuction {
 
     constructor(
         DigitalaxAccessControls _accessControls,
-        DigitalaxGarmentNFT _garmentNft
+        DigitalaxGarmentNFT _garmentNft,
+        address payable _platformReserveAddress
     )
-    DigitalaxAuction(_accessControls, _garmentNft)
+    DigitalaxAuction(_accessControls, _garmentNft, _platformReserveAddress)
     public {}
 
     function setNowOverride(uint256 _now) external {
