@@ -11,6 +11,7 @@ import {
 } from "../generated/schema";
 
 export function handleStrandCreated(event: StrandCreated): void {
+    log.info("handleStrandCreated @ Strand ID {}", [event.params.strandId.toString()]);
     let contract = DigitalaxMaterialsContract.bind(event.address);
 
     let strand = new DigitalaxMaterials(event.params.strandId.toString());
@@ -20,6 +21,7 @@ export function handleStrandCreated(event: StrandCreated): void {
 }
 
 export function handleBatchTransfer(event: TransferBatch): void {
+    log.info("handleBatchTransfer With Batch Size {}", ['1']);
     let strandIds = event.params.ids;
     for(let i = 0; i < strandIds.length; i++) {
         let strandId = strandIds.pop();

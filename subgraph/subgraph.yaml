@@ -66,13 +66,12 @@ dataSources:
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
-        - Transfer
+        - StrandCreated
+        - TransferBatch
       abis:
         - name: DigitalaxMaterials
           file: ./abis/DigitalaxMaterials.json
       eventHandlers:
         - event: StrandCreated(indexed uint256)
           handler: handleStrandCreated
-        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
-          handler: handleBatchTransfer
       file: ./src/DigitalaxMaterials.mapping.ts

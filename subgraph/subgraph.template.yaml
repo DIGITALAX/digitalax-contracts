@@ -66,7 +66,8 @@ dataSources:
       apiVersion: 0.0.3
       language: wasm/assemblyscript
       entities:
-        - Transfer
+        - StrandCreated
+        - TransferBatch
       abis:
         - name: DigitalaxMaterials
           file: ./abis/DigitalaxMaterials.json
