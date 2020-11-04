@@ -1,5 +1,4 @@
 const prompt = require('prompt-sync')();
-const AccessControlsArtifact = require('../artifacts/DigitalaxAccessControls.json');
 const FactoryArtifact = require('../artifacts/DigitalaxGarmentFactory.json');
 
 async function main() {
@@ -9,20 +8,6 @@ async function main() {
     "Creating a garment and wrapping using factory with address:",
     deployerAddress
   );
-
-  //todo put below in access controls
-  // const accessControlAddress = prompt('Access control address? ');
-  // const accessControls = new ethers.Contract(
-  //   accessControlAddress,
-  //   AccessControlsArtifact.abi,
-  //   deployer
-  // );
-
-  //await accessControls.addMinterRole(deployerAddress);
-
-  const factoryAddress = prompt('Factory address? ');
-
-  //await accessControls.addSmartContractRole(factoryAddress);
 
   const factory = new ethers.Contract(
     factoryAddress,
