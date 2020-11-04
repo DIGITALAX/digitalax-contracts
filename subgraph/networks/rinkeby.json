@@ -2,8 +2,8 @@
   "network": "rinkeby",
   "DigitalaxGenesisNFTAddress": "0x064A6151F99ba2610f2D6600Dcb2b2Ed3a276356",
   "DigitalaxGenesisNFTStartBlock": 7459382,
-  "DigitalaxGarmentNFTAddress": "0x91ea95147151d092C42cdB02dD9dff3e451773a5",
-  "DigitalaxGarmentNFTStartBlock": 7484288,
-  "DigitalaxMaterialsAddress": "0x91ea95147151d092C42cdB02dD9dff3e451773a5",
-  "DigitalaxMaterialsStartBlock": 0
+  "DigitalaxGarmentNFTAddress": "0x31f6b2c80f5278B9E0Cb60618470797B5C9757bA",
+  "DigitalaxGarmentNFTStartBlock": 7489183,
+  "DigitalaxMaterialsAddress": "0xBDC713fe557B1872DDad51cB5Fa55f9Fd2D887Aa",
+  "DigitalaxMaterialsStartBlock": 7489178
 }

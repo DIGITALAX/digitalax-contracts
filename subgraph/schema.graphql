@@ -32,8 +32,8 @@ type DigitalaxGarment @entity {
   strands: [DigitalaxGarmentChild!]
 }
 
-#type DigitalaxMaterials @entity {
-#  id: ID!
-#  uri
-#  totalSupply
-#}
+type DigitalaxMaterials @entity {
+  id: ID!
+  tokenUri: String!
+  totalSupply: BigInt!
+}

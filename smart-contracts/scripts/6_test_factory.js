@@ -9,16 +9,17 @@ async function main() {
     deployerAddress
   );
 
+  const factoryAddress = prompt('Factory address? ');
   const factory = new ethers.Contract(
     factoryAddress,
     FactoryArtifact.abi,
     deployer
   );
 
-  //await factory.createNewStrands(['randStrand1', 'randStrand2']);
+  //await factory.createNewStrands(['randStrandUri1', 'randStrandUri2']);
 
   await factory.createGarmentAndMintStrands(
-    'randGarmenUri',
+    'randGarmentUri',
     '0x12D062B19a2DF1920eb9FC28Bd6E9A7E936de4c2',
     ['1','2'],
     ['4', '6'],

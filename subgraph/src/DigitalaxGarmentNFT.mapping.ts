@@ -7,6 +7,10 @@ import {
 } from "../generated/DigitalaxGarmentNFT/DigitalaxGarmentNFT";
 
 import {
+    DigitalaxMaterials as DigitalaxMaterialsContract
+} from "../generated/DigitalaxMaterials/DigitalaxMaterials";
+
+import {
     DigitalaxGarment,
     DigitalaxGarmentChild
 } from "../generated/schema";
@@ -44,7 +48,9 @@ export function handleChildReceived(event: ReceivedChild): void {
     }
 
     child.contract = contract.childContract();
-    //child.tokenUri =
+
+    const childContract = DigitalaxMaterialsContract.bind(contract.childContract());
+    child.tokenUri = childContract.uri(event.params.childTokenId);
     child.save();
 
     let strands = garment.strands;
