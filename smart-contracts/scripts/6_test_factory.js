@@ -19,11 +19,11 @@ async function main() {
   //await factory.createNewStrands(['randStrandUri1', 'randStrandUri2']);
 
   await factory.createGarmentAndMintStrands(
-    'randGarmentUri',
+    'newGarmentWhat',
     '0x12D062B19a2DF1920eb9FC28Bd6E9A7E936de4c2',
-    ['1','2'],
-    ['4', '6'],
-    deployerAddress
+    ['3','4'],
+    ['2', '9'],
+    '0x12D062B19a2DF1920eb9FC28Bd6E9A7E936de4c2'
   );
 }
 

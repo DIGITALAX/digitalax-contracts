@@ -116,6 +116,8 @@ contract DigitalaxMaterials is ERC1155 {
         _mintBatch(_beneficiary, _strandIds, _amounts, _data);
     }
 
+    //todo smart contract burn
+
     // todo admin update tokenURI
 
     function updateAccessControls(DigitalaxAccessControls _accessControls) external {
