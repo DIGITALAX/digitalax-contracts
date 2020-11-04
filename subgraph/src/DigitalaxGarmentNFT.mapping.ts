@@ -36,6 +36,11 @@ export function handleChildReceived(event: ReceivedChild): void {
     child.save();
 
     let strands = garment.strands;
+
+    if (strands == null) {
+        strands = new Array<string>();
+    }
+
     strands.push(childId);
     garment.strands = strands;
 
