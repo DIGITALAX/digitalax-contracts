@@ -1,4 +1,5 @@
 var prompt = require('prompt-sync')();
+const AccessControlsArtifact = require('../artifacts/DigitalaxAccessControls.json');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -22,6 +23,14 @@ async function main() {
   await garmentFactory.deployed();
 
   console.log('Garment factory deployed at', garmentFactory.address);
+  console.log('Granting garment factory smart contract role');
+  const accessControls = new ethers.Contract(
+    accessControlsAddress,
+    AccessControlsArtifact.abi,
+    deployer
+  );
+
+  await accessControls.addSmartContractRole(garmentFactory.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
