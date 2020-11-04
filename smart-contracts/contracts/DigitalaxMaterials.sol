@@ -12,10 +12,15 @@ contract DigitalaxMaterials is ERC1155 {
 
     event DigitalaxMaterialsDeployed();
 
+    event StrandCreated(
+        uint256 indexed strandId
+    );
+
     string public name;
     string public symbol;
 
     uint256 public strandIdPointer;
+    mapping(uint256 => uint256) public strandTotalSupply;
 
     DigitalaxAccessControls public accessControls;
 
@@ -40,6 +45,8 @@ contract DigitalaxMaterials is ERC1155 {
         uint256 strandId = strandIdPointer;
         _setURI(strandId, _uri);
 
+        emit StrandCreated(strandId);
+
         return strandId;
     }
 
@@ -62,6 +69,8 @@ contract DigitalaxMaterials is ERC1155 {
             _setURI(strandId, uri);
 
             strandIds[i] = strandId;
+
+            emit StrandCreated(strandId);
         }
     }
 
@@ -73,6 +82,9 @@ contract DigitalaxMaterials is ERC1155 {
 
         require(bytes(tokenUris[_strandId]).length > 0, "DigitalaxMaterials.mintStrand: Strand does not exist");
         require(_amount > 0, "DigitalaxMaterials.mintStrand: No amount specified");
+
+        strandTotalSupply[_strandId] = strandTotalSupply[_strandId].add(_amount);
+
         _mint(_beneficiary, _strandId, _amount, _data);
     }
 
@@ -97,6 +109,8 @@ contract DigitalaxMaterials is ERC1155 {
 
             uint256 amount = _amounts[i];
             require(amount > 0, "DigitalaxMaterials.batchMintStrands: Invalid amount");
+
+            strandTotalSupply[strandId] = strandTotalSupply[strandId].add(amount);
         }
 
         _mintBatch(_beneficiary, _strandIds, _amounts, _data);
