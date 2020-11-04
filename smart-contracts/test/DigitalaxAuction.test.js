@@ -15,7 +15,7 @@ const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
 const DigitalaxAuction = artifacts.require('DigitalaxAuctionMock');
 
 contract('DigitalaxAuction', (accounts) => {
-  const [admin, smartContract, minter, owner, designer, bidder, bidder2] = accounts;
+  const [admin, smartContract, platformFeeAddress, minter, owner, designer, bidder, bidder2] = accounts;
 
   const TOKEN_ONE_ID = new BN('1');
   const TOKEN_ONE_ID_2 = new BN('2');
@@ -43,6 +43,7 @@ contract('DigitalaxAuction', (accounts) => {
     this.auction = await DigitalaxAuction.new(
       this.accessControls.address,
       this.token.address,
+      platformFeeAddress,
       {from: admin}
     );
 
@@ -196,6 +197,42 @@ contract('DigitalaxAuction', (accounts) => {
 
         const updated = await this.auction.accessControls();
         expect(updated).to.be.equal(accessControlsV2.address);
+      });
+    });
+
+    describe('updatePlatformFee()', () => {
+      it('fails when not admin', async () => {
+        await expectRevert(
+          this.auction.updatePlatformFee('123', {from: bidder}),
+          'DigitalaxAuction.updatePlatformFee: Sender must be admin'
+        );
+      });
+      it('successfully updates access controls', async () => {
+        const original = await this.auction.platformFee();
+        expect(original).to.be.bignumber.equal('120');
+
+        await this.auction.updatePlatformFee('999', {from: admin});
+
+        const updated = await this.auction.platformFee();
+        expect(updated).to.be.bignumber.equal('999');
+      });
+    });
+
+    describe('updatePlatformFeeRecipient()', () => {
+      it('fails when not admin', async () => {
+        await expectRevert(
+          this.auction.updatePlatformFeeRecipient(owner, {from: bidder}),
+          'DigitalaxAuction.updatePlatformFeeRecipient: Sender must be admin'
+        );
+      });
+      it('successfully updates access controls', async () => {
+        const original = await this.auction.platformFeeRecipient();
+        expect(original).to.be.equal(platformFeeAddress);
+
+        await this.auction.updatePlatformFeeRecipient(bidder2, {from: admin});
+
+        const updated = await this.auction.platformFeeRecipient();
+        expect(updated).to.be.equal(bidder2);
       });
     });
   });
@@ -497,7 +534,7 @@ contract('DigitalaxAuction', (accounts) => {
         await this.auction.setNowOverride('2');
         await this.auction.createAuction(
           TOKEN_ONE_ID,
-          '1',
+          ether('0.1'),
           '0',
           '10',
           {from: minter}
@@ -515,18 +552,29 @@ contract('DigitalaxAuction', (accounts) => {
         expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.equal(bidder);
       });
 
-      it('transfer funds to the token owner creator', async () => {
+      it('transfer funds to the token creator and platform', async () => {
         await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.4')});
         await this.auction.setNowOverride('12');
 
+        const platformFeeTracker = await balance.tracker(platformFeeAddress);
         const designerTracker = await balance.tracker(designer);
 
         // Result it successfully
         await this.auction.resultAuction(TOKEN_ONE_ID, {from: admin});
 
-        // Funds sent to designer on completion
+        // Platform gets 12%
+        const platformChanges = await platformFeeTracker.delta('wei');
+        expect(platformChanges).to.be.bignumber.equal(
+          (ether('0.4').sub(ether('0.1'))) // total minus reserve
+            .div(new BN('1000'))
+            .mul(new BN('120')) // only 12% of total
+        );
+
+        // Remaining funds sent to designer on completion
         const changes = await designerTracker.delta('wei');
-        expect(changes).to.be.bignumber.equal(ether('0.4'));
+        expect(changes).to.be.bignumber.equal(
+          ether('0.4').sub(platformChanges)
+        );
       });
 
       it('records primary sale price on garment NFT', async () => {

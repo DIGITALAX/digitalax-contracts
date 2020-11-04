@@ -34,6 +34,14 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         address indexed accessControls
     );
 
+    event UpdatePlatformFee(
+        uint256 platformFee
+    );
+
+    event UpdatePlatformFeeRecipient(
+        address payable _platformFeeRecipient
+    );
+
     event UpdateMinBidIncrement(
         uint256 minBidIncrement
     );
@@ -101,9 +109,20 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     /// @notice global bid withdrawal lock time
     uint256 public bidWithdrawalLockTime = 20 minutes;
 
-    constructor(DigitalaxAccessControls _accessControls, DigitalaxGarmentNFT _garmentNft) public {
+    /// @notice global platform fee, assumed to always be to 1 decimal place i.e. 120 = 12.0%
+    uint256 public platformFee = 120;
+
+    /// @notice where to send platform fee funds to
+    address payable public platformFeeRecipient;
+
+    constructor(
+        DigitalaxAccessControls _accessControls,
+        DigitalaxGarmentNFT _garmentNft,
+        address payable _platformFeeRecipient
+    ) public {
         accessControls = _accessControls;
         garmentNft = _garmentNft;
+        platformFeeRecipient = _platformFeeRecipient;
     }
 
     // TODO add test for creating an action, cancelling it, creating it again - confirm flow works as expected
@@ -256,13 +275,28 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         // Clean up the highest winner (N.b. dont clean up auction mapping as this NFT cannot only be auctioned once)
         delete highestBids[_garmentTokenId];
 
-        // TODO check this feature against the spec? Does this need to be on-chain?
         // Record the primary sale price for the garment
         garmentNft.setPrimarySalePrice(_garmentTokenId, winningBid);
 
-        // Send the designer their earnings
-        (bool designerTransferSuccess,) = garmentNft.garmentDesigners(_garmentTokenId).call{value : winningBid}("");
-        require(designerTransferSuccess, "DigitalaxAuction.resultAuction: Failed to send the designer their royalties");
+        if (winningBid > auction.reservePrice) {
+            // Work out total above the reserve
+            uint256 aboveReservePrice = winningBid.sub(auction.reservePrice);
+
+            // Work out platform fee from above reserve amount
+            uint256 platformFeeAboveReserve = (aboveReservePrice.div(1000)).mul(platformFee);
+
+            // Send platform fee
+            (bool platformTransferSuccess,) = platformFeeRecipient.call{value : platformFeeAboveReserve}("");
+            require(platformTransferSuccess, "DigitalaxAuction.resultAuction: Failed to send platform fee");
+
+            // Send remaining to designer
+            (bool designerTransferSuccess,) = garmentNft.garmentDesigners(_garmentTokenId).call{value : winningBid.sub(platformFeeAboveReserve)}("");
+            require(designerTransferSuccess, "DigitalaxAuction.resultAuction: Failed to send the designer their royalties");
+        } else {
+            // Send all to the designer
+            (bool designerTransferSuccess,) = garmentNft.garmentDesigners(_garmentTokenId).call{value : winningBid}("");
+            require(designerTransferSuccess, "DigitalaxAuction.resultAuction: Failed to send the designer their royalties");
+        }
 
         // Transfer the token to the winner
         garmentNft.safeTransferFrom(garmentNft.ownerOf(_garmentTokenId), winner, _garmentTokenId);
@@ -373,6 +407,28 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxAuction.updateAccessControls: Sender must be admin");
         accessControls = _accessControls;
         emit UpdateAccessControls(address(_accessControls));
+    }
+
+    /**
+     @notice Method for updating platform fee
+     @dev Only admin
+     @param _platformFee uint256 the platform fee to set
+     */
+    function updatePlatformFee(uint256 _platformFee) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxAuction.updatePlatformFee: Sender must be admin");
+        platformFee = _platformFee;
+        emit UpdatePlatformFee(_platformFee);
+    }
+
+    /**
+     @notice Method for updating platform fee address
+     @dev Only admin
+     @param _platformFeeRecipient payable address the address to sends the funds to
+     */
+    function updatePlatformFeeRecipient(address payable _platformFeeRecipient) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxAuction.updatePlatformFeeRecipient: Sender must be admin");
+        platformFeeRecipient = _platformFeeRecipient;
+        emit UpdatePlatformFeeRecipient(_platformFeeRecipient);
     }
 
     ///////////////
