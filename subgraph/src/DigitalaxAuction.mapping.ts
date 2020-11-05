@@ -4,7 +4,8 @@ import {
 } from "../generated/DigitalaxAuction/DigitalaxAuction";
 
 import {
-    DigitalaxGarmentAuction
+    DigitalaxGarmentAuction,
+    DigitalaxGarmentDesigner
 } from "../generated/schema"
 
 export function handleAuctionCreated(event: AuctionCreated): void {
@@ -17,4 +18,9 @@ export function handleAuctionCreated(event: AuctionCreated): void {
     //todo: other fields
     auction.save();
 
+    let garmentDesigner = DigitalaxGarmentDesigner.load(tokenId.toString());
+    let listings = garmentDesigner.listings;
+    listings.push(tokenId.toString());
+    garmentDesigner.listings = listings;
+    garmentDesigner.save();
 }
