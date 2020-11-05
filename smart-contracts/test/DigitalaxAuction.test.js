@@ -18,7 +18,7 @@ contract('DigitalaxAuction', (accounts) => {
   const [admin, smartContract, platformFeeAddress, minter, owner, designer, bidder, bidder2] = accounts;
 
   const TOKEN_ONE_ID = new BN('1');
-  const TOKEN_ONE_ID_2 = new BN('2');
+  const TOKEN_TWO_ID = new BN('2');
 
   const randomTokenURI = 'rand';
 
@@ -266,6 +266,19 @@ contract('DigitalaxAuction', (accounts) => {
         );
       });
 
+      it('fails if you dont own the token', async () => {
+        await this.auction.setNowOverride('2');
+        await this.token.mint(minter, randomTokenURI, designer, {from: minter});
+        await this.token.mint(bidder, randomTokenURI, designer, {from: minter});
+
+        await this.auction.createAuction(TOKEN_ONE_ID, '1', '0', '10', {from: minter});
+
+        await expectRevert(
+          this.auction.createAuction(TOKEN_TWO_ID, '1', '1', '3', {from: minter}),
+          'DigitalaxAuction.createAuction: Cannot create an auction if you do not own it'
+        );
+      });
+
       it('fails if token does not exist', async () => {
         await this.auction.setNowOverride('10');
 
@@ -315,7 +328,7 @@ contract('DigitalaxAuction', (accounts) => {
 
       it('will fail with valid token but no auction', async () => {
         await expectRevert(
-          this.auction.placeBid(TOKEN_ONE_ID_2, {from: bidder, value: 1}),
+          this.auction.placeBid(TOKEN_TWO_ID, {from: bidder, value: 1}),
           'DigitalaxAuction.placeBid: Bidding outside of the auction window'
         );
       });
