@@ -83,8 +83,8 @@ type DigitalaxGarmentAuctionHistory @entity {
   id: ID!
   token: DigitalaxGarment!
   eventName: String!
-  bidder: Bytes!
   timestamp: BigInt!
-  value: BigInt!
   transactionHash: Bytes!
+  bidder: Bytes
+  value: BigInt
 }
