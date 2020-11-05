@@ -52,7 +52,7 @@ type DigitalaxGarmentDesigner @entity {
   # sold
 }
 
-type DigitalaxAuctionConfig @entity {
+type DigitalaxAuctionContract @entity {
   ## Global config
   id: ID!
   minBidIncrement: BigInt!
