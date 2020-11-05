@@ -81,9 +81,9 @@ dataSources:
     name: DigitalaxAuction
     network: 'rinkeby'
     source:
-      address: '0xBDC713fe557B1872DDad51cB5Fa55f9Fd2D887Aa'
+      address: '0x0A2833042d13A64b4b48cF11B05fEEFA3c5daA21'
       abi: DigitalaxAuction
-      startBlock: 0
+      startBlock: 7495516
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
