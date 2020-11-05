@@ -103,4 +103,6 @@ dataSources:
           handler: handleAuctionCreated
         - event: DigitalaxAuctionContractDeployed()
           handler: handleDigitalaxAuctionContractDeployed
+        - event: BidPlaced(indexed uint256,indexed address,uint256)
+          handler: handleBidPlaced
       file: ./src/DigitalaxAuction.mapping.ts

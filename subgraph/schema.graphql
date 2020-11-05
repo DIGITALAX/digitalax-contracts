@@ -76,7 +76,17 @@ type DigitalaxGarmentAuction @entity {
   resulted: Boolean!
 
   ## Highest bidder
-  address: Bytes
-  bid: BigInt
+  topBidder: Bytes
+  topBid: BigInt
   lastBidTime: BigInt
+}
+
+type DigitalaxGarmentAuctionHistory @entity {
+  id: ID!
+  token: DigitalaxGarment!
+  eventName: String!
+  bidder: Bytes!
+  timestamp: BigInt!
+  value: BigInt!
+  transactionHash: Bytes!
 }
