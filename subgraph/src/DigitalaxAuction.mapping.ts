@@ -9,6 +9,7 @@ import {
     DigitalaxGarmentAuction,
     DigitalaxAuctionConfig,
     DigitalaxGarmentDesigner,
+    DigitalaxGarment,
     DigitalaxGarmentAuctionHistory
 } from "../generated/schema"
 import {ZERO} from "./constants";
@@ -60,10 +61,22 @@ export function handleBidPlaced(event: BidPlaced): void {
     auction.topBid = topBidder.value1
     auction.lastBidTime = topBidder.value2
     auction.save();
+
+    let eventId = tokenId.toString()
+        .concat(event.transaction.hash.toString())
+        .concat(event.transaction.index.toString());
+
+    let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
+    auctionEvent.token = DigitalaxGarment.load(event.params.garmentTokenId.toString()).id
+    auctionEvent.eventName = "BidPlaced"
+    auctionEvent.bidder = event.params.bidder
+    auctionEvent.timestamp = event.block.timestamp
+    auctionEvent.value = event.params.bid
+    auctionEvent.transactionHash = event.transaction.hash
+    auctionEvent.save()
 }
 
 export function handleBidWithdrawn(event: BidWithdrawn): void {
-    let contract = DigitalaxAuctionContract.bind(event.address);
     let tokenId = event.params.garmentTokenId;
 
     let eventId = tokenId.toString()
@@ -71,8 +84,8 @@ export function handleBidWithdrawn(event: BidWithdrawn): void {
         .concat(event.transaction.index.toString());
 
     let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
-    auctionEvent.token
-    auctionEvent.eventName = "Bid"
+    auctionEvent.token = DigitalaxGarment.load(event.params.garmentTokenId.toString()).id
+    auctionEvent.eventName = "BidWithdrawn"
     auctionEvent.bidder = event.params.bidder
     auctionEvent.timestamp = event.block.timestamp
     auctionEvent.value = event.params.bid
@@ -81,11 +94,33 @@ export function handleBidWithdrawn(event: BidWithdrawn): void {
 }
 
 export function handleAuctionResulted(event: AuctionResulted): void {
-    let contract = DigitalaxAuctionContract.bind(event.address);
     let tokenId = event.params.garmentTokenId;
+
+    let eventId = tokenId.toString()
+        .concat(event.transaction.hash.toString())
+        .concat(event.transaction.index.toString());
+
+    let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
+    auctionEvent.token = DigitalaxGarment.load(event.params.garmentTokenId.toString()).id
+    auctionEvent.eventName = "AuctionResulted"
+    auctionEvent.bidder = event.params.winner
+    auctionEvent.timestamp = event.block.timestamp
+    auctionEvent.value = event.params.winningBid
+    auctionEvent.transactionHash = event.transaction.hash
+    auctionEvent.save()
 }
 
 export function handleAuctionCancelled(event: AuctionCancelled): void {
-    let contract = DigitalaxAuctionContract.bind(event.address);
     let tokenId = event.params.garmentTokenId;
+
+    let eventId = tokenId.toString()
+        .concat(event.transaction.hash.toString())
+        .concat(event.transaction.index.toString());
+
+    let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
+    auctionEvent.token = DigitalaxGarment.load(event.params.garmentTokenId.toString()).id
+    auctionEvent.eventName = "AuctionCancelled"
+    auctionEvent.timestamp = event.block.timestamp
+    auctionEvent.transactionHash = event.transaction.hash
+    auctionEvent.save()
 }
