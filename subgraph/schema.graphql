@@ -6,7 +6,7 @@ type GenesisContributor @entity {
   lastContributedTimestamp: BigInt!
 }
 
-type DigitalaxGenesis @entity {
+type DigitalaxGenesisContract @entity {
   id: ID!
   accessControls: Bytes!
   fundsMultisig: Bytes!
@@ -27,6 +27,7 @@ type DigitalaxMaterialOwner @entity {
 type DigitalaxGarment @entity {
   id: ID!
   designer: Bytes!
+  owner: Bytes!
   primarySalePrice: BigInt!
   tokenUri: String!
   strands: [DigitalaxMaterialOwner!]!
