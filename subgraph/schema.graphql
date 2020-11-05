@@ -64,6 +64,8 @@ type DigitalaxAuctionConfig @entity {
 }
 
 type DigitalaxGarmentAuction @entity {
+  id: ID!
+
   ## Auction setup
   reservePrice: BigInt!
   startTime: BigInt!

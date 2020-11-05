@@ -5,5 +5,7 @@
   "DigitalaxGarmentNFTAddress": "0x31f6b2c80f5278B9E0Cb60618470797B5C9757bA",
   "DigitalaxGarmentNFTStartBlock": 7489183,
   "DigitalaxMaterialsAddress": "0xBDC713fe557B1872DDad51cB5Fa55f9Fd2D887Aa",
-  "DigitalaxMaterialsStartBlock": 7489178
+  "DigitalaxMaterialsStartBlock": 7489178,
+  "DigitalaxAuctionAddress": "0xBDC713fe557B1872DDad51cB5Fa55f9Fd2D887Aa",
+  "DigitalaxAuctionStartBlock": 0
 }

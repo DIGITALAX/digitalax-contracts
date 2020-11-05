@@ -77,3 +77,28 @@ dataSources:
         - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
           handler: handleBatchTransfer
       file: ./src/DigitalaxMaterials.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxAuction
+    network: 'rinkeby'
+    source:
+      address: '0xBDC713fe557B1872DDad51cB5Fa55f9Fd2D887Aa'
+      abi: DigitalaxAuction
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - AuctionCreated
+        - AuctionResulted
+        - AuctionCancelled
+        - BidPlaced
+        - BidWithdrawn
+        - BidRefunded
+      abis:
+        - name: DigitalaxAuction
+          file: ./abis/DigitalaxAuction.json
+      eventHandlers:
+        - event: AuctionCreated(indexed uint256)
+          handler: handleAuctionCreated
+      file: ./src/DigitalaxAuction.mapping.ts
