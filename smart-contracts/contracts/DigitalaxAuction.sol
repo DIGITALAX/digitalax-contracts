@@ -127,6 +127,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
 
     // TODO add test for creating an action, cancelling it, creating it again - confirm flow works as expected
     // TODO add test for increasing bid -> placeBid() -> placeBid() again to bump it
+    // TODO enforce method args more strictly for admin update methods
 
     /**
      @notice Creates a new auction for the given token
@@ -272,7 +273,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         // Ensure there is a winner
         require(winner != address(0), "DigitalaxAuction.resultAuction: no open bids");
 
-        // Clean up the highest winner (N.b. dont clean up auction mapping as this NFT cannot only be auctioned once)
+        // Clean up the highest bid
         delete highestBids[_garmentTokenId];
 
         // Record the primary sale price for the garment
