@@ -14,4 +14,6 @@ export function handleAuctionCreated(event: AuctionCreated): void {
     // TODO: handle re-listing
     // let auction = new DigitalaxGarmentAuction(tokenId.toString());
     // auction.reservePrice = contract.auctions(tokenId).
+
+
 }
