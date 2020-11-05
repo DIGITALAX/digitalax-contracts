@@ -11,6 +11,8 @@ import "./DigitalaxGarmentNFT.sol";
 contract DigitalaxAuction is Context, ReentrancyGuard {
     using SafeMath for uint256;
 
+    event DigitalaxAuctionContractDeployed();
+
     event AuctionCreated(
         uint256 indexed garmentTokenId
     );
@@ -123,6 +125,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         accessControls = _accessControls;
         garmentNft = _garmentNft;
         platformFeeRecipient = _platformFeeRecipient;
+        emit DigitalaxAuctionContractDeployed();
     }
 
     // TODO add test for creating an action, cancelling it, creating it again - confirm flow works as expected
