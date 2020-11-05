@@ -44,3 +44,10 @@ type DigitalaxCollector @entity {
   garmentsOwned: [DigitalaxGarment!]!
   strandsOwned: [DigitalaxMaterialOwner!]!
 }
+
+type DigitalaxGarmentDesigner @entity {
+  id: ID!
+  garments: [DigitalaxGarment!]!
+  # listings
+  # sold
+}
