@@ -13,7 +13,7 @@ import {
 } from "../generated/schema";
 
 export function handleGenesisPurchased(event: GenesisPurchased): void {
-    log.info('handleGenesisPurchased() @ hash: {}', [event.transaction.hash.toHexString()])
+    //log.info('handleGenesisPurchased() @ hash: {}', [event.transaction.hash.toHexString()])
 
     //     event GenesisPurchased(
     //         address indexed buyer,
@@ -35,13 +35,7 @@ export function handleGenesisPurchased(event: GenesisPurchased): void {
 }
 
 export function handleContributionIncreased(event: ContributionIncreased): void {
-    log.info('handleContributionIncreased() @ hash: {}', [event.transaction.hash.toHexString()])
-
-    //     event ContributionIncreased(
-    //         address indexed buyer,
-    //         uint256 increasedContribution,
-    //         uint256 buyerTotalContribution
-    //     );
+    log.info('handleContributionIncreased() @ hash: {}', [event.transaction.hash.toHexString()]);
 
     let genesisContributor: GenesisContributor | null = GenesisContributor.load(event.params.buyer.toHexString())
     genesisContributor.totalContribtuionInWei = genesisContributor.totalContribtuionInWei.plus(event.params.contribution)

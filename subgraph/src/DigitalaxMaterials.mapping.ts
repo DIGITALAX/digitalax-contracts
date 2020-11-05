@@ -21,13 +21,17 @@ export function handleStrandCreated(event: StrandCreated): void {
 }
 
 export function handleBatchTransfer(event: TransferBatch): void {
-    log.info("handleBatchTransfer With Batch Size {}", [`${event.params.values.length}`]);
-    let contract = DigitalaxMaterialsContract.bind(event.address);
-    let strandIds = event.params.ids;
-    for(let i = 0; i < strandIds.length; i++) {
-        let strandId = strandIds.pop();
+    log.info("handleBatchTransfer With Batch Size {} @ Hash {}", [
+        BigInt.fromI32(event.params.values.length).toString(),
+        event.transaction.hash.toHexString()
+    ]);
 
-        let strand = DigitalaxMaterial.load(strandId.toString());
+    let contract: DigitalaxMaterialsContract = DigitalaxMaterialsContract.bind(event.address);
+    let strandIds: Array<BigInt> = event.params.ids;
+    for(let i = 0; i < event.params.values.length; i++) {
+        let strandId: BigInt = strandIds.pop();
+
+        let strand: DigitalaxMaterial | null = DigitalaxMaterial.load(strandId.toString());
         strand.totalSupply = contract.strandTotalSupply(strandId);
         strand.save();
     }
