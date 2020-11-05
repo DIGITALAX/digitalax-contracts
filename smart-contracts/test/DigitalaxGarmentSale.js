@@ -12,7 +12,7 @@ const DigitalaxAuction = artifacts.require('DigitalaxAuctionMock');
 const DigitalaxGarmentFactory = artifacts.require('DigitalaxGarmentFactory');
 
 contract('Digitalax Garment Sale', (accounts) => {
-  const [admin, minter, owner, designer, bidder, bidder2] = accounts;
+  const [admin, minter, platformFeeAddress, owner, designer, bidder, bidder2] = accounts;
 
   const TOKEN_ONE_ID = new BN('1');
 
@@ -45,6 +45,7 @@ contract('Digitalax Garment Sale', (accounts) => {
     this.auction = await DigitalaxAuction.new(
       this.accessControls.address,
       this.token.address,
+      platformFeeAddress,
       {from: admin}
     );
 

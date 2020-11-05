@@ -230,6 +230,12 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         return childTokenIds;
     }
 
+    /**
+     * @dev checks the given token ID is approved either for all or the single token ID
+     */
+    function isApproved(uint256 _tokenId, address operator) external view returns (bool) {
+        return isApprovedForAll(ownerOf(_tokenId), operator) || getApproved(_tokenId) == operator;
+    }
 
     /////////////////////////
     // Internal and Private /

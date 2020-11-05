@@ -15,15 +15,17 @@ const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
 const DigitalaxAuction = artifacts.require('DigitalaxAuctionMock');
 
 contract('DigitalaxAuction', (accounts) => {
-  const [admin, minter, owner, designer, bidder, bidder2] = accounts;
+  const [admin, smartContract, platformFeeAddress, minter, owner, designer, bidder, bidder2] = accounts;
 
   const TOKEN_ONE_ID = new BN('1');
+  const TOKEN_TWO_ID = new BN('2');
 
   const randomTokenURI = 'rand';
 
   beforeEach(async () => {
     this.accessControls = await DigitalaxAccessControls.new({from: admin});
     await this.accessControls.addMinterRole(minter, {from: admin});
+    await this.accessControls.addSmartContractRole(smartContract, {from: admin});
 
     this.digitalaxMaterials = await DigitalaxMaterials.new(
       'DigitalaxMaterials',
@@ -41,6 +43,7 @@ contract('DigitalaxAuction', (accounts) => {
     this.auction = await DigitalaxAuction.new(
       this.accessControls.address,
       this.token.address,
+      platformFeeAddress,
       {from: admin}
     );
 
@@ -102,6 +105,24 @@ contract('DigitalaxAuction', (accounts) => {
 
         const updated = await this.auction.minBidIncrement();
         expect(updated).to.be.bignumber.equal(ether('0.2'));
+      });
+    });
+
+    describe('updateBidWithdrawalLockTime()', () => {
+      it('fails when not admin', async () => {
+        await expectRevert(
+          this.auction.updateBidWithdrawalLockTime('1', {from: bidder}),
+          'DigitalaxAuction.updateBidWithdrawalLockTime: Sender must be admin'
+        );
+      });
+      it('successfully updates min bid', async () => {
+        const original = await this.auction.bidWithdrawalLockTime();
+        expect(original).to.be.bignumber.equal('1200');
+
+        await this.auction.updateBidWithdrawalLockTime('123', {from: admin});
+
+        const updated = await this.auction.bidWithdrawalLockTime();
+        expect(updated).to.be.bignumber.equal('123');
       });
     });
 
@@ -178,6 +199,42 @@ contract('DigitalaxAuction', (accounts) => {
         expect(updated).to.be.equal(accessControlsV2.address);
       });
     });
+
+    describe('updatePlatformFee()', () => {
+      it('fails when not admin', async () => {
+        await expectRevert(
+          this.auction.updatePlatformFee('123', {from: bidder}),
+          'DigitalaxAuction.updatePlatformFee: Sender must be admin'
+        );
+      });
+      it('successfully updates access controls', async () => {
+        const original = await this.auction.platformFee();
+        expect(original).to.be.bignumber.equal('120');
+
+        await this.auction.updatePlatformFee('999', {from: admin});
+
+        const updated = await this.auction.platformFee();
+        expect(updated).to.be.bignumber.equal('999');
+      });
+    });
+
+    describe('updatePlatformFeeRecipient()', () => {
+      it('fails when not admin', async () => {
+        await expectRevert(
+          this.auction.updatePlatformFeeRecipient(owner, {from: bidder}),
+          'DigitalaxAuction.updatePlatformFeeRecipient: Sender must be admin'
+        );
+      });
+      it('successfully updates access controls', async () => {
+        const original = await this.auction.platformFeeRecipient();
+        expect(original).to.be.equal(platformFeeAddress);
+
+        await this.auction.updatePlatformFeeRecipient(bidder2, {from: admin});
+
+        const updated = await this.auction.platformFeeRecipient();
+        expect(updated).to.be.equal(bidder2);
+      });
+    });
   });
 
   describe('createAuction()', async () => {
@@ -201,7 +258,6 @@ contract('DigitalaxAuction', (accounts) => {
       it('fails if token already has auction in play', async () => {
         await this.auction.setNowOverride('2');
         await this.token.mint(minter, randomTokenURI, designer, {from: minter});
-        await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
         await this.auction.createAuction(TOKEN_ONE_ID, '1', '0', '10', {from: minter});
 
         await expectRevert(
@@ -210,25 +266,37 @@ contract('DigitalaxAuction', (accounts) => {
         );
       });
 
+      it('fails if you dont own the token', async () => {
+        await this.auction.setNowOverride('2');
+        await this.token.mint(minter, randomTokenURI, designer, {from: minter});
+        await this.token.mint(bidder, randomTokenURI, designer, {from: minter});
+
+        await this.auction.createAuction(TOKEN_ONE_ID, '1', '0', '10', {from: minter});
+
+        await expectRevert(
+          this.auction.createAuction(TOKEN_TWO_ID, '1', '1', '3', {from: minter}),
+          'DigitalaxAuction.createAuction: Cannot create an auction if you do not own it'
+        );
+      });
+
       it('fails if token does not exist', async () => {
         await this.auction.setNowOverride('10');
 
         await expectRevert(
           this.auction.createAuction(TOKEN_ONE_ID, '1', '1', '3', {from: minter}),
-          'ERC721: operator query for nonexistent token'
+          'ERC721: owner query for nonexistent token'
         );
       });
     });
 
     describe('successful creation', async () => {
-      it('Token transferred to the auction', async () => {
+      it('Token retains in the ownership of the auction creator', async () => {
         await this.auction.setNowOverride('2');
         await this.token.mint(minter, randomTokenURI, designer, {from: minter});
-        await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
         await this.auction.createAuction(TOKEN_ONE_ID, '1', '0', '10', {from: minter});
 
         const owner = await this.token.ownerOf(TOKEN_ONE_ID);
-        expect(owner).to.be.equal(this.auction.address);
+        expect(owner).to.be.equal(minter);
       });
     });
 
@@ -240,7 +308,7 @@ contract('DigitalaxAuction', (accounts) => {
 
       beforeEach(async () => {
         await this.token.mint(minter, randomTokenURI, designer, {from: minter});
-        await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
+        await this.token.mint(minter, randomTokenURI, designer, {from: minter});
         await this.auction.setNowOverride('2');
         await this.auction.createAuction(
           TOKEN_ONE_ID, // ID
@@ -254,14 +322,13 @@ contract('DigitalaxAuction', (accounts) => {
       it('will fail with 721 token not on auction', async () => {
         await expectRevert(
           this.auction.placeBid(999, {from: bidder, value: 1}),
-          'DigitalaxAuction.placeBid: Auction does not exist'
+          'DigitalaxAuction.placeBid: Bidding outside of the auction window'
         );
       });
 
-      it('will fail when auction not started', async () => {
-        await this.auction.setNowOverride('0');
+      it('will fail with valid token but no auction', async () => {
         await expectRevert(
-          this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: 1}),
+          this.auction.placeBid(TOKEN_TWO_ID, {from: bidder, value: 1}),
           'DigitalaxAuction.placeBid: Bidding outside of the auction window'
         );
       });
@@ -289,7 +356,6 @@ contract('DigitalaxAuction', (accounts) => {
 
       beforeEach(async () => {
         await this.token.mint(minter, randomTokenURI, designer, {from: minter});
-        await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
         await this.auction.setNowOverride('1');
         await this.auction.createAuction(
           TOKEN_ONE_ID, // ID
@@ -345,7 +411,6 @@ contract('DigitalaxAuction', (accounts) => {
 
     beforeEach(async () => {
       await this.token.mint(minter, randomTokenURI, designer, {from: minter});
-      await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
       await this.auction.setNowOverride('2');
       await this.auction.createAuction(
         TOKEN_ONE_ID,
@@ -371,12 +436,22 @@ contract('DigitalaxAuction', (accounts) => {
       );
     });
 
+    it('fails with withdrawing when lockout time not passed', async () => {
+      await expectRevert(
+        this.auction.withdrawBid(TOKEN_ONE_ID, {from: bidder2}),
+        'DigitalaxAuction.withdrawBid: You are not the highest bidder'
+      );
+    });
+
     it('successfully withdraw the bid', async () => {
       const {_bidder: originalBidder, _bid: originalBid} = await this.auction.getHighestBidder(TOKEN_ONE_ID);
       expect(originalBid).to.be.bignumber.equal(ether('0.2'));
       expect(originalBidder).to.equal(bidder);
 
       const bidderTracker = await balance.tracker(bidder);
+
+      // Move time on pass lockout time
+      await this.auction.setNowOverride('1203', {from: admin});
 
       const receipt = await this.auction.withdrawBid(TOKEN_ONE_ID, {from: bidder});
 
@@ -402,7 +477,7 @@ contract('DigitalaxAuction', (accounts) => {
         await this.auction.setNowOverride('2');
         await this.auction.createAuction(
           TOKEN_ONE_ID,
-          '1',
+          ether('1'),
           '0',
           '10',
           {from: minter}
@@ -412,7 +487,7 @@ contract('DigitalaxAuction', (accounts) => {
       it('cannot result if not an admin', async () => {
         await expectRevert(
           this.auction.resultAuction(TOKEN_ONE_ID, {from: bidder}),
-          'DigitalaxAuction.resultAuction: Sender must be admin'
+          'DigitalaxAuction.resultAuction: Sender must be admin or smart contract'
         );
       });
 
@@ -430,16 +505,27 @@ contract('DigitalaxAuction', (accounts) => {
         );
       });
 
-      it('cannot result if the auction has no winner', async () => {
+      it('cannot result if the auction is reserve not reached', async () => {
+        await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: (await this.auction.minBidIncrement())});
         await this.auction.setNowOverride('12');
         await expectRevert(
           this.auction.resultAuction(TOKEN_ONE_ID, {from: admin}),
-          'DigitalaxAuction.resultAuction: No one has bid'
+          'DigitalaxAuction.resultAuction: reserve not reached'
+        );
+      });
+
+      it('cannot result if the auction has no winner', async () => {
+        // Lower reserve to zero
+        await this.auction.updateAuctionReservePrice(TOKEN_ONE_ID, '0', {from: admin});
+        await this.auction.setNowOverride('12');
+        await expectRevert(
+          this.auction.resultAuction(TOKEN_ONE_ID, {from: admin}),
+          'DigitalaxAuction.resultAuction: no open bids'
         );
       });
 
       it('cannot result if the auction if its already resulted', async () => {
-        await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.2')});
+        await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('1')});
         await this.auction.setNowOverride('12');
 
         // result it
@@ -461,7 +547,7 @@ contract('DigitalaxAuction', (accounts) => {
         await this.auction.setNowOverride('2');
         await this.auction.createAuction(
           TOKEN_ONE_ID,
-          '1',
+          ether('0.1'),
           '0',
           '10',
           {from: minter}
@@ -472,25 +558,57 @@ contract('DigitalaxAuction', (accounts) => {
         await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.2')});
         await this.auction.setNowOverride('12');
 
-        expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.equal(this.auction.address);
+        expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.equal(minter);
 
         await this.auction.resultAuction(TOKEN_ONE_ID, {from: admin});
 
         expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.equal(bidder);
       });
 
-      it('transfer funds to the token owner creator', async () => {
+      it('transfer funds to the token creator and platform', async () => {
         await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.4')});
         await this.auction.setNowOverride('12');
 
+        const platformFeeTracker = await balance.tracker(platformFeeAddress);
         const designerTracker = await balance.tracker(designer);
 
         // Result it successfully
         await this.auction.resultAuction(TOKEN_ONE_ID, {from: admin});
 
-        // Funds sent to designer on completion
+        // Platform gets 12%
+        const platformChanges = await platformFeeTracker.delta('wei');
+        expect(platformChanges).to.be.bignumber.equal(
+          (ether('0.4').sub(ether('0.1'))) // total minus reserve
+            .div(new BN('1000'))
+            .mul(new BN('120')) // only 12% of total
+        );
+
+        // Remaining funds sent to designer on completion
         const changes = await designerTracker.delta('wei');
-        expect(changes).to.be.bignumber.equal(ether('0.4'));
+        expect(changes).to.be.bignumber.equal(
+          ether('0.4').sub(platformChanges)
+        );
+      });
+
+      it('transfer funds to the token to only the creator when reserve meet directly', async () => {
+        await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.1')});
+        await this.auction.setNowOverride('12');
+
+        const platformFeeTracker = await balance.tracker(platformFeeAddress);
+        const designerTracker = await balance.tracker(designer);
+
+        // Result it successfully
+        await this.auction.resultAuction(TOKEN_ONE_ID, {from: admin});
+
+        // Platform gets 12%
+        const platformChanges = await platformFeeTracker.delta('wei');
+        expect(platformChanges).to.be.bignumber.equal('0');
+
+        // Remaining funds sent to designer on completion
+        const changes = await designerTracker.delta('wei');
+        expect(changes).to.be.bignumber.equal(
+          ether('0.1')
+        );
       });
 
       it('records primary sale price on garment NFT', async () => {
@@ -512,7 +630,6 @@ contract('DigitalaxAuction', (accounts) => {
 
     beforeEach(async () => {
       await this.token.mint(minter, randomTokenURI, designer, {from: minter});
-      await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
       await this.auction.setNowOverride('2');
       await this.auction.createAuction(
         TOKEN_ONE_ID,
@@ -528,7 +645,7 @@ contract('DigitalaxAuction', (accounts) => {
       it('cannot cancel if not an admin', async () => {
         await expectRevert(
           this.auction.cancelAuction(TOKEN_ONE_ID, {from: bidder}),
-          'DigitalaxAuction.cancelAuction: Sender must be admin'
+          'DigitalaxAuction.cancelAuction: Sender must be admin or smart contract'
         );
       });
 
@@ -548,6 +665,7 @@ contract('DigitalaxAuction', (accounts) => {
         await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.2')});
         await this.auction.setNowOverride('12');
 
+        await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
         await this.auction.resultAuction(TOKEN_ONE_ID, {from: admin});
 
         await expectRevert(
@@ -561,6 +679,27 @@ contract('DigitalaxAuction', (accounts) => {
           this.auction.cancelAuction(9999, {from: admin}),
           'DigitalaxAuction.cancelAuction: Auction does not exist'
         );
+      });
+
+      it('Can cancel as smart contract', async () => {
+        // Stick a bid on it
+        await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.2')});
+
+        // Cancel it
+        await this.auction.cancelAuction(TOKEN_ONE_ID, {from: smartContract});
+
+        // Check auction cleaned up
+        const {_reservePrice, _startTime, _endTime, _lister, _resulted} = await this.auction.getAuction(TOKEN_ONE_ID);
+        expect(_reservePrice).to.be.bignumber.equal('0');
+        expect(_startTime).to.be.bignumber.equal('0');
+        expect(_endTime).to.be.bignumber.equal('0');
+        expect(_lister).to.be.equal(constants.ZERO_ADDRESS);
+        expect(_resulted).to.be.equal(false);
+
+        // Check auction cleaned up
+        const {_bidder, _bid} = await this.auction.getHighestBidder(TOKEN_ONE_ID);
+        expect(_bid).to.be.bignumber.equal('0');
+        expect(_bidder).to.equal(constants.ZERO_ADDRESS);
       });
 
       it('Cancel clears down auctions and top bidder', async () => {
