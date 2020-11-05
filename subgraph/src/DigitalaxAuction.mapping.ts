@@ -6,7 +6,8 @@ import {
 
 import {
     DigitalaxGarmentAuction,
-    DigitalaxAuctionConfig
+    DigitalaxAuctionConfig,
+    DigitalaxGarmentDesigner
 } from "../generated/schema"
 import {ZERO} from "./constants";
 
@@ -20,6 +21,11 @@ export function handleAuctionCreated(event: AuctionCreated): void {
     //todo: other fields
     auction.save();
 
+    let garmentDesigner = DigitalaxGarmentDesigner.load(tokenId.toString());
+    let listings = garmentDesigner.listings;
+    listings.push(tokenId.toString());
+    garmentDesigner.listings = listings;
+    garmentDesigner.save();
 }
 
 export function handleDigitalaxAuctionContractDeployed(event: DigitalaxAuctionContractDeployed): void {
