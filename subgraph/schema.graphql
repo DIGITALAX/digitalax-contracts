@@ -45,6 +45,13 @@ type DigitalaxCollector @entity {
   strandsOwned: [DigitalaxMaterialOwner!]!
 }
 
+type DigitalaxGarmentDesigner @entity {
+  id: ID!
+  garments: [DigitalaxGarment!]!
+  # listings
+  # sold
+}
+
 type DigitalaxAuctionConfig @entity {
   ## Global config
   id: ID!
@@ -61,7 +68,7 @@ type DigitalaxGarmentAuction @entity {
   reservePrice: BigInt!
   startTime: BigInt!
   endTime: BigInt!
-   lister: Bytes!
+  lister: Bytes!
   resulted: Boolean!
 
   ## Highest bidder
