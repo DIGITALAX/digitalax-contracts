@@ -30,11 +30,11 @@ export function handleAuctionCreated(event: AuctionCreated): void {
     auction.resulted = auctionResult.value4;
     auction.save();
 
-    let garmentDesigner = DigitalaxGarmentDesigner.load(tokenId.toString());
-    let listings = garmentDesigner.listings;
-    listings.push(tokenId.toString());
-    garmentDesigner.listings = listings;
-    garmentDesigner.save();
+    // let garmentDesigner = DigitalaxGarmentDesigner.load(tokenId.toString());
+    // let listings = garmentDesigner.listings;
+    // listings.push(tokenId.toString());
+    // garmentDesigner.listings = listings;
+    // garmentDesigner.save();
 
     // Auction Created event
     let eventId = tokenId.toString()
