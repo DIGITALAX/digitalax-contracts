@@ -13,7 +13,8 @@ import {
 import {
     DigitalaxGarment,
     DigitalaxMaterialOwner,
-    DigitalaxCollector
+    DigitalaxCollector,
+    DigitalaxGarmentDesigner
 } from "../generated/schema";
 
 export const ZERO_ADDRESS = Address.fromString('0x0000000000000000000000000000000000000000');
@@ -24,7 +25,8 @@ export function handleTransfer(event: Transfer): void {
 
     // This is the birthing of a garment
     if (event.params.from.equals(ZERO_ADDRESS)) {
-        let garment = new DigitalaxGarment(event.params.tokenId.toString());
+        let garmentId = event.params.tokenId.toString();
+        let garment = new DigitalaxGarment(garmentId);
         garment.designer = contract.garmentDesigners(event.params.tokenId);
         garment.owner = contract.ownerOf(event.params.tokenId);
         garment.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
@@ -43,10 +45,22 @@ export function handleTransfer(event: Transfer): void {
             strandsOwned = collector.strandsOwned;
         }
 
-        garmentsOwned.push(event.params.tokenId.toString())
+        garmentsOwned.push(garmentId);
         collector.garmentsOwned = garmentsOwned;
         collector.strandsOwned = strandsOwned;
         collector.save();
+
+        let garmentDesignerId = contract.garmentDesigners(event.params.tokenId).toHexString();
+        let garmentDesigner = DigitalaxGarmentDesigner.load(garmentDesignerId);
+        if (garmentDesigner == null) {
+            garmentDesigner = new DigitalaxGarmentDesigner(garmentDesignerId);
+            garmentDesigner.garments = new Array<string>();
+        }
+
+        let garments = garmentDesigner.garments;
+        garments.push(garmentId);
+        garmentDesigner.garments = garments;
+        garmentDesigner.save();
     }
 
     // handle burn
