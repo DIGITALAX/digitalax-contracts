@@ -44,3 +44,28 @@ type DigitalaxCollector @entity {
   garmentsOwned: [DigitalaxGarment!]!
   strandsOwned: [DigitalaxMaterialOwner!]!
 }
+
+type DigitalaxAuctionConfig @entity {
+  ## Global config
+  id: ID!
+  minBidIncrement: BigInt!
+  bidWithdrawalLockTime: BigInt!
+  platformFee: BigInt!
+  platformFeeRecipient: Bytes!
+  ## totals
+  totalSales: BigInt!
+}
+
+type DigitalaxGarmentAuction @entity {
+  ## Auction setup
+  reservePrice: BigInt!
+  startTime: BigInt!
+  endTime: BigInt!
+   lister: Bytes!
+  resulted: Boolean!
+
+  ## Highest bidder
+  address: Bytes
+  bid: BigInt
+  lastBidTime: BigInt
+}
