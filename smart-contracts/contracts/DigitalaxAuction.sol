@@ -241,7 +241,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         // Admin only resulting function
         require(
             accessControls.hasAdminRole(_msgSender()) || accessControls.hasSmartContractRole(_msgSender()),
-            "DigitalaxAuction.resultAuction: Sender must be admin"
+            "DigitalaxAuction.resultAuction: Sender must be admin or smart contract"
         );
 
         // Check the auction to see if it can be resulted
@@ -314,7 +314,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         // Admin only resulting function
         require(
             accessControls.hasAdminRole(_msgSender()) || accessControls.hasSmartContractRole(_msgSender()),
-            "DigitalaxAuction.cancelAuction: Sender must be admin"
+            "DigitalaxAuction.cancelAuction: Sender must be admin or smart contract"
         );
 
         // Check valid and not resulted
