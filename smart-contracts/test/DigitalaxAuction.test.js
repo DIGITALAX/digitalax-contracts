@@ -487,7 +487,7 @@ contract('DigitalaxAuction', (accounts) => {
       it('cannot result if not an admin', async () => {
         await expectRevert(
           this.auction.resultAuction(TOKEN_ONE_ID, {from: bidder}),
-          'DigitalaxAuction.resultAuction: Sender must be admin'
+          'DigitalaxAuction.resultAuction: Sender must be admin or smart contract'
         );
       });
 
@@ -590,6 +590,27 @@ contract('DigitalaxAuction', (accounts) => {
         );
       });
 
+      it('transfer funds to the token to only the creator when reserve meet directly', async () => {
+        await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.1')});
+        await this.auction.setNowOverride('12');
+
+        const platformFeeTracker = await balance.tracker(platformFeeAddress);
+        const designerTracker = await balance.tracker(designer);
+
+        // Result it successfully
+        await this.auction.resultAuction(TOKEN_ONE_ID, {from: admin});
+
+        // Platform gets 12%
+        const platformChanges = await platformFeeTracker.delta('wei');
+        expect(platformChanges).to.be.bignumber.equal('0');
+
+        // Remaining funds sent to designer on completion
+        const changes = await designerTracker.delta('wei');
+        expect(changes).to.be.bignumber.equal(
+          ether('0.1')
+        );
+      });
+
       it('records primary sale price on garment NFT', async () => {
         await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.4')});
         await this.auction.setNowOverride('12');
@@ -624,7 +645,7 @@ contract('DigitalaxAuction', (accounts) => {
       it('cannot cancel if not an admin', async () => {
         await expectRevert(
           this.auction.cancelAuction(TOKEN_ONE_ID, {from: bidder}),
-          'DigitalaxAuction.cancelAuction: Sender must be admin'
+          'DigitalaxAuction.cancelAuction: Sender must be admin or smart contract'
         );
       });
 
