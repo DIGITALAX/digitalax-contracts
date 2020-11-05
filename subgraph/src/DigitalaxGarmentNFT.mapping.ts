@@ -55,6 +55,7 @@ export function handleTransfer(event: Transfer): void {
         if (garmentDesigner == null) {
             garmentDesigner = new DigitalaxGarmentDesigner(garmentDesignerId);
             garmentDesigner.garments = new Array<string>();
+            garmentDesigner.listings = new Array<string>();
         }
 
         let garments = garmentDesigner.garments;
@@ -70,6 +71,7 @@ export function handleTransfer(event: Transfer): void {
         collector.strandsOwned = garment.strands;
         collector.save();
 
+        // TODO come back to this regarding collector vs artist / admin burning
         store.remove('DigitalaxGarment', event.params.tokenId.toString());
     }
     // just a transfer
