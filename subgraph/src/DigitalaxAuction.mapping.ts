@@ -7,7 +7,7 @@ import {
 
 import {
     DigitalaxGarmentAuction,
-    DigitalaxAuctionConfig,
+    DigitalaxAuctionContract,
     DigitalaxGarmentDesigner,
     DigitalaxGarment,
     DigitalaxGarmentAuctionHistory
@@ -39,7 +39,7 @@ export function handleAuctionCreated(event: AuctionCreated): void {
     // Auction Created event
     let eventId = tokenId.toString()
         .concat("-")
-        .concat(event.transaction.hash.toString())
+        .concat(event.transaction.hash.toHexString())
         .concat("-")
         .concat(event.transaction.index.toString());
 
@@ -54,7 +54,7 @@ export function handleAuctionCreated(event: AuctionCreated): void {
 export function handleDigitalaxAuctionContractDeployed(event: DigitalaxAuctionContractDeployed): void {
     let contract = DigitalaxAuctionContract.bind(event.address);
 
-    let auctionConfig = new DigitalaxAuctionConfig(event.address.toHexString());
+    let auctionConfig = new DigitalaxAuctionContract(event.address.toHexString());
     auctionConfig.minBidIncrement = contract.minBidIncrement();
     auctionConfig.bidWithdrawalLockTime = contract.bidWithdrawalLockTime();
     auctionConfig.platformFee = contract.platformFee();
@@ -78,7 +78,7 @@ export function handleBidPlaced(event: BidPlaced): void {
 
     let eventId = tokenId.toString()
         .concat("-")
-        .concat(event.transaction.hash.toString())
+        .concat(event.transaction.hash.toHexString())
         .concat("-")
         .concat(event.transaction.index.toString());
 
@@ -97,7 +97,7 @@ export function handleBidWithdrawn(event: BidWithdrawn): void {
 
     let eventId = tokenId.toString()
         .concat("-")
-        .concat(event.transaction.hash.toString())
+        .concat(event.transaction.hash.toHexString())
         .concat("-")
         .concat(event.transaction.index.toString());
 
@@ -116,7 +116,7 @@ export function handleAuctionResulted(event: AuctionResulted): void {
 
     let eventId = tokenId.toString()
         .concat("-")
-        .concat(event.transaction.hash.toString())
+        .concat(event.transaction.hash.toHexString())
         .concat("-")
         .concat(event.transaction.index.toString());
 
@@ -130,7 +130,7 @@ export function handleAuctionResulted(event: AuctionResulted): void {
     auctionEvent.save()
 
     // Record winning bid
-    let auctionConfig = DigitalaxAuctionConfig.load(event.address.toHexString());
+    let auctionConfig = DigitalaxAuctionContract.load(event.address.toHexString());
     auctionConfig.totalSales = auctionConfig.totalSales.plus(event.params.winningBid)
 
     // Result the auction
@@ -148,7 +148,7 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
 
     let eventId = tokenId.toString()
         .concat("-")
-        .concat(event.transaction.hash.toString())
+        .concat(event.transaction.hash.toHexString())
         .concat("-")
         .concat(event.transaction.index.toString());
 
