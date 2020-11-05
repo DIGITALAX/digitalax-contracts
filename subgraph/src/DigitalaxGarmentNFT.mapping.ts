@@ -26,6 +26,7 @@ export function handleTransfer(event: Transfer): void {
     if (event.params.from.equals(ZERO_ADDRESS)) {
         let garment = new DigitalaxGarment(event.params.tokenId.toString());
         garment.designer = contract.garmentDesigners(event.params.tokenId);
+        garment.owner = contract.ownerOf(event.params.tokenId);
         garment.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
         garment.tokenUri = contract.tokenURI(event.params.tokenId);
         garment.strands = new Array<string>();
@@ -48,7 +49,7 @@ export function handleTransfer(event: Transfer): void {
         collector.save();
     }
 
-    // todo handle burn
+    // handle burn
     else if (event.params.to.equals(ZERO_ADDRESS)) {
         let garment = DigitalaxGarment.load(event.params.tokenId.toString());
         let collector = DigitalaxCollector.load(event.params.from.toHexString());
@@ -56,6 +57,13 @@ export function handleTransfer(event: Transfer): void {
         collector.save();
 
         store.remove('DigitalaxGarment', event.params.tokenId.toString());
+    }
+    // just a transfer
+    else {
+        let garment = DigitalaxGarment.load(event.params.tokenId.toString());
+        garment.owner = contract.ownerOf(event.params.tokenId);
+        garment.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
+        garment.save();
     }
 }
 
@@ -70,7 +78,7 @@ export function handleChildReceived(event: ReceivedChild): void {
 
     let garment = DigitalaxGarment.load(event.params.toTokenId.toString());
 
-    let childId = event.params.toTokenId.toString() + '-' + event.params.childTokenId.toString();
+    let childId = contract.ownerOf(event.params.toTokenId).toHexString() + '-' + event.params.childTokenId.toString();
     let child = DigitalaxMaterialOwner.load(childId);
 
     if (child == null) {
