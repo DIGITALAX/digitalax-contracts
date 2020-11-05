@@ -461,11 +461,16 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
      @notice Method for getting all info about the highest bidder
      @param _garmentTokenId Token ID of the garment being auctioned
      */
-    function getHighestBidder(uint256 _garmentTokenId) external view returns (address payable _bidder, uint256 _bid) {
+    function getHighestBidder(uint256 _garmentTokenId) external view returns (
+        address payable _bidder,
+        uint256 _bid,
+        uint256 _lastBidTime
+    ) {
         HighestBid storage highestBid = highestBids[_garmentTokenId];
         return (
-        highestBid.bidder,
-        highestBid.bid
+            highestBid.bidder,
+            highestBid.bid,
+            highestBid.lastBidTime
         );
     }
 

@@ -445,6 +445,11 @@
         "internalType": "uint256",
         "name": "_bid",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_lastBidTime",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
