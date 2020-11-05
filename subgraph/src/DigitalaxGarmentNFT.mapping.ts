@@ -19,6 +19,7 @@ import {
 export const ZERO_ADDRESS = Address.fromString('0x0000000000000000000000000000000000000000');
 
 export function handleTransfer(event: Transfer): void {
+    log.info("Handle Garment Transfer @ Hash {}", [event.transaction.hash.toHexString()]);
     let contract = DigitalaxGarmentNFTContract.bind(event.address);
 
     // This is the birthing of a garment
@@ -59,6 +60,12 @@ export function handleTransfer(event: Transfer): void {
 }
 
 export function handleChildReceived(event: ReceivedChild): void {
+    log.info("Handle Child ID {} linking to Garment ID {} @ Hash {}", [
+        event.params.childTokenId.toString(),
+        event.transaction.hash.toHexString(),
+        event.params.toTokenId.toString()
+    ]);
+
     let contract = DigitalaxGarmentNFTContract.bind(event.address);
 
     let garment = DigitalaxGarment.load(event.params.toTokenId.toString());
