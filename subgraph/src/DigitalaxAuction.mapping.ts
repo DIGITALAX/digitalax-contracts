@@ -63,7 +63,9 @@ export function handleBidPlaced(event: BidPlaced): void {
     auction.save();
 
     let eventId = tokenId.toString()
+        .concat("-")
         .concat(event.transaction.hash.toString())
+        .concat("-")
         .concat(event.transaction.index.toString());
 
     let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
@@ -80,7 +82,9 @@ export function handleBidWithdrawn(event: BidWithdrawn): void {
     let tokenId = event.params.garmentTokenId;
 
     let eventId = tokenId.toString()
+        .concat("-")
         .concat(event.transaction.hash.toString())
+        .concat("-")
         .concat(event.transaction.index.toString());
 
     let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
@@ -97,7 +101,9 @@ export function handleAuctionResulted(event: AuctionResulted): void {
     let tokenId = event.params.garmentTokenId;
 
     let eventId = tokenId.toString()
+        .concat("-")
         .concat(event.transaction.hash.toString())
+        .concat("-")
         .concat(event.transaction.index.toString());
 
     let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
@@ -108,13 +114,19 @@ export function handleAuctionResulted(event: AuctionResulted): void {
     auctionEvent.value = event.params.winningBid
     auctionEvent.transactionHash = event.transaction.hash
     auctionEvent.save()
+
+    // Record winning bid
+    let auctionConfig = DigitalaxAuctionConfig.load(event.address.toHexString());
+    auctionConfig.totalSales = auctionConfig.totalSales.plus(event.params.winningBid)
 }
 
 export function handleAuctionCancelled(event: AuctionCancelled): void {
     let tokenId = event.params.garmentTokenId;
 
     let eventId = tokenId.toString()
+        .concat("-")
         .concat(event.transaction.hash.toString())
+        .concat("-")
         .concat(event.transaction.index.toString());
 
     let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
