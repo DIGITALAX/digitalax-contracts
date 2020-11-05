@@ -105,4 +105,10 @@ dataSources:
           handler: handleDigitalaxAuctionContractDeployed
         - event: BidPlaced(indexed uint256,indexed address,uint256)
           handler: handleBidPlaced
+        - event: BidWithdrawn(indexed uint256,indexed address,uint256)
+          handler: handleBidWithdrawn
+        - event: AuctionResulted(indexed uint256,indexed address,uint256)
+          handler: handleAuctionResulted
+        - event: AuctionCancelled(indexed uint256)
+          handler: handleAuctionCancelled
       file: ./src/DigitalaxAuction.mapping.ts
