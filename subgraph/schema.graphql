@@ -31,7 +31,6 @@ type DigitalaxGarment @entity {
   primarySalePrice: BigInt!
   tokenUri: String!
   strands: [DigitalaxMaterialOwner!]!
-  collector: DigitalaxCollector
 }
 
 type DigitalaxMaterial @entity {
@@ -43,7 +42,6 @@ type DigitalaxMaterial @entity {
 type DigitalaxCollector @entity {
   id: ID!
   garmentsOwned: [DigitalaxGarment!]!
-  gOwned: [DigitalaxGarment!]! @derivedFrom(field: "collector")
   strandsOwned: [DigitalaxMaterialOwner!]!
 }
 
