@@ -9,7 +9,7 @@ import {
 
 import {
     GenesisContributor,
-    DigitalaxGenesis
+    DigitalaxGenesisContract
 } from "../generated/schema";
 
 export function handleGenesisPurchased(event: GenesisPurchased): void {
@@ -29,7 +29,7 @@ export function handleGenesisPurchased(event: GenesisPurchased): void {
     genesisContributor.save()
 
     // update contract info
-    let digitalaxGenesis = DigitalaxGenesis.load(event.address.toHexString());
+    let digitalaxGenesis = DigitalaxGenesisContract.load(event.address.toHexString());
     digitalaxGenesis.totalContributions = DigitalaxGenesisNFTContract.bind(event.address).totalContributions();
     digitalaxGenesis.save();
 }
@@ -43,7 +43,7 @@ export function handleContributionIncreased(event: ContributionIncreased): void 
     genesisContributor.save()
 
     // update contract info
-    let digitalaxGenesis = DigitalaxGenesis.load(event.address.toHexString());
+    let digitalaxGenesis = DigitalaxGenesisContract.load(event.address.toHexString());
     digitalaxGenesis.totalContributions = DigitalaxGenesisNFTContract.bind(event.address).totalContributions();
     digitalaxGenesis.save();
 }
@@ -53,7 +53,7 @@ export function handleGenesisDeployed(event: DigitalaxGenesisNFTContractDeployed
 
     let contract = DigitalaxGenesisNFTContract.bind(event.address);
 
-    let digitalaxGenesis = new DigitalaxGenesis(event.address.toHexString());
+    let digitalaxGenesis = new DigitalaxGenesisContract(event.address.toHexString());
     digitalaxGenesis.accessControls = contract.accessControls();
     digitalaxGenesis.fundsMultisig = contract.fundsMultisig();
     digitalaxGenesis.genesisStart = contract.genesisStartTimestamp();

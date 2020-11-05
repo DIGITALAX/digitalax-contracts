@@ -13,10 +13,9 @@ import "./ERC998/IERC998ERC1155TopDown.sol";
 
 // TODO: secondary sale mechanics need to be built into core NFT twisted sister style - modify 721 to add payable
 // TODO: before each hook could also implement do not transfer to self
-// TODO: need a burn method returning 1155s to burner
 contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown {
 
-    // TODO: events for updating token URI and updating access controls
+    // TODO: events for updating token URI, admin methods and maybe on deploy in the constructor?
 
     /// @dev Required to govern who can call certain functions
     DigitalaxAccessControls public accessControls;
@@ -173,6 +172,8 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         require(_salePrice > 0, "DigitalaxGarmentNFT.setPrimarySalePrice: Invalid sale price");
 
         primarySalePrice[_tokenId] = _salePrice;
+
+        // todo do we need an event
     }
 
     /**
