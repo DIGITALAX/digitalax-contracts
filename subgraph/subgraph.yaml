@@ -101,4 +101,6 @@ dataSources:
       eventHandlers:
         - event: AuctionCreated(indexed uint256)
           handler: handleAuctionCreated
+        - event: DigitalaxAuctionContractDeployed()
+          handler: handleDigitalaxAuctionContractDeployed
       file: ./src/DigitalaxAuction.mapping.ts
