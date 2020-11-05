@@ -39,7 +39,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     );
 
     event UpdatePlatformFeeRecipient(
-        address payable _platformFeeRecipient
+        address payable platformFeeRecipient
     );
 
     event UpdateMinBidIncrement(
@@ -150,7 +150,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         require(_getNow() > auctions[_garmentTokenId].endTime, "DigitalaxAuction.createAuction: Cannot create an auction in the middle of another");
 
         // Check owner of the token is the creator
-        require(garmentNft.ownerOf(_garmentTokenId) == _msgSender(), "DigitalaxAuction.createAuction: Cannot create an auction if you dont own it");
+        require(garmentNft.ownerOf(_garmentTokenId) == _msgSender(), "DigitalaxAuction.createAuction: Cannot create an auction if you do not own it");
 
         // Setup the auction
         auctions[_garmentTokenId] = Auction({
