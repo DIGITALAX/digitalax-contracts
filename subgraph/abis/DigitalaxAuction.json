@@ -10,6 +10,11 @@
         "internalType": "contract DigitalaxGarmentNFT",
         "name": "_garmentNft",
         "type": "address"
+      },
+      {
+        "internalType": "address payable",
+        "name": "_platformFeeRecipient",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -136,6 +141,134 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [],
+    "name": "DigitalaxAuctionContractDeployed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "accessControls",
+        "type": "address"
+      }
+    ],
+    "name": "UpdateAccessControls",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "garmentTokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "endTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "UpdateAuctionEndTime",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "garmentTokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "reservePrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "UpdateAuctionReservePrice",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "garmentTokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "startTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "UpdateAuctionStartTime",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "bidWithdrawalLockTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "UpdateBidWithdrawalLockTime",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "minBidIncrement",
+        "type": "uint256"
+      }
+    ],
+    "name": "UpdateMinBidIncrement",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "platformFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "UpdatePlatformFee",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address payable",
+        "name": "platformFeeRecipient",
+        "type": "address"
+      }
+    ],
+    "name": "UpdatePlatformFeeRecipient",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "accessControls",
     "outputs": [
@@ -182,6 +315,19 @@
         "internalType": "bool",
         "name": "resulted",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "bidWithdrawalLockTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -323,6 +469,11 @@
         "internalType": "uint256",
         "name": "bid",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lastBidTime",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -352,6 +503,32 @@
     "name": "placeBid",
     "outputs": [],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "platformFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "platformFeeRecipient",
+    "outputs": [
+      {
+        "internalType": "address payable",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -438,11 +615,50 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_bidWithdrawalLockTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateBidWithdrawalLockTime",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_minBidIncrement",
         "type": "uint256"
       }
     ],
     "name": "updateMinBidIncrement",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_platformFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "updatePlatformFee",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "_platformFeeRecipient",
+        "type": "address"
+      }
+    ],
+    "name": "updatePlatformFeeRecipient",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
