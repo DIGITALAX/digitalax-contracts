@@ -1,7 +1,7 @@
 type GenesisContributor @entity {
   id: ID!
   contributor: Bytes! # address
-  totalContribtuionInWei: BigInt!
+  totalContributionInWei: BigInt!
   firstContributedTimestamp: BigInt!
   lastContributedTimestamp: BigInt!
 }
@@ -70,11 +70,12 @@ type DigitalaxGarmentAuction @entity {
   reservePrice: BigInt!
   startTime: BigInt!
   endTime: BigInt!
-  lister: Bytes!
+  lister: DigitalaxCollector!
   resulted: Boolean!
+  resultedTime: BigInt
 
   ## Highest bidder
-  topBidder: Bytes # TODO use DigitalaxCollector
+  topBidder: DigitalaxCollector
   topBid: BigInt
   lastBidTime: BigInt
 }
@@ -85,6 +86,6 @@ type DigitalaxGarmentAuctionHistory @entity {
   eventName: String!
   timestamp: BigInt!
   transactionHash: Bytes!
-  bidder: Bytes   # TODO use DigitalaxCollector
+  bidder: DigitalaxCollector
   value: BigInt
 }

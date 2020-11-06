@@ -23,7 +23,7 @@ export function handleGenesisPurchased(event: GenesisPurchased): void {
     let genesisContributor = new GenesisContributor(event.params.buyer.toHexString())
     genesisContributor.contributor = event.params.buyer
     genesisContributor.firstContributedTimestamp = event.block.timestamp
-    genesisContributor.totalContribtuionInWei = event.params.contribution
+    genesisContributor.totalContributionInWei = event.params.contribution
     genesisContributor.lastContributedTimestamp = event.block.timestamp
 
     genesisContributor.save()
@@ -38,7 +38,7 @@ export function handleContributionIncreased(event: ContributionIncreased): void 
     log.info('handleContributionIncreased() @ hash: {}', [event.transaction.hash.toHexString()]);
 
     let genesisContributor: GenesisContributor | null = GenesisContributor.load(event.params.buyer.toHexString())
-    genesisContributor.totalContribtuionInWei = genesisContributor.totalContribtuionInWei.plus(event.params.contribution)
+    genesisContributor.totalContributionInWei = genesisContributor.totalContributionInWei.plus(event.params.contribution)
     genesisContributor.lastContributedTimestamp = event.block.timestamp
     genesisContributor.save()
 
