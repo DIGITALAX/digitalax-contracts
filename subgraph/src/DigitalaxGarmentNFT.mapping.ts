@@ -16,6 +16,7 @@ import {
     DigitalaxCollector,
     DigitalaxGarmentDesigner
 } from "../generated/schema";
+import {loadOrCreateGarmentDesigner} from "./factory/DigitalaxGarmentDesigner.factory";
 
 export const ZERO_ADDRESS = Address.fromString('0x0000000000000000000000000000000000000000');
 
@@ -51,12 +52,7 @@ export function handleTransfer(event: Transfer): void {
         collector.save();
 
         let garmentDesignerId = contract.garmentDesigners(event.params.tokenId).toHexString();
-        let garmentDesigner = DigitalaxGarmentDesigner.load(garmentDesignerId);
-        if (garmentDesigner == null) {
-            garmentDesigner = new DigitalaxGarmentDesigner(garmentDesignerId);
-            garmentDesigner.garments = new Array<string>();
-            garmentDesigner.listings = new Array<string>();
-        }
+        let garmentDesigner = loadOrCreateGarmentDesigner(garmentDesignerId);
 
         let garments = garmentDesigner.garments;
         garments.push(garmentId);
