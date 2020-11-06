@@ -74,7 +74,7 @@ type DigitalaxGarmentAuction @entity {
   resulted: Boolean!
 
   ## Highest bidder
-  topBidder: Bytes
+  topBidder: Bytes # TODO use DigitalaxCollector
   topBid: BigInt
   lastBidTime: BigInt
 }
@@ -85,6 +85,6 @@ type DigitalaxGarmentAuctionHistory @entity {
   eventName: String!
   timestamp: BigInt!
   transactionHash: Bytes!
-  bidder: Bytes
+  bidder: Bytes   # TODO use DigitalaxCollector
   value: BigInt
 }
