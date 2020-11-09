@@ -1,5 +1,12 @@
 ## Primary and Children NFTs
 
+```
+Parent (ERC-721) a.k.a parent
+  |
+  ▼
+Child  (ERC-1155) a.k.a. children
+```
+
 ## DigitalaxMaterials (Child tokens - ERC-1155)
 
 #### Creating new children

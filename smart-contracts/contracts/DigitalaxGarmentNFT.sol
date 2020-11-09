@@ -1,5 +1,3 @@
-// ERC998 side of the contract based on: https://github.com/rocksideio/ERC998-ERC1155-TopDown/blob/695963195606304374015c49d166ab2fbeb42ea9/contracts/ERC998ERC1155TopDown.sol
-
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.6.12;
@@ -11,19 +9,25 @@ import "./ERC1155/ERC1155.sol";
 import "./DigitalaxAccessControls.sol";
 import "./ERC998/IERC998ERC1155TopDown.sol";
 
-// TODO: secondary sale mechanics need to be built into core NFT twisted sister style - modify 721 to add payable
-// TODO: before each hook could also implement do not transfer to self
-contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown {
+contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown {
 
-    // TODO: events for updating token URI, admin methods and maybe on deploy in the constructor?
+    // @notice event emitted upon construction of this contract, used to bootstrap external indexers
+    event DigitalaxGarmentNFTContractDeployed();
+
+    // @notice event emitted when token URI is updated
+    event DigitalaxGarmentTokenUriUpdate(
+        uint256 indexed _tokenId,
+        string _tokenUri
+    );
 
     /// @dev Required to govern who can call certain functions
     DigitalaxAccessControls public accessControls;
 
-    uint256 public tokenIdPointer;
+    /// @dev Child ERC1155 contract address
+    ERC1155 public childContract;
 
-    // TODO: add platform address
-    // TODO: add platform percentage of secondary sales
+    /// @dev current max tokenId
+    uint256 public tokenIdPointer;
 
     /// @dev TokenID -> Designer address
     mapping(uint256 => address) public garmentDesigners;
@@ -31,27 +35,23 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     /// @dev TokenID -> Primary Ether Sale Price in Wei
     mapping(uint256 => uint256) public primarySalePrice;
 
-    //TODO: check whether this should there be last sale price too?
-
     /// @dev ERC721 Token ID -> ERC1155 ID -> Balance
     mapping(uint256 => mapping(uint256 => uint256)) private balances;
 
     /// @dev ERC1155 ID -> ERC721 Token IDs that have a balance
-    mapping(uint256 => EnumerableSet.UintSet) private holdersOf;
-
-    /// @dev Child ERC1155 contract address
-    ERC1155 public childContract;
+    mapping(uint256 => EnumerableSet.UintSet) private childToParentMapping;
 
     /// @dev ERC721 Token ID -> ERC1155 child IDs owned by the token ID
-    mapping(uint256 => EnumerableSet.UintSet) private childsForChildContract;
+    mapping(uint256 => EnumerableSet.UintSet) private parentToChildMapping;
 
     /**
      @param _accessControls Address of the Digitalax access control contract
+     @param _childContract ERC1155 the Digitalax child NFT contract
      */
-    //TODO: new param for 1155 child contract
     constructor(DigitalaxAccessControls _accessControls, ERC1155 _childContract) public {
         accessControls = _accessControls;
         childContract = _childContract;
+        emit DigitalaxGarmentNFTContractDeployed();
     }
 
     /**
@@ -68,77 +68,98 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
             "DigitalaxGarmentNFT.mint: Sender must have the minter or contract role"
         );
 
+        // Valid args
         assertMintingParamsValid(_tokenUri, _designer);
 
         tokenIdPointer = tokenIdPointer.add(1);
         uint256 tokenId = tokenIdPointer;
+
+        // Mint token and set token URI
         _safeMint(_beneficiary, tokenId);
         _setTokenURI(tokenId, _tokenUri);
 
+        // Associate garment designer
         garmentDesigners[tokenId] = _designer;
 
         return tokenId;
     }
 
+    // TODO What happens if the receiver/caller is a contract - can they re-enter and what are the implications?
     function burn(uint256 _tokenId) external {
-        require(ownerOf(_tokenId) == _msgSender(), "DigitalaxGarmentNFT.burn: Only Garment Owner");
+        require(ownerOf(_tokenId) == _msgSender(), "DigitalaxGarmentNFT.burn: Only garment owner");
 
         address childContractAddress = address(childContract);
         uint256[] memory childIds = childIdsForOn(_tokenId, childContractAddress);
 
         // If there are any children tokens then send them as part of the burn
         if (childIds.length > 0) {
-            uint256[] memory balanceOfChilds = new uint256[](childIds.length);
 
-            for(uint i = 0; i < childIds.length; i++) {
-                balanceOfChilds[i] = childBalance(_tokenId, childContractAddress, childIds[i]);
+            uint256[] memory balanceOfChildren = new uint256[](childIds.length);
+
+            // Get balances for children tokens
+            for (uint i = 0; i < childIds.length; i++) {
+                balanceOfChildren[i] = childBalance(_tokenId, childContractAddress, childIds[i]);
             }
 
+            // Transfer children to the burner
             safeBatchTransferChildFrom(
                 _tokenId,
                 _msgSender(),
                 childContractAddress,
                 childIds,
-                balanceOfChilds,
+                balanceOfChildren,
                 abi.encodePacked("")
             );
         }
 
+        // Destroy token mappings
         _burn(_tokenId);
+
+        // Clean up designer mapping
+        delete garmentDesigners[_tokenId];
     }
 
-    function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _amount, bytes memory _data) virtual public override returns(bytes4) {
+    function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _amount, bytes memory _data)
+    virtual
+    public override
+    returns (bytes4) {
+        // TODO have to got a test for this
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
-        _beforeChildTransfer(_operator, 0, address(this), _from, _asSingletonArray(_id), _asSingletonArray(_amount), _data);
 
         uint256 _receiverTokenId;
         uint256 _index = msg.data.length - 32;
         assembly {_receiverTokenId := calldataload(_index)}
 
+        // Check token received is valid
         require(_exists(_receiverTokenId), "Token does not exist");
 
         _receiveChild(_receiverTokenId, msg.sender, _id, _amount);
+
         emit ReceivedChild(_from, _receiverTokenId, msg.sender, _id, _amount);
 
         return this.onERC1155Received.selector;
     }
 
-    function onERC1155BatchReceived(address _operator, address _from, uint256[] memory _ids, uint256[] memory _values, bytes memory _data) virtual public override returns(bytes4) {
+    function onERC1155BatchReceived(address _operator, address _from, uint256[] memory _ids, uint256[] memory _values, bytes memory _data)
+    virtual public
+    override returns (bytes4) {
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
         //TODO; check this but I believe that with our 1155, this is not a possibility
-        //require(_ids.length == _values.length, "ERC1155: ids and values length mismatch");
-        _beforeChildTransfer(_operator, 0, address(this), _from, _ids, _values, _data);
+        require(_ids.length == _values.length, "ERC1155: ids and values length mismatch");
 
         uint256 _receiverTokenId;
+        // TODO add tests for different types of size 32 to see if handles it
         uint256 _index = msg.data.length - 32;
         assembly {_receiverTokenId := calldataload(_index)}
 
         require(_exists(_receiverTokenId), "Token does not exist");
 
-        for(uint256 i = 0; i < _ids.length; i++) {
+        // TODO whats the max number of tokens we can receive due to GAS constraints?
+        for (uint256 i = 0; i < _ids.length; i++) {
             _receiveChild(_receiverTokenId, msg.sender, _ids[i], _values[i]);
             emit ReceivedChild(_from, _receiverTokenId, msg.sender, _ids[i], _values[i]);
         }
+
         return this.onERC1155BatchReceived.selector;
     }
 
@@ -148,13 +169,17 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
 
     /**
      @notice Updates the token URI of a given token
-     @dev Only admin
+     @dev Only admin or smart contract
      @param _tokenId The ID of the token being updated
      @param _tokenUri The new URI
      */
     function setTokenURI(uint256 _tokenId, string calldata _tokenUri) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentNFT.setTokenURI: Sender must have the admin role");
+        require(
+            accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxGarmentNFT.setPrimarySalePrice: Sender must be an authorised contract or admin"
+        );
         _setTokenURI(_tokenId, _tokenUri);
+        emit DigitalaxGarmentTokenUriUpdate(_tokenId, _tokenUri);
     }
 
     /**
@@ -173,7 +198,7 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
 
         primarySalePrice[_tokenId] = _salePrice;
 
-        // todo do we need an event
+        // todo do we need an event ... can add transfer hook?
     }
 
     /**
@@ -198,13 +223,12 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         return _exists(_tokenId);
     }
 
-    function childBalance(
-        uint256 _tokenId,
-        address _childContract,
-        uint256 _childTokenId
-    ) public view override returns(uint256) {
+    function childBalance(uint256 _tokenId, address _childContract, uint256 _childTokenId)
+    public view
+    override
+    returns (uint256) {
         return _childContract == address(childContract) ?
-                balances[_tokenId][_childTokenId] : 0;
+        balances[_tokenId][_childTokenId] : 0;
     }
 
     function childContractsFor(uint256 _tokenId) override external view returns (address[] memory) {
@@ -222,10 +246,10 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
             return new uint256[](0);
         }
 
-        uint256[] memory childTokenIds = new uint256[](childsForChildContract[_tokenId].length());
+        uint256[] memory childTokenIds = new uint256[](parentToChildMapping[_tokenId].length());
 
-        for(uint256 i = 0; i < childsForChildContract[_tokenId].length(); i++) {
-            childTokenIds[i] = childsForChildContract[_tokenId].at(i);
+        for (uint256 i = 0; i < parentToChildMapping[_tokenId].length(); i++) {
+            childTokenIds[i] = parentToChildMapping[_tokenId].at(i);
         }
 
         return childTokenIds;
@@ -256,8 +280,6 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
             "ERC998: caller is not owner nor approved"
         );
 
-        _beforeChildTransfer(operator, _fromTokenId, _to, address(childContract), _childTokenIds, _amounts, _data);
-
         for (uint256 i = 0; i < _childTokenIds.length; ++i) {
             uint256 _childTokenId = _childTokenIds[i];
             uint256 amount = _amounts[i];
@@ -272,8 +294,8 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         //todo add below check
         //require(_childContract == childContract)
 
-        if(balances[_tokenId][_childTokenId] == 0) {
-            childsForChildContract[_tokenId].add(_childTokenId);
+        if (balances[_tokenId][_childTokenId] == 0) {
+            parentToChildMapping[_tokenId].add(_childTokenId);
         }
 
         balances[_tokenId][_childTokenId] = balances[_tokenId][_childTokenId].add(_amount);
@@ -282,23 +304,11 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     function _removeChild(uint256 _tokenId, address, uint256 _childTokenId, uint256 _amount) private {
         require(_amount != 0 || balances[_tokenId][_childTokenId] >= _amount, "ERC998: insufficient child balance for transfer");
         balances[_tokenId][_childTokenId] = balances[_tokenId][_childTokenId].sub(_amount);
-        if(balances[_tokenId][_childTokenId] == 0) {
-            holdersOf[_childTokenId].remove(_tokenId);
-            childsForChildContract[_tokenId].remove(_childTokenId);
+        if (balances[_tokenId][_childTokenId] == 0) {
+            childToParentMapping[_childTokenId].remove(_tokenId);
+            parentToChildMapping[_tokenId].remove(_childTokenId);
         }
     }
-
-    function _beforeChildTransfer(
-        address _operator,
-        uint256 _fromTokenId,
-        address _to,
-        address _childContract,
-        uint256[] memory _ids,
-        uint256[] memory _amounts,
-        bytes memory _data
-    )
-    internal virtual
-    { }
 
     function _asSingletonArray(uint256 element) private pure returns (uint256[] memory) {
         uint256[] memory array = new uint256[](1);

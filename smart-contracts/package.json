@@ -4,7 +4,8 @@
   "scripts": {
     "test": "npx buidler test",
     "test-with-gas": "REPORT_GAS=true; npx buidler test",
-    "coverage": "npx buidler coverage"
+    "coverage": "npx buidler coverage",
+    "compile": "npx buidler compile"
   },
   "author": "BlockRocket.tech",
   "license": "MIT",
