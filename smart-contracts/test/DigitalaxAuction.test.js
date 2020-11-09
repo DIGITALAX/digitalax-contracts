@@ -13,6 +13,8 @@ const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
 const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
 const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
 const DigitalaxAuction = artifacts.require('DigitalaxAuctionMock');
+const DigitalaxAuctionReal = artifacts.require('DigitalaxAuction');
+const BiddingContractMock = artifacts.require('BiddingContractMock');
 
 contract('DigitalaxAuction', (accounts) => {
   const [admin, smartContract, platformFeeAddress, minter, owner, designer, bidder, bidder2] = accounts;
@@ -386,6 +388,22 @@ contract('DigitalaxAuction', (accounts) => {
       });
     });
 
+    describe('creating using real contract (not mock)', () => {
+      it('can successfully create', async () => {
+        const auction = await DigitalaxAuctionReal.new(
+          this.accessControls.address,
+          this.token.address,
+          platformFeeAddress,
+          {from: admin}
+        );
+
+        await this.token.mint(minter, randomTokenURI, designer, {from: minter});
+        await auction.createAuction(TOKEN_ONE_ID, '1', '0', '99999999999999', {from: minter});
+
+        const owner = await this.token.ownerOf(TOKEN_ONE_ID);
+        expect(owner).to.be.equal(minter);
+      });
+    });
   });
 
   describe('placeBid()', async () => {
@@ -402,6 +420,14 @@ contract('DigitalaxAuction', (accounts) => {
           '1', // start
           '10', // end
           {from: minter}
+        );
+      });
+
+      it('will revert if sender is smart contract', async () => {
+        this.biddingContract = await BiddingContractMock.new(this.auction.address);
+        await expectRevert(
+          this.biddingContract.bid(TOKEN_ONE_ID, {from: bidder, value: ether('0.2')}),
+          "DigitalaxAuction.placeBid: No contracts permitted"
         );
       });
 
@@ -540,9 +566,11 @@ contract('DigitalaxAuction', (accounts) => {
     });
 
     it('fails with withdrawing when lockout time not passed', async () => {
+      await this.auction.updateBidWithdrawalLockTime('6');
+      await this.auction.setNowOverride('5');
       await expectRevert(
-        this.auction.withdrawBid(TOKEN_ONE_ID, {from: bidder2}),
-        'DigitalaxAuction.withdrawBid: You are not the highest bidder'
+        this.auction.withdrawBid(TOKEN_ONE_ID, {from: bidder}),
+        "DigitalaxAuction.withdrawBid: Cannot withdraw until lock time has passed"
       );
     });
 
@@ -633,6 +661,18 @@ contract('DigitalaxAuction', (accounts) => {
         await expectRevert(
           this.auction.resultAuction(TOKEN_ONE_ID, {from: admin}),
           'DigitalaxAuction.resultAuction: no open bids'
+        );
+      });
+
+      it('cannot result if there is no approval', async () => {
+        await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('1')});
+        await this.auction.setNowOverride('12');
+
+        await this.token.approve(constants.ZERO_ADDRESS, TOKEN_ONE_ID, {from: minter});
+
+        await expectRevert(
+          this.auction.resultAuction(TOKEN_ONE_ID, {from: admin}),
+          "DigitalaxAuction.resultAuction: auction not approved"
         );
       });
 
