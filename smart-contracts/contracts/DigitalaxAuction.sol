@@ -124,7 +124,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
 
     constructor(
         DigitalaxAccessControls _accessControls,
-        DigitalaxGarmentNFT _garmentNft,
+        DigitalaxGarmentNFT _garmentNft, // TODO extract interface to save deployment costs
         address payable _platformFeeRecipient
     ) public {
         require(address(_accessControls) != address(0), "DigitalaxAuction: Invalid Access Controls");
@@ -155,9 +155,12 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     function createAuction(
         uint256 _garmentTokenId,
         uint256 _reservePrice,
-        uint256 _startTime,
-        uint256 _endTime
+        uint256 _startTime, // TODO change name to Timestamp
+        uint256 _endTime // TODO change name to Timestamp
     ) external {
+        // TODO is this role check valid - check logic/requirements
+        // TODO if allowing smart contracts to list tokens, need to be able to specify the lister and handle the approval flow for them
+
         // Ensure caller has privileges
         require(
             accessControls.hasMinterRole(_msgSender()),
@@ -195,6 +198,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
      @dev Bids from smart contracts are prohibited to prevent griefing with always reverting receiver
      @param _garmentTokenId Token ID of the garment being auctioned
      */
+    // TODO add check for "isNotContract"
     function placeBid(uint256 _garmentTokenId) external payable nonReentrant {
         require(_msgSender().isContract() == false, "DigitalaxAuction.placeBid: No contracts permitted");
 
