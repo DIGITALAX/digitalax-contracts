@@ -133,6 +133,14 @@ contract('DigitalaxAuction', (accounts) => {
           'DigitalaxAuction.updateAuctionReservePrice: Sender must be admin'
         );
       });
+
+      it('fails when auction doesnt exist', async () => {
+        await expectRevert(
+          this.auction.updateAuctionReservePrice(TOKEN_TWO_ID, '1', {from: admin}),
+          "DigitalaxAuction.updateAuctionReservePrice: No Auction exists"
+        );
+      });
+
       it('successfully updates auction reserve', async () => {
         let {_reservePrice} = await this.auction.getAuction(TOKEN_ONE_ID);
         expect(_reservePrice).to.be.bignumber.equal('1');
@@ -151,6 +159,14 @@ contract('DigitalaxAuction', (accounts) => {
           'DigitalaxAuction.updateAuctionStartTime: Sender must be admin'
         );
       });
+
+      it('fails when auction does not exist', async () => {
+        await expectRevert(
+          this.auction.updateAuctionStartTime(TOKEN_TWO_ID, '1', {from: admin}),
+          "DigitalaxAuction.updateAuctionStartTime: No Auction exists"
+        );
+      });
+
       it('successfully updates auction start time', async () => {
         let {_startTime} = await this.auction.getAuction(TOKEN_ONE_ID);
         expect(_startTime).to.be.bignumber.equal('0');
@@ -169,6 +185,14 @@ contract('DigitalaxAuction', (accounts) => {
           'DigitalaxAuction.updateAuctionEndTime: Sender must be admin'
         );
       });
+
+      it('fails when no auction exists', async () => {
+        await expectRevert(
+          this.auction.updateAuctionEndTime(TOKEN_TWO_ID, '1', {from: admin}),
+          "DigitalaxAuction.updateAuctionEndTime: No Auction exists"
+        );
+      });
+
       it('successfully updates auction end time', async () => {
         let {_endTime} = await this.auction.getAuction(TOKEN_ONE_ID);
         expect(_endTime).to.be.bignumber.equal('10');
@@ -187,6 +211,14 @@ contract('DigitalaxAuction', (accounts) => {
           'DigitalaxAuction.updateAccessControls: Sender must be admin'
         );
       });
+
+      it('reverts when trying to set recipient as ZERO address', async () => {
+        await expectRevert(
+          this.auction.updateAccessControls(constants.ZERO_ADDRESS, {from: admin}),
+          'DigitalaxAuction.updateAccessControls: Zero Address'
+        );
+      });
+
       it('successfully updates access controls', async () => {
         const accessControlsV2 = await DigitalaxAccessControls.new({from: admin});
 
@@ -219,13 +251,21 @@ contract('DigitalaxAuction', (accounts) => {
     });
 
     describe('updatePlatformFeeRecipient()', () => {
-      it('fails when not admin', async () => {
+      it('reverts when not admin', async () => {
         await expectRevert(
           this.auction.updatePlatformFeeRecipient(owner, {from: bidder}),
           'DigitalaxAuction.updatePlatformFeeRecipient: Sender must be admin'
         );
       });
-      it('successfully updates access controls', async () => {
+
+      it('reverts when trying to set recipient as ZERO address', async () => {
+        await expectRevert(
+          this.auction.updatePlatformFeeRecipient(constants.ZERO_ADDRESS, {from: admin}),
+          'DigitalaxAuction.updatePlatformFeeRecipient: Zero address'
+        );
+      });
+
+      it('successfully updates platform fee recipient', async () => {
         const original = await this.auction.platformFeeRecipient();
         expect(original).to.be.equal(platformFeeAddress);
 
@@ -244,6 +284,14 @@ contract('DigitalaxAuction', (accounts) => {
         await expectRevert(
           this.auction.createAuction(TOKEN_ONE_ID, '1', '0', '10', {from: bidder}),
           'DigitalaxAuction.createAuction: Sender must have the minter role'
+        );
+      });
+
+      it('fails if endTime is in the past', async () => {
+        await this.auction.setNowOverride('12');
+        await expectRevert(
+          this.auction.createAuction(TOKEN_ONE_ID, '1', '0', '10', {from: minter}),
+          "DigitalaxAuction.createAuction: End time passed. Nobody can bid."
         );
       });
 
@@ -457,6 +505,15 @@ contract('DigitalaxAuction', (accounts) => {
       await expectRevert(
         this.auction.withdrawBid(TOKEN_ONE_ID, {from: bidder2}),
         'DigitalaxAuction.withdrawBid: You are not the highest bidder'
+      );
+    });
+
+    it('fails when withdrawing after auction end', async () => {
+      await this.auction.setNowOverride('12');
+      await this.auction.updateBidWithdrawalLockTime('0', {from: admin});
+      await expectRevert(
+        this.auction.withdrawBid(TOKEN_ONE_ID, {from: bidder}),
+        "DigitalaxAuction.withdrawBid: Past auction end"
       );
     });
 
