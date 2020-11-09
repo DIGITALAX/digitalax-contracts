@@ -1,23 +1,25 @@
 var prompt = require('prompt-sync')();
-const DigitalaxGenesisNFTContract = require('../artifacts/DigitalaxGenesisNFT.json');
 
 async function main() {
     const [deployer] = await ethers.getSigners();
     const deployerAddress = await deployer.getAddress();
     console.log(
-        "Test buy with the account:",
+        "Deploying garment with address:",
         deployerAddress
     );
 
-    const genesisNftAddress = prompt('Genesis address? ');
-    const genesis = new ethers.Contract(
-        genesisNftAddress,
-        DigitalaxGenesisNFTContract.abi,
-        deployer //provider
-    );
-    const beneficiary = prompt('Genesis admin NFT beneficiary? ');
+    const accessControlsAddress = prompt('Access controls address? ');
+    const materialsAddress = prompt('Materials address? ');
 
-    await genesis.adminBuy(beneficiary, {from: deployerAddress});
+    const DigitalaxGarmentNFT = await ethers.getContractFactory('DigitalaxGarmentNFT');
+    const garment = await DigitalaxGarmentNFT.deploy(
+      accessControlsAddress,
+      materialsAddress
+    );
+
+    await garment.deployed();
+
+    console.log('Garment deployed at', garment.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

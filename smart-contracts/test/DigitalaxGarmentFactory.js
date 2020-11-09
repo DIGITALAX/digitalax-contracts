@@ -21,6 +21,8 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
   const STRAND_ONE_ID = new BN('1');
   const STRAND_TWO_ID = new BN('2');
   const STRAND_THREE_ID = new BN('3');
+  const STRAND_FOUR_ID = new BN('4');
+  const STRAND_FIVE_ID = new BN('5');
 
   beforeEach(async () => {
     this.accessControls = await DigitalaxAccessControls.new({from: admin});
@@ -82,7 +84,7 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
   describe('createGarmentAndMintStrands()', () => {
     beforeEach(async () => {
       await this.factory.createNewStrands(
-        [randomStrandURI, randomStrandURI, randomStrandURI],
+        [randomStrandURI, randomStrandURI, randomStrandURI, randomStrandURI, randomStrandURI],
         {from: minter}
       ); // This will create strands with strand IDs: [1], [2], [3]
     });
@@ -91,11 +93,14 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
       const strand1Amount = '1';
       const strand2Amount = '5';
       const strand3Amount = '2';
+      const strand4Amount = '2';
+      const strand5Amount = '2';
+      const strandIds = [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID, STRAND_FOUR_ID, STRAND_FIVE_ID];
       const { receipt } = await this.factory.createGarmentAndMintStrands(
         randomGarmentURI,
         designer,
-        [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID],
-        [strand1Amount, strand2Amount, strand3Amount], // amounts to mint and link
+        strandIds,
+        [strand1Amount, strand2Amount, strand3Amount, strand4Amount, strand5Amount], // amounts to mint and link
         tokenHolder,
         {from: minter}
       );
@@ -105,7 +110,9 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
       await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, strand1Amount);
       await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_TWO_ID, strand2Amount);
       await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_THREE_ID, strand3Amount);
-      await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID]);
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_FOUR_ID, strand4Amount);
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_FIVE_ID, strand5Amount);
+      await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, strandIds);
     });
 
 

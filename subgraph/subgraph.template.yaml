@@ -30,3 +30,85 @@ dataSources:
         - event: DigitalaxGenesisNFTContractDeployed()
           handler: handleGenesisDeployed
       file: ./src/DigitalaxGenesisNFT.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxGarmentNFT
+    network: '{{network}}'
+    source:
+      address: '{{DigitalaxGarmentNFTAddress}}'
+      abi: DigitalaxGarmentNFT
+      startBlock: {{DigitalaxGarmentNFTStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: DigitalaxGarmentNFT
+          file: ./abis/DigitalaxGarmentNFT.json
+        - name: DigitalaxMaterials
+          file: ./abis/DigitalaxMaterials.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: ReceivedChild(indexed address,indexed uint256,indexed address,uint256,uint256)
+          handler: handleChildReceived
+      file: ./src/DigitalaxGarmentNFT.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxMaterials
+    network: '{{network}}'
+    source:
+      address: '{{DigitalaxMaterialsAddress}}'
+      abi: DigitalaxMaterials
+      startBlock: {{DigitalaxMaterialsStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - StrandCreated
+        - TransferBatch
+      abis:
+        - name: DigitalaxMaterials
+          file: ./abis/DigitalaxMaterials.json
+      eventHandlers:
+        - event: StrandCreated(indexed uint256)
+          handler: handleStrandCreated
+        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
+          handler: handleBatchTransfer
+      file: ./src/DigitalaxMaterials.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxAuction
+    network: '{{network}}'
+    source:
+      address: '{{DigitalaxAuctionAddress}}'
+      abi: DigitalaxAuction
+      startBlock: {{DigitalaxAuctionStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - AuctionCreated
+        - AuctionResulted
+        - AuctionCancelled
+        - BidPlaced
+        - BidWithdrawn
+        - BidRefunded
+      abis:
+        - name: DigitalaxAuction
+          file: ./abis/DigitalaxAuction.json
+      eventHandlers:
+        - event: AuctionCreated(indexed uint256)
+          handler: handleAuctionCreated
+        - event: DigitalaxAuctionContractDeployed()
+          handler: handleDigitalaxAuctionContractDeployed
+        - event: BidPlaced(indexed uint256,indexed address,uint256)
+          handler: handleBidPlaced
+        - event: BidWithdrawn(indexed uint256,indexed address,uint256)
+          handler: handleBidWithdrawn
+        - event: AuctionResulted(indexed uint256,indexed address,uint256)
+          handler: handleAuctionResulted
+        - event: AuctionCancelled(indexed uint256)
+          handler: handleAuctionCancelled
+      file: ./src/DigitalaxAuction.mapping.ts
