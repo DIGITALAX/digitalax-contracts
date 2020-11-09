@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "./DigitalaxAccessControls.sol";
 import "./DigitalaxGarmentNFT.sol";
 
+//TODO: pause on create, placebid and withdraw
 contract DigitalaxAuction is Context, ReentrancyGuard {
     using SafeMath for uint256;
     using Address for address payable;
@@ -87,7 +88,6 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         uint256 reservePrice;
         uint256 startTime;
         uint256 endTime;
-        address lister;
         bool resulted;
     }
 
@@ -154,38 +154,50 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         uint256 _startTimestamp,
         uint256 _endTimestamp
     ) external {
-        // TODO is this role check valid - check logic/requirements
-        // TODO if allowing smart contracts to list tokens, need to be able to specify the lister and handle the approval flow for them
-
         // Ensure caller has privileges
         require(
             accessControls.hasMinterRole(_msgSender()),
             "DigitalaxAuction.createAuction: Sender must have the minter role"
         );
 
-        // Ensure a token cannot be re-listed if previously successfully sold
-        require(auctions[_garmentTokenId].lister == address(0), "DigitalaxAuction.createAuction: Cannot relist");
-
-        // Check end time not before start time and that end is in the future
-        require(_endTimestamp > _startTimestamp, "DigitalaxAuction.createAuction: End time must be greater than start");
-        require(_endTimestamp > _getNow(), "DigitalaxAuction.createAuction: End time passed. Nobody can bid.");
-
-        // Check owner of the token is the creator
+        // Check owner of the token is the creator and approved
         require(
-            garmentNft.ownerOf(_garmentTokenId) == _msgSender(),
+            garmentNft.ownerOf(_garmentTokenId) == _msgSender() && garmentNft.isApproved(_garmentTokenId, address(this)),
             "DigitalaxAuction.createAuction: Cannot create an auction if you do not own it"
         );
 
-        // Setup the auction
-        auctions[_garmentTokenId] = Auction({
-        reservePrice : _reservePrice,
-        startTime : _startTimestamp,
-        endTime : _endTimestamp,
-        lister : _msgSender(),
-        resulted : false // TODO: could put it in its own mapping to save gas setting up this struct
-        });
+        _createAuction(
+            _garmentTokenId,
+            _reservePrice,
+            _startTimestamp,
+            _endTimestamp
+        );
+    }
 
-        emit AuctionCreated(_garmentTokenId);
+    //todo add docs
+    function createAuctionOnBehalfOfOwner(
+        uint256 _garmentTokenId,
+        uint256 _reservePrice,
+        uint256 _startTimestamp,
+        uint256 _endTimestamp
+    ) external {
+        // Ensure caller has privileges
+        require(
+            accessControls.hasAdminRole(_msgSender()) || accessControls.hasSmartContractRole(_msgSender()),
+            "DigitalaxAuction.createAuctionOnBehalfOfOwner: Sender must have admin or smart contract role"
+        );
+
+        require(
+            garmentNft.isApproved(_garmentTokenId, address(this)),
+            "DigitalaxAuction.createAuctionOnBehalfOfOwner: Cannot create an auction if you do not have approval"
+        );
+
+        _createAuction(
+            _garmentTokenId,
+            _reservePrice,
+            _startTimestamp,
+            _endTimestamp
+        );
     }
 
     /**
@@ -277,7 +289,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         Auction storage auction = auctions[_garmentTokenId];
 
         // Check the auction real
-        require(auction.lister != address(0), "DigitalaxAuction.resultAuction: Auction does not exist");
+        require(auction.endTime > 0, "DigitalaxAuction.resultAuction: Auction does not exist");
 
         // Check the auction has ended
         require(_getNow() > auction.endTime, "DigitalaxAuction.resultAuction: The auction has not ended");
@@ -335,7 +347,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     }
 
     /**
-     @notice Cancels and inflight and un-resulted auctions, returning the funds to the top bidder if found and sending the token back to the lister
+     @notice Cancels and inflight and un-resulted auctions, returning the funds to the top bidder if found
      @dev Only admin
      @param _garmentTokenId Token ID of the garment being auctioned
      */
@@ -350,7 +362,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         Auction storage auction = auctions[_garmentTokenId];
 
         // Check auction is real
-        require(auction.lister != address(0), "DigitalaxAuction.cancelAuction: Auction does not exist");
+        require(auction.endTime > 0, "DigitalaxAuction.cancelAuction: Auction does not exist");
 
         // Check auction not already resulted
         require(!auction.resulted, "DigitalaxAuction.cancelAuction: auction already resulted");
@@ -406,7 +418,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         );
 
         require(
-            auctions[_garmentTokenId].lister != address(0),
+            auctions[_garmentTokenId].endTime > 0,
             "DigitalaxAuction.updateAuctionReservePrice: No Auction exists"
         );
 
@@ -428,7 +440,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         );
 
         require(
-            auctions[_garmentTokenId].lister != address(0),
+            auctions[_garmentTokenId].endTime > 0,
             "DigitalaxAuction.updateAuctionStartTime: No Auction exists"
         );
 
@@ -450,7 +462,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         );
 
         require(
-            auctions[_garmentTokenId].lister != address(0),
+            auctions[_garmentTokenId].endTime > 0,
             "DigitalaxAuction.updateAuctionEndTime: No Auction exists"
         );
 
@@ -518,13 +530,12 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     function getAuction(uint256 _garmentTokenId)
     external
     view
-    returns (uint256 _reservePrice, uint256 _startTime, uint256 _endTime, address _lister, bool _resulted) {
+    returns (uint256 _reservePrice, uint256 _startTime, uint256 _endTime, bool _resulted) {
         Auction storage auction = auctions[_garmentTokenId];
         return (
         auction.reservePrice,
         auction.startTime,
         auction.endTime,
-        auction.lister,
         auction.resulted
         );
     }
@@ -551,7 +562,32 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     /////////////////////////
 
     function _getNow() internal virtual view returns (uint256) {
-        return now;
+        return block.timestamp;
+    }
+
+    //todo add docs
+    function _createAuction(
+        uint256 _garmentTokenId,
+        uint256 _reservePrice,
+        uint256 _startTimestamp,
+        uint256 _endTimestamp
+    ) private {
+        // Ensure a token cannot be re-listed if previously successfully sold
+        require(auctions[_garmentTokenId].endTime == 0, "DigitalaxAuction.createAuction: Cannot relist");
+
+        // Check end time not before start time and that end is in the future
+        require(_endTimestamp > _startTimestamp, "DigitalaxAuction.createAuction: End time must be greater than start");
+        require(_endTimestamp > _getNow(), "DigitalaxAuction.createAuction: End time passed. Nobody can bid.");
+
+        // Setup the auction
+        auctions[_garmentTokenId] = Auction({
+        reservePrice : _reservePrice,
+        startTime : _startTimestamp,
+        endTime : _endTimestamp,
+        resulted : false
+        });
+
+        emit AuctionCreated(_garmentTokenId);
     }
 
     /**
