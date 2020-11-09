@@ -138,10 +138,6 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         emit DigitalaxAuctionContractDeployed();
     }
 
-    // TODO add test for creating an action, cancelling it, creating it again - confirm flow works as expected - scenario 1 - it doesnt sell fist time
-    // TODO add test for increasing bid -> placeBid() -> placeBid() again to bump it                           - scenario 2 - increasing my bid
-    // TODO enforce method args more strictly for admin update methods
-
     /**
      @notice Creates a new auction for a given garment
      @dev Only the owner of a garment can create an auction
@@ -149,14 +145,14 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
      @dev End time for the auction must be in the future.
      @param _garmentTokenId Token ID of the garment being auctioned
      @param _reservePrice Garment cannot be sold for less than this price
-     @param _startTime Unix epoch in seconds for the auction start time
-     @param _endTime Unix epoch in seconds for the auction end time.
+     @param _startTimestamp Unix epoch in seconds for the auction start time
+     @param _endTimestamp Unix epoch in seconds for the auction end time.
      */
     function createAuction(
         uint256 _garmentTokenId,
         uint256 _reservePrice,
-        uint256 _startTime, // TODO change name to Timestamp
-        uint256 _endTime // TODO change name to Timestamp
+        uint256 _startTimestamp,
+        uint256 _endTimestamp
     ) external {
         // TODO is this role check valid - check logic/requirements
         // TODO if allowing smart contracts to list tokens, need to be able to specify the lister and handle the approval flow for them
@@ -171,8 +167,8 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         require(auctions[_garmentTokenId].lister == address(0), "DigitalaxAuction.createAuction: Cannot relist");
 
         // Check end time not before start time and that end is in the future
-        require(_endTime > _startTime, "DigitalaxAuction.createAuction: End time must be greater than start");
-        require(_endTime > _getNow(), "DigitalaxAuction.createAuction: End time passed. Nobody can bid.");
+        require(_endTimestamp > _startTimestamp, "DigitalaxAuction.createAuction: End time must be greater than start");
+        require(_endTimestamp > _getNow(), "DigitalaxAuction.createAuction: End time passed. Nobody can bid.");
 
         // Check owner of the token is the creator
         require(
@@ -183,8 +179,8 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         // Setup the auction
         auctions[_garmentTokenId] = Auction({
         reservePrice : _reservePrice,
-        startTime : _startTime,
-        endTime : _endTime,
+        startTime : _startTimestamp,
+        endTime : _endTimestamp,
         lister : _msgSender(),
         resulted : false // TODO: could put it in its own mapping to save gas setting up this struct
         });
@@ -198,7 +194,6 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
      @dev Bids from smart contracts are prohibited to prevent griefing with always reverting receiver
      @param _garmentTokenId Token ID of the garment being auctioned
      */
-    // TODO add check for "isNotContract"
     function placeBid(uint256 _garmentTokenId) external payable nonReentrant {
         require(_msgSender().isContract() == false, "DigitalaxAuction.placeBid: No contracts permitted");
 

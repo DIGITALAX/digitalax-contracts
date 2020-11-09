@@ -403,8 +403,25 @@ contract('DigitalaxAuction', (accounts) => {
         expect(_bid).to.be.bignumber.equal(ether('0.4'));
         expect(_bidder).to.equal(bidder2);
       });
-    });
 
+      it('successfully increases bid', async () => {
+        await this.auction.setNowOverride('2');
+
+        const bidderTracker = await balance.tracker(bidder);
+        const receipt = await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.2')});
+
+        expect(await bidderTracker.delta()).to.be.bignumber.equal(ether('0.2').add(await getGasCosts(receipt)).mul(new BN('-1')));
+
+        const {_bidder, _bid} = await this.auction.getHighestBidder(TOKEN_ONE_ID);
+        expect(_bid).to.be.bignumber.equal(ether('0.2'));
+        expect(_bidder).to.equal(bidder);
+
+        const receipt2 = await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('1')});
+
+        // check that the bidder has only really spent 0.8 ETH plus gas due to 0.2 ETH refund
+        expect(await bidderTracker.delta()).to.be.bignumber.equal((ether('1').sub(ether('0.2'))).add(await getGasCosts(receipt2)).mul(new BN('-1')));
+      })
+    });
   });
 
   describe('withdrawBid()', async () => {
@@ -813,6 +830,17 @@ contract('DigitalaxAuction', (accounts) => {
         winner: bidder,
         winningBid: ether('0.2')
       });
+
+      await expectRevert(
+        this.auction.createAuction(
+          TOKEN_ONE_ID, // ID
+          '1',  // reserve
+          '1', // start
+          '13', // end
+          {from: minter}
+        ),
+        "DigitalaxAuction.createAuction: Cannot relist"
+      );
     });
 
   });
