@@ -42,7 +42,7 @@ contract DigitalaxGarmentFactory is Context {
     /**
      @notice Creates a single child ERC1155 token
      @dev Only callable with minter role
-     @return strandId the generated child Token ID
+     @return childTokenId the generated child Token ID
      */
     function createNewChild(string calldata _uri) external returns (uint256 childTokenId) {
         require(
