@@ -65,27 +65,27 @@ contract('Digitalax Garment Sale', (accounts) => {
 
   it('Can setup a garment sale', async () => {
     // Create the strands first
-    expect(await this.digitalaxMaterials.strandIdPointer()).to.be.bignumber.equal('0'); //No strands exist
+    expect(await this.digitalaxMaterials.tokenIdPointer()).to.be.bignumber.equal('0'); //No strands exist
 
-    await this.factory.createNewStrands(
+    await this.factory.createNewChildren(
       [randomStrandURI, randomStrandURI, randomStrandURI, randomStrandURI, randomStrandURI],
       {from: minter}
     ); // this will create strand with IDs [1], [2], [3]
 
-    expect(await this.digitalaxMaterials.strandIdPointer()).to.be.bignumber.equal('5'); //5 strands exist
+    expect(await this.digitalaxMaterials.tokenIdPointer()).to.be.bignumber.equal('5'); //5 strands exist
     expect(await this.token.balanceOf(minter)).to.be.bignumber.equal('0'); // no garments minted to owner
 
     // Create the garment and wrap strands
-    const strandIds = [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID, STRAND_FOUR_ID, STRAND_FIVE_ID];
+    const childTokenIds = [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID, STRAND_FOUR_ID, STRAND_FIVE_ID];
     const strand1Amount = '4';
     const strand2Amount = '2';
     const strand3Amount = '1';
     const strand4Amount = '1';
     const strand5Amount = '1';
-    await this.factory.createGarmentAndMintStrands(
+    await this.factory.mintParentWithChildren(
       randomTokenURI,
       designer,
-      strandIds,
+      childTokenIds,
       [strand1Amount, strand2Amount, strand3Amount, strand4Amount, strand5Amount],
       minter,
       {from: minter}
@@ -94,7 +94,7 @@ contract('Digitalax Garment Sale', (accounts) => {
     expect(await this.token.balanceOf(minter)).to.be.bignumber.equal('1');
     expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.bignumber.equal(minter);
 
-    await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, strandIds);
+    await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, childTokenIds);
     await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, strand1Amount);
     await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_TWO_ID, strand2Amount);
     await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_THREE_ID, strand3Amount);
@@ -126,15 +126,15 @@ contract('Digitalax Garment Sale', (accounts) => {
     expect(garmentStrandBalance).to.be.bignumber.equal(expectedStrandBalance);
   };
 
-  const expectGarmentToOwnAGivenSetOfStrandIds = async (garmentId, strandIds) => {
+  const expectGarmentToOwnAGivenSetOfStrandIds = async (garmentId, childTokenIds) => {
     const garmentStrandIdsOwned = await this.token.childIdsForOn(
       garmentId,
       this.digitalaxMaterials.address
     );
 
-    expect(garmentStrandIdsOwned.length).to.be.equal(strandIds.length);
+    expect(garmentStrandIdsOwned.length).to.be.equal(childTokenIds.length);
     garmentStrandIdsOwned.forEach((strandId, idx) => {
-      expect(strandId).to.be.bignumber.equal(strandIds[idx]);
+      expect(strandId).to.be.bignumber.equal(childTokenIds[idx]);
     });
   };
 });
