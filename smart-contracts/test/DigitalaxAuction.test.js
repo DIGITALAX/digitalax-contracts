@@ -262,7 +262,7 @@ contract('DigitalaxAuction', (accounts) => {
 
         await expectRevert(
           this.auction.createAuction(TOKEN_ONE_ID, '1', '1', '3', {from: minter}),
-          'DigitalaxAuction.createAuction: Cannot create an auction in the middle of another'
+          'DigitalaxAuction.createAuction: Cannot relist'
         );
       });
 
@@ -283,7 +283,7 @@ contract('DigitalaxAuction', (accounts) => {
         await this.auction.setNowOverride('10');
 
         await expectRevert(
-          this.auction.createAuction(TOKEN_ONE_ID, '1', '1', '3', {from: minter}),
+          this.auction.createAuction(TOKEN_ONE_ID, '1', '1', '11', {from: minter}),
           'ERC721: owner query for nonexistent token'
         );
       });
@@ -450,8 +450,8 @@ contract('DigitalaxAuction', (accounts) => {
 
       const bidderTracker = await balance.tracker(bidder);
 
-      // Move time on pass lockout time
-      await this.auction.setNowOverride('1203', {from: admin});
+      // remove the withdrawal lock time for the test
+      await this.auction.updateBidWithdrawalLockTime('0', {from: admin});
 
       const receipt = await this.auction.withdrawBid(TOKEN_ONE_ID, {from: bidder});
 

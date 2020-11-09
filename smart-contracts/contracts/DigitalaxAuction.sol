@@ -237,8 +237,6 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
      @param _garmentTokenId Token ID of the garment being auctioned
      */
     function withdrawBid(uint256 _garmentTokenId) external nonReentrant {
-        require(_getNow() < auctions[_garmentTokenId].endTime, "DigitalaxAuction.withdrawBid: Past auction end");
-
         HighestBid storage highestBid = highestBids[_garmentTokenId];
 
         // Ensure highest bidder is the caller
@@ -249,6 +247,8 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
             _getNow() >= highestBid.lastBidTime.add(bidWithdrawalLockTime),
             "DigitalaxAuction.withdrawBid: Cannot withdraw until lock time has passed"
         );
+
+        require(_getNow() < auctions[_garmentTokenId].endTime, "DigitalaxAuction.withdrawBid: Past auction end");
 
         uint256 previousBid = highestBid.bid;
 
