@@ -7,34 +7,6 @@ Parent (ERC-721) a.k.a parent
 Child  (ERC-1155) a.k.a. children
 ```
 
-## DigitalaxMaterials (Child tokens - ERC-1155)
-
-#### Creating new children
-
-```solidity
-function createChild(string calldata _uri) external returns (uint256 id)
-function batchCreateChildren(string[] calldata _uris) external returns (uint256[] memory tokenIds)
-```
-
-#### Minting tokens from existing children 
-
-```solidity
-function mintChild(uint256 _childTokenId, uint256 _amount, address _beneficiary, bytes calldata _data)
-function batchMintChildren(uint256[] calldata _childTokenIds, uint256[] calldata _amounts, address _beneficiary, bytes calldata _data)
-```
-
-#### Burning children 
-
-```solidity
-TODO
-```
-
-## DigitalaxGarmentNFT (Parent tokens - ERC-721)
-
-```solidity
-TODO
-```
-
 ### DigitalaxGarmentFactory (Orchestrator for making child and parent tokens)
 
 * Responsible for facilitating the minting of both children and parent tokens and linking those together if needed.
@@ -61,4 +33,45 @@ function createNewChildren(string[] calldata _uris) external returns (uint256[] 
 ```solidity
 function mintParentWithChildren(string calldata garmentTokenUri, address designer, uint256[] calldata childTokenIds, uint256[] calldata childTokenAmounts, address beneficiary)
 function mintParentWithoutChildren(string calldata garmentTokenUri, address designer, address beneficiary)
+```
+
+## DigitalaxMaterials (Child tokens - ERC-1155)
+
+#### Creating new children
+
+* Can only be called by an account who has the `SMART_CONTRACT` role
+* Create a new token ID for the given URI
+    * Tokens can have duplicate URIs
+* When creating new tokens - they have a balance of zero
+
+```solidity
+function createChild(string calldata _uri) external returns (uint256 id)
+function batchCreateChildren(string[] calldata _uris) external returns (uint256[] memory tokenIds)
+```
+
+#### Minting tokens from existing children 
+
+* Increases the supply of the provided child tokens for the given amounts
+* Can only be called by an account who has the `SMART_CONTRACT` role
+* If creating tokens to embedded within another 721 token, `msg.data` must be an encoded `tokenId`
+
+```solidity
+function mintChild(uint256 _childTokenId, uint256 _amount, address _beneficiary, bytes calldata _data)
+function batchMintChildren(uint256[] calldata _childTokenIds, uint256[] calldata _amounts, address _beneficiary, bytes calldata _data)
+```
+
+#### Burning children 
+
+* In order for a token owner to get access to the embedded 1155 child tokens, a user must burn it. 
+* Burning a token is a one way process
+* Only the token owner can burn their own token
+
+```solidity
+TODO
+```
+
+## DigitalaxGarmentNFT (Parent tokens - ERC-721)
+
+```solidity
+TODO
 ```
