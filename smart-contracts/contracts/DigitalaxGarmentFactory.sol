@@ -94,14 +94,14 @@ contract DigitalaxGarmentFactory is Context {
      @notice Creates a single ERC721 parent token without any linked child tokens
      @dev Only callable with minter role
      */
-    function createParent(
+    function mintParentWithoutChildren(
         string calldata garmentTokenUri,
         address designer,
         address beneficiary
     ) external {
         require(
             accessControls.hasMinterRole(_msgSender()),
-            "DigitalaxGarmentFactory.createParent: Sender must be minter"
+            "DigitalaxGarmentFactory.mintParentWithoutChildren: Sender must be minter"
         );
 
         // Generate parent 721 token

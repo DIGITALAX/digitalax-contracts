@@ -1,8 +1,6 @@
-const { BN, constants, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
-const { ZERO_ADDRESS } = constants;
+const {BN, constants, expectEvent, expectRevert} = require('@openzeppelin/test-helpers');
 
-const { expect } = require('chai');
-const web3 = require('web3');
+const {expect} = require('chai');
 
 const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
 const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
@@ -10,8 +8,8 @@ const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
 const DigitalaxGarmentFactoryTest = artifacts.require('DigitalaxGarmentFactory');
 
 contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, designer, ...otherAccounts]) {
-  const name = "DigitalaxMaterials";
-  const symbol = "DXM";
+  const name = 'DigitalaxMaterials';
+  const symbol = 'DXM';
 
   const randomStrandURI = 'randomStrandUri';
   const randomGarmentURI = 'randomGarmentUri';
@@ -60,7 +58,7 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
     it('Reverts when sender is not a minter', async () => {
       await expectRevert(
         this.factory.createNewChild(randomStrandURI, {from: tokenHolder}),
-        "DigitalaxGarmentFactory.createNewChild: Sender must be minter"
+        'DigitalaxGarmentFactory.createNewChild: Sender must be minter'
       );
     });
   });
@@ -76,7 +74,7 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
     it('Reverts when sender is not a minter', async () => {
       await expectRevert(
         this.factory.createNewChildren([randomStrandURI, randomStrandURI], {from: tokenHolder}),
-        "DigitalaxGarmentFactory.createNewChildren: Sender must be minter"
+        'DigitalaxGarmentFactory.createNewChildren: Sender must be minter'
       );
     });
   });
@@ -96,7 +94,7 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
       const strand4Amount = '2';
       const strand5Amount = '2';
       const childTokenIds = [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID, STRAND_FOUR_ID, STRAND_FIVE_ID];
-      const { receipt } = await this.factory.mintParentWithChildren(
+      const {receipt} = await this.factory.mintParentWithChildren(
         randomGarmentURI,
         designer,
         childTokenIds,
@@ -115,19 +113,45 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
       await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, childTokenIds);
     });
 
-
-
     it('Reverts when sender does not have the minter role', async () => {
       await expectRevert(
         this.factory.mintParentWithChildren(
           randomGarmentURI,
           designer,
           [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID],
-          ['1', '1','1'],
+          ['1', '1', '1'],
           tokenHolder,
           {from: tokenHolder}
         ),
-        "DigitalaxGarmentFactory.mintParentWithChildren: Sender must be minter"
+        'DigitalaxGarmentFactory.mintParentWithChildren: Sender must be minter'
+      );
+    });
+  });
+
+  describe('mintParentWithoutChildren()', () => {
+
+    it('Can mint parent without children', async () => {
+      const {receipt} = await this.factory.mintParentWithoutChildren(
+        randomGarmentURI,
+        designer,
+        tokenHolder,
+        {from: minter}
+      );
+
+      await expectEvent(receipt, 'GarmentCreated', {garmentTokenId: TOKEN_ONE_ID});
+
+      await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, []);
+    });
+
+    it('Reverts when sender does not have the minter role', async () => {
+      await expectRevert(
+        this.factory.mintParentWithoutChildren(
+          randomGarmentURI,
+          designer,
+          tokenHolder,
+          {from: tokenHolder}
+        ),
+        'DigitalaxGarmentFactory.mintParentWithoutChildren: Sender must be minter'
       );
     });
   });
