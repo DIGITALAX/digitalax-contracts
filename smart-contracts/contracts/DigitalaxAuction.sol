@@ -128,8 +128,8 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         emit DigitalaxAuctionContractDeployed();
     }
 
-    // TODO add test for creating an action, cancelling it, creating it again - confirm flow works as expected
-    // TODO add test for increasing bid -> placeBid() -> placeBid() again to bump it
+    // TODO add test for creating an action, cancelling it, creating it again - confirm flow works as expected - scenario 1 - it doesnt sell fist time
+    // TODO add test for increasing bid -> placeBid() -> placeBid() again to bump it                           - scenario 2 - increasing my bid
     // TODO enforce method args more strictly for admin update methods
 
     /**
