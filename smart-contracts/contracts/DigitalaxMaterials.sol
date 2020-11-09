@@ -7,6 +7,9 @@ import "./ERC1155/ERC1155.sol";
 import "./DigitalaxAccessControls.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
+// TODO ensure that a holder of a token can add more 1155 tokens to it in the future
+// TODO ensure that once the bank is setup, another contract can mint and burn tokens in some form
+
 contract DigitalaxMaterials is ERC1155 {
     using SafeMath for uint256;
 
@@ -40,6 +43,7 @@ contract DigitalaxMaterials is ERC1155 {
     ///////////////////////////
 
     //TODO: do we need a reverse lookup to ensure a token URI
+    // TODO ensure balance of zero when initially involved
     function createChild(string calldata _uri) external returns (uint256 id) {
         require(
             accessControls.hasSmartContractRole(_msgSender()),
@@ -56,6 +60,7 @@ contract DigitalaxMaterials is ERC1155 {
         emit ChildCreated(id);
     }
 
+    // TODO ensure balance of zero when initially involved
     function batchCreateChildren(string[] calldata _uris) external returns (uint256[] memory tokenIds) {
         require(
             accessControls.hasSmartContractRole(_msgSender()),
