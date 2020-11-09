@@ -46,6 +46,8 @@ function createAuction(uint256 _garmentTokenId, uint256 _reservePrice, uint256 _
 * `endTime` - when the auction closes for new bids - no further bids can happen after this time, an auction can only be resulted
 * `reservePrice` - the token price reserve - if this is not reached, the auction must be resulted unsuccessfully
 
+* These options can be modified by a user with `admin` rights and changes would take effect immediately
+
 ##### The rules
 
 * Users can only place bids between `start` and `end` time

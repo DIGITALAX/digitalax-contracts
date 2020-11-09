@@ -144,6 +144,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         uint256 _endTime // TODO change name to Timestamp
     ) external {
         // TODO is this role check valid - check logic/requirements
+        // TODO if allowing smart contracts to list tokens, need to be able to specify the lister and handle the approval flow for them
 
         // Ensure caller has privileges
         require(accessControls.hasMinterRole(_msgSender()), "DigitalaxAuction.createAuction: Sender must have the minter role");
