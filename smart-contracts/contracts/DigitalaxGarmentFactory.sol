@@ -4,11 +4,19 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/GSN/Context.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./DigitalaxGarmentNFT.sol";
 import "./DigitalaxMaterials.sol";
 import "./DigitalaxAccessControls.sol";
 
+/**
+ * @title Digitalax Garment Factory
+ * @dev To facilitate the creation of strands and garments
+ * @dev This contract needs to be given the SMART_CONTRACt role in order to be given access to mint tokens
+ */
 contract DigitalaxGarmentFactory is Context {
+
+    // @notice event emitted on garment creation
     event GarmentCreated(
         uint256 indexed garmentTokenId
     );
