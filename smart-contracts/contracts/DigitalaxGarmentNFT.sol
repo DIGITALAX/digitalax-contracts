@@ -44,6 +44,22 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     /// @dev ERC721 Token ID -> ERC1155 child IDs owned by the token ID
     mapping(uint256 => EnumerableSet.UintSet) private parentToChildMapping;
 
+    // TODO facilitate a user to "topup" there parent with other children tokens - up to the max
+
+    // TODO scenario 1:
+    //         -> token is already alive with existing children within
+    //         -> user can top up more tokens of the same type
+    //         -> only the owner can top them up
+
+    // TODO scenario 2:
+    //         -> token is already alive with existing children within
+    //         -> user can top up with new tokens - up to be the mxChildren limit
+    //         -> only the owner can top them up
+
+    // TODO introduce max child NFT cap - configurable by admin default is 10 - with test
+    /// @dev max children NFTs a single 721 can hold
+    uint256 public maxChildren = 10;
+
     /**
      @param _accessControls Address of the Digitalax access control contract
      @param _childContract ERC1155 the Digitalax child NFT contract
@@ -209,6 +225,16 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     function updateAccessControls(DigitalaxAccessControls _accessControls) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentNFT.updateAccessControls: Sender must be admin");
         accessControls = _accessControls;
+    }
+
+    /**
+     @notice Method for updating max children a token can hold
+     @dev Only admin
+     @param _maxChildren uint256 the max children a token can hold
+     */
+    function updateMaxChildren(uint256 _maxChildren) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentNFT.updateMaxChildren: Sender must be admin");
+        maxChildren = _maxChildren;
     }
 
     /////////////////
