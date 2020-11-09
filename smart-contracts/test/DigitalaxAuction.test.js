@@ -888,6 +888,11 @@ contract('DigitalaxAuction', (accounts) => {
         const changes = await bidderTracker.delta('wei');
         expect(changes).to.be.bignumber.equal(ether('0.2'));
       });
+
+      it('no funds transferred if no bids', async () => {
+        //cancel it
+        await this.auction.cancelAuction(TOKEN_ONE_ID, {from: admin});
+      });
     });
 
   });
