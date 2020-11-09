@@ -11,6 +11,8 @@ import "./DigitalaxGarmentNFT.sol";
 contract DigitalaxAuction is Context, ReentrancyGuard {
     using SafeMath for uint256;
 
+    event DigitalaxAuctionContractDeployed();
+
     event AuctionCreated(
         uint256 indexed garmentTokenId
     );
@@ -123,6 +125,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         accessControls = _accessControls;
         garmentNft = _garmentNft;
         platformFeeRecipient = _platformFeeRecipient;
+        emit DigitalaxAuctionContractDeployed();
     }
 
     // TODO add test for creating an action, cancelling it, creating it again - confirm flow works as expected
@@ -458,11 +461,16 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
      @notice Method for getting all info about the highest bidder
      @param _garmentTokenId Token ID of the garment being auctioned
      */
-    function getHighestBidder(uint256 _garmentTokenId) external view returns (address payable _bidder, uint256 _bid) {
+    function getHighestBidder(uint256 _garmentTokenId) external view returns (
+        address payable _bidder,
+        uint256 _bid,
+        uint256 _lastBidTime
+    ) {
         HighestBid storage highestBid = highestBids[_garmentTokenId];
         return (
-        highestBid.bidder,
-        highestBid.bid
+            highestBid.bidder,
+            highestBid.bid,
+            highestBid.lastBidTime
         );
     }
 

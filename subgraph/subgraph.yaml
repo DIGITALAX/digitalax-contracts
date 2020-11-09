@@ -6,11 +6,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DigitalaxGenesisNFT
-    network: 'mainnet'
+    network: 'rinkeby'
     source:
-      address: '0x89505d2a27b7e8ac56252081d721ecd525e4241e'
+      address: '0x064A6151F99ba2610f2D6600Dcb2b2Ed3a276356'
       abi: DigitalaxGenesisNFT
-      startBlock: 11157574
+      startBlock: 7459382
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -30,3 +30,85 @@ dataSources:
         - event: DigitalaxGenesisNFTContractDeployed()
           handler: handleGenesisDeployed
       file: ./src/DigitalaxGenesisNFT.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxGarmentNFT
+    network: 'rinkeby'
+    source:
+      address: '0x31f6b2c80f5278B9E0Cb60618470797B5C9757bA'
+      abi: DigitalaxGarmentNFT
+      startBlock: 7489183
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: DigitalaxGarmentNFT
+          file: ./abis/DigitalaxGarmentNFT.json
+        - name: DigitalaxMaterials
+          file: ./abis/DigitalaxMaterials.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: ReceivedChild(indexed address,indexed uint256,indexed address,uint256,uint256)
+          handler: handleChildReceived
+      file: ./src/DigitalaxGarmentNFT.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxMaterials
+    network: 'rinkeby'
+    source:
+      address: '0xBDC713fe557B1872DDad51cB5Fa55f9Fd2D887Aa'
+      abi: DigitalaxMaterials
+      startBlock: 7489178
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - StrandCreated
+        - TransferBatch
+      abis:
+        - name: DigitalaxMaterials
+          file: ./abis/DigitalaxMaterials.json
+      eventHandlers:
+        - event: StrandCreated(indexed uint256)
+          handler: handleStrandCreated
+        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
+          handler: handleBatchTransfer
+      file: ./src/DigitalaxMaterials.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxAuction
+    network: 'rinkeby'
+    source:
+      address: '0x0A2833042d13A64b4b48cF11B05fEEFA3c5daA21'
+      abi: DigitalaxAuction
+      startBlock: 7495516
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - AuctionCreated
+        - AuctionResulted
+        - AuctionCancelled
+        - BidPlaced
+        - BidWithdrawn
+        - BidRefunded
+      abis:
+        - name: DigitalaxAuction
+          file: ./abis/DigitalaxAuction.json
+      eventHandlers:
+        - event: AuctionCreated(indexed uint256)
+          handler: handleAuctionCreated
+        - event: DigitalaxAuctionContractDeployed()
+          handler: handleDigitalaxAuctionContractDeployed
+        - event: BidPlaced(indexed uint256,indexed address,uint256)
+          handler: handleBidPlaced
+        - event: BidWithdrawn(indexed uint256,indexed address,uint256)
+          handler: handleBidWithdrawn
+        - event: AuctionResulted(indexed uint256,indexed address,uint256)
+          handler: handleAuctionResulted
+        - event: AuctionCancelled(indexed uint256)
+          handler: handleAuctionCancelled
+      file: ./src/DigitalaxAuction.mapping.ts

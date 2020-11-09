@@ -1,12 +1,12 @@
 type GenesisContributor @entity {
   id: ID!
   contributor: Bytes! # address
-  totalContribtuionInWei: BigInt!
+  totalContributionInWei: BigInt!
   firstContributedTimestamp: BigInt!
   lastContributedTimestamp: BigInt!
 }
 
-type DigitalaxGenesis @entity {
+type DigitalaxGenesisContract @entity {
   id: ID!
   accessControls: Bytes!
   fundsMultisig: Bytes!
@@ -15,4 +15,77 @@ type DigitalaxGenesis @entity {
   minimumContributionAmount: BigInt!
   maximumContributionAmount: BigInt!
   totalContributions: BigInt!
+}
+
+type DigitalaxMaterialOwner @entity {
+  id: ID!
+  amount: BigInt!
+  contract: Bytes!
+  tokenUri: String!
+}
+
+type DigitalaxGarment @entity {
+  id: ID!
+  designer: Bytes!
+  owner: Bytes!
+  primarySalePrice: BigInt!
+  tokenUri: String!
+  strands: [DigitalaxMaterialOwner!]!
+}
+
+type DigitalaxMaterial @entity {
+  id: ID!
+  tokenUri: String!
+  totalSupply: BigInt!
+}
+
+type DigitalaxCollector @entity {
+  id: ID!
+  garmentsOwned: [DigitalaxGarment!]!
+  strandsOwned: [DigitalaxMaterialOwner!]!
+}
+
+type DigitalaxGarmentDesigner @entity {
+  id: ID!
+  garments: [DigitalaxGarment!]!
+  listings: [DigitalaxGarmentAuction!]!
+  # sold
+}
+
+type DigitalaxAuctionContract @entity {
+  ## Global config
+  id: ID!
+  minBidIncrement: BigInt!
+  bidWithdrawalLockTime: BigInt!
+  platformFee: BigInt!
+  platformFeeRecipient: Bytes!
+  ## totals
+  totalSales: BigInt!
+}
+
+type DigitalaxGarmentAuction @entity {
+  id: ID!
+
+  ## Auction setup
+  reservePrice: BigInt!
+  startTime: BigInt!
+  endTime: BigInt!
+  lister: DigitalaxCollector!
+  resulted: Boolean!
+  resultedTime: BigInt
+
+  ## Highest bidder
+  topBidder: DigitalaxCollector
+  topBid: BigInt
+  lastBidTime: BigInt
+}
+
+type DigitalaxGarmentAuctionHistory @entity {
+  id: ID!
+  token: DigitalaxGarment!
+  eventName: String!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  bidder: DigitalaxCollector
+  value: BigInt
 }
