@@ -1,6 +1,6 @@
 ### Primary Auction flow
 
-The contract `DigitialAuction` is responsible for handling the primary sale of parent NFTs. The auction itself only deals 
+The contract `DigitalaxAuction` is responsible for handling the primary sale of parent NFTs. The auction itself only deals 
 with ERC-721 tokens, also known as `Parent` tokens.
 
 Parent tokens can however hold other ERC-1155 tokens, also known as `Child` tokens. 

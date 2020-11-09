@@ -74,11 +74,11 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
         });
 
         describe('Admin function', () => {
-            it('When sender does not have a DEFAULT_ADMIN_ROLE role', async () => {
+            it('When sender does not have a DEFAULT_ADMIN_ROLE role or SMART_CONTRACT', async () => {
                 await this.token.mint(minter, randomURI, designer, {from: minter});
                 await expectRevert(
                     this.token.setTokenURI('1', randomURI, {from: minter}),
-                    "DigitalaxGarmentNFT.setTokenURI: Sender must have the admin role"
+                    "DigitalaxGarmentNFT.setPrimarySalePrice: Sender must be an authorised contract or admin"
                 );
             });
         });
@@ -317,11 +317,12 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
               owner,
               randomURI,
               designer,
-              {from: minter}
+              {from: smart_contract}
             );
           });
 
-          it('Can link multiple strands to a garment at creation of strands', async () => {
+          it
+          ('Can link multiple strands to a garment at creation of strands', async () => {
             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, '0');
             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_TWO_ID, '0');
             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_THREE_ID, '0');
@@ -401,7 +402,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
             owner,
             randomURI,
             designer,
-            {from: minter}
+            {from: smart_contract}
           );
 
           await this.digitalaxMaterials.batchCreateChildren(
@@ -528,7 +529,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
       it('Can burn a garment that does not have any strands', async () => {
         expect(await this.digitalaxMaterials.tokenIdPointer()).to.be.bignumber.equal('0');
 
-        await this.token.mint(owner, randomURI, designer);
+        await this.token.mint(owner, randomURI, smart_contract);
 
         expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.equal(owner);
         expect(await this.digitalaxMaterials.tokenIdPointer()).to.be.bignumber.equal('0');

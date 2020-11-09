@@ -12,7 +12,7 @@ const ERC721ReceiverMock = artifacts.require('ERC721ReceiverMock');
 
 contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([owner, minter, approved, anotherApproved, operator, other, artist]) {
 
-    const name = 'Digitalax';
+    const name = 'DigitalaxNFT';
     const symbol = 'DTX';
 
     const firstTokenId = new BN('1');
