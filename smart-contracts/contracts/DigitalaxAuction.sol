@@ -119,7 +119,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
 
     constructor(
         DigitalaxAccessControls _accessControls,
-        DigitalaxGarmentNFT _garmentNft,
+        DigitalaxGarmentNFT _garmentNft, // TODO extract interface to save deployment costs
         address payable _platformFeeRecipient
     ) public {
         accessControls = _accessControls;
@@ -140,9 +140,11 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     function createAuction(
         uint256 _garmentTokenId,
         uint256 _reservePrice,
-        uint256 _startTime,
-        uint256 _endTime
+        uint256 _startTime, // TODO change name to Timestamp
+        uint256 _endTime // TODO change name to Timestamp
     ) external {
+        // TODO is this role check valid - check logic/requirements
+
         // Ensure caller has privileges
         require(accessControls.hasMinterRole(_msgSender()), "DigitalaxAuction.createAuction: Sender must have the minter role");
 
@@ -172,6 +174,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
      @dev Only callable when the auction is open
      @param _garmentTokenId Token ID of the garment being auctioned
      */
+    // TODO add check for "isNotContract"
     function placeBid(uint256 _garmentTokenId) external payable nonReentrant {
         // Check the auction to see if this is a valid bid
         Auction storage auction = auctions[_garmentTokenId];
