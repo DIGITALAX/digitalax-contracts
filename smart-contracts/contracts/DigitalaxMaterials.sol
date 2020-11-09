@@ -12,120 +12,127 @@ contract DigitalaxMaterials is ERC1155 {
 
     event DigitalaxMaterialsDeployed();
 
-    event StrandCreated(
+    event ChildCreated(
         uint256 indexed strandId
     );
 
     string public name;
     string public symbol;
 
-    uint256 public strandIdPointer;
-    mapping(uint256 => uint256) public strandTotalSupply;
+    uint256 public tokenIdPointer;
+    mapping(uint256 => uint256) public childTokenTotalSupply;
 
     DigitalaxAccessControls public accessControls;
 
-    constructor(string memory _name, string memory _symbol, DigitalaxAccessControls _accessControls) public {
+    constructor(
+        string memory _name,
+        string memory _symbol,
+        DigitalaxAccessControls _accessControls
+    ) public {
         name = _name;
         symbol = _symbol;
         accessControls = _accessControls;
         emit DigitalaxMaterialsDeployed();
     }
 
+    ///////////////////////////
+    // Creating new children //
+    ///////////////////////////
+
     //TODO: do we need a reverse lookup to ensure a token URI
-    function createStrand(string calldata _uri) external returns (uint256) {
+    function createChild(string calldata _uri) external returns (uint256 id) {
         require(
             accessControls.hasSmartContractRole(_msgSender()),
-            "DigitalaxMaterials.createStrand: Sender must be smart contract"
+            "DigitalaxMaterials.createChild: Sender must be smart contract"
         );
 
-        require(bytes(_uri).length > 0, "DigitalaxMaterials.createStrand: URI is a blank string");
+        require(bytes(_uri).length > 0, "DigitalaxMaterials.createChild: URI is a blank string");
 
-        strandIdPointer = strandIdPointer.add(1);
+        tokenIdPointer = tokenIdPointer.add(1);
 
-        uint256 strandId = strandIdPointer;
-        _setURI(strandId, _uri);
+        id = tokenIdPointer;
+        _setURI(id, _uri);
 
-        emit StrandCreated(strandId);
-
-        return strandId;
+        emit ChildCreated(id);
     }
 
-    function batchCreateStrands(string[] calldata _uris) external returns (uint256[] memory strandIds) {
+    function batchCreateChildren(string[] calldata _uris) external returns (uint256[] memory tokenIds) {
         require(
             accessControls.hasSmartContractRole(_msgSender()),
-            "DigitalaxMaterials.batchCreateStrands: Sender must be smart contract"
+            "DigitalaxMaterials.batchCreateChildren: Sender must be smart contract"
         );
 
-        require(_uris.length > 0, "DigitalaxMaterials.batchCreateStrands: No data supplied in array");
+        require(_uris.length > 0, "DigitalaxMaterials.batchCreateChildren: No data supplied in array");
 
-        strandIds = new uint256[](_uris.length);
-        for(uint i = 0; i < _uris.length; i++) {
+        tokenIds = new uint256[](_uris.length);
+        for (uint i = 0; i < _uris.length; i++) {
             string memory uri = _uris[i];
-            require(bytes(uri).length > 0, "DigitalaxMaterials.batchCreateStrands: URI is a blank string");
+            require(bytes(uri).length > 0, "DigitalaxMaterials.batchCreateChildren: URI is a blank string");
 
-            strandIdPointer = strandIdPointer.add(1);
-            uint256 strandId = strandIdPointer;
+            tokenIdPointer = tokenIdPointer.add(1);
+            uint256 id = tokenIdPointer;
 
-            _setURI(strandId, uri);
+            _setURI(id, uri);
 
-            strandIds[i] = strandId;
+            tokenIds[i] = id;
 
-            emit StrandCreated(strandId);
+            emit ChildCreated(id);
         }
     }
 
-    function mintStrand(uint256 _strandId, uint256 _amount, address _beneficiary, bytes calldata _data) external {
+    //////////////////////////////////
+    // Minting of existing children //
+    //////////////////////////////////
+
+    function mintChild(uint256 _childTokenId, uint256 _amount, address _beneficiary, bytes calldata _data) external {
         require(
             accessControls.hasSmartContractRole(_msgSender()),
-            "DigitalaxMaterials.mintStrand: Sender must be smart contract"
+            "DigitalaxMaterials.mintChild: Sender must be smart contract"
         );
 
-        require(bytes(tokenUris[_strandId]).length > 0, "DigitalaxMaterials.mintStrand: Strand does not exist");
-        require(_amount > 0, "DigitalaxMaterials.mintStrand: No amount specified");
+        require(bytes(tokenUris[_childTokenId]).length > 0, "DigitalaxMaterials.mintChild: Strand does not exist");
+        require(_amount > 0, "DigitalaxMaterials.mintChild: No amount specified");
 
-        strandTotalSupply[_strandId] = strandTotalSupply[_strandId].add(_amount);
+        childTokenTotalSupply[_childTokenId] = childTokenTotalSupply[_childTokenId].add(_amount);
 
-        _mint(_beneficiary, _strandId, _amount, _data);
+        _mint(_beneficiary, _childTokenId, _amount, _data);
     }
 
-    function batchMintStrands(
-        uint256[] calldata _strandIds,
+    function batchMintChildren(
+        uint256[] calldata _childTokenIds,
         uint256[] calldata _amounts,
         address _beneficiary,
         bytes calldata _data
     ) external {
         require(
             accessControls.hasSmartContractRole(_msgSender()),
-            "DigitalaxMaterials.batchMintStrands: Sender must be smart contract"
+            "DigitalaxMaterials.batchMintChildren: Sender must be smart contract"
         );
 
-        require(_strandIds.length == _amounts.length, "DigitalaxMaterials.batchMintStrands: Array lengths are invalid");
-        require(_strandIds.length > 0, "DigitalaxMaterials.batchMintStrands: No data supplied in arrays");
+        require(_childTokenIds.length == _amounts.length, "DigitalaxMaterials.batchMintChildren: Array lengths are invalid");
+        require(_childTokenIds.length > 0, "DigitalaxMaterials.batchMintChildren: No data supplied in arrays");
 
         // Check the strands exist and no zero amounts
-        for(uint i = 0; i < _strandIds.length; i++) {
-            uint256 strandId = _strandIds[i];
-            require(bytes(tokenUris[strandId]).length > 0, "DigitalaxMaterials.batchMintStrands: Strand does not exist");
+        for (uint i = 0; i < _childTokenIds.length; i++) {
+            uint256 strandId = _childTokenIds[i];
+            require(bytes(tokenUris[strandId]).length > 0, "DigitalaxMaterials.batchMintChildren: Strand does not exist");
 
             uint256 amount = _amounts[i];
-            require(amount > 0, "DigitalaxMaterials.batchMintStrands: Invalid amount");
+            require(amount > 0, "DigitalaxMaterials.batchMintChildren: Invalid amount");
 
-            strandTotalSupply[strandId] = strandTotalSupply[strandId].add(amount);
+            childTokenTotalSupply[strandId] = childTokenTotalSupply[strandId].add(amount);
         }
 
-        _mintBatch(_beneficiary, _strandIds, _amounts, _data);
+        _mintBatch(_beneficiary, _childTokenIds, _amounts, _data);
     }
 
-    //todo smart contract burn
-
-    // todo admin update tokenURI
+    // todo smart contract burn
 
     function updateAccessControls(DigitalaxAccessControls _accessControls) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
             "DigitalaxMaterials.updateAccessControls: Sender must be admin"
         );
-
         require(
             address(_accessControls) != address(0),
             "DigitalaxMaterials.updateAccessControls: New access controls cannot be ZERO address"

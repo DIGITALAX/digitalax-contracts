@@ -7,7 +7,7 @@ const web3 = require('web3');
 const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
 const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
 const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
-const DigitalaxGarmentFactory = artifacts.require('DigitalaxGarmentFactory');
+const DigitalaxGarmentFactoryTest = artifacts.require('DigitalaxGarmentFactory');
 
 contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, designer, ...otherAccounts]) {
   const name = "DigitalaxMaterials";
@@ -41,7 +41,7 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
       {from: admin}
     );
 
-    this.factory = await DigitalaxGarmentFactory.new(
+    this.factory = await DigitalaxGarmentFactoryTest.new(
       this.garment.address,
       this.digitalaxMaterials.address,
       this.accessControls.address,
@@ -51,39 +51,39 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
     await this.accessControls.addSmartContractRole(this.factory.address, {from: admin});
   });
 
-  describe('createNewStrand()', () => {
+  describe('createNewChild()', () => {
     it('Creates a new strand successfully', async () => {
-      await this.factory.createNewStrand(randomStrandURI, {from: minter});
+      await this.factory.createNewChild(randomStrandURI, {from: minter});
       expect(await this.digitalaxMaterials.uri(STRAND_ONE_ID)).to.be.equal(randomStrandURI);
     });
 
     it('Reverts when sender is not a minter', async () => {
       await expectRevert(
-        this.factory.createNewStrand(randomStrandURI, {from: tokenHolder}),
-        "DigitalaxGarmentFactory.createNewStrand: Sender must be minter"
+        this.factory.createNewChild(randomStrandURI, {from: tokenHolder}),
+        "DigitalaxGarmentFactory.createNewChild: Sender must be minter"
       );
     });
   });
 
-  describe('createNewStrands()', () => {
+  describe('createNewChildren()', () => {
     it('Creates a multiple strands successfully', async () => {
       const strand2Uri = 'strand2uri';
-      await this.factory.createNewStrands([randomStrandURI, strand2Uri], {from: minter});
+      await this.factory.createNewChildren([randomStrandURI, strand2Uri], {from: minter});
       expect(await this.digitalaxMaterials.uri(STRAND_ONE_ID)).to.be.equal(randomStrandURI);
       expect(await this.digitalaxMaterials.uri(STRAND_TWO_ID)).to.be.equal(strand2Uri);
     });
 
     it('Reverts when sender is not a minter', async () => {
       await expectRevert(
-        this.factory.createNewStrands([randomStrandURI, randomStrandURI], {from: tokenHolder}),
-        "DigitalaxGarmentFactory.createNewStrands: Sender must be minter"
+        this.factory.createNewChildren([randomStrandURI, randomStrandURI], {from: tokenHolder}),
+        "DigitalaxGarmentFactory.createNewChildren: Sender must be minter"
       );
     });
   });
 
-  describe('createGarmentAndMintStrands()', () => {
+  describe('mintParentWithChildren()', () => {
     beforeEach(async () => {
-      await this.factory.createNewStrands(
+      await this.factory.createNewChildren(
         [randomStrandURI, randomStrandURI, randomStrandURI, randomStrandURI, randomStrandURI],
         {from: minter}
       ); // This will create strands with strand IDs: [1], [2], [3]
@@ -95,11 +95,11 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
       const strand3Amount = '2';
       const strand4Amount = '2';
       const strand5Amount = '2';
-      const strandIds = [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID, STRAND_FOUR_ID, STRAND_FIVE_ID];
-      const { receipt } = await this.factory.createGarmentAndMintStrands(
+      const childTokenIds = [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID, STRAND_FOUR_ID, STRAND_FIVE_ID];
+      const { receipt } = await this.factory.mintParentWithChildren(
         randomGarmentURI,
         designer,
-        strandIds,
+        childTokenIds,
         [strand1Amount, strand2Amount, strand3Amount, strand4Amount, strand5Amount], // amounts to mint and link
         tokenHolder,
         {from: minter}
@@ -112,14 +112,14 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
       await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_THREE_ID, strand3Amount);
       await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_FOUR_ID, strand4Amount);
       await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_FIVE_ID, strand5Amount);
-      await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, strandIds);
+      await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, childTokenIds);
     });
 
 
 
     it('Reverts when sender does not have the minter role', async () => {
       await expectRevert(
-        this.factory.createGarmentAndMintStrands(
+        this.factory.mintParentWithChildren(
           randomGarmentURI,
           designer,
           [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID],
@@ -127,7 +127,7 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
           tokenHolder,
           {from: tokenHolder}
         ),
-        "DigitalaxGarmentFactory.createGarmentAndMintStrands: Sender must be minter"
+        "DigitalaxGarmentFactory.mintParentWithChildren: Sender must be minter"
       );
     });
   });
@@ -141,15 +141,15 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
     expect(garmentStrandBalance).to.be.bignumber.equal(expectedStrandBalance);
   };
 
-  const expectGarmentToOwnAGivenSetOfStrandIds = async (garmentId, strandIds) => {
+  const expectGarmentToOwnAGivenSetOfStrandIds = async (garmentId, childTokenIds) => {
     const garmentStrandIdsOwned = await this.garment.childIdsForOn(
       garmentId,
       this.digitalaxMaterials.address
     );
 
-    expect(garmentStrandIdsOwned.length).to.be.equal(strandIds.length);
+    expect(garmentStrandIdsOwned.length).to.be.equal(childTokenIds.length);
     garmentStrandIdsOwned.forEach((strandId, idx) => {
-      expect(strandId).to.be.bignumber.equal(strandIds[idx]);
+      expect(strandId).to.be.bignumber.equal(childTokenIds[idx]);
     });
   };
 });

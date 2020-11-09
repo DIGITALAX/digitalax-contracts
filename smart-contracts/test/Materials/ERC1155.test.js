@@ -31,7 +31,7 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
     expect(await this.token.name()).to.be.equal(name);
     expect(await this.token.symbol()).to.be.equal(symbol);
 
-    await this.token.createStrand(initialURI, {from: operator});
+    await this.token.createChild(initialURI, {from: operator});
   });
 
   shouldBehaveLikeERC1155(otherAccounts);
@@ -49,14 +49,14 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
     describe('_mint', function () {
       it('reverts with a zero destination address', async function () {
         await expectRevert(
-          this.token.mintStrand(STRAND_ONE_ID, mintAmount, ZERO_ADDRESS, emptyData, {from: operator}),
+          this.token.mintChild(STRAND_ONE_ID, mintAmount, ZERO_ADDRESS, emptyData, {from: operator}),
           'ERC1155: mint to the zero address',
         );
       });
 
       context('with minted tokens', function () {
         beforeEach(async function () {
-          ({ logs: this.logs } = await this.token.mintStrand(
+          ({ logs: this.logs } = await this.token.mintChild(
               STRAND_ONE_ID,
               mintAmount,
               tokenHolder,
@@ -84,7 +84,7 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
 
     describe('_mintBatch', function () {
       beforeEach(async function () {
-        await this.token.batchCreateStrands(
+        await this.token.batchCreateChildren(
           [initialURI, initialURI, initialURI],
           {from: operator}
         );
@@ -92,26 +92,26 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
 
       it('reverts with a zero destination address', async function () {
         await expectRevert(
-          this.token.batchMintStrands(tokenBatchIds, mintAmounts, ZERO_ADDRESS, web3.utils.encodePacked(''), {from: operator}),
+          this.token.batchMintChildren(tokenBatchIds, mintAmounts, ZERO_ADDRESS, web3.utils.encodePacked(''), {from: operator}),
           'ERC1155: mint to the zero address',
         );
       });
 
       it('reverts if length of inputs do not match', async function () {
         await expectRevert(
-          this.token.batchMintStrands(tokenBatchIds, mintAmounts.slice(1), tokenBatchHolder, web3.utils.encodePacked(''), {from: operator}),
-          'DigitalaxMaterials.batchMintStrands: Array lengths are invalid',
+          this.token.batchMintChildren(tokenBatchIds, mintAmounts.slice(1), tokenBatchHolder, web3.utils.encodePacked(''), {from: operator}),
+          'DigitalaxMaterials.batchMintChildren: Array lengths are invalid',
         );
 
         await expectRevert(
-          this.token.batchMintStrands(tokenBatchIds.slice(1), mintAmounts, tokenBatchHolder, web3.utils.encodePacked(''), {from: operator}),
-          'DigitalaxMaterials.batchMintStrands: Array lengths are invalid',
+          this.token.batchMintChildren(tokenBatchIds.slice(1), mintAmounts, tokenBatchHolder, web3.utils.encodePacked(''), {from: operator}),
+          'DigitalaxMaterials.batchMintChildren: Array lengths are invalid',
         );
       });
 
       context('with minted batch of tokens', function () {
         beforeEach(async function () {
-          ({ logs: this.logs } = await this.token.batchMintStrands(
+          ({ logs: this.logs } = await this.token.batchMintChildren(
             tokenBatchIds,
             mintAmounts,
             tokenBatchHolder,
@@ -135,7 +135,7 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
           );
 
           for (let i = 0; i < holderBatchBalances.length; i++) {
-            // add one because of batchCreateStrand
+            // add one because of batchcreateChild
             expect(holderBatchBalances[i]).to.be.bignumber.equal(mintAmounts[i]);
           }
         });
@@ -155,7 +155,7 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
     it('sets the first and second token URI correctly', async function() {
       expect(await this.token.uri(STRAND_ONE_ID)).to.be.equal(initialURI);
 
-      await this.token.createStrand(secondTokenURI, {from: otherAccounts[0]});
+      await this.token.createChild(secondTokenURI, {from: otherAccounts[0]});
       expect(await this.token.uri(secondTokenID)).to.be.equal(secondTokenURI);
     });
   });
