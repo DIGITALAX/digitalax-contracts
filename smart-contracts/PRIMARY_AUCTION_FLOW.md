@@ -1,6 +1,6 @@
 ### Primary Auction flow
 
-The contract `DigitialAuction` is responsible for handing the primary sale of parent NFTs. The auction itself only deals 
+The contract `DigitialAuction` is responsible for handling the primary sale of parent NFTs. The auction itself only deals 
 with ERC-721 tokens, also known as `Parent` tokens.
 
 Parent tokens can however hold other ERC-1155 tokens, also known as `Child` tokens. 
@@ -32,7 +32,7 @@ function createAuction(uint256 _garmentTokenId, uint256 _reservePrice, uint256 _
 ##### Global configurations (for all auctions)
 
 * `minBidIncrement` - the amount by which the bid has to increase by as a minimum each time
-* `bidWithdrawalLockTime` - after making a successful bid, the bidder cannot withdraw their between in this window
+* `bidWithdrawalLockTime` - after making a successful bid, the amount of time in seconds that a bidder has to wait before withdrawing their bid
 * `platformFeeRecipient` - where any platform fees are sent when resulting an auction
 * `platformFee` - when resulting an auction, this is the % taken above the reserve which is sent to `platformFeeRecipient`
     * This is assumed to be defined to 1 decimal place i.e. `12.5%` is possible but not smaller denomination is 
