@@ -50,6 +50,44 @@ contract('DigitalaxAuction', (accounts) => {
     await this.accessControls.addSmartContractRole(this.auction.address, {from: admin});
   });
 
+  describe('Contract deployment', () => {
+    it('Reverts when access controls is zero', async () => {
+      await expectRevert(
+        DigitalaxAuction.new(
+          constants.ZERO_ADDRESS,
+          this.token.address,
+          platformFeeAddress,
+          {from: admin}
+        ),
+        "DigitalaxAuction: Invalid Access Controls"
+      );
+    });
+
+    it('Reverts when garment is zero', async () => {
+      await expectRevert(
+        DigitalaxAuction.new(
+          this.accessControls.address,
+          constants.ZERO_ADDRESS,
+          platformFeeAddress,
+          {from: admin}
+        ),
+        "DigitalaxAuction: Invalid NFT"
+      );
+    });
+
+    it('Reverts when platform fee recipient is zero', async () => {
+      await expectRevert(
+        DigitalaxAuction.new(
+          this.accessControls.address,
+          this.token.address,
+          constants.ZERO_ADDRESS,
+          {from: admin}
+        ),
+        "DigitalaxAuction: Invalid Platform Fee Recipient"
+      );
+    });
+  });
+
   describe('Admin functions', () => {
     beforeEach(async () => {
       await this.token.mint(minter, randomTokenURI, designer, {from: minter});
