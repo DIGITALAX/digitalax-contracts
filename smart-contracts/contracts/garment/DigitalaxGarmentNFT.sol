@@ -46,15 +46,8 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     /// @dev ERC721 Token ID -> ERC1155 child IDs owned by the token ID
     mapping(uint256 => EnumerableSet.UintSet) private parentToChildMapping;
 
-    // TODO scenario 3:
-    //         -> Create parent with embedded children via factory
-    //         -> Setup auction and result it
-    //         -> user can top up with new tokens IDs - up to be the mxChildren limit
-    //         -> only the owner can top them up
-
-    // TODO introduce max child NFT cap - configurable by admin default is 10 - with test
     /// @dev max children NFTs a single 721 can hold
-    uint256 public maxChildren = 10;
+    uint256 public maxChildrenPerToken = 10;
 
     /**
      @param _accessControls Address of the Digitalax access control contract
@@ -238,11 +231,11 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     /**
      @notice Method for updating max children a token can hold
      @dev Only admin
-     @param _maxChildren uint256 the max children a token can hold
+     @param _maxChildrenPerToken uint256 the max children a token can hold
      */
-    function updateMaxChildren(uint256 _maxChildren) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentNFT.updateMaxChildren: Sender must be admin");
-        maxChildren = _maxChildren;
+    function updateMaxChildrenPerToken(uint256 _maxChildrenPerToken) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentNFT.updateMaxChildrenPerToken: Sender must be admin");
+        maxChildrenPerToken = _maxChildrenPerToken;
     }
 
     /////////////////
@@ -261,8 +254,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     public view
     override
     returns (uint256) {
-        return _childContract == address(childContract) ?
-        balances[_tokenId][_childTokenId] : 0;
+        return _childContract == address(childContract) ? balances[_tokenId][_childTokenId] : 0;
     }
 
     function childContractsFor(uint256 _tokenId) override external view returns (address[] memory) {
