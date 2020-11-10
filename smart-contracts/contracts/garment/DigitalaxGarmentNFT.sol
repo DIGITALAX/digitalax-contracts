@@ -133,7 +133,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
 
         uint256 _receiverTokenId = _extractIncomingTokenId();
-        _validateReceiverParams(_receiverTokenId, _from);
+        _validateReceiverParams(_receiverTokenId, _operator, _from);
 
         _receiveChild(_receiverTokenId, msg.sender, _id, _amount);
 
@@ -148,7 +148,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
 
         uint256 _receiverTokenId = _extractIncomingTokenId();
-        _validateReceiverParams(_receiverTokenId, _from);
+        _validateReceiverParams(_receiverTokenId, _operator, _from);
 
         // TODO whats the max number of tokens we can receive due to GAS constraints?
         // Note: be mindful of GAS limits
@@ -167,17 +167,21 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         return _receiverTokenId;
     }
 
-    function _validateReceiverParams(uint256 _receiverTokenId, address _from) internal view {
+    function _validateReceiverParams(uint256 _receiverTokenId, address _operator, address _from) internal view {
         require(_exists(_receiverTokenId), "Token does not exist");
 
         // We only accept children from the Digitalax child contract
         require(msg.sender == address(childContract), "Invalid child token contract");
 
         // check the sender is the owner of the token or its just been birthed to this token
-        require(
-            ownerOf(_receiverTokenId) == _from || _from == address(0),
-            "Cannot add children to tokens you dont own"
-        );
+        if (_from != address(0)) {
+            require(
+                ownerOf(_receiverTokenId) == _from,
+                "Cannot add children to tokens you dont own"
+            );
+
+            require(_operator == _from, "Operator is not owner");
+        }
     }
 
     //////////
