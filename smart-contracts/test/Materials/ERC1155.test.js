@@ -43,6 +43,7 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
 
     const tokenBatchIds = [new BN('1'), new BN('2'), new BN('3')];
     const mintAmounts = [new BN(5000), new BN(10000), new BN(42195)];
+    const burnAmounts = [new BN(5000), new BN(9001), new BN(195)];
 
     const data = '0x12345678';
 
@@ -56,12 +57,12 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
 
       context('with minted tokens', function () {
         beforeEach(async function () {
-          ({ logs: this.logs } = await this.token.mintChild(
+          ({logs: this.logs} = await this.token.mintChild(
               STRAND_ONE_ID,
               mintAmount,
               tokenHolder,
               emptyData,
-              { from: operator }
+              {from: operator}
             )
           );
         });
@@ -111,12 +112,12 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
 
       context('with minted batch of tokens', function () {
         beforeEach(async function () {
-          ({ logs: this.logs } = await this.token.batchMintChildren(
+          ({logs: this.logs} = await this.token.batchMintChildren(
             tokenBatchIds,
             mintAmounts,
             tokenBatchHolder,
             web3.utils.encodePacked(''),
-            { from: operator },
+            {from: operator},
           ));
         });
 
@@ -137,6 +138,150 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
           for (let i = 0; i < holderBatchBalances.length; i++) {
             // add one because of batchcreateChild
             expect(holderBatchBalances[i]).to.be.bignumber.equal(mintAmounts[i]);
+          }
+        });
+      });
+    });
+
+    describe('_burn', function () {
+      it('reverts when burning the zero account\'s tokens', async function () {
+        await expectRevert(
+          this.token.burn(ZERO_ADDRESS, tokenId, mintAmount),
+          "ERC1155: caller is not owner nor approved"
+        );
+      });
+
+      it('reverts when burning a non-existent token id', async function () {
+        await expectRevert(
+          this.token.burn(tokenHolder, tokenId, mintAmount, {from: tokenHolder}),
+          'ERC1155: burn amount exceeds balance'
+        );
+      });
+
+      it('reverts when burning more than available tokens', async function () {
+        await this.token.mintChild(
+          STRAND_ONE_ID,
+          mintAmount,
+          tokenHolder,
+          data,
+          {from: operator}
+        )
+
+        await expectRevert(
+          this.token.burn(tokenHolder, tokenId, mintAmount.addn(1), {from: tokenHolder}),
+          'ERC1155: burn amount exceeds balance'
+        );
+      });
+
+      context('with minted-then-burnt tokens', function () {
+        beforeEach(async function () {
+          await this.token.mintChild(
+            STRAND_ONE_ID,
+            mintAmount,
+            tokenHolder,
+            emptyData,
+            {from: operator}
+          );
+
+          await this.token.setApprovalForAll(operator, true, {from: tokenHolder});
+
+          ({logs: this.logs} = await this.token.burn(
+            tokenHolder,
+            tokenId,
+            burnAmount,
+            {from: operator}
+          ));
+        });
+
+        it('emits a TransferSingle event', function () {
+          expectEvent.inLogs(this.logs, 'TransferSingle', {
+            operator,
+            from: tokenHolder,
+            to: ZERO_ADDRESS,
+            id: tokenId,
+            value: burnAmount,
+          });
+        });
+
+        it('accounts for both minting and burning', async function () {
+          expect(await this.token.balanceOf(
+            tokenHolder,
+            tokenId
+          )).to.be.bignumber.equal(mintAmount.sub(burnAmount));
+        });
+      });
+    });
+
+    describe('_burnBatch', function () {
+      it('reverts when burning the zero account\'s tokens', async function () {
+        await expectRevert(
+          this.token.burnBatch(ZERO_ADDRESS, tokenBatchIds, burnAmounts),
+          "ERC1155: caller is not owner nor approved"
+        );
+      });
+
+      it('reverts if length of inputs do not match', async function () {
+        await expectRevert(
+          this.token.burnBatch(tokenBatchHolder, tokenBatchIds, burnAmounts.slice(1), {from: tokenBatchHolder}),
+          'ERC1155: ids and amounts length mismatch'
+        );
+
+        await expectRevert(
+          this.token.burnBatch(tokenBatchHolder, tokenBatchIds.slice(1), burnAmounts, {from: tokenBatchHolder}),
+          'ERC1155: ids and amounts length mismatch'
+        );
+      });
+
+      it('reverts when burning a non-existent token id', async function () {
+        await expectRevert(
+          this.token.burnBatch(tokenBatchHolder, tokenBatchIds, burnAmounts, {from: tokenBatchHolder}),
+          'ERC1155: burn amount exceeds balance'
+        );
+      });
+
+      context('with minted-then-burnt tokens', function () {
+        beforeEach(async function () {
+          await this.token.batchCreateChildren(
+            [initialURI, initialURI, initialURI],
+            {from: operator}
+          );
+
+          ({logs: this.logs} = await this.token.batchMintChildren(
+            tokenBatchIds,
+            mintAmounts,
+            tokenBatchHolder,
+            data,
+            {from: operator},
+          ));
+
+          await this.token.setApprovalForAll(operator, true, {from: tokenBatchHolder});
+
+          ({logs: this.logs} = await this.token.burnBatch(
+            tokenBatchHolder,
+            tokenBatchIds,
+            burnAmounts,
+            {from: operator}
+          ));
+        });
+
+        it('emits a TransferBatch event', function () {
+          expectEvent.inLogs(this.logs, 'TransferBatch', {
+            operator,
+            from: tokenBatchHolder,
+            to: ZERO_ADDRESS,
+            // ids: tokenBatchIds,
+            // values: burnAmounts,
+          });
+        });
+
+        it('accounts for both minting and burning', async function () {
+          const holderBatchBalances = await this.token.balanceOfBatch(
+            new Array(tokenBatchIds.length).fill(tokenBatchHolder),
+            tokenBatchIds
+          );
+
+          for (let i = 0; i < holderBatchBalances.length; i++) {
+            expect(holderBatchBalances[i]).to.be.bignumber.equal(mintAmounts[i].sub(burnAmounts[i]));
           }
         });
       });
