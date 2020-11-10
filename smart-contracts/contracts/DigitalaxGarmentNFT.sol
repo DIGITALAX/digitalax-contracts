@@ -154,10 +154,6 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     override returns (bytes4) {
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
 
-        //TODO; check this but I believe that with our 1155, this is not a possibility
-        // TODO - I agree JM
-        //        require(_ids.length == _values.length, "ERC1155: ids and values length mismatch");
-
         uint256 _receiverTokenId = _extractIncomingTokenId();
         _validateReceiverParams(_receiverTokenId, _from);
 
