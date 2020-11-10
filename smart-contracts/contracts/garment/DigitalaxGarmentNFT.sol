@@ -139,6 +139,12 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
 
         emit ReceivedChild(_from, _receiverTokenId, msg.sender, _id, _amount);
 
+        // Check total tokens do not exceed maximum
+        require(
+            parentToChildMapping[_receiverTokenId].length() <= maxChildrenPerToken,
+            "Cannot exceed max child token allocation"
+        );
+
         return this.onERC1155Received.selector;
     }
 
@@ -150,12 +156,18 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         uint256 _receiverTokenId = _extractIncomingTokenId();
         _validateReceiverParams(_receiverTokenId, _from);
 
-        // TODO whats the max number of tokens we can receive due to GAS constraints?
+
         // Note: be mindful of GAS limits
         for (uint256 i = 0; i < _ids.length; i++) {
             _receiveChild(_receiverTokenId, msg.sender, _ids[i], _values[i]);
             emit ReceivedChild(_from, _receiverTokenId, msg.sender, _ids[i], _values[i]);
         }
+
+        // Check total tokens do not exceed maximum
+        require(
+            parentToChildMapping[_receiverTokenId].length() <= maxChildrenPerToken,
+            "Cannot exceed max child token allocation"
+        );
 
         return this.onERC1155BatchReceived.selector;
     }
@@ -279,6 +291,10 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         }
 
         return childTokenIds;
+    }
+
+    function totalChildrenMapped(uint256 _tokenId) external view returns (uint256) {
+        return parentToChildMapping[_tokenId].length();
     }
 
     /**
