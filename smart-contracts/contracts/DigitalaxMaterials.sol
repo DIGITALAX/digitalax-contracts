@@ -131,7 +131,7 @@ contract DigitalaxMaterials is ERC1155 {
         _mintBatch(_beneficiary, _childTokenIds, _amounts, _data);
     }
 
-    // todo smart contract burn
+    // TODO smart contract burn - used in the future by the bank - burn token to release collteral - are any changes needed in here to support this?
 
     function updateAccessControls(DigitalaxAccessControls _accessControls) external {
         require(

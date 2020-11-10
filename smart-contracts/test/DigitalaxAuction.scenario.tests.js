@@ -97,7 +97,7 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
     this.receipt = receipt;
   });
 
-  describe.only('scenario 1: happy path creation, auction and burn', async () => {
+  describe('scenario 1: happy path creation, auction and burn', async () => {
 
     it('Garment and children are created', async () => {
       await expectEvent(this.receipt, 'GarmentCreated', {garmentTokenId: TOKEN_ONE_ID});
@@ -180,7 +180,7 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
     });
   });
 
-  describe.only('scenario 2: happy path creation, auction and increasing balance post purchase', async () => {
+  describe('scenario 2: happy path creation, auction and increasing balance post purchase', async () => {
 
     it('Garment and children are created', async () => {
       await expectEvent(this.receipt, 'GarmentCreated', {garmentTokenId: TOKEN_ONE_ID});
