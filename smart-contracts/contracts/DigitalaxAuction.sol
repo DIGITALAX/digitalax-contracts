@@ -402,6 +402,10 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         emit AuctionCancelled(_garmentTokenId);
     }
 
+    /**
+     @notice Toggling the pause flag
+     @dev Only admin
+     */
     function toggleIsPaused() external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxAuction.toggleIsPaused: Sender must be admin");
         isPaused = !isPaused;

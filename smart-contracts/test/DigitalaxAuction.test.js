@@ -314,6 +314,26 @@ contract('DigitalaxAuction', (accounts) => {
         expect(updated).to.be.equal(bidder2);
       });
     });
+
+    describe('toggleIsPaused()', () => {
+      it('can successfully toggle as admin', async () => {
+        expect(await this.auction.isPaused()).to.be.false;
+
+        const {receipt} = await this.auction.toggleIsPaused({from: admin});
+        await expectEvent(receipt, 'PauseToggled', {
+          isPaused: true
+        });
+
+        expect(await this.auction.isPaused()).to.be.true;
+      })
+
+      it('reverts when not admin', async () => {
+        await expectRevert(
+          this.auction.toggleIsPaused({from: bidder}),
+          "DigitalaxAuction.toggleIsPaused: Sender must be admin"
+        );
+      })
+    });
   });
 
   describe('createAuction()', async () => {
@@ -375,6 +395,15 @@ contract('DigitalaxAuction', (accounts) => {
         await expectRevert(
           this.auction.createAuction('99', '1', '1', '11', {from: minter}),
           'ERC721: owner query for nonexistent token'
+        );
+      });
+
+      it('fails if contract is paused', async () => {
+        await this.auction.setNowOverride('2');
+        await this.auction.toggleIsPaused({from: admin});
+        await expectRevert(
+          this.auction.createAuction(TOKEN_ONE_ID, '1', '0', '10', {from: minter}),
+          "Function is currently paused"
         );
       });
     });
@@ -457,6 +486,14 @@ contract('DigitalaxAuction', (accounts) => {
         await expectRevert(
           this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: 1}),
           'DigitalaxAuction.placeBid: Bidding outside of the auction window'
+        );
+      });
+
+      it('will fail when contract is paused', async () => {
+        await this.auction.toggleIsPaused({from: admin});
+        await expectRevert(
+          this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('1.0')}),
+          "Function is currently paused"
         );
       });
 
@@ -588,6 +625,23 @@ contract('DigitalaxAuction', (accounts) => {
       await expectRevert(
         this.auction.withdrawBid(TOKEN_ONE_ID, {from: bidder}),
         "DigitalaxAuction.withdrawBid: Past auction end"
+      );
+    });
+
+    it('fails when the contract is paused', async () => {
+      const {_bidder: originalBidder, _bid: originalBid} = await this.auction.getHighestBidder(TOKEN_ONE_ID);
+      expect(originalBid).to.be.bignumber.equal(ether('0.2'));
+      expect(originalBidder).to.equal(bidder);
+
+      const bidderTracker = await balance.tracker(bidder);
+
+      // remove the withdrawal lock time for the test
+      await this.auction.updateBidWithdrawalLockTime('0', {from: admin});
+
+      await this.auction.toggleIsPaused({from: admin});
+      await expectRevert(
+        this.auction.withdrawBid(TOKEN_ONE_ID, {from: bidder}),
+        "Function is currently paused"
       );
     });
 
