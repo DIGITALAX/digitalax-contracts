@@ -7,9 +7,9 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
-import "./ERC1155/ERC1155.sol";
-import "./DigitalaxAccessControls.sol";
-import "./ERC998/IERC998ERC1155TopDown.sol";
+import "../ERC1155/ERC1155.sol";
+import "../DigitalaxAccessControls.sol";
+import "../ERC998/IERC998ERC1155TopDown.sol";
 
 // TODO: secondary sale mechanics need to be built into core NFT twisted sister style - modify 721 to add payable
 // TODO: before each hook could also implement do not transfer to self
@@ -234,8 +234,8 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     /**
      * @dev checks the given token ID is approved either for all or the single token ID
      */
-    function isApproved(uint256 _tokenId, address operator) external view returns (bool) {
-        return isApprovedForAll(ownerOf(_tokenId), operator) || getApproved(_tokenId) == operator;
+    function isApproved(uint256 _tokenId, address _operator) external view returns (bool) {
+        return isApprovedForAll(ownerOf(_tokenId), _operator) || getApproved(_tokenId) == _operator;
     }
 
     /////////////////////////

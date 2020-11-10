@@ -9,7 +9,7 @@ contract DigitalaxAuctionMock is DigitalaxAuction {
 
     constructor(
         DigitalaxAccessControls _accessControls,
-        DigitalaxGarmentNFT _garmentNft,
+        IDigitalaxGarmentNFT _garmentNft,
         address payable _platformReserveAddress
     )
     DigitalaxAuction(_accessControls, _garmentNft, _platformReserveAddress)
