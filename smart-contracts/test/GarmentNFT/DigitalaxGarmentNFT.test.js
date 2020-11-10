@@ -413,7 +413,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
           await this.digitalaxMaterials.batchMintChildren(
             [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID],
             ['1', '1', '1'],
-            admin,
+            owner,
             web3.utils.encodePacked(""),
             {from: smart_contract}
           );
@@ -422,11 +422,12 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
         describe('Single strand', () => {
           it('Successfully wraps through a transfer', async () => {
             await this.digitalaxMaterials.safeTransferFrom(
-              admin,
+              owner,
               this.token.address,
               STRAND_ONE_ID,
               '1',
-              web3.utils.encodePacked(TOKEN_ONE_ID.toString())
+              web3.utils.encodePacked(TOKEN_ONE_ID.toString()),
+              {from: owner}
             );
 
             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, '1');
@@ -437,11 +438,12 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
         describe('Multiple strands', () => {
           it('Successfully wraps through a transfer', async () => {
             await this.digitalaxMaterials.safeBatchTransferFrom(
-              admin,
+              owner,
               this.token.address,
               [STRAND_ONE_ID, STRAND_TWO_ID],
               ['1', '1'],
-              web3.utils.encodePacked(TOKEN_ONE_ID.toString())
+              web3.utils.encodePacked(TOKEN_ONE_ID.toString()),
+              {from: owner}
             );
 
             await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, '1');
