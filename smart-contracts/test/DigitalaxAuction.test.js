@@ -121,11 +121,10 @@ contract('DigitalaxAuction', (accounts) => {
         expect(_bid).to.be.bignumber.equal('0');
         expect(_bidder).to.equal(constants.ZERO_ADDRESS);
 
-        const {_reservePrice, _startTime, _endTime, _lister, _resulted} = await this.auction.getAuction(TOKEN_ONE_ID);
+        const {_reservePrice, _startTime, _endTime, _resulted} = await this.auction.getAuction(TOKEN_ONE_ID);
         expect(_reservePrice).to.be.bignumber.equal('1');
         expect(_startTime).to.be.bignumber.equal('0');
         expect(_endTime).to.be.bignumber.equal('10');
-        expect(_lister).to.be.equal(minter);
         expect(_resulted).to.be.equal(true);
       });
     });
@@ -320,6 +319,11 @@ contract('DigitalaxAuction', (accounts) => {
   describe('createAuction()', async () => {
 
     describe('validation', async () => {
+      beforeEach(async () => {
+        await this.token.mint(minter, randomTokenURI, designer, {from: minter});
+        await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
+      });
+
       it('fails if does not have minter role', async () => {
         await expectRevert(
           this.auction.createAuction(TOKEN_ONE_ID, '1', '0', '10', {from: bidder}),
@@ -345,7 +349,6 @@ contract('DigitalaxAuction', (accounts) => {
 
       it('fails if token already has auction in play', async () => {
         await this.auction.setNowOverride('2');
-        await this.token.mint(minter, randomTokenURI, designer, {from: minter});
         await this.auction.createAuction(TOKEN_ONE_ID, '1', '0', '10', {from: minter});
 
         await expectRevert(
@@ -356,14 +359,13 @@ contract('DigitalaxAuction', (accounts) => {
 
       it('fails if you dont own the token', async () => {
         await this.auction.setNowOverride('2');
-        await this.token.mint(minter, randomTokenURI, designer, {from: minter});
         await this.token.mint(bidder, randomTokenURI, designer, {from: minter});
 
         await this.auction.createAuction(TOKEN_ONE_ID, '1', '0', '10', {from: minter});
 
         await expectRevert(
           this.auction.createAuction(TOKEN_TWO_ID, '1', '1', '3', {from: minter}),
-          'DigitalaxAuction.createAuction: Cannot create an auction if you do not own it'
+          'DigitalaxAuction.createAuction: Not owner and or contract not approved'
         );
       });
 
@@ -371,7 +373,7 @@ contract('DigitalaxAuction', (accounts) => {
         await this.auction.setNowOverride('10');
 
         await expectRevert(
-          this.auction.createAuction(TOKEN_ONE_ID, '1', '1', '11', {from: minter}),
+          this.auction.createAuction('99', '1', '1', '11', {from: minter}),
           'ERC721: owner query for nonexistent token'
         );
       });
@@ -381,6 +383,7 @@ contract('DigitalaxAuction', (accounts) => {
       it('Token retains in the ownership of the auction creator', async () => {
         await this.auction.setNowOverride('2');
         await this.token.mint(minter, randomTokenURI, designer, {from: minter});
+        await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
         await this.auction.createAuction(TOKEN_ONE_ID, '1', '0', '10', {from: minter});
 
         const owner = await this.token.ownerOf(TOKEN_ONE_ID);
@@ -398,6 +401,7 @@ contract('DigitalaxAuction', (accounts) => {
         );
 
         await this.token.mint(minter, randomTokenURI, designer, {from: minter});
+        await this.token.approve(auction.address, TOKEN_ONE_ID, {from: minter});
         await auction.createAuction(TOKEN_ONE_ID, '1', '0', '99999999999999', {from: minter});
 
         const owner = await this.token.ownerOf(TOKEN_ONE_ID);
@@ -414,6 +418,9 @@ contract('DigitalaxAuction', (accounts) => {
         await this.token.mint(minter, randomTokenURI, designer, {from: minter});
         await this.token.mint(minter, randomTokenURI, designer, {from: minter});
         await this.auction.setNowOverride('2');
+
+        await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
+        await this.token.approve(this.auction.address, TOKEN_TWO_ID, {from: minter});
         await this.auction.createAuction(
           TOKEN_ONE_ID, // ID
           '1',  // reserve
@@ -468,6 +475,7 @@ contract('DigitalaxAuction', (accounts) => {
 
       beforeEach(async () => {
         await this.token.mint(minter, randomTokenURI, designer, {from: minter});
+        await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
         await this.auction.setNowOverride('1');
         await this.auction.createAuction(
           TOKEN_ONE_ID, // ID
@@ -486,11 +494,10 @@ contract('DigitalaxAuction', (accounts) => {
         expect(_bid).to.be.bignumber.equal(ether('0.2'));
         expect(_bidder).to.equal(bidder);
 
-        const {_reservePrice, _startTime, _endTime, _lister, _resulted} = await this.auction.getAuction(TOKEN_ONE_ID);
+        const {_reservePrice, _startTime, _endTime, _resulted} = await this.auction.getAuction(TOKEN_ONE_ID);
         expect(_reservePrice).to.be.bignumber.equal('1');
         expect(_startTime).to.be.bignumber.equal('1');
         expect(_endTime).to.be.bignumber.equal('10');
-        expect(_lister).to.be.equal(minter);
         expect(_resulted).to.be.equal(false);
       });
 
@@ -540,6 +547,7 @@ contract('DigitalaxAuction', (accounts) => {
 
     beforeEach(async () => {
       await this.token.mint(minter, randomTokenURI, designer, {from: minter});
+      await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
       await this.auction.setNowOverride('2');
       await this.auction.createAuction(
         TOKEN_ONE_ID,
@@ -782,6 +790,7 @@ contract('DigitalaxAuction', (accounts) => {
 
     beforeEach(async () => {
       await this.token.mint(minter, randomTokenURI, designer, {from: minter});
+      await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
       await this.auction.setNowOverride('2');
       await this.auction.createAuction(
         TOKEN_ONE_ID,
@@ -841,11 +850,10 @@ contract('DigitalaxAuction', (accounts) => {
         await this.auction.cancelAuction(TOKEN_ONE_ID, {from: smartContract});
 
         // Check auction cleaned up
-        const {_reservePrice, _startTime, _endTime, _lister, _resulted} = await this.auction.getAuction(TOKEN_ONE_ID);
+        const {_reservePrice, _startTime, _endTime, _resulted} = await this.auction.getAuction(TOKEN_ONE_ID);
         expect(_reservePrice).to.be.bignumber.equal('0');
         expect(_startTime).to.be.bignumber.equal('0');
         expect(_endTime).to.be.bignumber.equal('0');
-        expect(_lister).to.be.equal(constants.ZERO_ADDRESS);
         expect(_resulted).to.be.equal(false);
 
         // Check auction cleaned up
@@ -862,11 +870,10 @@ contract('DigitalaxAuction', (accounts) => {
         await this.auction.cancelAuction(TOKEN_ONE_ID, {from: admin});
 
         // Check auction cleaned up
-        const {_reservePrice, _startTime, _endTime, _lister, _resulted} = await this.auction.getAuction(TOKEN_ONE_ID);
+        const {_reservePrice, _startTime, _endTime, _resulted} = await this.auction.getAuction(TOKEN_ONE_ID);
         expect(_reservePrice).to.be.bignumber.equal('0');
         expect(_startTime).to.be.bignumber.equal('0');
         expect(_endTime).to.be.bignumber.equal('0');
-        expect(_lister).to.be.equal(constants.ZERO_ADDRESS);
         expect(_resulted).to.be.equal(false);
 
         // Check auction cleaned up
@@ -927,11 +934,10 @@ contract('DigitalaxAuction', (accounts) => {
       expect(changes).to.be.bignumber.equal(ether('0.2'));
 
       // Check auction cleaned up
-      const {_reservePrice, _startTime, _endTime, _lister, _resulted} = await this.auction.getAuction(TOKEN_ONE_ID);
+      const {_reservePrice, _startTime, _endTime, _resulted} = await this.auction.getAuction(TOKEN_ONE_ID);
       expect(_reservePrice).to.be.bignumber.equal('0');
       expect(_startTime).to.be.bignumber.equal('0');
       expect(_endTime).to.be.bignumber.equal('0');
-      expect(_lister).to.be.equal(constants.ZERO_ADDRESS);
       expect(_resulted).to.be.equal(false);
 
       // Crate new one
@@ -949,13 +955,11 @@ contract('DigitalaxAuction', (accounts) => {
         _reservePrice: newReservePrice,
         _startTime: newStartTime,
         _endTime: newEndTime,
-        _lister: newLister,
         _resulted: newResulted
       } = await this.auction.getAuction(TOKEN_ONE_ID);
       expect(newReservePrice).to.be.bignumber.equal('1');
       expect(newStartTime).to.be.bignumber.equal('1');
       expect(newEndTime).to.be.bignumber.equal('10');
-      expect(newLister).to.be.equal(minter);
       expect(newResulted).to.be.equal(false);
 
       // Stick a bid on it
@@ -971,13 +975,14 @@ contract('DigitalaxAuction', (accounts) => {
         winningBid: ether('0.2')
       });
 
+      await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: bidder});
       await expectRevert(
-        this.auction.createAuction(
+        this.auction.createAuctionOnBehalfOfOwner(
           TOKEN_ONE_ID, // ID
           '1',  // reserve
           '1', // start
           '13', // end
-          {from: minter}
+          {from: admin}
         ),
         "DigitalaxAuction.createAuction: Cannot relist"
       );
