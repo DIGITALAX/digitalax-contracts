@@ -399,12 +399,20 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
         ]);
       }));
 
-      // check ownership
+      // Check ownership
       await Promise.all(newTokens.map(async (tokenId) => {
         const balanceOf = await this.digitalaxMaterials.balanceOf(tokenHolder, tokenId);
         expect(balanceOf).to.be.bignumber.equal('5');
         return balanceOf;
       }));
+    });
+
+    it('TODO try batch send more tokens than limit', async () => {
+
+    });
+
+    it('TODO try send more tokens up to limit', async () => {
+
     });
 
   });
