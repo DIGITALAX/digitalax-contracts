@@ -140,11 +140,11 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
 
     /**
      @notice Creates a new auction for a given garment
-     @dev Only the owner of a garment can create an auction
+     @dev Only the owner of a garment can create an auction and must have approved the contract
      @dev In addition to owning the garment, the sender also has to have the MINTER role.
      @dev End time for the auction must be in the future.
      @param _garmentTokenId Token ID of the garment being auctioned
-     @param _reservePrice Garment cannot be sold for less than this price
+     @param _reservePrice Garment cannot be sold for less than this or minBidIncrement, whichever is higher
      @param _startTimestamp Unix epoch in seconds for the auction start time
      @param _endTimestamp Unix epoch in seconds for the auction end time.
      */
@@ -163,7 +163,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         // Check owner of the token is the creator and approved
         require(
             garmentNft.ownerOf(_garmentTokenId) == _msgSender() && garmentNft.isApproved(_garmentTokenId, address(this)),
-            "DigitalaxAuction.createAuction: Cannot create an auction if you do not own it"
+            "DigitalaxAuction.createAuction: Not owner and or contract not approved"
         );
 
         _createAuction(
@@ -174,7 +174,16 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         );
     }
 
-    //todo add docs
+    /**
+     @notice Admin or smart contract can list approved Garments
+     @dev Sender must have admin or smart contract role
+     @dev Owner must have approved this contract for the garment or all garments they own
+     @dev End time for the auction must be in the future.
+     @param _garmentTokenId Token ID of the garment being auctioned
+     @param _reservePrice Garment cannot be sold for less than this or minBidIncrement, whichever is higher
+     @param _startTimestamp Unix epoch in seconds for the auction start time
+     @param _endTimestamp Unix epoch in seconds for the auction end time.
+     */
     function createAuctionOnBehalfOfOwner(
         uint256 _garmentTokenId,
         uint256 _reservePrice,
