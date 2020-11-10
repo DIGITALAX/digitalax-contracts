@@ -439,6 +439,61 @@ contract('DigitalaxAuction', (accounts) => {
     });
   });
 
+  describe('createAuctionOnBehalfOfOwner()', () => {
+    beforeEach(async () => {
+      await this.auction.setNowOverride('2');
+      await this.token.mint(minter, randomTokenURI, designer, {from: minter});
+    });
+
+    describe('validation', () => {
+      it('fails when sender does not have admin or smart contract role', async () => {
+        await expectRevert(
+          this.auction.createAuctionOnBehalfOfOwner(TOKEN_ONE_ID, "0", "0", "10", {from: bidder}),
+          "DigitalaxAuction.createAuctionOnBehalfOfOwner: Sender must have admin or smart contract role"
+        );
+      });
+
+      it('fails when auction does not have approval for garment', async () => {
+        await expectRevert(
+          this.auction.createAuctionOnBehalfOfOwner(TOKEN_ONE_ID, "0", "0", "10", {from: admin}),
+          "DigitalaxAuction.createAuctionOnBehalfOfOwner: Cannot create an auction if you do not have approval"
+        );
+      });
+    });
+
+    describe('successful creation', () => {
+      beforeEach(async () => {
+        await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
+      });
+
+      const createAuctionOnBehalfOfOwnerGivenSenderIs = async (sender) => {
+        const {receipt} = await this.auction.createAuctionOnBehalfOfOwner(TOKEN_ONE_ID, "0", "0", "10", {from: sender});
+
+        await expectEvent(receipt, 'AuctionCreated', {
+          garmentTokenId: TOKEN_ONE_ID
+        });
+
+        const {_reservePrice, _startTime, _endTime, _resulted} = await this.auction.getAuction(TOKEN_ONE_ID);
+        expect(_reservePrice).to.be.bignumber.equal('0');
+        expect(_startTime).to.be.bignumber.equal('0');
+        expect(_endTime).to.be.bignumber.equal('10');
+        expect(_resulted).to.be.equal(false);
+
+        const owner = await this.token.ownerOf(TOKEN_ONE_ID);
+        expect(owner).to.be.equal(minter);
+      };
+
+      it('succeeds with admin role', async () => {
+        await createAuctionOnBehalfOfOwnerGivenSenderIs(admin);
+      });
+
+
+      it('succeeds with smart contract role', async () => {
+        await createAuctionOnBehalfOfOwnerGivenSenderIs(smartContract);
+      });
+    });
+  });
+
   describe('placeBid()', async () => {
 
     describe('validation', () => {
