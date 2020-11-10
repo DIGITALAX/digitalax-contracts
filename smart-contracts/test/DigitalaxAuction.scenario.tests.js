@@ -15,6 +15,8 @@ const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
 const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
 const DigitalaxAuction = artifacts.require('DigitalaxAuctionMock');
 
+const ERC1155Mock = artifacts.require('ERC1155Mock');
+
 contract('DigitalaxAuction scenario tests', (accounts) => {
   const [admin, minter, owner, smartContract, platformFeeAddress, tokenHolder, designer, bidder, ...otherAccounts] = accounts;
 
@@ -317,6 +319,24 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
           await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_FOUR_ID, '0');
         });
 
+        it('cannot add new children from another 1155 token', async () => {
+          const anotherChildContract = await ERC1155Mock.new();
+
+          const ANOTHER_TOKEN_ID = 1;
+
+          // Bidder owns 5 1155s from another contract
+          await anotherChildContract.mint(ANOTHER_TOKEN_ID, '3', {from: bidder});
+          expect(await anotherChildContract.balanceOf(bidder, ANOTHER_TOKEN_ID)).to.be.bignumber.equal('3');
+
+          // try send from another 1155 to the parent
+          await expectRevert(
+            anotherChildContract.safeTransferFrom(
+              bidder, this.token.address, ANOTHER_TOKEN_ID, '3', web3.utils.encodePacked(TOKEN_ONE_ID),
+              {from: bidder}
+            ),
+            'Invalid child token contract'
+          );
+        });
       });
     });
   });

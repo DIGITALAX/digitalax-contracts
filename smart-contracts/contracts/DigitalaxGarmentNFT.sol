@@ -165,8 +165,11 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         // We only accept children from the Digitalax child contract
         require(msg.sender == address(childContract), "Invalid child token contract");
 
-        // check the sender is the owner of the token
-        require(ownerOf(_receiverTokenId) == _from, "Cannot add children to tokens you dont own");
+        // check the sender is the owner of the token or its just been birthed to this token
+        require(
+            ownerOf(_receiverTokenId) == _from || _from == address(0),
+            "Cannot add children to tokens you dont own"
+        );
 
         _receiveChild(_receiverTokenId, msg.sender, _id, _amount);
 
@@ -188,6 +191,15 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         assembly {_receiverTokenId := calldataload(_index)}
 
         require(_exists(_receiverTokenId), "Token does not exist");
+
+        // We only accept children from the Digitalax child contract
+        require(msg.sender == address(childContract), "Invalid child token contract");
+
+        // check the sender is the owner of the token or its just been birthed to this token
+        require(
+            ownerOf(_receiverTokenId) == _from || _from == address(0),
+            "Cannot add children to tokens you dont own"
+        );
 
         // TODO whats the max number of tokens we can receive due to GAS constraints?
         for (uint256 i = 0; i < _ids.length; i++) {
