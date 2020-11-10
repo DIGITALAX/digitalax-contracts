@@ -232,6 +232,22 @@ contract('DigitalaxAuction', (accounts) => {
         );
       });
 
+      it('fails when wnd time must be greater than start', async () => {
+        this.auction.updateAuctionStartTime(TOKEN_ONE_ID, '10', {from: admin});
+        await expectRevert(
+          this.auction.updateAuctionEndTime(TOKEN_ONE_ID, '9', {from: admin}),
+          'DigitalaxAuction.updateAuctionEndTime: End time must be greater than start'
+        );
+      });
+
+      it('fails when end time has passed', async () => {
+        await this.auction.setNowOverride('12');
+        await expectRevert(
+          this.auction.updateAuctionEndTime(TOKEN_ONE_ID, '11', {from: admin}),
+          'DigitalaxAuction.updateAuctionEndTime: End time passed. Nobody can bid'
+        );
+      });
+
       it('successfully updates auction end time', async () => {
         let {_endTime} = await this.auction.getAuction(TOKEN_ONE_ID);
         expect(_endTime).to.be.bignumber.equal('10');

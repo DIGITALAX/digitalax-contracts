@@ -9,6 +9,9 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "./DigitalaxAccessControls.sol";
 import "./garment/IDigitalaxGarmentNFT.sol";
 
+/**
+ * @notice Primary sale auction contract for Digitalax NFTs
+ */
 contract DigitalaxAuction is Context, ReentrancyGuard {
     using SafeMath for uint256;
     using Address for address payable;
@@ -320,9 +323,6 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         // Ensure this contract is approved to move the token
         require(garmentNft.isApproved(_garmentTokenId, address(this)), "DigitalaxAuction.resultAuction: auction not approved");
 
-        // Result the auction
-        auctions[_garmentTokenId].resulted = true;
-
         // Get info on who the highest bidder is
         HighestBid storage highestBid = highestBids[_garmentTokenId];
         address winner = highestBid.bidder;
@@ -333,6 +333,9 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
 
         // Ensure there is a winner
         require(winner != address(0), "DigitalaxAuction.resultAuction: no open bids");
+
+        // Result the auction
+        auctions[_garmentTokenId].resulted = true;
 
         // Clean up the highest bid
         delete highestBids[_garmentTokenId];
@@ -483,21 +486,28 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
      @dev Only admin
      @dev Auction must exist
      @param _garmentTokenId Token ID of the garment being auctioned
-     @param _endTime New end time (unix epoch in seconds)
+     @param _endTimestamp New end time (unix epoch in seconds)
      */
-    function updateAuctionEndTime(uint256 _garmentTokenId, uint256 _endTime) external {
+    function updateAuctionEndTime(uint256 _garmentTokenId, uint256 _endTimestamp) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
             "DigitalaxAuction.updateAuctionEndTime: Sender must be admin"
         );
-
         require(
             auctions[_garmentTokenId].endTime > 0,
             "DigitalaxAuction.updateAuctionEndTime: No Auction exists"
         );
+        require(
+            auctions[_garmentTokenId].startTime < _endTimestamp,
+            "DigitalaxAuction.updateAuctionEndTime: End time must be greater than start"
+        );
+        require(
+            _endTimestamp > _getNow(),
+            "DigitalaxAuction.updateAuctionEndTime: End time passed. Nobody can bid"
+        );
 
-        auctions[_garmentTokenId].endTime = _endTime;
-        emit UpdateAuctionEndTime(_garmentTokenId, _endTime);
+        auctions[_garmentTokenId].endTime = _endTimestamp;
+        emit UpdateAuctionEndTime(_garmentTokenId, _endTimestamp);
     }
 
     /**
