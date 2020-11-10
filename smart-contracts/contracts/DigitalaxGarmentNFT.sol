@@ -9,6 +9,8 @@ import "./ERC1155/ERC1155.sol";
 import "./DigitalaxAccessControls.sol";
 import "./ERC998/IERC998ERC1155TopDown.sol";
 
+// TODO use _msgSender() where possible
+
 contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown {
 
     // @notice event emitted upon construction of this contract, used to bootstrap external indexers
@@ -159,6 +161,12 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
 
         // Check token received is valid
         require(_exists(_receiverTokenId), "Token does not exist");
+
+        // We only accept children from the Digitalax child contract
+        require(msg.sender == address(childContract), "Invalid child token contract");
+
+        // check the sender is the owner of the token
+        require(ownerOf(_receiverTokenId) == _from, "Cannot add children to tokens you dont own");
 
         _receiveChild(_receiverTokenId, msg.sender, _id, _amount);
 

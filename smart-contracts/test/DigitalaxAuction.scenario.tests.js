@@ -18,6 +18,8 @@ const DigitalaxAuction = artifacts.require('DigitalaxAuctionMock');
 contract('DigitalaxAuction scenario tests', (accounts) => {
   const [admin, minter, owner, smartContract, platformFeeAddress, tokenHolder, designer, bidder, ...otherAccounts] = accounts;
 
+  const EMPTY_BYTES = web3.utils.encodePacked('');
+
   beforeEach(async () => {
     // Setup access controls and enabled admin
     this.accessControls = await DigitalaxAccessControls.new({from: admin});
@@ -63,33 +65,37 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
   const CHILD_ONE_ID = new BN('1');
   const CHILD_TWO_ID = new BN('2');
   const CHILD_THREE_ID = new BN('3');
+  const CHILD_FOUR_ID = new BN('4');
 
   const child1 = 'child1';
   const child2 = 'child2';
   const child3 = 'child3';
+  const child4 = 'child4';
 
   beforeEach(async () => {
-    // Create children - creates 1155 token IDs: [1], [2], [3]
-    await this.factory.createNewChildren([child1, child2, child3], {from: minter});
+    // Create children - creates 1155 token IDs: [1], [2], [3], [4]
+    await this.factory.createNewChildren([child1, child2, child3, child4], {from: minter});
     expect(await this.digitalaxMaterials.uri(CHILD_ONE_ID)).to.be.equal(child1);
     expect(await this.digitalaxMaterials.uri(CHILD_TWO_ID)).to.be.equal(child2);
     expect(await this.digitalaxMaterials.uri(CHILD_THREE_ID)).to.be.equal(child3);
+
+    // token 4 used as the attack token
+    expect(await this.digitalaxMaterials.uri(CHILD_FOUR_ID)).to.be.equal(child4);
+
+    // Create parent with children
+    const randomGarmentURI = 'randomGarmentURI';
+    const {receipt} = await this.factory.mintParentWithChildren(
+      randomGarmentURI,
+      designer,
+      [CHILD_ONE_ID, CHILD_TWO_ID, CHILD_THREE_ID],
+      [1, 2, 3],
+      tokenHolder,
+      {from: minter}
+    );
+    this.receipt = receipt;
   });
 
   describe.only('scenario 1: happy path creation, auction and burn', async () => {
-    const randomGarmentURI = 'randomGarmentURI';
-
-    beforeEach(async () => {
-      const {receipt} = await this.factory.mintParentWithChildren(
-        randomGarmentURI,
-        designer,
-        [CHILD_ONE_ID, CHILD_TWO_ID, CHILD_THREE_ID],
-        [1, 2, 3],
-        tokenHolder,
-        {from: minter}
-      );
-      this.receipt = receipt;
-    });
 
     it('Garment and children are created', async () => {
       await expectEvent(this.receipt, 'GarmentCreated', {garmentTokenId: TOKEN_ONE_ID});
@@ -172,15 +178,157 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
     });
   });
 
-  describe('scenario 2: happy path creation, auction and increasing balance post purchase', async () => {
+  describe.only('scenario 2: happy path creation, auction and increasing balance post purchase', async () => {
 
-    beforeEach(async () => {
-
+    it('Garment and children are created', async () => {
+      await expectEvent(this.receipt, 'GarmentCreated', {garmentTokenId: TOKEN_ONE_ID});
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_ONE_ID, '1');
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_TWO_ID, '2');
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_THREE_ID, '3');
     });
 
+    describe('Given an auction', async () => {
+
+      beforeEach(async () => {
+        // Give token holder minter role to setup an auction and approve auction
+        await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: tokenHolder});
+        await this.accessControls.addMinterRole(tokenHolder, {from: admin});
+
+        // Create auction
+        await this.auction.setNowOverride('2');
+        await this.auction.createAuction(
+          TOKEN_ONE_ID,
+          '1',
+          '0',
+          '10',
+          {from: tokenHolder}
+        );
+
+        // Place bid
+        await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.2')});
+        await this.auction.setNowOverride('12');
+
+        // Result it
+        const {receipt} = await this.auction.resultAuction(TOKEN_ONE_ID, {from: admin});
+        this.receipt = receipt;
+      });
+
+      it('the auction is resulted properly and token ownership assigned', async () => {
+        await expectEvent(this.receipt, 'AuctionResulted', {
+          garmentTokenId: TOKEN_ONE_ID,
+          winner: bidder,
+          winningBid: ether('0.2')
+        });
+
+        // top bidder now owns token
+        expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.equal(bidder);
+
+        // Token still owns children
+        await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_ONE_ID, '1');
+        await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_TWO_ID, '2');
+        await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_THREE_ID, '3');
+      });
+
+      describe('Given user now tops up there existing child balances', async () => {
+
+        // mint more balances of the children and send them to the new owner so they can topup
+        beforeEach(async () => {
+
+          // check balance are zero before
+          expect(await this.digitalaxMaterials.balanceOf(bidder, CHILD_ONE_ID)).to.be.bignumber.equal('0');
+          expect(await this.digitalaxMaterials.balanceOf(bidder, CHILD_TWO_ID)).to.be.bignumber.equal('0');
+          expect(await this.digitalaxMaterials.balanceOf(bidder, CHILD_THREE_ID)).to.be.bignumber.equal('0');
+
+          // send 5 tokens to the bidder
+          await this.digitalaxMaterials.mintChild(CHILD_ONE_ID, '5', bidder, EMPTY_BYTES, {from: smartContract});
+          await this.digitalaxMaterials.mintChild(CHILD_TWO_ID, '5', bidder, EMPTY_BYTES, {from: smartContract});
+          await this.digitalaxMaterials.mintChild(CHILD_THREE_ID, '5', bidder, EMPTY_BYTES, {from: smartContract});
+
+          // check balance are 5 for each type
+          expect(await this.digitalaxMaterials.balanceOf(bidder, CHILD_ONE_ID)).to.be.bignumber.equal('5');
+          expect(await this.digitalaxMaterials.balanceOf(bidder, CHILD_TWO_ID)).to.be.bignumber.equal('5');
+          expect(await this.digitalaxMaterials.balanceOf(bidder, CHILD_THREE_ID)).to.be.bignumber.equal('5');
+        });
+
+        it('balances are updated', async () => {
+          // Top up balances
+          await this.digitalaxMaterials.safeTransferFrom(
+            bidder, this.token.address, CHILD_ONE_ID, '5', web3.utils.encodePacked(TOKEN_ONE_ID),
+            {from: bidder}
+          );
+          await this.digitalaxMaterials.safeTransferFrom(
+            bidder, this.token.address, CHILD_TWO_ID, '5', web3.utils.encodePacked(TOKEN_ONE_ID),
+            {from: bidder}
+          );
+          await this.digitalaxMaterials.safeTransferFrom(
+            bidder, this.token.address, CHILD_THREE_ID, '5', web3.utils.encodePacked(TOKEN_ONE_ID),
+            {from: bidder}
+          );
+
+          // check direct balance are now 0 for each type
+          expect(await this.digitalaxMaterials.balanceOf(bidder, CHILD_ONE_ID)).to.be.bignumber.equal('0');
+          expect(await this.digitalaxMaterials.balanceOf(bidder, CHILD_TWO_ID)).to.be.bignumber.equal('0');
+          expect(await this.digitalaxMaterials.balanceOf(bidder, CHILD_THREE_ID)).to.be.bignumber.equal('0');
+
+          // Check token now owns them
+          await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_ONE_ID, '6');
+          await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_TWO_ID, '7');
+          await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_THREE_ID, '8');
+        });
+
+        it('cannot add top-up existing children to someone else parent', async () => {
+          // give tokenHolder 5 children
+          await this.digitalaxMaterials.mintChild(CHILD_ONE_ID, '5', tokenHolder, EMPTY_BYTES, {from: smartContract});
+          expect(await this.digitalaxMaterials.balanceOf(tokenHolder, CHILD_ONE_ID)).to.be.bignumber.equal('5');
+
+          // Attempt to top up the child balances of another user
+          const bidderOwnedToken = web3.utils.encodePacked(TOKEN_ONE_ID);
+          await expectRevert(
+            this.digitalaxMaterials.safeTransferFrom(
+              tokenHolder, this.token.address, CHILD_ONE_ID, '5', bidderOwnedToken,
+              {from: tokenHolder}
+            ),
+            'Cannot add children to tokens you dont own'
+          );
+
+          // balances stay the same
+          expect(await this.digitalaxMaterials.balanceOf(tokenHolder, CHILD_ONE_ID)).to.be.bignumber.equal('5');
+          await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_ONE_ID, '1');
+        });
+
+        it('cannot add new children to someone else parent', async () => {
+
+          // give tokenHolder 5 children of a new token
+          await this.digitalaxMaterials.mintChild(CHILD_FOUR_ID, '5', tokenHolder, EMPTY_BYTES, {from: smartContract});
+          expect(await this.digitalaxMaterials.balanceOf(tokenHolder, CHILD_FOUR_ID)).to.be.bignumber.equal('5');
+
+          // Attempt to top up the child balances of another user for a new token
+          const bidderOwnedToken = web3.utils.encodePacked(TOKEN_ONE_ID);
+          await expectRevert(
+            this.digitalaxMaterials.safeTransferFrom(
+              tokenHolder, this.token.address, CHILD_FOUR_ID, '5', bidderOwnedToken,
+              {from: tokenHolder}
+            ),
+            'Cannot add children to tokens you dont own'
+          );
+
+          // balances stay the same
+          expect(await this.digitalaxMaterials.balanceOf(tokenHolder, CHILD_FOUR_ID)).to.be.bignumber.equal('5');
+          await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_FOUR_ID, '0');
+        });
+
+      });
+    });
   });
 
   describe('scenario 3: happy path creation, auction and additional children added', async () => {
+
+    it('Garment and children are created', async () => {
+      await expectEvent(this.receipt, 'GarmentCreated', {garmentTokenId: TOKEN_ONE_ID});
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_ONE_ID, '1');
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_TWO_ID, '2');
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_THREE_ID, '3');
+    });
 
     beforeEach(async () => {
 
