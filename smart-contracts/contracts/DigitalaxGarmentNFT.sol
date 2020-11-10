@@ -46,23 +46,6 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     /// @dev ERC721 Token ID -> ERC1155 child IDs owned by the token ID
     mapping(uint256 => EnumerableSet.UintSet) private parentToChildMapping;
 
-    // TODO only the 721 can accept 1155s from our code
-    // TODO only the 1155 can work with the 721 from us
-
-    // TODO facilitate a user to "top-up" there parent with other children tokens - up to the max
-
-    // TODO scenario 1:
-    //         -> Create parent with embedded children via factory
-    //         -> Setup auction and result it
-    //         -> user takes ownership of both child and parent NFTs
-    //         -> user burns it and extracts out children tokens
-
-    // TODO scenario 2:
-    //         -> Create parent with embedded children via factory
-    //         -> Setup auction and result it
-    //         -> user can top up more tokens of the same type
-    //         -> only the owner can top them up
-
     // TODO scenario 3:
     //         -> Create parent with embedded children via factory
     //         -> Setup auction and result it
@@ -148,28 +131,16 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         delete garmentDesigners[_tokenId];
     }
 
+    // TODO - check what happens with receiving new and existing children in a single transfer - confirm impact with a test
+
     function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _amount, bytes memory _data)
     virtual
     public override
     returns (bytes4) {
-        // TODO have to got a test for this
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
 
-        uint256 _receiverTokenId;
-        uint256 _index = msg.data.length - 32;
-        assembly {_receiverTokenId := calldataload(_index)}
-
-        // Check token received is valid
-        require(_exists(_receiverTokenId), "Token does not exist");
-
-        // We only accept children from the Digitalax child contract
-        require(msg.sender == address(childContract), "Invalid child token contract");
-
-        // check the sender is the owner of the token or its just been birthed to this token
-        require(
-            ownerOf(_receiverTokenId) == _from || _from == address(0),
-            "Cannot add children to tokens you dont own"
-        );
+        uint256 _receiverTokenId = _extractIncomingTokenId();
+        _validateReceiverParams(_receiverTokenId, _from);
 
         _receiveChild(_receiverTokenId, msg.sender, _id, _amount);
 
@@ -182,14 +153,32 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     virtual public
     override returns (bytes4) {
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
+
         //TODO; check this but I believe that with our 1155, this is not a possibility
         require(_ids.length == _values.length, "ERC1155: ids and values length mismatch");
 
+        uint256 _receiverTokenId = _extractIncomingTokenId();
+        _validateReceiverParams(_receiverTokenId, _from);
+
+        // TODO whats the max number of tokens we can receive due to GAS constraints?
+        // Note: be mindful ofr GAS limits
+        for (uint256 i = 0; i < _ids.length; i++) {
+            _receiveChild(_receiverTokenId, msg.sender, _ids[i], _values[i]);
+            emit ReceivedChild(_from, _receiverTokenId, msg.sender, _ids[i], _values[i]);
+        }
+
+        return this.onERC1155BatchReceived.selector;
+    }
+
+    function _extractIncomingTokenId() internal returns (uint256) {
         uint256 _receiverTokenId;
         // TODO add tests for different types of size 32 to see if handles it
         uint256 _index = msg.data.length - 32;
         assembly {_receiverTokenId := calldataload(_index)}
+        return _receiverTokenId;
+    }
 
+    function _validateReceiverParams(uint256 _receiverTokenId, address _from) internal {
         require(_exists(_receiverTokenId), "Token does not exist");
 
         // We only accept children from the Digitalax child contract
@@ -200,14 +189,6 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
             ownerOf(_receiverTokenId) == _from || _from == address(0),
             "Cannot add children to tokens you dont own"
         );
-
-        // TODO whats the max number of tokens we can receive due to GAS constraints?
-        for (uint256 i = 0; i < _ids.length; i++) {
-            _receiveChild(_receiverTokenId, msg.sender, _ids[i], _values[i]);
-            emit ReceivedChild(_from, _receiverTokenId, msg.sender, _ids[i], _values[i]);
-        }
-
-        return this.onERC1155BatchReceived.selector;
     }
 
     //////////
