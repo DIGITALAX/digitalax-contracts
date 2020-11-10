@@ -334,6 +334,19 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
           await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_ONE_ID, '1');
         });
 
+        it('cannot top-up existing children to someone else parent even with approval', async () => {
+          await this.digitalaxMaterials.setApprovalForAll(tokenHolder, true, {from: bidder});
+
+          // Top up balances
+          await expectRevert(
+            this.digitalaxMaterials.safeTransferFrom(
+              bidder, this.token.address, CHILD_ONE_ID, '5', web3.utils.encodePacked(TOKEN_ONE_ID),
+              {from: tokenHolder}
+            ),
+            "Operator is not owner"
+          );
+        });
+
         it('cannot add new children from the materials contract to someone else parent', async () => {
 
           // give tokenHolder 5 children of a new token
