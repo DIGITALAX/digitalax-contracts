@@ -7,15 +7,18 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./DigitalaxAccessControls.sol";
-import "./DigitalaxGarmentNFT.sol";
+import "./garment/IDigitalaxGarmentNFT.sol";
 
-//TODO: pause on create, placebid and withdraw
 contract DigitalaxAuction is Context, ReentrancyGuard {
     using SafeMath for uint256;
     using Address for address payable;
 
     /// @notice Event emitted only on construction. To be used by indexers
     event DigitalaxAuctionContractDeployed();
+
+    event PauseToggled(
+        bool isPaused
+    );
 
     event AuctionCreated(
         uint256 indexed garmentTokenId
@@ -105,7 +108,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     mapping(uint256 => HighestBid) public highestBids;
 
     /// @notice Garment ERC721 NFT - the only NFT that can be auctioned in this contract
-    DigitalaxGarmentNFT public garmentNft;
+    IDigitalaxGarmentNFT public garmentNft;
 
     // @notice responsible for enforcing admin access
     DigitalaxAccessControls public accessControls;
@@ -122,9 +125,17 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     /// @notice where to send platform fee funds to
     address payable public platformFeeRecipient;
 
+    /// @notice for switching off auction creations, bids and withdrawals
+    bool public isPaused;
+
+    modifier whenNotPaused() {
+        require(!isPaused, "Function is currently paused");
+        _;
+    }
+
     constructor(
         DigitalaxAccessControls _accessControls,
-        DigitalaxGarmentNFT _garmentNft, // TODO extract interface to save deployment costs
+        IDigitalaxGarmentNFT _garmentNft,
         address payable _platformFeeRecipient
     ) public {
         require(address(_accessControls) != address(0), "DigitalaxAuction: Invalid Access Controls");
@@ -153,7 +164,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         uint256 _reservePrice,
         uint256 _startTimestamp,
         uint256 _endTimestamp
-    ) external {
+    ) external whenNotPaused {
         // Ensure caller has privileges
         require(
             accessControls.hasMinterRole(_msgSender()),
@@ -215,7 +226,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
      @dev Bids from smart contracts are prohibited to prevent griefing with always reverting receiver
      @param _garmentTokenId Token ID of the garment being auctioned
      */
-    function placeBid(uint256 _garmentTokenId) external payable nonReentrant {
+    function placeBid(uint256 _garmentTokenId) external payable nonReentrant whenNotPaused {
         require(_msgSender().isContract() == false, "DigitalaxAuction.placeBid: No contracts permitted");
 
         // Check the auction to see if this is a valid bid
@@ -252,7 +263,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
      @dev Only callable by the existing top bidder
      @param _garmentTokenId Token ID of the garment being auctioned
      */
-    function withdrawBid(uint256 _garmentTokenId) external nonReentrant {
+    function withdrawBid(uint256 _garmentTokenId) external nonReentrant whenNotPaused {
         HighestBid storage highestBid = highestBids[_garmentTokenId];
 
         // Ensure highest bidder is the caller
@@ -389,6 +400,12 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         delete auctions[_garmentTokenId];
 
         emit AuctionCancelled(_garmentTokenId);
+    }
+
+    function toggleIsPaused() external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxAuction.toggleIsPaused: Sender must be admin");
+        isPaused = !isPaused;
+        emit PauseToggled(isPaused);
     }
 
     /**
