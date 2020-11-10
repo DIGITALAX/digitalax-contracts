@@ -3,10 +3,9 @@ const {
   expectEvent,
   BN,
   ether,
-  constants,
-  balance
 } = require('@openzeppelin/test-helpers');
 
+const _ = require('lodash');
 const {expect} = require('chai');
 
 const DigitalaxGarmentFactory = artifacts.require('DigitalaxGarmentFactory');
@@ -148,7 +147,7 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
         await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_THREE_ID, '3');
       });
 
-      describe('Given user burns it', async () => {
+      describe('Given a user burns it', async () => {
         it('user destroys parent token and is assigned the composite children', async () => {
 
           // check balance are zero before burn
@@ -378,7 +377,7 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
     });
   });
 
-  describe('scenario 3: happy path creation, auction and additional children added', async () => {
+  describe.skip('scenario 3: happy path creation, can add additional children up to max children allowed', async () => {
 
     it('Garment and children are created', async () => {
       await expectEvent(this.receipt, 'GarmentCreated', {garmentTokenId: TOKEN_ONE_ID});
@@ -388,7 +387,24 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
     });
 
     beforeEach(async () => {
+      // token holder owns the token
+      expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.equal(tokenHolder);
 
+      // Mint 10 more new tokens
+      const newTokens = _.range(4, 14);
+      await Promise.all(newTokens.map((tokenId) => {
+        return Promise.all([
+          this.digitalaxMaterials.createChild(`child-${tokenId}`, {from: smartContract}),
+          this.digitalaxMaterials.mintChild(tokenId, '5', tokenHolder, EMPTY_BYTES, {from: smartContract})
+        ]);
+      }));
+
+      // check ownership
+      await Promise.all(newTokens.map(async (tokenId) => {
+        const balanceOf = await this.digitalaxMaterials.balanceOf(tokenHolder, tokenId);
+        expect(balanceOf).to.be.bignumber.equal('5');
+        return balanceOf;
+      }));
     });
 
   });
@@ -402,15 +418,4 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
     expect(garmentStrandBalance).to.be.bignumber.equal(expectedStrandBalance);
   };
 
-  const expectGarmentToOwnAGivenSetOfStrandIds = async (garmentId, childTokenIds) => {
-    const garmentStrandIdsOwned = await this.token.childIdsForOn(
-      garmentId,
-      this.digitalaxMaterials.address
-    );
-
-    expect(garmentStrandIdsOwned.length).to.be.equal(childTokenIds.length);
-    garmentStrandIdsOwned.forEach((strandId, idx) => {
-      expect(strandId).to.be.bignumber.equal(childTokenIds[idx]);
-    });
-  };
 });
