@@ -161,6 +161,21 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
        });
     });
 
+    describe('Updating maxChildrenPerToken', () => {
+       it('Can update access controls as admin', async () => {
+           expect(await this.token.maxChildrenPerToken()).to.be.bignumber.equal("10");
+           await this.token.updateMaxChildrenPerToken("20", {from: admin});
+           expect(await this.token.maxChildrenPerToken()).to.be.bignumber.equal("20");
+       });
+
+       it('Reverts when sender is not admin', async () => {
+         await expectRevert(
+           this.token.updateMaxChildrenPerToken("10", {from: random}),
+           "DigitalaxGarmentNFT.updateMaxChildrenPerToken: Sender must be admin"
+         );
+       });
+    });
+
     describe('Wrapping 1155 Child Tokens', () => {
       describe('General', () => {
         describe('Given a garment token that does not exist', () => {

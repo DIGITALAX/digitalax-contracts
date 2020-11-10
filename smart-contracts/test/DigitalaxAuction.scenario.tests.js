@@ -390,7 +390,7 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
     });
   });
 
-  describe.skip('scenario 3: happy path creation, can add additional children up to max children allowed', async () => {
+  describe('scenario 3: happy path creation, can add additional children up to max children allowed', async () => {
 
     it('Garment and children are created', async () => {
       await expectEvent(this.receipt, 'GarmentCreated', {garmentTokenId: TOKEN_ONE_ID});
@@ -420,12 +420,65 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
       }));
     });
 
-    it('TODO try batch send more tokens than limit', async () => {
+    it('should fail when trying to batch send more tokens than limit', async () => {
+      const tokenId = web3.utils.encodePacked(TOKEN_ONE_ID);
 
+      // Confirm 3 children
+      let totalChildrenMapped = await this.token.totalChildrenMapped(TOKEN_ONE_ID);
+      expect(totalChildrenMapped).to.be.bignumber.equal('3');
+
+      // try move move than 10 children
+      await expectRevert(
+        this.digitalaxMaterials.safeBatchTransferFrom(
+          tokenHolder,
+          this.token.address,
+          [4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+          [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+          tokenId,
+          {from: tokenHolder}),
+        'Cannot exceed max child token allocation'
+      );
+
+      // Check still 3
+      totalChildrenMapped = await this.token.totalChildrenMapped(TOKEN_ONE_ID);
+      expect(totalChildrenMapped).to.be.bignumber.equal('3');
     });
 
-    it('TODO try send more tokens up to limit', async () => {
+    it('is fine sending children up to the limit, after this it fails', async () => {
+      const tokenId = web3.utils.encodePacked(TOKEN_ONE_ID);
 
+      // Confirm 3 children
+      let totalChildrenMapped = await this.token.totalChildrenMapped(TOKEN_ONE_ID);
+      expect(totalChildrenMapped).to.be.bignumber.equal('3');
+
+      // Add up to the limit
+      await this.digitalaxMaterials.safeBatchTransferFrom(
+        tokenHolder,
+        this.token.address,
+        [4, 5, 6, 7, 8, 9, 10],
+        [1, 1, 1, 1, 1, 1, 1],
+        tokenId,
+        {from: tokenHolder});
+
+      // Check now 10
+      totalChildrenMapped = await this.token.totalChildrenMapped(TOKEN_ONE_ID);
+      expect(totalChildrenMapped).to.be.bignumber.equal('10');
+
+      // try move move 1 more to trigger the failure
+      await expectRevert(
+        this.digitalaxMaterials.safeBatchTransferFrom(
+          tokenHolder,
+          this.token.address,
+          [11],
+          [1],
+          tokenId,
+          {from: tokenHolder}),
+        'Cannot exceed max child token allocation'
+      );
+
+      // Check still 10
+      totalChildrenMapped = await this.token.totalChildrenMapped(TOKEN_ONE_ID);
+      expect(totalChildrenMapped).to.be.bignumber.equal('10');
     });
 
   });
