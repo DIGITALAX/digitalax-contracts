@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/GSN/Context.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./DigitalaxAccessControls.sol";
-import "./DigitalaxGarmentNFT.sol";
+import "./garment/DigitalaxGarmentNFT.sol";
 
 contract DigitalaxAuction is Context, ReentrancyGuard {
     using SafeMath for uint256;

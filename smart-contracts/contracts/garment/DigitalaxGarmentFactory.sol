@@ -5,8 +5,8 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/GSN/Context.sol";
 import "./DigitalaxGarmentNFT.sol";
-import "./DigitalaxMaterials.sol";
-import "./DigitalaxAccessControls.sol";
+import "../DigitalaxMaterials.sol";
+import "../DigitalaxAccessControls.sol";
 
 /**
  * @title Digitalax Garment Factory
