@@ -10,6 +10,9 @@
 * Move to repo folder `cd smart-contracts`
 * Install dependencies `yarn`
 * Run tests `yarn test`
+
+#### Running GAS reports
+* in its own terminal tab run: `npx buidler node`
 * Run test with `GAS` profiling `yarn test-with-gas`
 
 ## Genesis Metadata

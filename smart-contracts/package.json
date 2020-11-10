@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "test": "npx buidler test",
-    "test-with-gas": "REPORT_GAS=true; npx buidler test",
+    "test-with-gas": "REPORT_GAS=true; npx buidler test --network localhost",
     "coverage": "npx buidler coverage",
     "compile": "npx buidler compile"
   },
