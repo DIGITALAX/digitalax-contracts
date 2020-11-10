@@ -278,7 +278,44 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
           await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_THREE_ID, '8');
         });
 
-        it('cannot add top-up existing children to someone else parent', async () => {
+        it('cannot top-up receive parent tokens is msg.data is not 32 bytes in size (boolean)', async () => {
+          // give tokenHolder 5 children
+          await this.digitalaxMaterials.mintChild(CHILD_ONE_ID, '5', tokenHolder, EMPTY_BYTES, {from: smartContract});
+          expect(await this.digitalaxMaterials.balanceOf(tokenHolder, CHILD_ONE_ID)).to.be.bignumber.equal('5');
+
+          const randomlyEncodedBoolean = web3.utils.encodePacked(true);
+          await expectRevert(
+            this.digitalaxMaterials.safeTransferFrom(
+              tokenHolder, this.token.address, CHILD_ONE_ID, '5', randomlyEncodedBoolean,
+              {from: tokenHolder}
+            ),
+            'ERC998: data must contain the unique uint256 tokenId to transfer the child token to'
+          );
+
+          // balances stay the same
+          expect(await this.digitalaxMaterials.balanceOf(tokenHolder, CHILD_ONE_ID)).to.be.bignumber.equal('5');
+          await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_ONE_ID, '1');
+        });
+
+        it('cannot top-up receive parent tokens is msg.data is not 32 bytes in size (random bytes)', async () => {
+          await this.digitalaxMaterials.mintChild(CHILD_ONE_ID, '5', tokenHolder, EMPTY_BYTES, {from: smartContract});
+          expect(await this.digitalaxMaterials.balanceOf(tokenHolder, CHILD_ONE_ID)).to.be.bignumber.equal('5');
+
+          const randomBytes = web3.utils.padLeft('0x3456ff', 20);
+          await expectRevert(
+            this.digitalaxMaterials.safeTransferFrom(
+              tokenHolder, this.token.address, CHILD_ONE_ID, '5', randomBytes,
+              {from: tokenHolder}
+            ),
+            'ERC998: data must contain the unique uint256 tokenId to transfer the child token to'
+          );
+
+          // balances stay the same
+          expect(await this.digitalaxMaterials.balanceOf(tokenHolder, CHILD_ONE_ID)).to.be.bignumber.equal('5');
+          await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_ONE_ID, '1');
+        });
+
+        it('cannot top-up existing children to someone else parent', async () => {
           // give tokenHolder 5 children
           await this.digitalaxMaterials.mintChild(CHILD_ONE_ID, '5', tokenHolder, EMPTY_BYTES, {from: smartContract});
           expect(await this.digitalaxMaterials.balanceOf(tokenHolder, CHILD_ONE_ID)).to.be.bignumber.equal('5');
@@ -298,7 +335,7 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
           await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_ONE_ID, '1');
         });
 
-        it('cannot add new children to someone else parent', async () => {
+        it('cannot add new children from the materials contract to someone else parent', async () => {
 
           // give tokenHolder 5 children of a new token
           await this.digitalaxMaterials.mintChild(CHILD_FOUR_ID, '5', tokenHolder, EMPTY_BYTES, {from: smartContract});
@@ -319,7 +356,7 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
           await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_FOUR_ID, '0');
         });
 
-        it('cannot add new children from another 1155 token', async () => {
+        it('cannot add new children from another 1155 token to another token', async () => {
           const anotherChildContract = await ERC1155Mock.new();
 
           const ANOTHER_TOKEN_ID = 1;
