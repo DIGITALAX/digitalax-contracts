@@ -256,6 +256,54 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     }
 
     /**
+     * @dev Destroys `amount` tokens of token type `id` from `account`
+     *
+     * Requirements:
+     *
+     * - `account` cannot be the zero address.
+     * - `account` must have at least `amount` tokens of token type `id`.
+     */
+    function _burn(address account, uint256 id, uint256 amount) internal virtual {
+        require(account != address(0), "ERC1155: burn from the zero address");
+
+        address operator = _msgSender();
+
+        _beforeTokenTransfer(operator, account, address(0), _asSingletonArray(id), _asSingletonArray(amount), "");
+
+        _balances[id][account] = _balances[id][account].sub(
+            amount,
+            "ERC1155: burn amount exceeds balance"
+        );
+
+        emit TransferSingle(operator, account, address(0), id, amount);
+    }
+
+    /**
+     * @dev xref:ROOT:erc1155.adoc#batch-operations[Batched] version of {_burn}.
+     *
+     * Requirements:
+     *
+     * - `ids` and `amounts` must have the same length.
+     */
+    function _burnBatch(address account, uint256[] memory ids, uint256[] memory amounts) internal virtual {
+        require(account != address(0), "ERC1155: burn from the zero address");
+        require(ids.length == amounts.length, "ERC1155: ids and amounts length mismatch");
+
+        address operator = _msgSender();
+
+        _beforeTokenTransfer(operator, account, address(0), ids, amounts, "");
+
+        for (uint i = 0; i < ids.length; i++) {
+            _balances[ids[i]][account] = _balances[ids[i]][account].sub(
+                amounts[i],
+                "ERC1155: burn amount exceeds balance"
+            );
+        }
+
+        emit TransferBatch(operator, account, address(0), ids, amounts);
+    }
+
+    /**
      * @dev Hook that is called before any token transfer. This includes minting
      * and burning, as well as batched variants.
      *

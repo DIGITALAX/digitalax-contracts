@@ -3,13 +3,13 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import "./ERC1155/ERC1155.sol";
+import "./ERC1155/ERC1155Burnable.sol";
 import "./DigitalaxAccessControls.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
 // TODO ensure that once the bank is setup, another contract can mint and burn tokens in some form
 // TODO "a designer creates a garment with 5 children. A user buys this and can top it up a further 5 tokens (max 10). Once this is done they cannot add any more, and need to burn it in order to release those extra tokens?
-contract DigitalaxMaterials is ERC1155 {
+contract DigitalaxMaterials is ERC1155Burnable {
     using SafeMath for uint256;
 
     event DigitalaxMaterialsDeployed();
@@ -126,8 +126,6 @@ contract DigitalaxMaterials is ERC1155 {
 
         _mintBatch(_beneficiary, _childTokenIds, _amounts, _data);
     }
-
-    // TODO smart contract burn - used in the future by the bank - burn token to release collteral - are any changes needed in here to support this?
 
     function updateAccessControls(DigitalaxAccessControls _accessControls) external {
         require(
