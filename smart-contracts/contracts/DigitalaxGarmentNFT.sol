@@ -44,16 +44,27 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     /// @dev ERC721 Token ID -> ERC1155 child IDs owned by the token ID
     mapping(uint256 => EnumerableSet.UintSet) private parentToChildMapping;
 
-    // TODO facilitate a user to "topup" there parent with other children tokens - up to the max
+    // TODO only the 721 can accept 1155s from our code
+    // TODO only the 1155 can work with the 721 from us
+
+    // TODO facilitate a user to "top-up" there parent with other children tokens - up to the max
 
     // TODO scenario 1:
-    //         -> token is already alive with existing children within
+    //         -> Create parent with embedded children via factory
+    //         -> Setup auction and result it
+    //         -> user takes ownership of both child and parent NFTs
+    //         -> user burns it and extracts out children tokens
+
+    // TODO scenario 2:
+    //         -> Create parent with embedded children via factory
+    //         -> Setup auction and result it
     //         -> user can top up more tokens of the same type
     //         -> only the owner can top them up
 
-    // TODO scenario 2:
-    //         -> token is already alive with existing children within
-    //         -> user can top up with new tokens - up to be the mxChildren limit
+    // TODO scenario 3:
+    //         -> Create parent with embedded children via factory
+    //         -> Setup auction and result it
+    //         -> user can top up with new tokens IDs - up to be the mxChildren limit
     //         -> only the owner can top them up
 
     // TODO introduce max child NFT cap - configurable by admin default is 10 - with test
