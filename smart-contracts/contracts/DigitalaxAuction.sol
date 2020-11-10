@@ -591,7 +591,13 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         return block.timestamp;
     }
 
-    //todo add docs
+    /**
+     @notice Private method doing the heavy lifting of creating an auction
+     @param _garmentTokenId Token ID of the garment being auctioned
+     @param _reservePrice Garment cannot be sold for less than this or minBidIncrement, whichever is higher
+     @param _startTimestamp Unix epoch in seconds for the auction start time
+     @param _endTimestamp Unix epoch in seconds for the auction end time.
+     */
     function _createAuction(
         uint256 _garmentTokenId,
         uint256 _reservePrice,
