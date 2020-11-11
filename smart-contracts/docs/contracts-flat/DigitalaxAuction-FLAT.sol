@@ -27,7 +27,7 @@ abstract contract Context {
 
 // File: @openzeppelin/contracts/math/SafeMath.sol
 
-// SPDX-License-Identifier: MIT
+
 
 pragma solidity ^0.6.0;
 
@@ -189,7 +189,7 @@ library SafeMath {
 
 // File: @openzeppelin/contracts/utils/ReentrancyGuard.sol
 
-// SPDX-License-Identifier: MIT
+
 
 pragma solidity ^0.6.0;
 
@@ -254,7 +254,7 @@ contract ReentrancyGuard {
 
 // File: @openzeppelin/contracts/utils/Address.sol
 
-// SPDX-License-Identifier: MIT
+
 
 pragma solidity ^0.6.2;
 
@@ -398,7 +398,7 @@ library Address {
 
 // File: @openzeppelin/contracts/utils/EnumerableSet.sol
 
-// SPDX-License-Identifier: MIT
+
 
 pragma solidity ^0.6.0;
 
@@ -644,7 +644,7 @@ library EnumerableSet {
 
 // File: @openzeppelin/contracts/access/AccessControl.sol
 
-// SPDX-License-Identifier: MIT
+
 
 pragma solidity ^0.6.0;
 
@@ -863,7 +863,7 @@ abstract contract AccessControl is Context {
 
 // File: contracts/DigitalaxAccessControls.sol
 
-// SPDX-License-Identifier: MIT
+
 
 pragma solidity 0.6.12;
 
@@ -1013,7 +1013,7 @@ contract DigitalaxAccessControls is AccessControl {
 
 // File: @openzeppelin/contracts/introspection/IERC165.sol
 
-// SPDX-License-Identifier: MIT
+
 
 pragma solidity ^0.6.0;
 
@@ -1040,7 +1040,7 @@ interface IERC165 {
 
 // File: @openzeppelin/contracts/token/ERC721/IERC721.sol
 
-// SPDX-License-Identifier: MIT
+
 
 pragma solidity ^0.6.2;
 
@@ -1171,7 +1171,7 @@ interface IERC721 is IERC165 {
 
 // File: contracts/garment/IDigitalaxGarmentNFT.sol
 
-// SPDX-License-Identifier: MIT
+
 
 pragma solidity 0.6.12;
 
@@ -1184,7 +1184,7 @@ interface IDigitalaxGarmentNFT is IERC721 {
 
 // File: contracts/DigitalaxAuction.sol
 
-// SPDX-License-Identifier: MIT
+
 
 pragma solidity 0.6.12;
 
