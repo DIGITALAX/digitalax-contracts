@@ -84,7 +84,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([owner, minter, 
             it('reverts when no admin or smart contract', async function() {
                 await expectRevert(
                   this.token.setTokenURI(nonExistentTokenId, sampleUri, {from: operator}),
-                  "DigitalaxGarmentNFT.setPrimarySalePrice: Sender must be an authorised contract or admin",
+                  "DigitalaxGarmentNFT.setTokenURI: Sender must be an authorised contract or admin",
                 );
             });
 
