@@ -109,3 +109,5 @@ build
 .coverage_cache
 .coverage_contracts
 solc-sjw-macos-x64
+slither-output.log
+.solcx-lock-0.6.12
