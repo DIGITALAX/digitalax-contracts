@@ -10,7 +10,8 @@ contract MockVault {
     IERC20 public supportedERC20Asset;
     uint256 public supportedERC20AssetSyntheticStrandId;
 
-    constructor(DigitalaxMaterials _materials, IERC20 _supportedERC20Asset, string memory _supportedAssetSyntheticStrandUri) public {
+    // using init rather than constructor as we need to know the contract address in the test to give it smart contract role
+    function init(DigitalaxMaterials _materials, IERC20 _supportedERC20Asset, string memory _supportedAssetSyntheticStrandUri) external {
         materials = _materials;
 
         // If this contract supported many assets, this would be in a 'whitelist' method of sorts (maybe without the createChild and instead with a strandId)
@@ -29,5 +30,11 @@ contract MockVault {
             msg.sender,
             abi.encodePacked("")
         );
+    }
+
+    function claimUnderlyingAssetFromMaterial(uint256 _strandId, uint256 _claimAmount) external {
+        //🔥
+        materials.burn(msg.sender, _strandId, _claimAmount);
+        supportedERC20Asset.transfer(msg.sender, _claimAmount);
     }
 }
