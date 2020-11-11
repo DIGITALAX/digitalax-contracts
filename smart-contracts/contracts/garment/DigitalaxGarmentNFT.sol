@@ -24,6 +24,12 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         string _tokenUri
     );
 
+    // @notice event emitted when a tokens primary sale occurs
+    event TokenPrimarySalePriceSet(
+        uint256 indexed _tokenId,
+        uint256 _salePrice
+    );
+
     /// @dev Required to govern who can call certain functions
     DigitalaxAccessControls public accessControls;
 
@@ -76,7 +82,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         );
 
         // Valid args
-        assertMintingParamsValid(_tokenUri, _designer);
+        _assertMintingParamsValid(_tokenUri, _designer);
 
         tokenIdPointer = tokenIdPointer.add(1);
         uint256 tokenId = tokenIdPointer;
@@ -209,7 +215,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     function setTokenURI(uint256 _tokenId, string calldata _tokenUri) external {
         require(
             accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxGarmentNFT.setPrimarySalePrice: Sender must be an authorised contract or admin"
+            "DigitalaxGarmentNFT.setTokenURI: Sender must be an authorised contract or admin"
         );
         _setTokenURI(_tokenId, _tokenUri);
         emit DigitalaxGarmentTokenUriUpdate(_tokenId, _tokenUri);
@@ -229,9 +235,11 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         require(_exists(_tokenId), "DigitalaxGarmentNFT.setPrimarySalePrice: Token does not exist");
         require(_salePrice > 0, "DigitalaxGarmentNFT.setPrimarySalePrice: Invalid sale price");
 
-        primarySalePrice[_tokenId] = _salePrice;
-
-        // todo do we need an event ... can add transfer hook?
+        // Only set it once
+        if (primarySalePrice[_tokenId] == 0) {
+            primarySalePrice[_tokenId] = _salePrice;
+            emit TokenPrimarySalePriceSet(_tokenId, _salePrice);
+        }
     }
 
     /**
@@ -337,13 +345,9 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     }
 
     function _receiveChild(uint256 _tokenId, address, uint256 _childTokenId, uint256 _amount) private {
-        //todo add below check
-        //require(_childContract == childContract)
-
         if (balances[_tokenId][_childTokenId] == 0) {
             parentToChildMapping[_tokenId].add(_childTokenId);
         }
-
         balances[_tokenId][_childTokenId] = balances[_tokenId][_childTokenId].add(_amount);
     }
 
@@ -368,8 +372,8 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
      @param _tokenUri URI supplied on minting
      @param _designer Address supplied on minting
      */
-    function assertMintingParamsValid(string calldata _tokenUri, address _designer) pure private {
-        require(bytes(_tokenUri).length > 0, "DigitalaxGarmentNFT.assertMintingParamsValid: Token URI is empty");
-        require(_designer != address(0), "DigitalaxGarmentNFT.assertMintingParamsValid: Designer is zero address");
+    function _assertMintingParamsValid(string calldata _tokenUri, address _designer) pure internal {
+        require(bytes(_tokenUri).length > 0, "DigitalaxGarmentNFT._assertMintingParamsValid: Token URI is empty");
+        require(_designer != address(0), "DigitalaxGarmentNFT._assertMintingParamsValid: Designer is zero address");
     }
 }

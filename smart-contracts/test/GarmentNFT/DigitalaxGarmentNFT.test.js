@@ -145,6 +145,52 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
         });
     });
 
+    describe('Updating primary sale price', () => {
+
+      beforeEach(async () => {
+        await this.token.mint(owner, randomURI, designer, {from: minter});
+      });
+
+      it('Can update as admin', async () => {
+        expect(await this.token.primarySalePrice(TOKEN_ONE_ID)).to.be.bignumber.equal("0");
+        await this.token.setPrimarySalePrice(TOKEN_ONE_ID, "20", {from: admin});
+        expect(await this.token.primarySalePrice(TOKEN_ONE_ID)).to.be.bignumber.equal("20");
+      });
+
+      it('Can update as smart contract', async () => {
+        expect(await this.token.primarySalePrice(TOKEN_ONE_ID)).to.be.bignumber.equal("0");
+        await this.token.setPrimarySalePrice(TOKEN_ONE_ID, "20", {from: smart_contract});
+        expect(await this.token.primarySalePrice(TOKEN_ONE_ID)).to.be.bignumber.equal("20");
+      });
+
+      it('Only records first time it happens', async () => {
+        expect(await this.token.primarySalePrice(TOKEN_ONE_ID)).to.be.bignumber.equal("0");
+        await this.token.setPrimarySalePrice(TOKEN_ONE_ID, "20", {from: smart_contract});
+        expect(await this.token.primarySalePrice(TOKEN_ONE_ID)).to.be.bignumber.equal("20");
+
+        // change again
+        await this.token.setPrimarySalePrice(TOKEN_ONE_ID, "30", {from: smart_contract});
+
+        // Still 20
+        expect(await this.token.primarySalePrice(TOKEN_ONE_ID)).to.be.bignumber.equal("20");
+      });
+
+      it('Emits an event the first time it is set', async () => {
+        const {receipt} = await this.token.setPrimarySalePrice(TOKEN_ONE_ID, "30", {from: smart_contract});
+        await expectEvent(receipt, 'TokenPrimarySalePriceSet', {
+          _tokenId: TOKEN_ONE_ID,
+          _salePrice: "30"
+        });
+      });
+
+      it('Reverts when sender is not admin or smart contract', async () => {
+        await expectRevert(
+          this.token.updateMaxChildrenPerToken("10", {from: random}),
+          "DigitalaxGarmentNFT.updateMaxChildrenPerToken: Sender must be admin"
+        );
+      });
+    });
+
     describe('Updating access controls', () => {
        it('Can update access controls as admin', async () => {
            const currentAccessControlsAddress = await this.token.accessControls();
