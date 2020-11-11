@@ -27,9 +27,10 @@ function createNewChildren(string[] calldata _uris) external returns (uint256[] 
 
 #### Step 2 - minting garments 
 
-* These methods will increase the supply of the given children token IDs through minting
+* `mintParentWithChildren` will increase the supply of the given children token IDs through minting
 * It is the responsibility of the caller to provide the correct amounts and IDs which are aligned via array index 
 * If 1155 tokenIds are provided which do not yet exist, the method will revert
+* The above does not apply if minting a garment with no children
 
 ```solidity
 function mintParentWithChildren(string calldata garmentTokenUri, address designer, uint256[] calldata childTokenIds, uint256[] calldata childTokenAmounts, address beneficiary)
@@ -90,9 +91,31 @@ One final stipulation is that when an owner of a garment wants to add a new chil
     * The `_beneficiary` would need to be the address of the ERC721 parent contract
     * The `_data` parameter would have to be `abi.encodePacked(${PARENT_TOKEN_ID})`
 
-#### Wrapping through transfering
+#### Wrapping through transferring
 
-```TODO```
+* If atomically wrapping children in a single garment as part of a transfer, the parameter requirements are:
+    * `to` is the address of the garment parent NFT contract
+    * `data` would have to be `abi.encodePacked(${PARENT_TOKEN_ID})`
+
+```
+function safeTransferFrom(
+         address from,
+         address to,
+         uint256 id,
+         uint256 amount,
+         bytes memory data
+     )
+
+function safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    )
+```
+
+But remember the business rules stipulated above; Only the owner of both 1155 children and the target parent token ID can perform this operation if they do not exceed the max children rule.
 
 ## DigitalaxGarmentNFT (Parent tokens - ERC-721)
 
