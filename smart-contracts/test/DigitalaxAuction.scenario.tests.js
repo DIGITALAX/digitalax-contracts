@@ -467,11 +467,11 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
 
       // try move move 1 more to trigger the failure
       await expectRevert(
-        this.digitalaxMaterials.safeBatchTransferFrom(
+        this.digitalaxMaterials.safeTransferFrom(
           tokenHolder,
           this.token.address,
-          [11],
-          [1],
+          11,
+          1,
           tokenId,
           {from: tokenHolder}),
         'Cannot exceed max child token allocation'

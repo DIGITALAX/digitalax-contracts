@@ -97,32 +97,17 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         return tokenId;
     }
 
-    // TODO What happens if the receiver/caller is a contract - can they re-enter and what are the implications?
     function burn(uint256 _tokenId) external {
-        require(ownerOf(_tokenId) == _msgSender(), "DigitalaxGarmentNFT.burn: Only garment owner");
-
-        address childContractAddress = address(childContract);
-        uint256[] memory childIds = childIdsForOn(_tokenId, childContractAddress);
+        address operator = _msgSender();
+        require(
+            ownerOf(_tokenId) == operator || isApproved(_tokenId, operator),
+            "DigitalaxGarmentNFT.burn: Only garment owner or approved"
+        );
 
         // If there are any children tokens then send them as part of the burn
-        if (childIds.length > 0) {
-
-            uint256[] memory balanceOfChildren = new uint256[](childIds.length);
-
-            // Get balances for children tokens
-            for (uint i = 0; i < childIds.length; i++) {
-                balanceOfChildren[i] = childBalance(_tokenId, childContractAddress, childIds[i]);
-            }
-
+        if (parentToChildMapping[_tokenId].length() > 0) {
             // Transfer children to the burner
-            safeBatchTransferChildFrom(
-                _tokenId,
-                _msgSender(),
-                childContractAddress,
-                childIds,
-                balanceOfChildren,
-                abi.encodePacked("")
-            );
+            _extractAndTransferChildrenFromParent(_tokenId, _msgSender());
         }
 
         // Destroy token mappings
@@ -312,7 +297,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     /**
      * @dev checks the given token ID is approved either for all or the single token ID
      */
-    function isApproved(uint256 _tokenId, address _operator) external view returns (bool) {
+    function isApproved(uint256 _tokenId, address _operator) public view returns (bool) {
         return isApprovedForAll(ownerOf(_tokenId), _operator) || getApproved(_tokenId) == _operator;
     }
 
@@ -320,27 +305,21 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     // Internal and Private /
     /////////////////////////
 
-    // TODO; should this function be public?
-    function safeBatchTransferChildFrom(uint256 _fromTokenId, address _to, address, uint256[] memory _childTokenIds, uint256[] memory _amounts, bytes memory _data) public override {
-        //TODO: require does not work
-        //require(_msgSender() == address(this), "Only contract");
-        require(_childTokenIds.length == _amounts.length, "ERC998: ids and amounts length mismatch");
-        require(_to != address(0), "ERC998: transfer to the zero address");
-
-        address operator = _msgSender();
-        require(
-            ownerOf(_fromTokenId) == operator ||
-            isApprovedForAll(ownerOf(_fromTokenId), operator),
-            "ERC998: caller is not owner nor approved"
-        );
+    function _extractAndTransferChildrenFromParent(uint256 _fromTokenId, address _to) internal {
+        uint256[] memory _childTokenIds = childIdsForOn(_fromTokenId, address(childContract));
+        uint256[] memory _amounts = new uint256[](_childTokenIds.length);
 
         for (uint256 i = 0; i < _childTokenIds.length; ++i) {
             uint256 _childTokenId = _childTokenIds[i];
-            uint256 amount = _amounts[i];
+            uint256 amount = childBalance(_fromTokenId, address(childContract), _childTokenId);
+
+            _amounts[i] = amount;
 
             _removeChild(_fromTokenId, address(childContract), _childTokenId, amount);
         }
-        childContract.safeBatchTransferFrom(address(this), _to, _childTokenIds, _amounts, _data);
+
+        childContract.safeBatchTransferFrom(address(this), _to, _childTokenIds, _amounts, abi.encodePacked(""));
+
         emit TransferBatchChild(_fromTokenId, _to, address(childContract), _childTokenIds, _amounts);
     }
 
