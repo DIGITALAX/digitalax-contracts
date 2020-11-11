@@ -158,7 +158,6 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         uint256 _receiverTokenId = _extractIncomingTokenId();
         _validateReceiverParams(_receiverTokenId, _operator, _from);
 
-
         // Note: be mindful of GAS limits
         for (uint256 i = 0; i < _ids.length; i++) {
             _receiveChild(_receiverTokenId, _msgSender(), _ids[i], _values[i]);
@@ -194,6 +193,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
                 "Cannot add children to tokens you dont own"
             );
 
+            // Check the operator is also the owner, preventing an approved address adding tokens on the holders behalf
             require(_operator == _from, "Operator is not owner");
         }
     }

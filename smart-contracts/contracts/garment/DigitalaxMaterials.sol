@@ -8,7 +8,6 @@ import "../DigitalaxAccessControls.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
 // TODO ensure that once the bank is setup, another contract can mint and burn tokens in some form
-// TODO "a designer creates a garment with 5 children. A user buys this and can top it up a further 5 tokens (max 10). Once this is done they cannot add any more, and need to burn it in order to release those extra tokens?
 /**
  * @title Digitalax Materials NFT a.k.a. child NFTs
  * @dev Issues ERC-1155 tokens which can be held by the parent ERC-721 contract
