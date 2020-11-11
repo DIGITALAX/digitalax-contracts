@@ -6,7 +6,6 @@ pragma experimental ABIEncoderV2;
 import "../ERC1155/ERC1155Burnable.sol";
 import "../DigitalaxAccessControls.sol";
 
-// TODO ensure that once the bank is setup, another contract can mint and burn tokens in some form
 /**
  * @title Digitalax Materials NFT a.k.a. child NFTs
  * @dev Issues ERC-1155 tokens which can be held by the parent ERC-721 contract
@@ -16,7 +15,11 @@ contract DigitalaxMaterials is ERC1155Burnable {
     event DigitalaxMaterialsDeployed();
 
     event ChildCreated(
-        uint256 indexed strandId
+        uint256 indexed childId
+    );
+
+    event ChildrenCreated(
+        uint256[] childIds
     );
 
     string public name;
@@ -76,9 +79,9 @@ contract DigitalaxMaterials is ERC1155Burnable {
             _setURI(id, uri);
 
             tokenIds[i] = id;
-
-            emit ChildCreated(id);
         }
+
+        emit ChildrenCreated(tokenIds);
     }
 
     //////////////////////////////////
@@ -128,6 +131,7 @@ contract DigitalaxMaterials is ERC1155Burnable {
             accessControls.hasAdminRole(_msgSender()),
             "DigitalaxMaterials.updateAccessControls: Sender must be admin"
         );
+
         require(
             address(_accessControls) != address(0),
             "DigitalaxMaterials.updateAccessControls: New access controls cannot be ZERO address"

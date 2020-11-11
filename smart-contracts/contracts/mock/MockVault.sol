@@ -32,6 +32,8 @@ contract MockVault {
         );
     }
 
+    // todo: mint straight to garment
+
     function claimUnderlyingAssetFromMaterial(uint256 _strandId, uint256 _claimAmount) external {
         //🔥
         materials.burn(msg.sender, _strandId, _claimAmount);
