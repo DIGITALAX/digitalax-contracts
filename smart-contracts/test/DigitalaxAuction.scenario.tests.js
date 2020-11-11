@@ -73,6 +73,8 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
   const child3 = 'child3';
   const child4 = 'child4';
 
+  const randomGarmentURI = 'randomGarmentURI';
+
   beforeEach(async () => {
     // Create children - creates 1155 token IDs: [1], [2], [3], [4]
     await this.factory.createNewChildren([child1, child2, child3, child4], {from: minter});
@@ -84,7 +86,6 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
     expect(await this.digitalaxMaterials.uri(CHILD_FOUR_ID)).to.be.equal(child4);
 
     // Create parent with children
-    const randomGarmentURI = 'randomGarmentURI';
     const {receipt} = await this.factory.mintParentWithChildren(
       randomGarmentURI,
       designer,
@@ -343,7 +344,7 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
               bidder, this.token.address, CHILD_ONE_ID, '5', web3.utils.encodePacked(TOKEN_ONE_ID),
               {from: tokenHolder}
             ),
-            "Operator is not owner"
+            'Operator is not owner'
           );
         });
 
@@ -481,6 +482,66 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
       expect(totalChildrenMapped).to.be.bignumber.equal('10');
     });
 
+  });
+
+  describe('scenario 4: topping up multiple children to a parent but the children are a mixture of new and old children', async () => {
+
+    beforeEach(async () => {
+      // token holder owns the token
+      expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.equal(tokenHolder);
+
+      // Mint 5 more NWT tokens
+      const newTokens = _.range(4, 9);
+      await Promise.all(newTokens.map((tokenId) => {
+        return Promise.all([
+          this.digitalaxMaterials.createChild(`child-${tokenId}`, {from: smartContract}),
+          this.digitalaxMaterials.mintChild(tokenId, '5', tokenHolder, EMPTY_BYTES, {from: smartContract})
+        ]);
+      }));
+
+      // Check ownership
+      await Promise.all(newTokens.map(async (tokenId) => {
+        const balanceOf = await this.digitalaxMaterials.balanceOf(tokenHolder, tokenId);
+        expect(balanceOf).to.be.bignumber.equal('5');
+        return balanceOf;
+      }));
+
+      // mint more tokens of existing children to the token holder
+      this.digitalaxMaterials.mintChild(CHILD_ONE_ID, '5', tokenHolder, EMPTY_BYTES, {from: smartContract});
+      this.digitalaxMaterials.mintChild(CHILD_TWO_ID, '5', tokenHolder, EMPTY_BYTES, {from: smartContract});
+      this.digitalaxMaterials.mintChild(CHILD_THREE_ID, '5', tokenHolder, EMPTY_BYTES, {from: smartContract});
+    });
+
+    it('sending a mix of new and existing children', async () => {
+      // confirm 3 child balances
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_ONE_ID, '1');
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_TWO_ID, '2');
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_THREE_ID, '3');
+
+      // Check total children mapped is 3
+      let totalChildrenMapped = await this.token.totalChildrenMapped(TOKEN_ONE_ID);
+      expect(totalChildrenMapped).to.be.bignumber.equal('3');
+
+      // send a mixture - 2 existing children and 2 new children
+      await this.digitalaxMaterials.safeBatchTransferFrom(
+        tokenHolder,
+        this.token.address,
+        [CHILD_ONE_ID, CHILD_TWO_ID, 4, 5],
+        [1, 1, 1, 1],
+        web3.utils.encodePacked(TOKEN_ONE_ID),
+        {from: tokenHolder});
+
+      // check 5 are now mapped
+      totalChildrenMapped = await this.token.totalChildrenMapped(TOKEN_ONE_ID);
+      expect(totalChildrenMapped).to.be.bignumber.equal('5');
+
+      // Confirm balances updated accordingly
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_ONE_ID, '2');
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_TWO_ID, '3');
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, CHILD_THREE_ID, '3'); // no change
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, 4, '1');
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, 5, '1');
+    });
   });
 
   const expectStrandBalanceOfGarmentToBe = async (garmentTokenId, strandId, expectedStrandBalance) => {
