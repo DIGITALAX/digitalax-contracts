@@ -183,14 +183,18 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
             {from: operator}
           );
 
+          expect(await this.token.tokenTotalSupply(STRAND_ONE_ID)).to.be.bignumber.equal(mintAmount);
+
           await this.token.setApprovalForAll(operator, true, {from: tokenHolder});
 
           ({logs: this.logs} = await this.token.burn(
             tokenHolder,
-            tokenId,
+            STRAND_ONE_ID,
             burnAmount,
             {from: operator}
           ));
+
+          expect(await this.token.tokenTotalSupply(STRAND_ONE_ID)).to.be.bignumber.equal(mintAmount.sub(burnAmount));
         });
 
         it('emits a TransferSingle event', function () {
@@ -254,6 +258,11 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
             {from: operator},
           ));
 
+          const token = this.token;
+          await Promise.all(tokenBatchIds.map(async (id, index) => {
+            expect(await token.tokenTotalSupply(id)).to.be.bignumber.equal(mintAmounts[index]);
+          }));
+
           await this.token.setApprovalForAll(operator, true, {from: tokenBatchHolder});
 
           ({logs: this.logs} = await this.token.burnBatch(
@@ -262,6 +271,10 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
             burnAmounts,
             {from: operator}
           ));
+
+          await Promise.all(tokenBatchIds.map(async (id, index) => {
+            expect(await token.tokenTotalSupply(id)).to.be.bignumber.equal(mintAmounts[index].sub(burnAmounts[index]));
+          }));
         });
 
         it('emits a TransferBatch event', function () {

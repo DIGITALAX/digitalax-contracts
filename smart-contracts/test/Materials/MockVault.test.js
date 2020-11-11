@@ -49,17 +49,20 @@ contract('MockVault tests', function ([admin, minter, tokenHolder, ...otherAccou
   it('Can mint an asset back strand and retrieve back the asset', async () => {
     expect(await this.token.balanceOf(tokenHolder)).to.be.bignumber.equal(ONE_THOUSAND_TOKENS);
     expect(await this.materials.balanceOf(tokenHolder, STRAND_ID)).to.be.bignumber.equal('0');
+    expect(await this.materials.tokenTotalSupply(STRAND_ID)).to.be.bignumber.equal('0');
 
     await this.token.approve(this.vault.address, ONE_THOUSAND_TOKENS, {from: tokenHolder});
     await this.vault.mintAssetBackedSyntheticMaterial(ONE_THOUSAND_TOKENS, {from: tokenHolder});
 
     expect(await this.token.balanceOf(tokenHolder)).to.be.bignumber.equal('0');
     expect(await this.materials.balanceOf(tokenHolder, STRAND_ID)).to.be.bignumber.equal(ONE_THOUSAND_TOKENS);
+    expect(await this.materials.tokenTotalSupply(STRAND_ID)).to.be.bignumber.equal(ONE_THOUSAND_TOKENS);
 
     await this.materials.setApprovalForAll(this.vault.address, true, {from: tokenHolder});
     await this.vault.claimUnderlyingAssetFromMaterial(STRAND_ID, ONE_THOUSAND_TOKENS, {from: tokenHolder});
 
     expect(await this.token.balanceOf(tokenHolder)).to.be.bignumber.equal(ONE_THOUSAND_TOKENS);
     expect(await this.materials.balanceOf(tokenHolder, STRAND_ID)).to.be.bignumber.equal('0');
+    expect(await this.materials.tokenTotalSupply(STRAND_ID)).to.be.bignumber.equal('0');
   });
 });

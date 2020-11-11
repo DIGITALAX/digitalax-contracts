@@ -5,7 +5,6 @@ pragma experimental ABIEncoderV2;
 
 import "../ERC1155/ERC1155Burnable.sol";
 import "../DigitalaxAccessControls.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
 
 // TODO ensure that once the bank is setup, another contract can mint and burn tokens in some form
 /**
@@ -13,7 +12,6 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
  * @dev Issues ERC-1155 tokens which can be held by the parent ERC-721 contract
  */
 contract DigitalaxMaterials is ERC1155Burnable {
-    using SafeMath for uint256;
 
     event DigitalaxMaterialsDeployed();
 
@@ -25,7 +23,6 @@ contract DigitalaxMaterials is ERC1155Burnable {
     string public symbol;
 
     uint256 public tokenIdPointer;
-    mapping(uint256 => uint256) public childTokenTotalSupply;
 
     DigitalaxAccessControls public accessControls;
 
@@ -97,8 +94,6 @@ contract DigitalaxMaterials is ERC1155Burnable {
         require(bytes(tokenUris[_childTokenId]).length > 0, "DigitalaxMaterials.mintChild: Strand does not exist");
         require(_amount > 0, "DigitalaxMaterials.mintChild: No amount specified");
 
-        childTokenTotalSupply[_childTokenId] = childTokenTotalSupply[_childTokenId].add(_amount);
-
         _mint(_beneficiary, _childTokenId, _amount, _data);
     }
 
@@ -123,8 +118,6 @@ contract DigitalaxMaterials is ERC1155Burnable {
 
             uint256 amount = _amounts[i];
             require(amount > 0, "DigitalaxMaterials.batchMintChildren: Invalid amount");
-
-            childTokenTotalSupply[strandId] = childTokenTotalSupply[strandId].add(amount);
         }
 
         _mintBatch(_beneficiary, _childTokenIds, _amounts, _data);
