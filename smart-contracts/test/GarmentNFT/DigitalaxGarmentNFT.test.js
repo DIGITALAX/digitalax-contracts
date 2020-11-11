@@ -61,14 +61,14 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
             it('When token URI is empty', async () => {
                 await expectRevert(
                     this.token.mint(minter, '', designer, {from: minter}),
-                    "DigitalaxGarmentNFT.assertMintingParamsValid: Token URI is empty"
+                    "DigitalaxGarmentNFT._assertMintingParamsValid: Token URI is empty"
                 );
             });
 
             it('When designer is address ZERO', async () => {
                 await expectRevert(
                     this.token.mint(minter, randomURI, ZERO_ADDRESS, {from: minter}),
-                    "DigitalaxGarmentNFT.assertMintingParamsValid: Designer is zero address"
+                    "DigitalaxGarmentNFT._assertMintingParamsValid: Designer is zero address"
                 );
             });
         });
@@ -78,7 +78,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
                 await this.token.mint(minter, randomURI, designer, {from: minter});
                 await expectRevert(
                     this.token.setTokenURI('1', randomURI, {from: minter}),
-                    "DigitalaxGarmentNFT.setPrimarySalePrice: Sender must be an authorised contract or admin"
+                    "DigitalaxGarmentNFT.setTokenURI: Sender must be an authorised contract or admin"
                 );
             });
         });
