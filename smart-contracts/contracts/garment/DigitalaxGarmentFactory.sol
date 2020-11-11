@@ -10,7 +10,7 @@ import "../DigitalaxAccessControls.sol";
 
 /**
  * @title Digitalax Garment Factory
- * @dev To facilitate the creation of strands and garments
+ * @dev To facilitate the creation of child and parents NFTs
  * @dev This contract needs to be given the smart contract role in order to be given access to mint tokens
  */
 contract DigitalaxGarmentFactory is Context {

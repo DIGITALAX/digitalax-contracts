@@ -9,8 +9,10 @@ import "../ERC1155/ERC1155.sol";
 import "../DigitalaxAccessControls.sol";
 import "../ERC998/IERC998ERC1155TopDown.sol";
 
-// TODO use _msgSender() where possible
-
+/**
+ * @title Digitalax Garment NFT a.k.a. parent NFTs
+ * @dev Issues ERC-721 tokens as well as being able to hold child 1155 tokens
+ */
 contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown {
 
     // @notice event emitted upon construction of this contract, used to bootstrap external indexers
@@ -135,9 +137,9 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         uint256 _receiverTokenId = _extractIncomingTokenId();
         _validateReceiverParams(_receiverTokenId, _operator, _from);
 
-        _receiveChild(_receiverTokenId, msg.sender, _id, _amount);
+        _receiveChild(_receiverTokenId, _msgSender(), _id, _amount);
 
-        emit ReceivedChild(_from, _receiverTokenId, msg.sender, _id, _amount);
+        emit ReceivedChild(_from, _receiverTokenId, _msgSender(), _id, _amount);
 
         // Check total tokens do not exceed maximum
         require(
@@ -159,8 +161,8 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
 
         // Note: be mindful of GAS limits
         for (uint256 i = 0; i < _ids.length; i++) {
-            _receiveChild(_receiverTokenId, msg.sender, _ids[i], _values[i]);
-            emit ReceivedChild(_from, _receiverTokenId, msg.sender, _ids[i], _values[i]);
+            _receiveChild(_receiverTokenId, _msgSender(), _ids[i], _values[i]);
+            emit ReceivedChild(_from, _receiverTokenId, _msgSender(), _ids[i], _values[i]);
         }
 
         // Check total tokens do not exceed maximum
@@ -183,7 +185,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         require(_exists(_receiverTokenId), "Token does not exist");
 
         // We only accept children from the Digitalax child contract
-        require(msg.sender == address(childContract), "Invalid child token contract");
+        require(_msgSender() == address(childContract), "Invalid child token contract");
 
         // check the sender is the owner of the token or its just been birthed to this token
         if (_from != address(0)) {
@@ -315,7 +317,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     // TODO; should this function be public?
     function safeBatchTransferChildFrom(uint256 _fromTokenId, address _to, address, uint256[] memory _childTokenIds, uint256[] memory _amounts, bytes memory _data) public override {
         //TODO: require does not work
-        //require(msg.sender == address(this), "Only contract");
+        //require(_msgSender() == address(this), "Only contract");
         require(_childTokenIds.length == _amounts.length, "ERC998: ids and amounts length mismatch");
         require(_to != address(0), "ERC998: transfer to the zero address");
 
