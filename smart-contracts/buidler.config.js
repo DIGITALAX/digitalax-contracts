@@ -19,7 +19,7 @@ module.exports = {
   },
   gasReporter: {
     currency: 'USD',
-    enabled: true,
+    enabled: false,
     gasPrice: 50
   },
   networks: {

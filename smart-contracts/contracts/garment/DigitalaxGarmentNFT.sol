@@ -115,6 +115,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
 
         // Clean up designer mapping
         delete garmentDesigners[_tokenId];
+        delete primarySalePrice[_tokenId];
     }
 
     function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _amount, bytes memory _data)
