@@ -797,8 +797,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([owner, minter, 
         });
     });
 
-    // TODO: leaving burn tests here in case this functionality is required
-    describe.skip('_burn', function () {
+    describe('_burn', function () {
         it('reverts when burning a non-existent token id', async function () {
             await expectRevert(
                 this.token.burn(firstTokenId), 'ERC721: owner query for nonexistent token',
@@ -807,8 +806,8 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([owner, minter, 
 
         context('with minted tokens', function () {
             beforeEach(async function () {
-                await this.token.mint(owner, firstTokenId, artist, {from: minter});
-                await this.token.mint(owner, secondTokenId, artist, {from: minter});
+                await this.token.mint(owner, randomTokenURI, artist, {from: minter});
+                await this.token.mint(owner, randomTokenURI, artist, {from: minter});
             });
 
             context('with burnt token', function () {
