@@ -1,5 +1,3 @@
-// ERC998 side of the contract based on: https://github.com/rocksideio/ERC998-ERC1155-TopDown/blob/695963195606304374015c49d166ab2fbeb42ea9/contracts/ERC998ERC1155TopDown.sol
-
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.6.12;
@@ -11,19 +9,35 @@ import "../ERC1155/ERC1155.sol";
 import "../DigitalaxAccessControls.sol";
 import "../ERC998/IERC998ERC1155TopDown.sol";
 
-// TODO: secondary sale mechanics need to be built into core NFT twisted sister style - modify 721 to add payable
-// TODO: before each hook could also implement do not transfer to self
-contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown {
+/**
+ * @title Digitalax Garment NFT a.k.a. parent NFTs
+ * @dev Issues ERC-721 tokens as well as being able to hold child 1155 tokens
+ */
+contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown {
 
-    // TODO: events for updating token URI, admin methods and maybe on deploy in the constructor?
+    // @notice event emitted upon construction of this contract, used to bootstrap external indexers
+    event DigitalaxGarmentNFTContractDeployed();
+
+    // @notice event emitted when token URI is updated
+    event DigitalaxGarmentTokenUriUpdate(
+        uint256 indexed _tokenId,
+        string _tokenUri
+    );
+
+    // @notice event emitted when a tokens primary sale occurs
+    event TokenPrimarySalePriceSet(
+        uint256 indexed _tokenId,
+        uint256 _salePrice
+    );
 
     /// @dev Required to govern who can call certain functions
     DigitalaxAccessControls public accessControls;
 
-    uint256 public tokenIdPointer;
+    /// @dev Child ERC1155 contract address
+    ERC1155 public childContract;
 
-    // TODO: add platform address
-    // TODO: add platform percentage of secondary sales
+    /// @dev current max tokenId
+    uint256 public tokenIdPointer;
 
     /// @dev TokenID -> Designer address
     mapping(uint256 => address) public garmentDesigners;
@@ -31,27 +45,26 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     /// @dev TokenID -> Primary Ether Sale Price in Wei
     mapping(uint256 => uint256) public primarySalePrice;
 
-    //TODO: check whether this should there be last sale price too?
-
     /// @dev ERC721 Token ID -> ERC1155 ID -> Balance
     mapping(uint256 => mapping(uint256 => uint256)) private balances;
 
     /// @dev ERC1155 ID -> ERC721 Token IDs that have a balance
-    mapping(uint256 => EnumerableSet.UintSet) private holdersOf;
-
-    /// @dev Child ERC1155 contract address
-    ERC1155 public childContract;
+    mapping(uint256 => EnumerableSet.UintSet) private childToParentMapping;
 
     /// @dev ERC721 Token ID -> ERC1155 child IDs owned by the token ID
-    mapping(uint256 => EnumerableSet.UintSet) private childsForChildContract;
+    mapping(uint256 => EnumerableSet.UintSet) private parentToChildMapping;
+
+    /// @dev max children NFTs a single 721 can hold
+    uint256 public maxChildrenPerToken = 10;
 
     /**
      @param _accessControls Address of the Digitalax access control contract
+     @param _childContract ERC1155 the Digitalax child NFT contract
      */
-    //TODO: new param for 1155 child contract
     constructor(DigitalaxAccessControls _accessControls, ERC1155 _childContract) public {
         accessControls = _accessControls;
         childContract = _childContract;
+        emit DigitalaxGarmentNFTContractDeployed();
     }
 
     /**
@@ -68,78 +81,123 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
             "DigitalaxGarmentNFT.mint: Sender must have the minter or contract role"
         );
 
-        assertMintingParamsValid(_tokenUri, _designer);
+        // Valid args
+        _assertMintingParamsValid(_tokenUri, _designer);
 
         tokenIdPointer = tokenIdPointer.add(1);
         uint256 tokenId = tokenIdPointer;
+
+        // Mint token and set token URI
         _safeMint(_beneficiary, tokenId);
         _setTokenURI(tokenId, _tokenUri);
 
+        // Associate garment designer
         garmentDesigners[tokenId] = _designer;
 
         return tokenId;
     }
 
+    /**
+     @notice Burns a DigitalaxGarmentNFT, releasing any composed 1155 tokens held by the token itseld
+     @dev Only the owner or an approved sender can call this method
+     @param _tokenId the token ID to burn
+     */
     function burn(uint256 _tokenId) external {
-        require(ownerOf(_tokenId) == _msgSender(), "DigitalaxGarmentNFT.burn: Only Garment Owner");
-
-        address childContractAddress = address(childContract);
-        uint256[] memory childIds = childIdsForOn(_tokenId, childContractAddress);
+        address operator = _msgSender();
+        require(
+            ownerOf(_tokenId) == operator || isApproved(_tokenId, operator),
+            "DigitalaxGarmentNFT.burn: Only garment owner or approved"
+        );
 
         // If there are any children tokens then send them as part of the burn
-        if (childIds.length > 0) {
-            uint256[] memory balanceOfChilds = new uint256[](childIds.length);
-
-            for(uint i = 0; i < childIds.length; i++) {
-                balanceOfChilds[i] = childBalance(_tokenId, childContractAddress, childIds[i]);
-            }
-
-            safeBatchTransferChildFrom(
-                _tokenId,
-                _msgSender(),
-                childContractAddress,
-                childIds,
-                balanceOfChilds,
-                abi.encodePacked("")
-            );
+        if (parentToChildMapping[_tokenId].length() > 0) {
+            // Transfer children to the burner
+            _extractAndTransferChildrenFromParent(_tokenId, _msgSender());
         }
 
+        // Destroy token mappings
         _burn(_tokenId);
+
+        // Clean up designer mapping
+        delete garmentDesigners[_tokenId];
+        delete primarySalePrice[_tokenId];
     }
 
-    function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _amount, bytes memory _data) virtual public override returns(bytes4) {
+    /**
+     @notice Single ERC1155 receiver callback hook, used to enforce children token binding to a given parent token
+     */
+    function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _amount, bytes memory _data)
+    virtual
+    public override
+    returns (bytes4) {
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
-        _beforeChildTransfer(_operator, 0, address(this), _from, _asSingletonArray(_id), _asSingletonArray(_amount), _data);
 
-        uint256 _receiverTokenId;
-        uint256 _index = msg.data.length - 32;
-        assembly {_receiverTokenId := calldataload(_index)}
+        uint256 _receiverTokenId = _extractIncomingTokenId();
+        _validateReceiverParams(_receiverTokenId, _operator, _from);
 
-        require(_exists(_receiverTokenId), "Token does not exist");
+        _receiveChild(_receiverTokenId, _msgSender(), _id, _amount);
 
-        _receiveChild(_receiverTokenId, msg.sender, _id, _amount);
-        emit ReceivedChild(_from, _receiverTokenId, msg.sender, _id, _amount);
+        emit ReceivedChild(_from, _receiverTokenId, _msgSender(), _id, _amount);
+
+        // Check total tokens do not exceed maximum
+        require(
+            parentToChildMapping[_receiverTokenId].length() <= maxChildrenPerToken,
+            "Cannot exceed max child token allocation"
+        );
 
         return this.onERC1155Received.selector;
     }
 
-    function onERC1155BatchReceived(address _operator, address _from, uint256[] memory _ids, uint256[] memory _values, bytes memory _data) virtual public override returns(bytes4) {
+    /**
+     @notice Batch ERC1155 receiver callback hook, used to enforce child token bindings to a given parent token ID
+     */
+    function onERC1155BatchReceived(address _operator, address _from, uint256[] memory _ids, uint256[] memory _values, bytes memory _data)
+    virtual public
+    override returns (bytes4) {
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
-        //TODO; check this but I believe that with our 1155, this is not a possibility
-        //require(_ids.length == _values.length, "ERC1155: ids and values length mismatch");
-        _beforeChildTransfer(_operator, 0, address(this), _from, _ids, _values, _data);
 
+        uint256 _receiverTokenId = _extractIncomingTokenId();
+        _validateReceiverParams(_receiverTokenId, _operator, _from);
+
+        // Note: be mindful of GAS limits
+        for (uint256 i = 0; i < _ids.length; i++) {
+            _receiveChild(_receiverTokenId, _msgSender(), _ids[i], _values[i]);
+            emit ReceivedChild(_from, _receiverTokenId, _msgSender(), _ids[i], _values[i]);
+        }
+
+        // Check total tokens do not exceed maximum
+        require(
+            parentToChildMapping[_receiverTokenId].length() <= maxChildrenPerToken,
+            "Cannot exceed max child token allocation"
+        );
+
+        return this.onERC1155BatchReceived.selector;
+    }
+
+    function _extractIncomingTokenId() internal pure returns (uint256) {
+        // Extract out the embedded token ID from the sender
         uint256 _receiverTokenId;
         uint256 _index = msg.data.length - 32;
         assembly {_receiverTokenId := calldataload(_index)}
+        return _receiverTokenId;
+    }
 
+    function _validateReceiverParams(uint256 _receiverTokenId, address _operator, address _from) internal view {
         require(_exists(_receiverTokenId), "Token does not exist");
 
-        for(uint256 i = 0; i < _ids.length; i++) {
-            _receiveChild(_receiverTokenId, msg.sender, _ids[i], _values[i]);
-            emit ReceivedChild(_from, _receiverTokenId, msg.sender, _ids[i], _values[i]);
+        // We only accept children from the Digitalax child contract
+        require(_msgSender() == address(childContract), "Invalid child token contract");
+
+        // check the sender is the owner of the token or its just been birthed to this token
+        if (_from != address(0)) {
+            require(
+                ownerOf(_receiverTokenId) == _from,
+                "Cannot add children to tokens you dont own"
+            );
+
+            // Check the operator is also the owner, preventing an approved address adding tokens on the holders behalf
+            require(_operator == _from, "Operator is not owner");
         }
-        return this.onERC1155BatchReceived.selector;
     }
 
     //////////
@@ -148,13 +206,17 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
 
     /**
      @notice Updates the token URI of a given token
-     @dev Only admin
+     @dev Only admin or smart contract
      @param _tokenId The ID of the token being updated
      @param _tokenUri The new URI
      */
     function setTokenURI(uint256 _tokenId, string calldata _tokenUri) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentNFT.setTokenURI: Sender must have the admin role");
+        require(
+            accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxGarmentNFT.setTokenURI: Sender must be an authorised contract or admin"
+        );
         _setTokenURI(_tokenId, _tokenUri);
+        emit DigitalaxGarmentTokenUriUpdate(_tokenId, _tokenUri);
     }
 
     /**
@@ -171,9 +233,11 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         require(_exists(_tokenId), "DigitalaxGarmentNFT.setPrimarySalePrice: Token does not exist");
         require(_salePrice > 0, "DigitalaxGarmentNFT.setPrimarySalePrice: Invalid sale price");
 
-        primarySalePrice[_tokenId] = _salePrice;
-
-        // todo do we need an event
+        // Only set it once
+        if (primarySalePrice[_tokenId] == 0) {
+            primarySalePrice[_tokenId] = _salePrice;
+            emit TokenPrimarySalePriceSet(_tokenId, _salePrice);
+        }
     }
 
     /**
@@ -184,6 +248,16 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     function updateAccessControls(DigitalaxAccessControls _accessControls) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentNFT.updateAccessControls: Sender must be admin");
         accessControls = _accessControls;
+    }
+
+    /**
+     @notice Method for updating max children a token can hold
+     @dev Only admin
+     @param _maxChildrenPerToken uint256 the max children a token can hold
+     */
+    function updateMaxChildrenPerToken(uint256 _maxChildrenPerToken) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentNFT.updateMaxChildrenPerToken: Sender must be admin");
+        maxChildrenPerToken = _maxChildrenPerToken;
     }
 
     /////////////////
@@ -198,15 +272,19 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         return _exists(_tokenId);
     }
 
-    function childBalance(
-        uint256 _tokenId,
-        address _childContract,
-        uint256 _childTokenId
-    ) public view override returns(uint256) {
-        return _childContract == address(childContract) ?
-                balances[_tokenId][_childTokenId] : 0;
+    /**
+     @dev Get the child token balances held by the contract, assumes caller knows the correct child contract
+     */
+    function childBalance(uint256 _tokenId, address _childContract, uint256 _childTokenId)
+    public view
+    override
+    returns (uint256) {
+        return _childContract == address(childContract) ? balances[_tokenId][_childTokenId] : 0;
     }
 
+    /**
+     @dev Get list of supported child contracts, always a list of 0 or 1 in our case
+     */
     function childContractsFor(uint256 _tokenId) override external view returns (address[] memory) {
         if (!_exists(_tokenId)) {
             return new address[](0);
@@ -217,24 +295,34 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
         return childContracts;
     }
 
+    /**
+     @dev Gets mapped IDs for child tokens
+     */
     function childIdsForOn(uint256 _tokenId, address _childContract) override public view returns (uint256[] memory) {
         if (!_exists(_tokenId) || _childContract != address(childContract)) {
             return new uint256[](0);
         }
 
-        uint256[] memory childTokenIds = new uint256[](childsForChildContract[_tokenId].length());
+        uint256[] memory childTokenIds = new uint256[](parentToChildMapping[_tokenId].length());
 
-        for(uint256 i = 0; i < childsForChildContract[_tokenId].length(); i++) {
-            childTokenIds[i] = childsForChildContract[_tokenId].at(i);
+        for (uint256 i = 0; i < parentToChildMapping[_tokenId].length(); i++) {
+            childTokenIds[i] = parentToChildMapping[_tokenId].at(i);
         }
 
         return childTokenIds;
     }
 
     /**
+     @dev Get total number of children mapped to the token
+     */
+    function totalChildrenMapped(uint256 _tokenId) external view returns (uint256) {
+        return parentToChildMapping[_tokenId].length();
+    }
+
+    /**
      * @dev checks the given token ID is approved either for all or the single token ID
      */
-    function isApproved(uint256 _tokenId, address _operator) external view returns (bool) {
+    function isApproved(uint256 _tokenId, address _operator) public view returns (bool) {
         return isApprovedForAll(ownerOf(_tokenId), _operator) || getApproved(_tokenId) == _operator;
     }
 
@@ -242,63 +330,39 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
     // Internal and Private /
     /////////////////////////
 
-    // TODO; should this function be public?
-    function safeBatchTransferChildFrom(uint256 _fromTokenId, address _to, address, uint256[] memory _childTokenIds, uint256[] memory _amounts, bytes memory _data) public override {
-        //TODO: require does not work
-        //require(msg.sender == address(this), "Only contract");
-        require(_childTokenIds.length == _amounts.length, "ERC998: ids and amounts length mismatch");
-        require(_to != address(0), "ERC998: transfer to the zero address");
-
-        address operator = _msgSender();
-        require(
-            ownerOf(_fromTokenId) == operator ||
-            isApprovedForAll(ownerOf(_fromTokenId), operator),
-            "ERC998: caller is not owner nor approved"
-        );
-
-        _beforeChildTransfer(operator, _fromTokenId, _to, address(childContract), _childTokenIds, _amounts, _data);
+    function _extractAndTransferChildrenFromParent(uint256 _fromTokenId, address _to) internal {
+        uint256[] memory _childTokenIds = childIdsForOn(_fromTokenId, address(childContract));
+        uint256[] memory _amounts = new uint256[](_childTokenIds.length);
 
         for (uint256 i = 0; i < _childTokenIds.length; ++i) {
             uint256 _childTokenId = _childTokenIds[i];
-            uint256 amount = _amounts[i];
+            uint256 amount = childBalance(_fromTokenId, address(childContract), _childTokenId);
+
+            _amounts[i] = amount;
 
             _removeChild(_fromTokenId, address(childContract), _childTokenId, amount);
         }
-        childContract.safeBatchTransferFrom(address(this), _to, _childTokenIds, _amounts, _data);
+
+        childContract.safeBatchTransferFrom(address(this), _to, _childTokenIds, _amounts, abi.encodePacked(""));
+
         emit TransferBatchChild(_fromTokenId, _to, address(childContract), _childTokenIds, _amounts);
     }
 
     function _receiveChild(uint256 _tokenId, address, uint256 _childTokenId, uint256 _amount) private {
-        //todo add below check
-        //require(_childContract == childContract)
-
-        if(balances[_tokenId][_childTokenId] == 0) {
-            childsForChildContract[_tokenId].add(_childTokenId);
+        if (balances[_tokenId][_childTokenId] == 0) {
+            parentToChildMapping[_tokenId].add(_childTokenId);
         }
-
         balances[_tokenId][_childTokenId] = balances[_tokenId][_childTokenId].add(_amount);
     }
 
     function _removeChild(uint256 _tokenId, address, uint256 _childTokenId, uint256 _amount) private {
         require(_amount != 0 || balances[_tokenId][_childTokenId] >= _amount, "ERC998: insufficient child balance for transfer");
         balances[_tokenId][_childTokenId] = balances[_tokenId][_childTokenId].sub(_amount);
-        if(balances[_tokenId][_childTokenId] == 0) {
-            holdersOf[_childTokenId].remove(_tokenId);
-            childsForChildContract[_tokenId].remove(_childTokenId);
+        if (balances[_tokenId][_childTokenId] == 0) {
+            childToParentMapping[_childTokenId].remove(_tokenId);
+            parentToChildMapping[_tokenId].remove(_childTokenId);
         }
     }
-
-    function _beforeChildTransfer(
-        address _operator,
-        uint256 _fromTokenId,
-        address _to,
-        address _childContract,
-        uint256[] memory _ids,
-        uint256[] memory _amounts,
-        bytes memory _data
-    )
-    internal virtual
-    { }
 
     function _asSingletonArray(uint256 element) private pure returns (uint256[] memory) {
         uint256[] memory array = new uint256[](1);
@@ -312,8 +376,8 @@ contract DigitalaxGarmentNFT is ERC721("Digitalax", "DTX"), ERC1155Receiver, IER
      @param _tokenUri URI supplied on minting
      @param _designer Address supplied on minting
      */
-    function assertMintingParamsValid(string calldata _tokenUri, address _designer) pure private {
-        require(bytes(_tokenUri).length > 0, "DigitalaxGarmentNFT.assertMintingParamsValid: Token URI is empty");
-        require(_designer != address(0), "DigitalaxGarmentNFT.assertMintingParamsValid: Designer is zero address");
+    function _assertMintingParamsValid(string calldata _tokenUri, address _designer) pure internal {
+        require(bytes(_tokenUri).length > 0, "DigitalaxGarmentNFT._assertMintingParamsValid: Token URI is empty");
+        require(_designer != address(0), "DigitalaxGarmentNFT._assertMintingParamsValid: Designer is zero address");
     }
 }

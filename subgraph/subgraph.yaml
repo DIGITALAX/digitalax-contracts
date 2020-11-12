@@ -34,9 +34,9 @@ dataSources:
     name: DigitalaxGarmentNFT
     network: 'rinkeby'
     source:
-      address: '0x31f6b2c80f5278B9E0Cb60618470797B5C9757bA'
+      address: '0xBf379898e6C392Fe2A131046B8f3daE9A8748454'
       abi: DigitalaxGarmentNFT
-      startBlock: 7489183
+      startBlock: 7534547
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -58,22 +58,25 @@ dataSources:
     name: DigitalaxMaterials
     network: 'rinkeby'
     source:
-      address: '0xBDC713fe557B1872DDad51cB5Fa55f9Fd2D887Aa'
+      address: '0x5988db41A39F4AB0d6DeB9cf99C74F691bbD236a'
       abi: DigitalaxMaterials
-      startBlock: 7489178
+      startBlock: 7534540
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
-        - StrandCreated
+        - ChildCreated
+        - ChildrenCreated
         - TransferBatch
       abis:
         - name: DigitalaxMaterials
           file: ./abis/DigitalaxMaterials.json
       eventHandlers:
-        - event: StrandCreated(indexed uint256)
-          handler: handleStrandCreated
+        - event: ChildCreated(indexed uint256)
+          handler: handleChildCreated
+        - event: ChildrenCreated(uint256[])
+          handler: handleChildrenCreated
         - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
           handler: handleBatchTransfer
       file: ./src/DigitalaxMaterials.mapping.ts
@@ -81,9 +84,9 @@ dataSources:
     name: DigitalaxAuction
     network: 'rinkeby'
     source:
-      address: '0x0A2833042d13A64b4b48cF11B05fEEFA3c5daA21'
+      address: '0x18ff4ECCf9397C4CEF2A8611a33CbD5052f3679E'
       abi: DigitalaxAuction
-      startBlock: 7495516
+      startBlock: 7534588
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

@@ -7,7 +7,7 @@
         "type": "address"
       },
       {
-        "internalType": "contract DigitalaxGarmentNFT",
+        "internalType": "contract IDigitalaxGarmentNFT",
         "name": "_garmentNft",
         "type": "address"
       },
@@ -144,6 +144,19 @@
     "anonymous": false,
     "inputs": [],
     "name": "DigitalaxAuctionContractDeployed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isPaused",
+        "type": "bool"
+      }
+    ],
+    "name": "PauseToggled",
     "type": "event"
   },
   {
@@ -307,11 +320,6 @@
         "type": "uint256"
       },
       {
-        "internalType": "address",
-        "name": "lister",
-        "type": "address"
-      },
-      {
         "internalType": "bool",
         "name": "resulted",
         "type": "bool"
@@ -360,12 +368,12 @@
       },
       {
         "internalType": "uint256",
-        "name": "_startTime",
+        "name": "_startTimestamp",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "_endTime",
+        "name": "_endTimestamp",
         "type": "uint256"
       }
     ],
@@ -375,11 +383,39 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_garmentTokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_reservePrice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_startTimestamp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_endTimestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "createAuctionOnBehalfOfOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "garmentNft",
     "outputs": [
       {
-        "internalType": "contract DigitalaxGarmentNFT",
+        "internalType": "contract IDigitalaxGarmentNFT",
         "name": "",
         "type": "address"
       }
@@ -411,11 +447,6 @@
         "internalType": "uint256",
         "name": "_endTime",
         "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_lister",
-        "type": "address"
       },
       {
         "internalType": "bool",
@@ -479,6 +510,19 @@
         "internalType": "uint256",
         "name": "lastBidTime",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "isPaused",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -550,6 +594,13 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "toggleIsPaused",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "contract DigitalaxAccessControls",
@@ -571,7 +622,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_endTime",
+        "name": "_endTimestamp",
         "type": "uint256"
       }
     ],
