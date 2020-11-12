@@ -1,6 +1,7 @@
 const prompt = require('prompt-sync')();
 const FactoryArtifact = require('../artifacts/DigitalaxGarmentFactory.json');
 const AuctionArtifact = require('../artifacts/DigitalaxAuction.json');
+const GarmentArtifact = require('../artifacts/DigitalaxGarmentNFT.json');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -17,17 +18,19 @@ async function main() {
     deployer
   );
 
-  // const tx = await factory.createNewStrands(['randStrandUri5', 'randStrandUri6', 'randStrandUri7']);
+  // const tx = await factory.createNewStrands(['randStrandUri7', 'randStrandUri8', 'randStrandUri9']);
   //
   // await tx.wait();
 
-  await factory.createGarmentAndMintStrands(
-    'garment3',
+  const tx = await factory.mintParentWithChildren(
+    'https://miro.medium.com/max/1000/1*PrWCeKJEFi9fxYtBh27SHQ.jpeg',
     '0x12D062B19a2DF1920eb9FC28Bd6E9A7E936de4c2',
-    ['5','6', '7'],
+    ['3','4', '1'],
     ['2', '9', '3'],
     deployerAddress
   );
+
+  await tx.wait();
 
   const auctionAddress = prompt('Auction address? ');
   const auction = new ethers.Contract(
@@ -36,11 +39,22 @@ async function main() {
     deployer
   );
 
+  const tokenToList = '4';
+  // const garmentAddress = prompt('Garment address? ');
+  // const garment = new ethers.Contract(
+  //   garmentAddress,
+  //   GarmentArtifact.abi,
+  //   deployer
+  // );
+  //
+  // const tx = await garment.setApprovalForAll(auctionAddress, true);
+  // await tx.wait();
+
   await auction.createAuction(
-    '3',
-    '5000000000000000', // 0.005
-    '0',
-    '1604679967' //Date and time (GMT): Friday, November 6, 2020 4:26:07 PM
+    tokenToList,
+    '0', // 0.65
+    '1605879479',
+    '1606310534' //Date and time (GMT): Wednesday, November 25, 2020 1:22:14 PM
   );
 }
 

@@ -12,7 +12,7 @@ const ERC721ReceiverMock = artifacts.require('ERC721ReceiverMock');
 
 contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([owner, minter, approved, anotherApproved, operator, other, artist]) {
 
-    const name = 'Digitalax';
+    const name = 'DigitalaxNFT';
     const symbol = 'DTX';
 
     const firstTokenId = new BN('1');
@@ -81,9 +81,14 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([owner, minter, 
                 );
             });
 
-            it.skip('tokens with URI can be burnt ', async function () {
-                await this.token.setTokenURI(firstTokenId, sampleUri);
+            it('reverts when no admin or smart contract', async function() {
+                await expectRevert(
+                  this.token.setTokenURI(nonExistentTokenId, sampleUri, {from: operator}),
+                  "DigitalaxGarmentNFT.setTokenURI: Sender must be an authorised contract or admin",
+                );
+            });
 
+            it('tokens with URI can be burnt ', async function () {
                 await this.token.burn(firstTokenId, { from: owner });
 
                 expect(await this.token.exists(firstTokenId)).to.equal(false);
@@ -397,19 +402,8 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([owner, minter, 
         describe('safe mint', function () {
             const thirdTokenId = new BN('3');
             const tokenId = thirdTokenId;
-            const data = '0x42';
 
             describe('via safeMint', function () { // regular minting is tested in ERC721Mintable.test.js and others
-                it.skip('calls onERC721Received — with data', async function () {
-                    this.receiver = await ERC721ReceiverMock.new(RECEIVER_MAGIC_VALUE, false);
-                    const receipt = await this.token.mint(this.receiver.address, tokenId, data);
-
-                    await expectEvent.inTransaction(receipt.tx, ERC721ReceiverMock, 'Received', {
-                        from: ZERO_ADDRESS,
-                        tokenId: tokenId,
-                        data: data,
-                    });
-                });
 
                 it('calls onERC721Received — without data', async function () {
                     this.receiver = await ERC721ReceiverMock.new(RECEIVER_MAGIC_VALUE, false);
@@ -803,8 +797,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([owner, minter, 
         });
     });
 
-    // TODO: leaving burn tests here in case this functionality is required
-    describe.skip('_burn', function () {
+    describe('_burn', function () {
         it('reverts when burning a non-existent token id', async function () {
             await expectRevert(
                 this.token.burn(firstTokenId), 'ERC721: owner query for nonexistent token',
@@ -813,8 +806,8 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([owner, minter, 
 
         context('with minted tokens', function () {
             beforeEach(async function () {
-                await this.token.mint(owner, firstTokenId, artist, {from: minter});
-                await this.token.mint(owner, secondTokenId, artist, {from: minter});
+                await this.token.mint(owner, randomTokenURI, artist, {from: minter});
+                await this.token.mint(owner, randomTokenURI, artist, {from: minter});
             });
 
             context('with burnt token', function () {

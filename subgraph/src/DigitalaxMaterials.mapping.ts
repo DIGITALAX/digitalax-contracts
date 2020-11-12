@@ -1,7 +1,8 @@
 import {log, BigInt, Address} from "@graphprotocol/graph-ts/index";
 
 import {
-    StrandCreated,
+    ChildCreated,
+    ChildrenCreated,
     TransferBatch,
     DigitalaxMaterials as DigitalaxMaterialsContract
 } from "../generated/DigitalaxMaterials/DigitalaxMaterials";
@@ -10,14 +11,28 @@ import {
     DigitalaxMaterial
 } from "../generated/schema";
 
-export function handleStrandCreated(event: StrandCreated): void {
-    log.info("handleStrandCreated @ Strand ID {}", [event.params.strandId.toString()]);
+export function handleChildCreated(event: ChildCreated): void {
+    log.info("handleChildCreated @ Child ID {}", [event.params.childId.toString()]);
     let contract = DigitalaxMaterialsContract.bind(event.address);
 
-    let strand = new DigitalaxMaterial(event.params.strandId.toString());
-    strand.tokenUri = contract.uri(event.params.strandId);
+    let strand = new DigitalaxMaterial(event.params.childId.toString());
+    strand.tokenUri = contract.uri(event.params.childId);
     strand.totalSupply = BigInt.fromI32(0);
     strand.save();
+}
+
+export function handleChildrenCreated(event: ChildrenCreated): void {
+    log.info("handleChildrenCreated", []);
+    let contract = DigitalaxMaterialsContract.bind(event.address);
+
+    let childIds = event.params.childIds;
+    for(let i = 0; i < event.params.childIds.length; i++) {
+        let childId: BigInt = childIds.pop();
+        let strand = new DigitalaxMaterial(childId.toString());
+        strand.tokenUri = contract.uri(childId);
+        strand.totalSupply = BigInt.fromI32(0);
+        strand.save();
+    }
 }
 
 export function handleBatchTransfer(event: TransferBatch): void {
@@ -32,7 +47,7 @@ export function handleBatchTransfer(event: TransferBatch): void {
         let strandId: BigInt = strandIds.pop();
 
         let strand: DigitalaxMaterial | null = DigitalaxMaterial.load(strandId.toString());
-        strand.totalSupply = contract.strandTotalSupply(strandId);
+        strand.totalSupply = contract.tokenTotalSupply(strandId);
         strand.save();
     }
 }

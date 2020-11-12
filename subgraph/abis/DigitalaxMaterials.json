@@ -47,21 +47,34 @@
   },
   {
     "anonymous": false,
-    "inputs": [],
-    "name": "DigitalaxMaterialsDeployed",
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "childId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ChildCreated",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "strandId",
-        "type": "uint256"
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "childIds",
+        "type": "uint256[]"
       }
     ],
-    "name": "StrandCreated",
+    "name": "ChildrenCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "DigitalaxMaterialsDeployed",
     "type": "event"
   },
   {
@@ -226,11 +239,11 @@
         "type": "string[]"
       }
     ],
-    "name": "batchCreateStrands",
+    "name": "batchCreateChildren",
     "outputs": [
       {
         "internalType": "uint256[]",
-        "name": "strandIds",
+        "name": "tokenIds",
         "type": "uint256[]"
       }
     ],
@@ -241,7 +254,7 @@
     "inputs": [
       {
         "internalType": "uint256[]",
-        "name": "_strandIds",
+        "name": "_childTokenIds",
         "type": "uint256[]"
       },
       {
@@ -260,7 +273,53 @@
         "type": "bytes"
       }
     ],
-    "name": "batchMintStrands",
+    "name": "batchMintChildren",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "burn",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "ids",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "amounts",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "burnBatch",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -273,11 +332,11 @@
         "type": "string"
       }
     ],
-    "name": "createStrand",
+    "name": "createChild",
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "id",
         "type": "uint256"
       }
     ],
@@ -312,7 +371,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_strandId",
+        "name": "_childTokenId",
         "type": "uint256"
       },
       {
@@ -331,7 +390,7 @@
         "type": "bytes"
       }
     ],
-    "name": "mintStrand",
+    "name": "mintChild",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -434,38 +493,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "strandIdPointer",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "strandTotalSupply",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "bytes4",
@@ -492,6 +519,38 @@
         "internalType": "string",
         "name": "",
         "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "tokenIdPointer",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "tokenTotalSupply",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

@@ -1,22 +1,32 @@
 const prompt = require('prompt-sync')();
+const FactoryArtifact = require('../artifacts/DigitalaxGarmentFactory.json');
+const AuctionArtifact = require('../artifacts/DigitalaxAuction.json');
 const GarmentArtifact = require('../artifacts/DigitalaxGarmentNFT.json');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
   const deployerAddress = await deployer.getAddress();
   console.log(
-    "Burning a garment with signer address:",
+    "Placing a bid with signer address:",
     deployerAddress
   );
 
-  const garmentAddress = prompt('Garment address? ');
-  const garment = new ethers.Contract(
-    garmentAddress,
-    GarmentArtifact.abi,
+  const auctionAddress = prompt('Auction address? ');
+  const auction = new ethers.Contract(
+    auctionAddress,
+    AuctionArtifact.abi,
     deployer
   );
 
-  await garment.burn('2');
+  await auction.placeBid(
+    '1',
+    {value: '700000000000000000'}
+  );
+
+  await auction.placeBid(
+    '1',
+    {value: '900000000000000000'}
+  );
 }
 
 // We recommend this pattern to be able to use async/await everywhere

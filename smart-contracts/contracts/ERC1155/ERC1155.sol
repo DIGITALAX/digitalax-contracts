@@ -35,6 +35,9 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     // Token ID to its URI
     mapping (uint256 => string) internal tokenUris;
 
+    // Token ID to its total supply
+    mapping(uint256 => uint256) public tokenTotalSupply;
+
     /*
      *     bytes4(keccak256('balanceOf(address,uint256)')) == 0x00fdd58e
      *     bytes4(keccak256('balanceOfBatch(address[],uint256[])')) == 0x4e1273f4
@@ -224,6 +227,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         _beforeTokenTransfer(operator, address(0), account, _asSingletonArray(id), _asSingletonArray(amount), data);
 
         _balances[id][account] = _balances[id][account].add(amount);
+        tokenTotalSupply[id] = tokenTotalSupply[id].add(amount);
         emit TransferSingle(operator, address(0), account, id, amount);
 
         _doSafeTransferAcceptanceCheck(operator, address(0), account, id, amount, data);
@@ -247,12 +251,69 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         _beforeTokenTransfer(operator, address(0), to, ids, amounts, data);
 
         for (uint i = 0; i < ids.length; i++) {
-            _balances[ids[i]][to] = amounts[i].add(_balances[ids[i]][to]);
+            uint256 id = ids[i];
+            uint256 amount = amounts[i];
+            _balances[id][to] = amount.add(_balances[id][to]);
+            tokenTotalSupply[id] = tokenTotalSupply[id].add(amount);
         }
 
         emit TransferBatch(operator, address(0), to, ids, amounts);
 
         _doSafeBatchTransferAcceptanceCheck(operator, address(0), to, ids, amounts, data);
+    }
+
+    /**
+     * @dev Destroys `amount` tokens of token type `id` from `account`
+     *
+     * Requirements:
+     *
+     * - `account` cannot be the zero address.
+     * - `account` must have at least `amount` tokens of token type `id`.
+     */
+    function _burn(address account, uint256 id, uint256 amount) internal virtual {
+        require(account != address(0), "ERC1155: burn from the zero address");
+
+        address operator = _msgSender();
+
+        _beforeTokenTransfer(operator, account, address(0), _asSingletonArray(id), _asSingletonArray(amount), "");
+
+        _balances[id][account] = _balances[id][account].sub(
+            amount,
+            "ERC1155: burn amount exceeds balance"
+        );
+
+        tokenTotalSupply[id] = tokenTotalSupply[id].sub(amount);
+
+        emit TransferSingle(operator, account, address(0), id, amount);
+    }
+
+    /**
+     * @dev xref:ROOT:erc1155.adoc#batch-operations[Batched] version of {_burn}.
+     *
+     * Requirements:
+     *
+     * - `ids` and `amounts` must have the same length.
+     */
+    function _burnBatch(address account, uint256[] memory ids, uint256[] memory amounts) internal virtual {
+        require(account != address(0), "ERC1155: burn from the zero address");
+        require(ids.length == amounts.length, "ERC1155: ids and amounts length mismatch");
+
+        address operator = _msgSender();
+
+        _beforeTokenTransfer(operator, account, address(0), ids, amounts, "");
+
+        for (uint i = 0; i < ids.length; i++) {
+            uint256 id = ids[i];
+            uint256 amount = amounts[i];
+            _balances[id][account] = _balances[id][account].sub(
+                amount,
+                "ERC1155: burn amount exceeds balance"
+            );
+
+            tokenTotalSupply[id] = tokenTotalSupply[id].sub(amount);
+        }
+
+        emit TransferBatch(operator, account, address(0), ids, amounts);
     }
 
     /**

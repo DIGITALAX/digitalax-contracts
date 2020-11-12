@@ -31,8 +31,7 @@ export function handleAuctionCreated(event: AuctionCreated): void {
     auction.reservePrice = auctionResult.value0;
     auction.startTime = auctionResult.value1;
     auction.endTime = auctionResult.value2;
-    auction.lister = loadOrCreateGenesisContributor(auctionResult.value3, event.block, ZERO).id;
-    auction.resulted = auctionResult.value4;
+    auction.resulted = auctionResult.value3;
     auction.resultedTime = event.block.timestamp;
     auction.save();
 

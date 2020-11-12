@@ -28,114 +28,114 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, minter, to
     );
   });
 
-  describe('createStrand()', function () {
+  describe('createChild()', function () {
     it('Reverts when sender is not smart contract', async function() {
       await expectRevert(
-        this.token.createStrand(initialURI, {from: tokenHolder}),
-        "DigitalaxMaterials.createStrand: Sender must be smart contract"
+        this.token.createChild(initialURI, {from: tokenHolder}),
+        "DigitalaxMaterials.createChild: Sender must be smart contract"
       );
     });
 
     it('Reverts when empty uri specified', async function() {
       await expectRevert(
-        this.token.createStrand("", {from: smart_contract}),
-        "DigitalaxMaterials.createStrand: URI is a blank string"
+        this.token.createChild("", {from: smart_contract}),
+        "DigitalaxMaterials.createChild: URI is a blank string"
       );
     });
   });
 
-  describe('batchCreateStrands()', function() {
+  describe('batchCreateChildren()', function() {
     it('Reverts when sender is not smart contract', async function() {
       await expectRevert(
-        this.token.batchCreateStrands([], {from: tokenBatchHolder}),
-        "DigitalaxMaterials.batchCreateStrands: Sender must be smart contract"
+        this.token.batchCreateChildren([], {from: tokenBatchHolder}),
+        "DigitalaxMaterials.batchCreateChildren: Sender must be smart contract"
       );
     });
 
     it('Reverts when arrays are empty', async function() {
       await expectRevert(
-        this.token.batchCreateStrands([], {from: smart_contract}),
-        "DigitalaxMaterials.batchCreateStrands: No data supplied in array"
+        this.token.batchCreateChildren([], {from: smart_contract}),
+        "DigitalaxMaterials.batchCreateChildren: No data supplied in array"
       );
     });
 
     it('Reverts when any elem in the _uris is empty', async function() {
       await expectRevert(
-        this.token.batchCreateStrands([initialURI, ""], {from: smart_contract}),
-        "DigitalaxMaterials.batchCreateStrands: URI is a blank string"
+        this.token.batchCreateChildren([initialURI, ""], {from: smart_contract}),
+        "DigitalaxMaterials.batchCreateChildren: URI is a blank string"
       );
     });
   });
 
-  describe('mintStrand()', function() {
+  describe('mintChild()', function() {
     beforeEach(async function() {
-      await this.token.createStrand(
+      await this.token.createChild(
         initialURI,
         {from: smart_contract}
       );
     });
 
     it('Can successfully mint', async function() {
-      await this.token.mintStrand(STRAND_ONE_ID, '4', tokenHolder, web3.utils.encodePacked(''), {from: smart_contract});
+      await this.token.mintChild(STRAND_ONE_ID, '4', tokenHolder, web3.utils.encodePacked(''), {from: smart_contract});
       expect(await this.token.balanceOf(tokenHolder, STRAND_ONE_ID)).to.be.bignumber.equal('4');
     });
 
     it('Reverts when sender does not have smart contract role', async function() {
       await expectRevert(
-        this.token.mintStrand(STRAND_ONE_ID, '4', tokenHolder, web3.utils.encodePacked(''), {from: tokenBatchHolder}),
-        "DigitalaxMaterials.mintStrand: Sender must be smart contract"
+        this.token.mintChild(STRAND_ONE_ID, '4', tokenHolder, web3.utils.encodePacked(''), {from: tokenBatchHolder}),
+        "DigitalaxMaterials.mintChild: Sender must be smart contract"
       )
     });
 
     it('Reverts when strand has not been created', async function() {
       await expectRevert(
-        this.token.mintStrand('2', '5', tokenHolder, web3.utils.encodePacked(''), {from: smart_contract}),
-        "DigitalaxMaterials.mintStrand: Strand does not exist"
+        this.token.mintChild('2', '5', tokenHolder, web3.utils.encodePacked(''), {from: smart_contract}),
+        "DigitalaxMaterials.mintChild: Strand does not exist"
       );
     });
 
     it('Reverts when amount is specified as zero', async function() {
       await expectRevert(
-        this.token.mintStrand(STRAND_ONE_ID, '0', tokenHolder, web3.utils.encodePacked(''), {from: smart_contract}),
-        "DigitalaxMaterials.mintStrand: No amount specified"
+        this.token.mintChild(STRAND_ONE_ID, '0', tokenHolder, web3.utils.encodePacked(''), {from: smart_contract}),
+        "DigitalaxMaterials.mintChild: No amount specified"
       );
     });
   });
 
-  describe('batchMintStrands()', function() {
+  describe('batchMintChildren()', function() {
     it('Reverts when sender is not a smart contract', async function() {
       await expectRevert(
-        this.token.batchMintStrands([], [], tokenBatchHolder, web3.utils.encodePacked(''), {from: tokenBatchHolder}),
-        "DigitalaxMaterials.batchMintStrands: Sender must be smart contract"
+        this.token.batchMintChildren([], [], tokenBatchHolder, web3.utils.encodePacked(''), {from: tokenBatchHolder}),
+        "DigitalaxMaterials.batchMintChildren: Sender must be smart contract"
       );
     });
 
     it('Reverts when any strand does not exist', async function() {
       await expectRevert(
-        this.token.batchMintStrands(['1'], ['1'], tokenBatchHolder, web3.utils.encodePacked(''), {from: smart_contract}),
-        "DigitalaxMaterials.batchMintStrands: Strand does not exist"
+        this.token.batchMintChildren(['1'], ['1'], tokenBatchHolder, web3.utils.encodePacked(''), {from: smart_contract}),
+        "DigitalaxMaterials.batchMintChildren: Strand does not exist"
       );
     });
 
     it('Reverts when any amount is zero', async function() {
-      await this.token.createStrand(initialURI, {from: smart_contract});
+      await this.token.createChild(initialURI, {from: smart_contract});
       await expectRevert(
-        this.token.batchMintStrands(['1'], ['0'], tokenBatchHolder, web3.utils.encodePacked(''), {from: smart_contract}),
-        "DigitalaxMaterials.batchMintStrands: Invalid amount"
+        this.token.batchMintChildren(['1'], ['0'], tokenBatchHolder, web3.utils.encodePacked(''), {from: smart_contract}),
+        "DigitalaxMaterials.batchMintChildren: Invalid amount"
       );
     });
 
     it('Reverts when array lengths are inconsistent', async function() {
       await expectRevert(
-        this.token.batchMintStrands(['1'], [], tokenBatchHolder, web3.utils.encodePacked(''), {from: smart_contract}),
-        "DigitalaxMaterials.batchMintStrands: Array lengths are invalid"
+        this.token.batchMintChildren(['1'], [], tokenBatchHolder, web3.utils.encodePacked(''), {from: smart_contract}),
+        "DigitalaxMaterials.batchMintChildren: Array lengths are invalid"
       );
     });
 
     it('Reverts when arrays are empty', async function() {
       await expectRevert(
-        this.token.batchMintStrands([], [], tokenBatchHolder, web3.utils.encodePacked(''), {from: smart_contract}),
-        "DigitalaxMaterials.batchMintStrands: No data supplied in arrays"
+        this.token.batchMintChildren([], [], tokenBatchHolder, web3.utils.encodePacked(''), {from: smart_contract}),
+        "DigitalaxMaterials.batchMintChildren: No data supplied in arrays"
       );
     });
   });
