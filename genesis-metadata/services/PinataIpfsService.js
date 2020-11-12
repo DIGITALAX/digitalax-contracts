@@ -8,7 +8,7 @@ class PinataIpfsService {
     const result = await this.pinata.pinFileToIPFS(filestream);
     return {
       result,
-      pinataIpfsUrl: `https://gateway.pinata.cloud/ipfs/${result.IpfsHash}`
+      pinataIpfsUrl: `${process.env.PINATA_GATEWAY_URL}/${result.IpfsHash}`
     }
   }
 
@@ -16,7 +16,7 @@ class PinataIpfsService {
     const result = await this.pinata.pinJSONToIPFS(json);
     return {
       result,
-      pinataIpfsUrl: `https://gateway.pinata.cloud/ipfs/${result.IpfsHash}`
+      pinataIpfsUrl: `${process.env.PINATA_GATEWAY_URL}/${result.IpfsHash}`
     }
   }
 }
