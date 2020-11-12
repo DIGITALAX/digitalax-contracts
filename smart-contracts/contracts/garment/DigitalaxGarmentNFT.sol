@@ -97,6 +97,11 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         return tokenId;
     }
 
+    /**
+     @notice Burns a DigitalaxGarmentNFT, releasing any composed 1155 tokens held by the token itseld
+     @dev Only the owner or an approved sender can call this method
+     @param _tokenId the token ID to burn
+     */
     function burn(uint256 _tokenId) external {
         address operator = _msgSender();
         require(
@@ -118,6 +123,9 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         delete primarySalePrice[_tokenId];
     }
 
+    /**
+     @notice Single ERC1155 receiver callback hook, used to enforce children token binding to a given parent token
+     */
     function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _amount, bytes memory _data)
     virtual
     public override
@@ -140,6 +148,9 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         return this.onERC1155Received.selector;
     }
 
+    /**
+     @notice Batch ERC1155 receiver callback hook, used to enforce child token bindings to a given parent token ID
+     */
     function onERC1155BatchReceived(address _operator, address _from, uint256[] memory _ids, uint256[] memory _values, bytes memory _data)
     virtual public
     override returns (bytes4) {
@@ -164,6 +175,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     }
 
     function _extractIncomingTokenId() internal pure returns (uint256) {
+        // Extract out the embedded token ID from the sender
         uint256 _receiverTokenId;
         uint256 _index = msg.data.length - 32;
         assembly {_receiverTokenId := calldataload(_index)}
@@ -260,6 +272,9 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         return _exists(_tokenId);
     }
 
+    /**
+     @dev Get the child token balances held by the contract, assumes caller knows the correct child contract
+     */
     function childBalance(uint256 _tokenId, address _childContract, uint256 _childTokenId)
     public view
     override
@@ -267,6 +282,9 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         return _childContract == address(childContract) ? balances[_tokenId][_childTokenId] : 0;
     }
 
+    /**
+     @dev Get list of supported child contracts, always a list of 0 or 1 in our case
+     */
     function childContractsFor(uint256 _tokenId) override external view returns (address[] memory) {
         if (!_exists(_tokenId)) {
             return new address[](0);
@@ -277,6 +295,9 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         return childContracts;
     }
 
+    /**
+     @dev Gets mapped IDs for child tokens
+     */
     function childIdsForOn(uint256 _tokenId, address _childContract) override public view returns (uint256[] memory) {
         if (!_exists(_tokenId) || _childContract != address(childContract)) {
             return new uint256[](0);
@@ -291,6 +312,9 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         return childTokenIds;
     }
 
+    /**
+     @dev Get total number of children mapped to the token
+     */
     function totalChildrenMapped(uint256 _tokenId) external view returns (uint256) {
         return parentToChildMapping[_tokenId].length();
     }
