@@ -75,6 +75,8 @@ dataSources:
       eventHandlers:
         - event: ChildCreated(indexed uint256)
           handler: handleChildCreated
+        - event: ChildrenCreated(uint256[])
+          handler: handleChildrenCreated
         - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
           handler: handleBatchTransfer
       file: ./src/DigitalaxMaterials.mapping.ts
