@@ -16,15 +16,15 @@ async function main() {
     deployer
   );
 
-  const tx = await factory.createNewChildren(['randStrandUri3', 'randStrandUri4']);
-
-  await tx.wait();
+  // const tx = await factory.createNewChildren(['randStrandUri5', 'randStrandUri6']);
+  //
+  // await tx.wait();
 
   await factory.mintParentWithChildren(
-    'newGarmentWhat',
-    '0x12D062B19a2DF1920eb9FC28Bd6E9A7E936de4c2',
-    ['3','4'],
-    ['2', '9'],
+    'garment3Uri',
+    '0xA9d8b169783100639Bb137eC09f7277DC7948760',
+    ['1','2'],
+    ['2', '2'],
     deployerAddress
   );
 }

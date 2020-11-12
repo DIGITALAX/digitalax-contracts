@@ -16,7 +16,7 @@ async function main() {
     deployer
   );
 
-  await garment.burn('1');
+  await garment.burn('2');
 }
 
 // We recommend this pattern to be able to use async/await everywhere
