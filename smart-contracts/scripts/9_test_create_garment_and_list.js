@@ -1,6 +1,7 @@
 const prompt = require('prompt-sync')();
 const FactoryArtifact = require('../artifacts/DigitalaxGarmentFactory.json');
 const AuctionArtifact = require('../artifacts/DigitalaxAuction.json');
+const GarmentArtifact = require('../artifacts/DigitalaxGarmentNFT.json');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -10,24 +11,24 @@ async function main() {
     deployerAddress
   );
 
-  const factoryAddress = prompt('Factory address? ');
-  const factory = new ethers.Contract(
-    factoryAddress,
-    FactoryArtifact.abi,
-    deployer
-  );
+  // const factoryAddress = prompt('Factory address? ');
+  // const factory = new ethers.Contract(
+  //   factoryAddress,
+  //   FactoryArtifact.abi,
+  //   deployer
+  // );
 
   // const tx = await factory.createNewStrands(['randStrandUri5', 'randStrandUri6', 'randStrandUri7']);
   //
   // await tx.wait();
 
-  await factory.createGarmentAndMintStrands(
-    'garment3',
-    '0x12D062B19a2DF1920eb9FC28Bd6E9A7E936de4c2',
-    ['5','6', '7'],
-    ['2', '9', '3'],
-    deployerAddress
-  );
+  // await factory.createGarmentAndMintStrands(
+  //   'garment3',
+  //   '0x12D062B19a2DF1920eb9FC28Bd6E9A7E936de4c2',
+  //   ['5','6', '7'],
+  //   ['2', '9', '3'],
+  //   deployerAddress
+  // );
 
   const auctionAddress = prompt('Auction address? ');
   const auction = new ethers.Contract(
@@ -36,11 +37,22 @@ async function main() {
     deployer
   );
 
+  const tokenToList = '1';
+  // const garmentAddress = prompt('Garment address? ');
+  // const garment = new ethers.Contract(
+  //   garmentAddress,
+  //   GarmentArtifact.abi,
+  //   deployer
+  // );
+  //
+  // const tx = await garment.setApprovalForAll(auctionAddress, true);
+  // await tx.wait();
+
   await auction.createAuction(
-    '3',
-    '5000000000000000', // 0.005
+    tokenToList,
+    '650000000000000000', // 0.65
     '0',
-    '1604679967' //Date and time (GMT): Friday, November 6, 2020 4:26:07 PM
+    '1606310534' //Date and time (GMT): Wednesday, November 25, 2020 1:22:14 PM
   );
 }
 
