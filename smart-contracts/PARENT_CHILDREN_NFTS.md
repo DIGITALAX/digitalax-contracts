@@ -15,7 +15,7 @@ Strand / Swatches  (ERC-1155) a.k.a. children
 * However, in order to create and wrap a garment, the strands / children have to exist in the 1155 contract. Therefore, if the children that you want to wrap within a garment do not exist, creating a garment is a 2 step process as defined below.
 * If children exist for a garment, you can skip step 1 below. 
 
-#### Step 1 - setting up the strand(s)
+#### Step 1 - setting up the children
 
 * The methods below define new ERC1155 semi-fungible tokens - these tokens can then have a supply
 * There is no check to ensure the same token URI is not used across unique ERC-1155 tokens. Therefore, you could in theory make 2 1155s using the same `_uri` parameter.
