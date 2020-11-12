@@ -27,7 +27,7 @@ function createNewChildren(string[] calldata _uris) external returns (uint256[] 
 
 #### Step 2 - minting garments 
 
-* `mintParentWithChildren` will increase the supply of the given children token IDs through minting
+* `mintParentWithChildren` will increase the supply of the given children token IDs via minting
 * It is the responsibility of the caller to provide the correct amounts and IDs which are aligned via array index 
 * If 1155 tokenIds are provided which do not yet exist, the method will revert
 * The above does not apply if minting a garment with no children
