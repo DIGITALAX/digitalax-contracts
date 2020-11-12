@@ -32,7 +32,20 @@ contract MockVault {
         );
     }
 
-    // todo: mint straight to garment
+    function mintAssetBackedSyntheticMaterialToGarment(address _garmentAddress, uint256 _garmentId, uint256 _depositAmount) external {
+        //TODO: this should really check owner of garment ID is msg.sender otherwise you could add to someone elses garment
+
+        // Danger: Transfer does not guarantee this contract will receive all tokens depending on the token implementation
+        supportedERC20Asset.transferFrom(msg.sender, address(this), _depositAmount);
+
+        //mint balance of strand to sender
+        materials.mintChild(
+            supportedERC20AssetSyntheticStrandId,
+            _depositAmount,
+            _garmentAddress,
+            abi.encodePacked(_garmentId)
+        );
+    }
 
     function claimUnderlyingAssetFromMaterial(uint256 _strandId, uint256 _claimAmount) external {
         //🔥
