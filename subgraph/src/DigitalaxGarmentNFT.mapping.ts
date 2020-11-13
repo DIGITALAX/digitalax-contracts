@@ -36,12 +36,9 @@ export function handleTransfer(event: Transfer): void {
         garment.save();
 
         let collector = loadOrCreateDigitalaxCollector(event.params.to);
-        let garmentsOwned = new Array<string>();
-        let strandsOwned = new Array<string>();
+        let garmentsOwned = collector.garmentsOwned;
         garmentsOwned.push(garmentId);
-
         collector.garmentsOwned = garmentsOwned;
-        collector.strandsOwned = strandsOwned;
         collector.save();
 
         let garmentDesignerId = contract.garmentDesigners(event.params.tokenId).toHexString();
@@ -55,6 +52,9 @@ export function handleTransfer(event: Transfer): void {
 
     // handle burn
     else if (event.params.to.equals(ZERO_ADDRESS)) {
+
+        // TODO only remove garments from the current owner
+
         let garment = DigitalaxGarment.load(event.params.tokenId.toString());
         let collector = DigitalaxCollector.load(event.params.from.toHexString());
         collector.strandsOwned = garment.strands;
@@ -65,10 +65,23 @@ export function handleTransfer(event: Transfer): void {
     }
     // just a transfer
     else {
+
+        // TODO remove garments from current owner, set on
+
         let garment = DigitalaxGarment.load(event.params.tokenId.toString());
         garment.owner = contract.ownerOf(event.params.tokenId);
         garment.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
         garment.save();
+
+        /*
+        // Add to owner garments to collector
+        let collector = loadOrCreateDigitalaxCollector(event.params.winner);
+        let garmentsOwned = collector.garmentsOwned;
+        garmentsOwned.push(event.params.garmentTokenId.toString());
+        collector.garmentsOwned = garmentsOwned;
+        collector.save();
+
+         */
     }
 }
 
