@@ -653,7 +653,7 @@ contract('DigitalaxAuction', (accounts) => {
         expect(newBidder).to.equal(bidder);
       })
 
-      it('successfully outbid bid', async () => {
+      it('successfully outbid bidder', async () => {
         await this.auction.setNowOverride('2');
 
         const bidderTracker = await balance.tracker(bidder);
