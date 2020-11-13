@@ -35,6 +35,8 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
     }
 }
 
+// TODO add single transfer hook and handle adding/removing strands
+
 export function handleBatchTransfer(event: TransferBatch): void {
     log.info("handleBatchTransfer With Batch Size {} @ Hash {}", [
         BigInt.fromI32(event.params.values.length).toString(),
