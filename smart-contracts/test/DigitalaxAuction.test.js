@@ -647,6 +647,35 @@ contract('DigitalaxAuction', (accounts) => {
 
         // check that the bidder has only really spent 0.8 ETH plus gas due to 0.2 ETH refund
         expect(await bidderTracker.delta()).to.be.bignumber.equal((ether('1').sub(ether('0.2'))).add(await getGasCosts(receipt2)).mul(new BN('-1')));
+
+        const {_bidder: newBidder, _bid: newBid} = await this.auction.getHighestBidder(TOKEN_ONE_ID);
+        expect(newBid).to.be.bignumber.equal(ether('1'));
+        expect(newBidder).to.equal(bidder);
+      })
+
+      it('successfully outbid bidder', async () => {
+        await this.auction.setNowOverride('2');
+
+        const bidderTracker = await balance.tracker(bidder);
+        const bidder2Tracker = await balance.tracker(bidder2);
+
+        // Bidder 1 makes first bid
+        const receipt = await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.2')});
+        expect(await bidderTracker.delta()).to.be.bignumber.equal(ether('0.2').add(await getGasCosts(receipt)).mul(new BN('-1')));
+        const {_bidder, _bid} = await this.auction.getHighestBidder(TOKEN_ONE_ID);
+        expect(_bid).to.be.bignumber.equal(ether('0.2'));
+        expect(_bidder).to.equal(bidder);
+
+        // Bidder 2 outbids bidder 1
+        const receipt2 = await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder2, value: ether('1')});
+
+        // check that the bidder has only really spent 0.8 ETH plus gas due to 0.2 ETH refund
+        expect(await bidder2Tracker.delta()).to.be.bignumber.equal(ether('1').add(await getGasCosts(receipt2)).mul(new BN('-1')));
+        expect(await bidderTracker.delta()).to.be.bignumber.equal(ether('0.2'));
+
+        const {_bidder: newBidder, _bid: newBid} = await this.auction.getHighestBidder(TOKEN_ONE_ID);
+        expect(newBid).to.be.bignumber.equal(ether('1'));
+        expect(newBidder).to.equal(bidder2);
       })
     });
   });

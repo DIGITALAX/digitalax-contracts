@@ -16,8 +16,8 @@ import {
 } from "../generated/schema"
 
 import {ZERO} from "./constants";
-import {loadOrCreateGenesisContributor} from "./factory/GenesisContributor.factory";
 import {loadOrCreateGarmentDesigner} from "./factory/DigitalaxGarmentDesigner.factory";
+import {loadOrCreateDigitalaxCollector} from "./factory/DigitalaxCollector.factory";
 
 export function handleAuctionCreated(event: AuctionCreated): void {
     let contract = DigitalaxAuction.bind(event.address);
@@ -76,7 +76,7 @@ export function handleBidPlaced(event: BidPlaced): void {
 
     // Record top bidder
     let topBidder = contract.getHighestBidder(event.params.garmentTokenId)
-    auction.topBidder = loadOrCreateGenesisContributor(topBidder.value0, event.block, ZERO).id
+    auction.topBidder = loadOrCreateDigitalaxCollector(event.params.bidder).id
     auction.topBid = topBidder.value1
     auction.lastBidTime = topBidder.value2
     auction.save()
@@ -90,7 +90,7 @@ export function handleBidPlaced(event: BidPlaced): void {
     let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
     auctionEvent.token = DigitalaxGarment.load(event.params.garmentTokenId.toString()).id
     auctionEvent.eventName = "BidPlaced"
-    auctionEvent.bidder = loadOrCreateGenesisContributor(event.params.bidder, event.block, ZERO).id
+    auctionEvent.bidder = loadOrCreateDigitalaxCollector(event.params.bidder).id
     auctionEvent.timestamp = event.block.timestamp
     auctionEvent.value = event.params.bid
     auctionEvent.transactionHash = event.transaction.hash
@@ -109,11 +109,18 @@ export function handleBidWithdrawn(event: BidWithdrawn): void {
     let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
     auctionEvent.token = DigitalaxGarment.load(event.params.garmentTokenId.toString()).id
     auctionEvent.eventName = "BidWithdrawn"
-    auctionEvent.bidder = loadOrCreateGenesisContributor(event.params.bidder, event.block, ZERO).id
+    auctionEvent.bidder = loadOrCreateDigitalaxCollector(event.params.bidder).id
     auctionEvent.timestamp = event.block.timestamp
     auctionEvent.value = event.params.bid
     auctionEvent.transactionHash = event.transaction.hash
     auctionEvent.save()
+
+    // Clear down bids
+    let auction = DigitalaxGarmentAuction.load(tokenId.toString());
+    auction.topBidder = null
+    auction.topBid = null
+    auction.lastBidTime = null
+    auction.save();
 }
 
 export function handleAuctionResulted(event: AuctionResulted): void {
@@ -128,7 +135,7 @@ export function handleAuctionResulted(event: AuctionResulted): void {
     let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
     auctionEvent.token = DigitalaxGarment.load(event.params.garmentTokenId.toString()).id
     auctionEvent.eventName = "AuctionResulted"
-    auctionEvent.bidder = loadOrCreateGenesisContributor(event.params.winner, event.block, event.params.winningBid).id
+    auctionEvent.bidder = loadOrCreateDigitalaxCollector(event.params.winner).id
     auctionEvent.timestamp = event.block.timestamp
     auctionEvent.value = event.params.winningBid
     auctionEvent.transactionHash = event.transaction.hash
@@ -141,11 +148,8 @@ export function handleAuctionResulted(event: AuctionResulted): void {
     // Result the auction
     let auction = DigitalaxGarmentAuction.load(tokenId.toString());
     auction.resulted = true
-    auction.topBidder = null
-    auction.topBid = null
-    auction.lastBidTime = null
+    auction.resultedTime = event.block.timestamp
     auction.save();
-
 }
 
 export function handleAuctionCancelled(event: AuctionCancelled): void {
@@ -163,4 +167,11 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
     auctionEvent.timestamp = event.block.timestamp
     auctionEvent.transactionHash = event.transaction.hash
     auctionEvent.save()
+
+    // Clear down bids
+    let auction = DigitalaxGarmentAuction.load(tokenId.toString());
+    auction.topBidder = null
+    auction.topBid = null
+    auction.lastBidTime = null
+    auction.save();
 }
