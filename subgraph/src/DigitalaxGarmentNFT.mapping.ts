@@ -16,7 +16,7 @@ import {
     DigitalaxCollector,
 } from "../generated/schema";
 import {loadOrCreateGarmentDesigner} from "./factory/DigitalaxGarmentDesigner.factory";
-import {loadOrDigitalaxCollector} from "./factory/DigitalaxCollector.factory";
+import {loadOrCreateDigitalaxCollector} from "./factory/DigitalaxCollector.factory";
 
 export const ZERO_ADDRESS = Address.fromString('0x0000000000000000000000000000000000000000');
 
@@ -35,7 +35,7 @@ export function handleTransfer(event: Transfer): void {
         garment.strands = new Array<string>();
         garment.save();
 
-        let collector = loadOrDigitalaxCollector(event.params.to);
+        let collector = loadOrCreateDigitalaxCollector(event.params.to);
         let garmentsOwned = new Array<string>();
         let strandsOwned = new Array<string>();
         garmentsOwned.push(garmentId);

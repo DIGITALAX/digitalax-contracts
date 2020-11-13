@@ -17,7 +17,7 @@ import {
 
 import {ZERO} from "./constants";
 import {loadOrCreateGarmentDesigner} from "./factory/DigitalaxGarmentDesigner.factory";
-import {loadOrDigitalaxCollector} from "./factory/DigitalaxCollector.factory";
+import {loadOrCreateDigitalaxCollector} from "./factory/DigitalaxCollector.factory";
 
 export function handleAuctionCreated(event: AuctionCreated): void {
     let contract = DigitalaxAuction.bind(event.address);
@@ -76,7 +76,7 @@ export function handleBidPlaced(event: BidPlaced): void {
 
     // Record top bidder
     let topBidder = contract.getHighestBidder(event.params.garmentTokenId)
-    auction.topBidder = loadOrDigitalaxCollector(event.params.bidder).id
+    auction.topBidder = loadOrCreateDigitalaxCollector(event.params.bidder).id
     auction.topBid = topBidder.value1
     auction.lastBidTime = topBidder.value2
     auction.save()
@@ -90,7 +90,7 @@ export function handleBidPlaced(event: BidPlaced): void {
     let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
     auctionEvent.token = DigitalaxGarment.load(event.params.garmentTokenId.toString()).id
     auctionEvent.eventName = "BidPlaced"
-    auctionEvent.bidder = loadOrDigitalaxCollector(event.params.bidder).id
+    auctionEvent.bidder = loadOrCreateDigitalaxCollector(event.params.bidder).id
     auctionEvent.timestamp = event.block.timestamp
     auctionEvent.value = event.params.bid
     auctionEvent.transactionHash = event.transaction.hash
@@ -109,7 +109,7 @@ export function handleBidWithdrawn(event: BidWithdrawn): void {
     let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
     auctionEvent.token = DigitalaxGarment.load(event.params.garmentTokenId.toString()).id
     auctionEvent.eventName = "BidWithdrawn"
-    auctionEvent.bidder = loadOrDigitalaxCollector(event.params.bidder).id
+    auctionEvent.bidder = loadOrCreateDigitalaxCollector(event.params.bidder).id
     auctionEvent.timestamp = event.block.timestamp
     auctionEvent.value = event.params.bid
     auctionEvent.transactionHash = event.transaction.hash
@@ -135,7 +135,7 @@ export function handleAuctionResulted(event: AuctionResulted): void {
     let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
     auctionEvent.token = DigitalaxGarment.load(event.params.garmentTokenId.toString()).id
     auctionEvent.eventName = "AuctionResulted"
-    auctionEvent.bidder = loadOrDigitalaxCollector(event.params.winner).id
+    auctionEvent.bidder = loadOrCreateDigitalaxCollector(event.params.winner).id
     auctionEvent.timestamp = event.block.timestamp
     auctionEvent.value = event.params.winningBid
     auctionEvent.transactionHash = event.transaction.hash
