@@ -148,11 +148,8 @@ export function handleAuctionResulted(event: AuctionResulted): void {
     // Result the auction
     let auction = DigitalaxGarmentAuction.load(tokenId.toString());
     auction.resulted = true
-    auction.topBidder = null
-    auction.topBid = null
-    auction.lastBidTime = null
+    auction.resultedTime = event.block.timestamp
     auction.save();
-
 }
 
 export function handleAuctionCancelled(event: AuctionCancelled): void {
