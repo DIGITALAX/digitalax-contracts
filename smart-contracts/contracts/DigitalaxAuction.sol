@@ -9,9 +9,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "./DigitalaxAccessControls.sol";
 import "./garment/IDigitalaxGarmentNFT.sol";
 
-/**
- * @notice Primary sale auction contract for Digitalax NFTs
- */
+/// @notice Primary sale auction contract for Digitalax NFTs
 contract DigitalaxAuction is Context, ReentrancyGuard {
     using SafeMath for uint256;
     using Address for address payable;
@@ -19,75 +17,26 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     /// @notice Event emitted only on construction. To be used by indexers
     event DigitalaxAuctionContractDeployed();
 
-    event PauseToggled(
-        bool isPaused
-    );
+    event PauseToggled(bool isPaused);
+    
+    event AuctionCreated(uint256 indexed garmentTokenId);
+    event AuctionResulted(uint256 indexed garmentTokenId, address indexed winner, uint256 winningBid);
+    event AuctionCancelled(uint256 indexed garmentTokenId);
 
-    event AuctionCreated(
-        uint256 indexed garmentTokenId
-    );
+    event UpdateAuctionEndTime(uint256 indexed garmentTokenId, uint256 endTime);
+    event UpdateAuctionStartTime(uint256 indexed garmentTokenId, uint256 startTime);
+    event UpdateAuctionReservePrice(uint256 indexed garmentTokenId, uint256 reservePrice);
+    event UpdateAccessControls(address indexed accessControls);
+    event UpdatePlatformFee(uint256 platformFee);
+    event UpdatePlatformFeeRecipient(address payable platformFeeRecipient);
 
-    event UpdateAuctionEndTime(
-        uint256 indexed garmentTokenId,
-        uint256 endTime
-    );
+    event BidPlaced(uint256 indexed garmentTokenId, address indexed bidder, uint256 bid);
+    event BidWithdrawn(uint256 indexed garmentTokenId, address indexed bidder, uint256 bid);
+    event BidRefunded(address indexed bidder, uint256 bid);
 
-    event UpdateAuctionStartTime(
-        uint256 indexed garmentTokenId,
-        uint256 startTime
-    );
+    event UpdateMinBidIncrement(uint256 minBidIncrement);
+    event UpdateBidWithdrawalLockTime(uint256 bidWithdrawalLockTime);
 
-    event UpdateAuctionReservePrice(
-        uint256 indexed garmentTokenId,
-        uint256 reservePrice
-    );
-
-    event UpdateAccessControls(
-        address indexed accessControls
-    );
-
-    event UpdatePlatformFee(
-        uint256 platformFee
-    );
-
-    event UpdatePlatformFeeRecipient(
-        address payable platformFeeRecipient
-    );
-
-    event UpdateMinBidIncrement(
-        uint256 minBidIncrement
-    );
-
-    event UpdateBidWithdrawalLockTime(
-        uint256 bidWithdrawalLockTime
-    );
-
-    event BidPlaced(
-        uint256 indexed garmentTokenId,
-        address indexed bidder,
-        uint256 bid
-    );
-
-    event BidWithdrawn(
-        uint256 indexed garmentTokenId,
-        address indexed bidder,
-        uint256 bid
-    );
-
-    event BidRefunded(
-        address indexed bidder,
-        uint256 bid
-    );
-
-    event AuctionResulted(
-        uint256 indexed garmentTokenId,
-        address indexed winner,
-        uint256 winningBid
-    );
-
-    event AuctionCancelled(
-        uint256 indexed garmentTokenId
-    );
 
     /// @notice Parameters of an auction
     struct Auction {
@@ -113,7 +62,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     /// @notice Garment ERC721 NFT - the only NFT that can be auctioned in this contract
     IDigitalaxGarmentNFT public garmentNft;
 
-    // @notice responsible for enforcing admin access
+    /// @notice responsible for enforcing admin access
     DigitalaxAccessControls public accessControls;
 
     /// @notice globally and across all auctions, the amount by which a bid has to increase
@@ -152,16 +101,14 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         emit DigitalaxAuctionContractDeployed();
     }
 
-    /**
-     @notice Creates a new auction for a given garment
-     @dev Only the owner of a garment can create an auction and must have approved the contract
-     @dev In addition to owning the garment, the sender also has to have the MINTER role.
-     @dev End time for the auction must be in the future.
-     @param _garmentTokenId Token ID of the garment being auctioned
-     @param _reservePrice Garment cannot be sold for less than this or minBidIncrement, whichever is higher
-     @param _startTimestamp Unix epoch in seconds for the auction start time
-     @param _endTimestamp Unix epoch in seconds for the auction end time.
-     */
+    /// @notice Creates a new auction for a given garment
+    /// @dev Only the owner of a garment can create an auction and must have approved the contract
+    /// @dev In addition to owning the garment, the sender also has to have the MINTER role.
+    /// @dev End time for the auction must be in the future.
+    /// @param _garmentTokenId Token ID of the garment being auctioned
+    /// @param _reservePrice Garment cannot be sold for less than this or minBidIncrement, whichever is higher
+    /// @param _startTimestamp Unix epoch in seconds for the auction start time
+    /// @param _endTimestamp Unix epoch in seconds for the auction end time.
     function createAuction(
         uint256 _garmentTokenId,
         uint256 _reservePrice,
@@ -188,16 +135,14 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         );
     }
 
-    /**
-     @notice Admin or smart contract can list approved Garments
-     @dev Sender must have admin or smart contract role
-     @dev Owner must have approved this contract for the garment or all garments they own
-     @dev End time for the auction must be in the future.
-     @param _garmentTokenId Token ID of the garment being auctioned
-     @param _reservePrice Garment cannot be sold for less than this or minBidIncrement, whichever is higher
-     @param _startTimestamp Unix epoch in seconds for the auction start time
-     @param _endTimestamp Unix epoch in seconds for the auction end time.
-     */
+    /// @notice Admin or smart contract can list approved Garments
+    /// @dev Sender must have admin or smart contract role
+    /// @dev Owner must have approved this contract for the garment or all garments they own
+    /// @dev End time for the auction must be in the future.
+    /// @param _garmentTokenId Token ID of the garment being auctioned
+    /// @param _reservePrice Garment cannot be sold for less than this or minBidIncrement, whichever is higher
+    /// @param _startTimestamp Unix epoch in seconds for the auction start time
+    /// @param _endTimestamp Unix epoch in seconds for the auction end time.
     function createAuctionOnBehalfOfOwner(
         uint256 _garmentTokenId,
         uint256 _reservePrice,
@@ -223,12 +168,10 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         );
     }
 
-    /**
-     @notice Places a new bid, out bidding the existing bidder if found and criteria is reached
-     @dev Only callable when the auction is open
-     @dev Bids from smart contracts are prohibited to prevent griefing with always reverting receiver
-     @param _garmentTokenId Token ID of the garment being auctioned
-     */
+    /// @notice Places a new bid, out bidding the existing bidder if found and criteria is reached
+    /// @dev Only callable when the auction is open
+    /// @dev Bids from smart contracts are prohibited to prevent griefing with always reverting receiver
+    /// @param _garmentTokenId Token ID of the garment being auctioned
     function placeBid(uint256 _garmentTokenId) external payable nonReentrant whenNotPaused {
         require(_msgSender().isContract() == false, "DigitalaxAuction.placeBid: No contracts permitted");
 
@@ -261,11 +204,9 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         emit BidPlaced(_garmentTokenId, _msgSender(), bidAmount);
     }
 
-    /**
-     @notice Given a sender who has the highest bid on a garment, allows them to withdraw their bid
-     @dev Only callable by the existing top bidder
-     @param _garmentTokenId Token ID of the garment being auctioned
-     */
+    /// @notice Given a sender who has the highest bid on a garment, allows them to withdraw their bid
+    /// @dev Only callable by the existing top bidder
+    /// @param _garmentTokenId Token ID of the garment being auctioned
     function withdrawBid(uint256 _garmentTokenId) external nonReentrant whenNotPaused {
         HighestBid storage highestBid = highestBids[_garmentTokenId];
 
@@ -295,13 +236,11 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     // Admin /
     //////////
 
-    /**
-     @notice Results a finished auction
-     @dev Only admin or smart contract
-     @dev Auction can only be resulted if there has been a bidder and reserve met.
-     @dev If there have been no bids, the auction needs to be cancelled instead using `cancelAuction()`
-     @param _garmentTokenId Token ID of the garment being auctioned
-     */
+    /// @notice Results a finished auction
+    /// @dev Only admin or smart contract
+    /// @dev Auction can only be resulted if there has been a bidder and reserve met.
+    /// @dev If there have been no bids, the auction needs to be cancelled instead using `cancelAuction()`
+    /// @param _garmentTokenId Token ID of the garment being auctioned
     function resultAuction(uint256 _garmentTokenId) external nonReentrant {
         require(
             accessControls.hasAdminRole(_msgSender()) || accessControls.hasSmartContractRole(_msgSender()),
@@ -369,11 +308,9 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         emit AuctionResulted(_garmentTokenId, winner, winningBid);
     }
 
-    /**
-     @notice Cancels and inflight and un-resulted auctions, returning the funds to the top bidder if found
-     @dev Only admin
-     @param _garmentTokenId Token ID of the garment being auctioned
-     */
+    /// @notice Cancels and inflight and un-resulted auctions, returning the funds to the top bidder if found
+    /// @dev Only admin
+    /// @param _garmentTokenId Token ID of the garment being auctioned
     function cancelAuction(uint256 _garmentTokenId) external nonReentrant {
         // Admin only resulting function
         require(
@@ -405,45 +342,37 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         emit AuctionCancelled(_garmentTokenId);
     }
 
-    /**
-     @notice Toggling the pause flag
-     @dev Only admin
-     */
+    /// @notice Toggling the pause flag
+    /// @dev Only admin
     function toggleIsPaused() external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxAuction.toggleIsPaused: Sender must be admin");
         isPaused = !isPaused;
         emit PauseToggled(isPaused);
     }
 
-    /**
-     @notice Update the amount by which bids have to increase, across all auctions
-     @dev Only admin
-     @param _minBidIncrement New bid step in WEI
-     */
+    /// @notice Update the amount by which bids have to increase, across all auctions
+    /// @dev Only admin
+    /// @param _minBidIncrement New bid step in WEI
     function updateMinBidIncrement(uint256 _minBidIncrement) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxAuction.updateMinBidIncrement: Sender must be admin");
         minBidIncrement = _minBidIncrement;
         emit UpdateMinBidIncrement(_minBidIncrement);
     }
 
-    /**
-     @notice Update the global bid withdrawal lockout time
-     @dev Only admin
-     @param _bidWithdrawalLockTime New bid withdrawal lock time
-     */
+    /// @notice Update the global bid withdrawal lockout time
+    /// @dev Only admin
+    /// @param _bidWithdrawalLockTime New bid withdrawal lock time
     function updateBidWithdrawalLockTime(uint256 _bidWithdrawalLockTime) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxAuction.updateBidWithdrawalLockTime: Sender must be admin");
         bidWithdrawalLockTime = _bidWithdrawalLockTime;
         emit UpdateBidWithdrawalLockTime(_bidWithdrawalLockTime);
     }
 
-    /**
-     @notice Update the current reserve price for an auction
-     @dev Only admin
-     @dev Auction must exist
-     @param _garmentTokenId Token ID of the garment being auctioned
-     @param _reservePrice New Ether reserve price (WEI value)
-     */
+    /// @notice Update the current reserve price for an auction
+    /// @dev Only admin
+    /// @dev Auction must exist
+    /// @param _garmentTokenId Token ID of the garment being auctioned
+    /// @param _reservePrice New Ether reserve price (WEI value)
     function updateAuctionReservePrice(uint256 _garmentTokenId, uint256 _reservePrice) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
@@ -459,13 +388,11 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         emit UpdateAuctionReservePrice(_garmentTokenId, _reservePrice);
     }
 
-    /**
-     @notice Update the current start time for an auction
-     @dev Only admin
-     @dev Auction must exist
-     @param _garmentTokenId Token ID of the garment being auctioned
-     @param _startTime New start time (unix epoch in seconds)
-     */
+    /// @notice Update the current start time for an auction
+    /// @dev Only admin
+    /// @dev Auction must exist
+    /// @param _garmentTokenId Token ID of the garment being auctioned
+    /// @param _startTime New start time (unix epoch in seconds)
     function updateAuctionStartTime(uint256 _garmentTokenId, uint256 _startTime) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
@@ -481,13 +408,11 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         emit UpdateAuctionStartTime(_garmentTokenId, _startTime);
     }
 
-    /**
-     @notice Update the current end time for an auction
-     @dev Only admin
-     @dev Auction must exist
-     @param _garmentTokenId Token ID of the garment being auctioned
-     @param _endTimestamp New end time (unix epoch in seconds)
-     */
+    /// @notice Update the current end time for an auction
+    /// @dev Only admin
+    /// @dev Auction must exist
+    /// @param _garmentTokenId Token ID of the garment being auctioned
+    /// @param _endTimestamp New end time (unix epoch in seconds)
     function updateAuctionEndTime(uint256 _garmentTokenId, uint256 _endTimestamp) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
@@ -510,11 +435,10 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         emit UpdateAuctionEndTime(_garmentTokenId, _endTimestamp);
     }
 
-    /**
-     @notice Method for updating the access controls contract used by the NFT
-     @dev Only admin
-     @param _accessControls Address of the new access controls contract (Cannot be zero address)
-     */
+    
+    /// @notice Method for updating the access controls contract used by the NFT
+    /// @dev Only admin
+    /// @param _accessControls Address of the new access controls contract (Cannot be zero address)
     function updateAccessControls(DigitalaxAccessControls _accessControls) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
@@ -527,11 +451,10 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         emit UpdateAccessControls(address(_accessControls));
     }
 
-    /**
-     @notice Method for updating platform fee
-     @dev Only admin
-     @param _platformFee uint256 the platform fee to set
-     */
+    
+    /// @notice Method for updating platform fee
+    /// @dev Only admin
+    /// @param _platformFee uint256 the platform fee to set
     function updatePlatformFee(uint256 _platformFee) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
@@ -542,11 +465,10 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         emit UpdatePlatformFee(_platformFee);
     }
 
-    /**
-     @notice Method for updating platform fee address
-     @dev Only admin
-     @param _platformFeeRecipient payable address the address to sends the funds to
-     */
+    
+    /// @notice Method for updating platform fee address
+    /// @dev Only admin
+    /// @param _platformFeeRecipient payable address the address to sends the funds to
     function updatePlatformFeeRecipient(address payable _platformFeeRecipient) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
@@ -563,10 +485,9 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     // Accessors //
     ///////////////
 
-    /**
-     @notice Method for getting all info about the auction
-     @param _garmentTokenId Token ID of the garment being auctioned
-     */
+    
+    /// @notice Method for getting all info about the auction
+    /// @param _garmentTokenId Token ID of the garment being auctioned
     function getAuction(uint256 _garmentTokenId)
     external
     view
@@ -580,10 +501,9 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         );
     }
 
-    /**
-     @notice Method for getting all info about the highest bidder
-     @param _garmentTokenId Token ID of the garment being auctioned
-     */
+    
+    /// @notice Method for getting all info about the highest bidder
+    /// @param _garmentTokenId Token ID of the garment being auctioned
     function getHighestBidder(uint256 _garmentTokenId) external view returns (
         address payable _bidder,
         uint256 _bid,
@@ -605,13 +525,11 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         return block.timestamp;
     }
 
-    /**
-     @notice Private method doing the heavy lifting of creating an auction
-     @param _garmentTokenId Token ID of the garment being auctioned
-     @param _reservePrice Garment cannot be sold for less than this or minBidIncrement, whichever is higher
-     @param _startTimestamp Unix epoch in seconds for the auction start time
-     @param _endTimestamp Unix epoch in seconds for the auction end time.
-     */
+    /// @notice Private method doing the heavy lifting of creating an auction
+    /// @param _garmentTokenId Token ID of the garment being auctioned
+    /// @param _reservePrice Garment cannot be sold for less than this or minBidIncrement, whichever is higher
+    /// @param _startTimestamp Unix epoch in seconds for the auction start time
+    /// @param _endTimestamp Unix epoch in seconds for the auction end time.
     function _createAuction(
         uint256 _garmentTokenId,
         uint256 _reservePrice,
@@ -636,11 +554,9 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         emit AuctionCreated(_garmentTokenId);
     }
 
-    /**
-     @notice Used for sending back escrowed funds from a previous bid
-     @param _currentHighestBidder Address of the last highest bidder
-     @param _currentHighestBid Ether amount in WEI that the bidder sent when placing their bid
-     */
+    /// @notice Used for sending back escrowed funds from a previous bid
+    /// @param _currentHighestBidder Address of the last highest bidder
+    /// @param _currentHighestBid Ether amount in WEI that the bidder sent when placing their bid
     function _refundHighestBidder(address payable _currentHighestBidder, uint256 _currentHighestBid) private {
         // refund previous best (if bid exists)
         (bool successRefund,) = _currentHighestBidder.call{value : _currentHighestBid}("");
