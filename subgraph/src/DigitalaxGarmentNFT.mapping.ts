@@ -52,36 +52,29 @@ export function handleTransfer(event: Transfer): void {
 
     // handle burn
     else if (event.params.to.equals(ZERO_ADDRESS)) {
-
-        // TODO only remove garments from the current owner
-
-        let garment = DigitalaxGarment.load(event.params.tokenId.toString());
-        let collector = DigitalaxCollector.load(event.params.from.toHexString());
-        collector.strandsOwned = garment.strands;
-        collector.save();
-
         // TODO come back to this regarding collector vs artist / admin burning
         store.remove('DigitalaxGarment', event.params.tokenId.toString());
     }
     // just a transfer
     else {
-
-        // TODO remove garments from current owner, set on
-
+        // Update garment info
         let garment = DigitalaxGarment.load(event.params.tokenId.toString());
         garment.owner = contract.ownerOf(event.params.tokenId);
         garment.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
         garment.save();
 
-        /*
-        // Add to owner garments to collector
-        let collector = loadOrCreateDigitalaxCollector(event.params.winner);
-        let garmentsOwned = collector.garmentsOwned;
-        garmentsOwned.push(event.params.garmentTokenId.toString());
-        collector.garmentsOwned = garmentsOwned;
-        collector.save();
+        // Update garments owned on the `from` and `to` address collectors
+        let fromCollector = loadOrCreateDigitalaxCollector(event.params.from);
+        let fromGarmentsOwned = fromCollector.garmentsOwned;
+        fromGarmentsOwned = fromGarmentsOwned.filter((garmentId: string) => garmentId !== event.params.tokenId.toString());
+        fromCollector.garmentsOwned = fromGarmentsOwned;
+        fromCollector.save();
 
-         */
+        let toCollector = loadOrCreateDigitalaxCollector(event.params.to);
+        let garmentsOwned = toCollector.garmentsOwned;
+        garmentsOwned.push(event.params.tokenId.toString());
+        toCollector.garmentsOwned = garmentsOwned;
+        toCollector.save();
     }
 }
 
