@@ -69,6 +69,7 @@ dataSources:
         - ChildCreated
         - ChildrenCreated
         - TransferBatch
+        - TransferSingle
       abis:
         - name: DigitalaxMaterials
           file: ./abis/DigitalaxMaterials.json
@@ -79,6 +80,8 @@ dataSources:
           handler: handleChildrenCreated
         - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
           handler: handleBatchTransfer
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleSingleTransfer
       file: ./src/DigitalaxMaterials.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuction

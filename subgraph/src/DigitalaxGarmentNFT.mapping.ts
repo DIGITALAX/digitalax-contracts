@@ -18,7 +18,7 @@ import {
 import {loadOrCreateGarmentDesigner} from "./factory/DigitalaxGarmentDesigner.factory";
 import {loadOrCreateDigitalaxCollector} from "./factory/DigitalaxCollector.factory";
 
-export const ZERO_ADDRESS = Address.fromString('0x0000000000000000000000000000000000000000');
+import {ZERO_ADDRESS} from "./constants";
 
 export function handleTransfer(event: Transfer): void {
     log.info("Handle Garment Transfer @ Hash {}", [event.transaction.hash.toHexString()]);
