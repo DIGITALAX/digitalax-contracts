@@ -1,3 +1,10 @@
+type Day @entity {
+  id: ID!
+  totalBidValue: BigInt!
+  totalWithdrawalValue: BigInt!
+  totalNetBidActivity: BigInt!
+}
+
 type GenesisContributor @entity {
   id: ID!
   contributor: Bytes! # address
