@@ -55,8 +55,9 @@ export function handleSingleTransfer(event: TransferSingle): void {
     strand.totalSupply = contract.tokenTotalSupply(strandId);
     strand.save();
 
-    // If `from` is not zero, then update the collector that triggered the transfer
-    if (!event.params.from.equals(ZERO_ADDRESS)) {
+    // If `from` is not zero or the garment NFT, then update the collector that triggered the transfer
+    if (!event.params.from.equals(ZERO_ADDRESS)
+        || !event.params.from.equals(Address.fromString(DigitalaxGarmentNFTContractAddress))) {
         let fromCollector = loadOrCreateDigitalaxCollector(event.params.from);
         let strandsOwned = fromCollector.strandsOwned;
         strandsOwned = strandsOwned.filter((childId: string) => childId !== event.params.id.toString());
@@ -92,7 +93,8 @@ export function handleBatchTransfer(event: TransferBatch): void {
         strand.save();
 
         // If `from` is not zero, then update the collector that triggered the transfer
-        if (!event.params.from.equals(ZERO_ADDRESS)) {
+        if (!event.params.from.equals(ZERO_ADDRESS)
+            || !event.params.from.equals(Address.fromString(DigitalaxGarmentNFTContractAddress))) {
             let fromCollector = loadOrCreateDigitalaxCollector(event.params.from);
             let strandsOwned = fromCollector.strandsOwned;
             strandsOwned = strandsOwned.filter(function (childId: string) {
