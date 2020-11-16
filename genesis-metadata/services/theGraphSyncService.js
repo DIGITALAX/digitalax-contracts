@@ -8,7 +8,7 @@ const ipfsClient = require('ipfs-http-client');
 const subgraphIpfsClient = ipfsClient({
   host: 'api.thegraph.com',
   port: '443',
-  apiPath: '/ipfs/api/v0',
+  apiPath: '/ipfs/api/v0/',
   protocol: 'https'
 });
 
