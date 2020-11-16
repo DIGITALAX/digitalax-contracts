@@ -5,6 +5,12 @@ type Day @entity {
   totalNetBidActivity: BigInt!
 }
 
+type DigitalaxGarmentNFTGlobalStats @entity {
+  id: ID!
+  totalSalesValue: BigInt! # Eth value in WEI accross all successful auctions
+  totalActiveBidsValue: BigInt! # Eth value of the active aggregate bids across all in flight auctions
+}
+
 type GenesisContributor @entity {
   id: ID!
   contributor: Bytes! # address
