@@ -1,11 +1,11 @@
-import {DigitalaxGarmentNFTGlobalStats} from "../../generated/schema";
+import {DigitalaxGarmentNFTGlobalStat} from "../../generated/schema";
 import {ZERO} from "../constants";
 
-export function loadOrCreateGarmentNFTGlobalStats(): DigitalaxGarmentNFTGlobalStats | null {
-    let globalStats = DigitalaxGarmentNFTGlobalStats.load('DigitalaxGarmentNFTGlobalStats');
+export function loadOrCreateGarmentNFTGlobalStats(): DigitalaxGarmentNFTGlobalStat | null {
+    let globalStats = DigitalaxGarmentNFTGlobalStat.load('DigitalaxGarmentNFTGlobalStats');
 
     if (globalStats == null) {
-        globalStats = new DigitalaxGarmentNFTGlobalStats('DigitalaxGarmentNFTGlobalStats');
+        globalStats = new DigitalaxGarmentNFTGlobalStat('DigitalaxGarmentNFTGlobalStats');
         globalStats.totalSalesValue = ZERO;
         globalStats.totalActiveBidsValue = ZERO;
         globalStats.save();
