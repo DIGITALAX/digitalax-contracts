@@ -1,3 +1,5 @@
+import {BigInt} from "@graphprotocol/graph-ts/index";
+
 import {
     AuctionCancelled,
     AuctionCreated,
@@ -18,6 +20,7 @@ import {
 import {ZERO} from "./constants";
 import {loadOrCreateGarmentDesigner} from "./factory/DigitalaxGarmentDesigner.factory";
 import {loadOrCreateDigitalaxCollector} from "./factory/DigitalaxCollector.factory";
+import {loadDayFromEvent} from "./factory/Day.factory";
 
 export function handleAuctionCreated(event: AuctionCreated): void {
     let contract = DigitalaxAuction.bind(event.address);
@@ -74,8 +77,22 @@ export function handleBidPlaced(event: BidPlaced): void {
 
     let auction = DigitalaxGarmentAuction.load(tokenId.toString());
 
-    // Record top bidder
+    // Record bid as part of day
+    let day = loadDayFromEvent(event);
+
     let topBidder = contract.getHighestBidder(event.params.garmentTokenId)
+    if (!auction.topBidder) {
+        day.totalBidValue = day.totalBidValue + topBidder.value1;
+    } else {
+        // This is key - we want to record the difference between the last highest bid and this new bid on this day
+        day.totalBidValue = day.totalBidValue + (topBidder.value1 - (auction.topBid as BigInt));
+    }
+
+    day.totalNetBidActivity = day.totalBidValue - day.totalWithdrawalValue;
+
+    day.save();
+
+    // Record top bidder
     auction.topBidder = loadOrCreateDigitalaxCollector(event.params.bidder).id
     auction.topBid = topBidder.value1
     auction.lastBidTime = topBidder.value2
@@ -87,6 +104,7 @@ export function handleBidPlaced(event: BidPlaced): void {
         .concat("-")
         .concat(event.transaction.index.toString());
 
+    // Record event
     let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
     auctionEvent.token = DigitalaxGarment.load(event.params.garmentTokenId.toString()).id
     auctionEvent.eventName = "BidPlaced"
@@ -121,6 +139,12 @@ export function handleBidWithdrawn(event: BidWithdrawn): void {
     auction.topBid = null
     auction.lastBidTime = null
     auction.save();
+
+    // Record withdrawal as part of day
+    let day = loadDayFromEvent(event);
+    day.totalWithdrawalValue = day.totalWithdrawalValue + event.params.bid;
+    day.totalNetBidActivity = day.totalBidValue - day.totalWithdrawalValue;
+    day.save();
 }
 
 export function handleAuctionResulted(event: AuctionResulted): void {
