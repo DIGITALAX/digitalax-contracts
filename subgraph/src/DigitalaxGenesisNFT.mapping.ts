@@ -35,7 +35,7 @@ export function handleGenesisPurchased(event: GenesisPurchased): void {
 }
 
 export function handleContributionIncreased(event: ContributionIncreased): void {
-    log.info('handleContributionIncreased() @ hash: {}', [event.transaction.hash.toHexString()]);
+    // log.info('handleContributionIncreased() @ hash: {}', [event.transaction.hash.toHexString()]);
 
     let genesisContributor: GenesisContributor | null = GenesisContributor.load(event.params.buyer.toHexString())
     genesisContributor.totalContributionInWei = genesisContributor.totalContributionInWei.plus(event.params.contribution)
@@ -49,7 +49,7 @@ export function handleContributionIncreased(event: ContributionIncreased): void 
 }
 
 export function handleGenesisDeployed(event: DigitalaxGenesisNFTContractDeployed): void {
-    log.info('handleGenesisDeployed() @ hash: {}', [event.transaction.hash.toHexString()])
+    // log.info('handleGenesisDeployed() @ hash: {}', [event.transaction.hash.toHexString()])
 
     let contract = DigitalaxGenesisNFTContract.bind(event.address);
 

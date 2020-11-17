@@ -21,7 +21,7 @@ import {loadOrCreateDigitalaxCollector} from "./factory/DigitalaxCollector.facto
 import {ZERO_ADDRESS} from "./constants";
 
 export function handleTransfer(event: Transfer): void {
-    log.info("Handle Garment Transfer @ Hash {}", [event.transaction.hash.toHexString()]);
+    // log.info("Handle Garment Transfer @ Hash {}", [event.transaction.hash.toHexString()]);
     let contract = DigitalaxGarmentNFTContract.bind(event.address);
 
     // This is the birthing of a garment
@@ -36,9 +36,9 @@ export function handleTransfer(event: Transfer): void {
         garment.save();
 
         let collector = loadOrCreateDigitalaxCollector(event.params.to);
-        let garmentsOwned = collector.garmentsOwned;
-        garmentsOwned.push(garmentId);
-        collector.garmentsOwned = garmentsOwned;
+        let parentsOwned = collector.parentsOwned;
+        parentsOwned.push(garmentId);
+        collector.parentsOwned = parentsOwned;
         collector.save();
 
         let garmentDesignerId = contract.garmentDesigners(event.params.tokenId).toHexString();
@@ -65,25 +65,33 @@ export function handleTransfer(event: Transfer): void {
 
         // Update garments owned on the `from` and `to` address collectors
         let fromCollector = loadOrCreateDigitalaxCollector(event.params.from);
-        let fromGarmentsOwned = fromCollector.garmentsOwned;
-        fromGarmentsOwned = fromGarmentsOwned.filter((garmentId: string) => garmentId !== event.params.tokenId.toString());
-        fromCollector.garmentsOwned = fromGarmentsOwned;
+        let fromGarmentsOwned = fromCollector.parentsOwned;
+
+        let updatedGarmentsOwned = new Array<string>();
+        for(let i = 0; i < fromGarmentsOwned.length; i++) {
+            let garmentId = fromGarmentsOwned.pop();
+            if (garmentId !== event.params.tokenId.toString()) {
+                updatedGarmentsOwned.push(garmentId);
+            }
+        }
+
+        fromCollector.parentsOwned = updatedGarmentsOwned;
         fromCollector.save();
 
         let toCollector = loadOrCreateDigitalaxCollector(event.params.to);
-        let garmentsOwned = toCollector.garmentsOwned;
-        garmentsOwned.push(event.params.tokenId.toString());
-        toCollector.garmentsOwned = garmentsOwned;
+        let parentsOwned = toCollector.parentsOwned;
+        parentsOwned.push(event.params.tokenId.toString());
+        toCollector.parentsOwned = parentsOwned;
         toCollector.save();
     }
 }
 
 export function handleChildReceived(event: ReceivedChild): void {
-    log.info("Handle Child ID {} linking to Garment ID {} @ Hash {}", [
-        event.params.childTokenId.toString(),
-        event.transaction.hash.toHexString(),
-        event.params.toTokenId.toString()
-    ]);
+    // log.info("Handle Child ID {} linking to Garment ID {} @ Hash {}", [
+    //     event.params.childTokenId.toString(),
+    //     event.transaction.hash.toHexString(),
+    //     event.params.toTokenId.toString()
+    // ]);
 
     let contract = DigitalaxGarmentNFTContract.bind(event.address);
 

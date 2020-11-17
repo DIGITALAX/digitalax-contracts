@@ -54,8 +54,8 @@ type DigitalaxMaterial @entity {
 
 type DigitalaxCollector @entity {
   id: ID!
-  garmentsOwned: [DigitalaxGarment!]!
-  strandsOwned: [DigitalaxMaterialOwner!]!
+  parentsOwned: [DigitalaxGarment!]!
+  childrenOwned: [DigitalaxMaterialOwner!]!
 }
 
 type DigitalaxGarmentDesigner @entity {
