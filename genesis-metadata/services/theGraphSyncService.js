@@ -27,7 +27,7 @@ const syncHashToSubgraph = async function ({fileList}) {
 
     const onFailure = (error) => {
       console.error(`Failed to sync with TheGraph`, fileList, error);
-      return true;
+      throw error;
     };
 
     const syncWithTheGraph = async () => Promise.all(_.map(fileList, (cid) => {
@@ -45,7 +45,7 @@ const syncHashToSubgraph = async function ({fileList}) {
 
       // Add basic retry to see if this fixes the occasional 502 from the graph node¬
       return syncWithTheGraph().catch((err) => {
-        console.error(`Syncing with TheGraph Failure - attempt [${number}]`, err);
+        console.error(`Syncing with TheGraph Failure - attempt [${number}]`);
         retry(err);
       });
     }, retryOptions)
