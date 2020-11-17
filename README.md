@@ -15,11 +15,9 @@
 * in its own terminal tab run: `npx buidler node`
 * Run test with `GAS` profiling `yarn test-with-gas`
 
-## Genesis Metadata
+## Metadata
 
-* Located in `./genesis-metadata/`
-* Scripts folder for generating and storing the metadata required for the genesis auction
-* IPFS provider used [pinata.cloud](https://pinata.cloud/)
+*  See project [nft-minting-scripts](https://github.com/DIGITALAX/nft-minting-scripts)
 
 ### Subgraph
 
