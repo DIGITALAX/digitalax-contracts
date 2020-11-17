@@ -30,8 +30,10 @@ type DigitalaxGenesisContract @entity {
   totalContributions: BigInt!
 }
 
-type DigitalaxMaterialOwner @entity {
-  id: ID!
+type DigitalaxGarmentChild @entity {
+  id: ID! # {parent-token-id}-{child-token-id}
+  parentId: BigInt! # parent token ID
+  childId: BigInt! # child token ID
   amount: BigInt!
   contract: Bytes!
   tokenUri: String!
@@ -43,19 +45,29 @@ type DigitalaxGarment @entity {
   owner: Bytes!
   primarySalePrice: BigInt!
   tokenUri: String!
-  strands: [DigitalaxMaterialOwner!]!
+  children: [DigitalaxGarmentChild!]!
 }
 
+# Total support of all children
 type DigitalaxMaterial @entity {
   id: ID!
   tokenUri: String!
   totalSupply: BigInt!
 }
 
+type DigitalaxChildOwner @entity {
+  id: ID! # {parent-token-id-holder}-{child-token-id}
+  childId: BigInt! # the child token ID
+  owner: Bytes! # token owner
+  amount: BigInt!
+  contract: Bytes!
+  tokenUri: String!
+}
+
 type DigitalaxCollector @entity {
   id: ID!
-  parentsOwned: [DigitalaxGarment!]!
-  childrenOwned: [DigitalaxMaterialOwner!]!
+  parentsOwned: [DigitalaxGarment!]! # only parents owned by the
+  childrenOwned: [DigitalaxChildOwner!]! # only given children when a parent is burnt
 }
 
 type DigitalaxGarmentDesigner @entity {

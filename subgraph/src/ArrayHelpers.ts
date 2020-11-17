@@ -1,9 +1,7 @@
-import {BigInt} from "@graphprotocol/graph-ts/index";
-
-export function isChildInList(childId: string, ids: Array<BigInt>): boolean {
-    for (let i = 0; i < ids.length; i++) {
-        let id: BigInt = ids.pop();
-        if (id.toString() === childId.toString()) {
+export function isChildInList(childId: string, ids: Array<string>): boolean {
+    let totalIds = ids.length;
+    for (let i = 0; i < totalIds; i++) {
+        if (ids.pop() === childId) {
             return true;
         }
     }

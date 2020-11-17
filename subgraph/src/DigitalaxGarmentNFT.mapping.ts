@@ -7,18 +7,13 @@ import {
 } from "../generated/DigitalaxGarmentNFT/DigitalaxGarmentNFT";
 
 import {
-    DigitalaxMaterials as DigitalaxMaterialsContract
-} from "../generated/DigitalaxMaterials/DigitalaxMaterials";
-
-import {
     DigitalaxGarment,
-    DigitalaxMaterialOwner,
-    DigitalaxCollector,
 } from "../generated/schema";
 import {loadOrCreateGarmentDesigner} from "./factory/DigitalaxGarmentDesigner.factory";
 import {loadOrCreateDigitalaxCollector} from "./factory/DigitalaxCollector.factory";
 
 import {ZERO_ADDRESS} from "./constants";
+import {loadOrCreateDigitalaxGarmentChild} from "./factory/DigitalaxGarmentChild.factory";
 
 export function handleTransfer(event: Transfer): void {
     // log.info("Handle Garment Transfer @ Hash {}", [event.transaction.hash.toHexString()]);
@@ -32,7 +27,7 @@ export function handleTransfer(event: Transfer): void {
         garment.owner = contract.ownerOf(event.params.tokenId);
         garment.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
         garment.tokenUri = contract.tokenURI(event.params.tokenId);
-        garment.strands = new Array<string>();
+        garment.children = new Array<string>();
         garment.save();
 
         let collector = loadOrCreateDigitalaxCollector(event.params.to);
@@ -86,37 +81,23 @@ export function handleTransfer(event: Transfer): void {
     }
 }
 
+// triggered when a parent receives a child token
 export function handleChildReceived(event: ReceivedChild): void {
-    // log.info("Handle Child ID {} linking to Garment ID {} @ Hash {}", [
-    //     event.params.childTokenId.toString(),
-    //     event.transaction.hash.toHexString(),
-    //     event.params.toTokenId.toString()
-    // ]);
-
-    let contract = DigitalaxGarmentNFTContract.bind(event.address);
+    log.info("Handle Child ID {} linking to Garment ID {} @ Hash {}", [
+        event.params.childTokenId.toString(),
+        event.transaction.hash.toHexString(),
+        event.params.toTokenId.toString()
+    ]);
 
     let garment = DigitalaxGarment.load(event.params.toTokenId.toString());
 
-    let childId = contract.ownerOf(event.params.toTokenId).toHexString() + '-' + event.params.childTokenId.toString();
-    let child = DigitalaxMaterialOwner.load(childId);
-
-    if (child == null) {
-        child = new DigitalaxMaterialOwner(childId);
-        child.amount = event.params.amount;
-    } else {
-        child.amount = child.amount + event.params.amount;
-    }
-
-    child.contract = contract.childContract();
-
-    const childContract = DigitalaxMaterialsContract.bind(contract.childContract());
-    child.tokenUri = childContract.uri(event.params.childTokenId);
+    let child = loadOrCreateDigitalaxGarmentChild(event, event.params.toTokenId, event.params.childTokenId);
+    child.amount = child.amount.plus(event.params.amount);
     child.save();
 
-    let strands = garment.strands;
-
-    strands.push(childId);
-    garment.strands = strands;
+    let children = garment.children;
+    children.push(child.id);
+    garment.children = children;
 
     garment.save();
 }

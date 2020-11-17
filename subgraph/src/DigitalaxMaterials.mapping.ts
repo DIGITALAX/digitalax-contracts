@@ -1,4 +1,4 @@
-import {log, BigInt, Address} from "@graphprotocol/graph-ts/index";
+import {log, BigInt} from "@graphprotocol/graph-ts/index";
 
 import {
     ChildCreated,
@@ -12,12 +12,13 @@ import {
     DigitalaxMaterial
 } from "../generated/schema";
 
-import {ZERO_ADDRESS, DigitalaxGarmentNFTContractAddress, ZERO} from "./constants";
+import {ZERO_ADDRESS, ZERO} from "./constants";
 import {loadOrCreateDigitalaxCollector} from "./factory/DigitalaxCollector.factory";
 import {isChildInList} from "./ArrayHelpers";
+import {loadOrCreateDigitalaxChildOwner} from "./factory/DigitalaxChildOwner.factory";
 
 export function handleChildCreated(event: ChildCreated): void {
-    // log.info("handleChildCreated @ Child ID {}", [event.params.childId.toString()]);
+    log.info("handleChildCreated @ Child ID {}", [event.params.childId.toString()]);
     let contract = DigitalaxMaterialsContract.bind(event.address);
 
     let strand = new DigitalaxMaterial(event.params.childId.toString());
@@ -27,11 +28,11 @@ export function handleChildCreated(event: ChildCreated): void {
 }
 
 export function handleChildrenCreated(event: ChildrenCreated): void {
-    // log.info("handleChildrenCreated", []);
+    log.info("handleChildrenCreated", []);
     let contract = DigitalaxMaterialsContract.bind(event.address);
 
     let childIds = event.params.childIds;
-    for(let i = 0; i < event.params.childIds.length; i++) {
+    for (let i = 0; i < event.params.childIds.length; i++) {
         let childId: BigInt = childIds.pop();
         let strand = new DigitalaxMaterial(childId.toString());
         strand.tokenUri = contract.uri(childId);
@@ -40,39 +41,104 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
     }
 }
 
-// TODO add single transfer hook and handle adding/removing strands
+// Handle a single transfer of either adding or removing children
 export function handleSingleTransfer(event: TransferSingle): void {
-    // log.info("handle single transfer of child ID {} and balance {}",
-    //     [
-    //         event.params.id.toString(),
-    //         event.params.value.toString()
-    //     ]
-    // );
+    log.info("handle single transfer of child ID {} and balance {}",
+        [
+            event.params.id.toString(),
+            event.params.value.toString()
+        ]
+    );
 
     // Ensure total supply is correct in cases of birthing or burning
     let contract: DigitalaxMaterialsContract = DigitalaxMaterialsContract.bind(event.address);
-    let strandId: BigInt = event.params.id;
-    let strand: DigitalaxMaterial | null = DigitalaxMaterial.load(strandId.toString());
-    strand.totalSupply = contract.tokenTotalSupply(strandId);
-    strand.save();
+    let childId: BigInt = event.params.id;
+    let childToken: DigitalaxMaterial | null = DigitalaxMaterial.load(childId.toString());
+    childToken.totalSupply = contract.tokenTotalSupply(childId);
+    childToken.save();
 
-    // If `from` is not zero or the garment NFT, then update the collector that triggered the transfer
-    if (!event.params.from.equals(ZERO_ADDRESS)
-        ) {
+    // Update "from" balances
+    if (!event.params.from.equals(ZERO_ADDRESS)) {
         let fromCollector = loadOrCreateDigitalaxCollector(event.params.from);
+
         let childrenOwned = fromCollector.childrenOwned;
-        childrenOwned = childrenOwned.filter((childId: string) => childId !== event.params.id.toString());
-        fromCollector.childrenOwned = childrenOwned;
+        let totalChildOwned = childrenOwned.length;
+        let updatedChildren = new Array<string>();
+
+        // Iterate all children currently owned
+        for (let j = 0; j < totalChildOwned; j++) {
+            let childTokenId = childrenOwned.pop();
+
+            // For each ID being transferred
+            let id: BigInt = event.params.id;
+            let amount: BigInt = event.params.value;
+
+            // Expected child owner ID
+            let compositeId = event.params.from.toHexString() + '-' + id.toString()
+
+            // Check that we have an entry for the child
+            if (childTokenId.toString() === compositeId) {
+
+                // Load collector and reduce balance
+                let child = loadOrCreateDigitalaxChildOwner(event, event.params.from, id);
+                child.amount = child.amount.minus(amount);
+                child.save();
+
+                // keep track of child if balance positive
+                if (!child.amount.equals(ZERO)) {
+                    updatedChildren.push(childTokenId);
+                }
+            }
+        }
+
+        // assign the newly owned children
+        fromCollector.childrenOwned = updatedChildren;
         fromCollector.save();
     }
 
-    // If `to` is burn or garment NFT address, we can stop here otherwise add the strand to the `to` address
-    if (!event.params.to.equals(ZERO_ADDRESS)
-        ) {
+    // Update "to" balances
+    if (!event.params.to.equals(ZERO_ADDRESS)) {
         let toCollector = loadOrCreateDigitalaxCollector(event.params.to);
-        let childrenOwned = toCollector.childrenOwned;
-        childrenOwned.push(strandId.toString());
-        toCollector.childrenOwned = childrenOwned;
+        let childrenOwned = toCollector.childrenOwned; // 0x123-123
+        let totalChildOwned = childrenOwned.length;
+        let updatedChildren = new Array<string>();
+
+        let id: BigInt = event.params.id;
+        let amount: BigInt = event.params.value;
+
+        // Expected child owner ID
+        let compositeId = event.params.to.toHexString() + '-' + id.toString()
+
+        // If we already have a child allocated to the collector
+        if (isChildInList(compositeId, childrenOwned)) {
+
+            // Iterate all children currently owned
+            for (let k = 0; k < totalChildOwned; k++) {
+
+                // Find the matching child
+                let currentChildId = childrenOwned.pop();
+                if (currentChildId.toString() === compositeId) {
+
+                    // Load collector and add to its balance
+                    let child = loadOrCreateDigitalaxChildOwner(event, event.params.to, id);
+                    child.amount = child.amount.plus(amount);
+                    child.save();
+
+                    updatedChildren.push(child.id);
+                }
+            }
+        } else {
+            // If we dont already own it, load and increment
+            let child = loadOrCreateDigitalaxChildOwner(event, event.params.to, id);
+            child.amount = child.amount.plus(amount);
+            child.save();
+
+            // keep track of child
+            updatedChildren.push(child.id);
+        }
+
+        // assign the newly owned children
+        toCollector.childrenOwned = updatedChildren;
         toCollector.save();
     }
 }
@@ -83,42 +149,105 @@ export function handleBatchTransfer(event: TransferBatch): void {
     ]);
 
     let contract: DigitalaxMaterialsContract = DigitalaxMaterialsContract.bind(event.address);
-    let strandIds: Array<BigInt> = event.params.ids;
-    for(let i = 0; i < event.params.values.length; i++) {
-        let strandId: BigInt = strandIds.pop();
 
-        // Ensure total supply is correct in cases of birthing or burning
-        let strand: DigitalaxMaterial | null = DigitalaxMaterial.load(strandId.toString());
-        strand.totalSupply = contract.tokenTotalSupply(strandId);
-        strand.save();
+    let totalIdsTransferred = event.params.ids.length;
+    let childrenIds: Array<BigInt> = event.params.ids;
 
-        // If `from` is not zero, then update the collector that triggered the transfer
-        if (!event.params.from.equals(ZERO_ADDRESS)
-            || !event.params.from.equals(Address.fromString(DigitalaxGarmentNFTContractAddress))) {
+    // Model total supply - Ensure total supply is correct in cases of birthing or burning
+    for (let i = 0; i < totalIdsTransferred; i++) {
+        let childId: BigInt = childrenIds.pop();
+        let child: DigitalaxMaterial | null = DigitalaxMaterial.load(childId.toString());
+        child.totalSupply = contract.tokenTotalSupply(childId);
+        child.save();
+    }
 
-            let fromCollector = loadOrCreateDigitalaxCollector(event.params.from);
-            let childrenOwned = fromCollector.childrenOwned;
+    // Update "from" balances
+    if (!event.params.from.equals(ZERO_ADDRESS)) {
+        let fromCollector = loadOrCreateDigitalaxCollector(event.params.from);
 
-            let updatedChildren = new Array<string>();
-            for(let j = 0; j < childrenOwned.length; j++) {
-                let strand = childrenOwned.pop();
-                if (!isChildInList(strand.toString(), event.params.ids)) {
-                    updatedChildren.push(strand);
+        let childrenOwned = fromCollector.childrenOwned;
+        let totalChildrenOwned = childrenOwned.length;
+        let updatedChildren = new Array<string>();
+
+        // Iterate all children currently owned
+        for (let j = 0; j < totalChildrenOwned; j++) {
+            let childTokenId = childrenOwned.pop();
+
+            // For each ID being transferred
+            for (let k = 0; k < totalIdsTransferred; k++) {
+                let id: BigInt = event.params.ids.pop();
+                let amount: BigInt = event.params.values.pop();
+
+                // Expected child owner ID
+                let compositeId = event.params.from.toHexString() + '-' + id.toString()
+
+                // Check that we have an entry for the child
+                if (childTokenId === compositeId) {
+
+                    // Load collector and reduce balance
+                    let child = loadOrCreateDigitalaxChildOwner(event, event.params.from, id);
+                    child.amount = child.amount.minus(amount);
+                    child.save();
+
+                    // keep track of child if balance positive
+                    if (!child.amount.equals(ZERO)) {
+                        updatedChildren.push(childTokenId);
+                    }
                 }
             }
-
-            fromCollector.childrenOwned = updatedChildren;
-            fromCollector.save();
         }
 
-        // If `to` is burn or garment NFT address, we can stop here otherwise add the strand to the `to` address
-        if (!event.params.to.equals(ZERO_ADDRESS)
-            || !event.params.to.equals(Address.fromString(DigitalaxGarmentNFTContractAddress))) {
-            let toCollector = loadOrCreateDigitalaxCollector(event.params.to);
-            let childrenOwned = toCollector.childrenOwned;
-            childrenOwned.push(strandId.toString());
-            toCollector.childrenOwned = childrenOwned;
-            toCollector.save();
+        // assign the newly owned children
+        fromCollector.childrenOwned = updatedChildren;
+        fromCollector.save();
+    }
+
+    // Update "to" balances
+    if (!event.params.to.equals(ZERO_ADDRESS)) {
+        let toCollector = loadOrCreateDigitalaxCollector(event.params.to);
+        let childrenOwned = toCollector.childrenOwned; // 0x123-123
+        let totalChildOwned = childrenOwned.length;
+        let updatedChildren = new Array<string>();
+
+        // for each ID being transferred
+        for (let j = 0; j < totalIdsTransferred; j++) {
+            let id: BigInt = event.params.ids.pop();
+            let amount: BigInt = event.params.values.pop();
+
+            // Expected child owner ID
+            let compositeId = event.params.to.toHexString() + '-' + id.toString()
+
+            // If we already have a child allocated to the collector
+            if (isChildInList(compositeId, childrenOwned)) {
+
+                // Iterate all children currently owned
+                for (let k = 0; k < totalChildOwned; k++) {
+
+                    // Find the matching child
+                    let currentChildId = childrenOwned.pop();
+                    if (currentChildId === compositeId) {
+
+                        // Load collector and add to its balance
+                        let child = loadOrCreateDigitalaxChildOwner(event, event.params.to, id);
+                        child.amount = child.amount.plus(amount);
+                        child.save();
+
+                        updatedChildren.push(child.id);
+                    }
+                }
+            } else {
+                // If we dont already own it, load and increment
+                let child = loadOrCreateDigitalaxChildOwner(event, event.params.to, id);
+                child.amount = child.amount.plus(amount);
+                child.save();
+
+                // keep track of child
+                updatedChildren.push(child.id);
+            }
         }
+
+        // assign the newly owned children
+        toCollector.childrenOwned = updatedChildren;
+        toCollector.save();
     }
 }
