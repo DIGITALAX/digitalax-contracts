@@ -1,6 +1,6 @@
 specVersion: 0.0.2
 description: Digitalax Smart Contract Indexing
-repository: https://github.com/graphprotocol/example-subgraph
+repository: https://github.com/DIGITALAX/digitalax-contracts/tree/main/subgraph
 schema:
   file: ./schema.graphql
 dataSources:

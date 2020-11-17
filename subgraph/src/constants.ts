@@ -8,6 +8,3 @@ export const MAX_UINT_256 = BigInt.fromUnsignedBytes(Bytes.fromHexString("0xffff
 
 export const ONE_ETH = new BigDecimal(BigInt.fromI32(1).times(BigInt.fromI32(10).pow(18)))
 export const SECONDS_IN_DAY = BigInt.fromI32(86400)
-
-// TODO: need a strategy for this regarding switching out for different networks etc.
-export const DigitalaxGarmentNFTContractAddress = "0xBf379898e6C392Fe2A131046B8f3daE9A8748454";

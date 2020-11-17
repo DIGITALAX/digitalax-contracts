@@ -84,19 +84,19 @@ export function handleBidPlaced(event: BidPlaced): void {
     let topBidder = contract.getHighestBidder(event.params.garmentTokenId)
     let bidDeltaWithPreviousBid = ZERO;
     if (!auction.topBidder) {
-        bidDeltaWithPreviousBid = day.totalBidValue + topBidder.value1;
+        bidDeltaWithPreviousBid = day.totalBidValue.plus(topBidder.value1);
     } else {
         // This is key - we want to record the difference between the last highest bid and this new bid on this day
-        bidDeltaWithPreviousBid = day.totalBidValue + (topBidder.value1 - (auction.topBid as BigInt));
+        bidDeltaWithPreviousBid = day.totalBidValue.plus(topBidder.value1.minus((auction.topBid as BigInt)));
     }
 
     day.totalBidValue = bidDeltaWithPreviousBid;
-    day.totalNetBidActivity = day.totalBidValue - day.totalWithdrawalValue;
+    day.totalNetBidActivity = day.totalBidValue.minus(day.totalWithdrawalValue);
 
     day.save();
 
     let globalStats = loadOrCreateGarmentNFTGlobalStats();
-    globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue + bidDeltaWithPreviousBid;
+    globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue.plus(bidDeltaWithPreviousBid);
     globalStats.save();
 
     // Record top bidder
@@ -149,12 +149,12 @@ export function handleBidWithdrawn(event: BidWithdrawn): void {
 
     // Record withdrawal as part of day
     let day = loadDayFromEvent(event);
-    day.totalWithdrawalValue = day.totalWithdrawalValue + event.params.bid;
-    day.totalNetBidActivity = day.totalBidValue - day.totalWithdrawalValue;
+    day.totalWithdrawalValue = day.totalWithdrawalValue.plus(event.params.bid);
+    day.totalNetBidActivity = day.totalBidValue.minus(day.totalWithdrawalValue);
     day.save();
 
     let globalStats = loadOrCreateGarmentNFTGlobalStats();
-    globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue - event.params.bid;
+    globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue.minus(event.params.bid);
     globalStats.save();
 }
 
@@ -188,8 +188,8 @@ export function handleAuctionResulted(event: AuctionResulted): void {
 
     // Record global stats
     let globalStats = loadOrCreateGarmentNFTGlobalStats();
-    globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue - event.params.winningBid;
-    globalStats.totalSalesValue = globalStats.totalSalesValue + event.params.winningBid;
+    globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue.minus(event.params.winningBid);
+    globalStats.totalSalesValue = globalStats.totalSalesValue.plus(event.params.winningBid);
     globalStats.save();
 }
 
@@ -215,7 +215,7 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
     if (auction.topBid) {
         // adjust global stats
         let globalStats = loadOrCreateGarmentNFTGlobalStats();
-        globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue - (auction.topBid as BigInt);
+        globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue.minus((auction.topBid as BigInt));
         globalStats.save();
     }
 
