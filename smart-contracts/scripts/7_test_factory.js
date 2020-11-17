@@ -16,15 +16,18 @@ async function main() {
     deployer
   );
 
-  // const tx = await factory.createNewChildren(['randStrandUri5', 'randStrandUri6']);
-  //
-  // await tx.wait();
+  const tx = await factory.createNewChildren([
+    'https://gateway.pinata.cloud/ipfs/Qmb3ZYpR2VeHR4s3CAUvnAGY1oZFfciLricN8JhCb68uQB',
+    'https://gateway.pinata.cloud/ipfs/QmRTt56q6hvxnhPcCfXQjaUTJWG5r7cmngDaX14ProVFN8'
+  ]);
+
+  await tx.wait();
 
   await factory.mintParentWithChildren(
-    'garment3Uri',
+    'https://gateway.pinata.cloud/ipfs/QmeF4uEJaW5JTcRCL58w5vKq4cbqMJ9VFDfhch8Zz1qypN',
     '0xA9d8b169783100639Bb137eC09f7277DC7948760',
-    ['1','2'],
-    ['2', '2'],
+    ['7','8'],
+    ['9', '4'],
     deployerAddress
   );
 }
