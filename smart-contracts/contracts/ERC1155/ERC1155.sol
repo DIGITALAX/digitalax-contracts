@@ -206,6 +206,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
      */
     function _setURI(uint256 tokenId, string memory newuri) internal virtual {
         tokenUris[tokenId] = newuri;
+        emit URI(newuri, tokenId);
     }
 
     /**
