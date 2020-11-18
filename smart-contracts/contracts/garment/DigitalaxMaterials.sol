@@ -83,8 +83,9 @@ contract DigitalaxMaterials is ERC1155Burnable {
 
         require(_uris.length > 0, "DigitalaxMaterials.batchCreateChildren: No data supplied in array");
 
-        tokenIds = new uint256[](_uris.length);
-        for (uint i = 0; i < _uris.length; i++) {
+        uint256 urisLength = _uris.length;
+        tokenIds = new uint256[](urisLength);
+        for (uint256 i = 0; i < urisLength; i++) {
             string memory uri = _uris[i];
             require(bytes(uri).length > 0, "DigitalaxMaterials.batchCreateChildren: URI is a blank string");
             tokenIdPointer = tokenIdPointer.add(1);
@@ -138,7 +139,7 @@ contract DigitalaxMaterials is ERC1155Burnable {
         require(_childTokenIds.length > 0, "DigitalaxMaterials.batchMintChildren: No data supplied in arrays");
 
         // Check the strands exist and no zero amounts
-        for (uint i = 0; i < _childTokenIds.length; i++) {
+        for (uint256 i = 0; i < _childTokenIds.length; i++) {
             uint256 strandId = _childTokenIds[i];
             require(bytes(tokenUris[strandId]).length > 0, "DigitalaxMaterials.batchMintChildren: Strand does not exist");
 
