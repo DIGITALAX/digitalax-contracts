@@ -1,3 +1,5 @@
+import {BigInt} from "@graphprotocol/graph-ts/index";
+
 import {
     AuctionCancelled,
     AuctionCreated,
@@ -18,6 +20,8 @@ import {
 import {ZERO} from "./constants";
 import {loadOrCreateGarmentDesigner} from "./factory/DigitalaxGarmentDesigner.factory";
 import {loadOrCreateDigitalaxCollector} from "./factory/DigitalaxCollector.factory";
+import {loadDayFromEvent} from "./factory/Day.factory";
+import {loadOrCreateGarmentNFTGlobalStats} from "./factory/DigitalaxGarmentNFTGlobalStats.factory";
 
 export function handleAuctionCreated(event: AuctionCreated): void {
     let contract = DigitalaxAuction.bind(event.address);
@@ -74,8 +78,28 @@ export function handleBidPlaced(event: BidPlaced): void {
 
     let auction = DigitalaxGarmentAuction.load(tokenId.toString());
 
-    // Record top bidder
+    // Record bid as part of day
+    let day = loadDayFromEvent(event);
+
     let topBidder = contract.getHighestBidder(event.params.garmentTokenId)
+    let bidDeltaWithPreviousBid = ZERO;
+    if (!auction.topBidder) {
+        bidDeltaWithPreviousBid = day.totalBidValue.plus(topBidder.value1);
+    } else {
+        // This is key - we want to record the difference between the last highest bid and this new bid on this day
+        bidDeltaWithPreviousBid = day.totalBidValue.plus(topBidder.value1.minus((auction.topBid as BigInt)));
+    }
+
+    day.totalBidValue = bidDeltaWithPreviousBid;
+    day.totalNetBidActivity = day.totalBidValue.minus(day.totalWithdrawalValue);
+
+    day.save();
+
+    let globalStats = loadOrCreateGarmentNFTGlobalStats();
+    globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue.plus(bidDeltaWithPreviousBid);
+    globalStats.save();
+
+    // Record top bidder
     auction.topBidder = loadOrCreateDigitalaxCollector(event.params.bidder).id
     auction.topBid = topBidder.value1
     auction.lastBidTime = topBidder.value2
@@ -87,6 +111,7 @@ export function handleBidPlaced(event: BidPlaced): void {
         .concat("-")
         .concat(event.transaction.index.toString());
 
+    // Record event
     let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
     auctionEvent.token = DigitalaxGarment.load(event.params.garmentTokenId.toString()).id
     auctionEvent.eventName = "BidPlaced"
@@ -121,6 +146,16 @@ export function handleBidWithdrawn(event: BidWithdrawn): void {
     auction.topBid = null
     auction.lastBidTime = null
     auction.save();
+
+    // Record withdrawal as part of day
+    let day = loadDayFromEvent(event);
+    day.totalWithdrawalValue = day.totalWithdrawalValue.plus(event.params.bid);
+    day.totalNetBidActivity = day.totalBidValue.minus(day.totalWithdrawalValue);
+    day.save();
+
+    let globalStats = loadOrCreateGarmentNFTGlobalStats();
+    globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue.minus(event.params.bid);
+    globalStats.save();
 }
 
 export function handleAuctionResulted(event: AuctionResulted): void {
@@ -150,6 +185,12 @@ export function handleAuctionResulted(event: AuctionResulted): void {
     auction.resulted = true
     auction.resultedTime = event.block.timestamp
     auction.save();
+
+    // Record global stats
+    let globalStats = loadOrCreateGarmentNFTGlobalStats();
+    globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue.minus(event.params.winningBid);
+    globalStats.totalSalesValue = globalStats.totalSalesValue.plus(event.params.winningBid);
+    globalStats.save();
 }
 
 export function handleAuctionCancelled(event: AuctionCancelled): void {
@@ -170,6 +211,14 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
 
     // Clear down bids
     let auction = DigitalaxGarmentAuction.load(tokenId.toString());
+
+    if (auction.topBid) {
+        // adjust global stats
+        let globalStats = loadOrCreateGarmentNFTGlobalStats();
+        globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue.minus((auction.topBid as BigInt));
+        globalStats.save();
+    }
+
     auction.topBidder = null
     auction.topBid = null
     auction.lastBidTime = null

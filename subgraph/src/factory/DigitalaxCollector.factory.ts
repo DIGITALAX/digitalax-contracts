@@ -5,8 +5,8 @@ export function loadOrCreateDigitalaxCollector(collector: Address): DigitalaxCol
     let digitalaxCollector: DigitalaxCollector | null = DigitalaxCollector.load(collector.toHexString());
     if (digitalaxCollector == null) {
         digitalaxCollector = new DigitalaxCollector(collector.toHexString())
-        digitalaxCollector.garmentsOwned = new Array<string>();
-        digitalaxCollector.strandsOwned = new Array<string>();
+        digitalaxCollector.parentsOwned = new Array<string>();
+        digitalaxCollector.childrenOwned = new Array<string>();
     }
     digitalaxCollector.save()
     return digitalaxCollector as DigitalaxCollector;

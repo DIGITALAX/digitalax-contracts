@@ -1,6 +1,6 @@
 import {DigitalaxGarmentDesigner} from "../../generated/schema";
 
-export function loadOrCreateGarmentDesigner(garmentDesignerId: String): DigitalaxGarmentDesigner {
+export function loadOrCreateGarmentDesigner(garmentDesignerId: string): DigitalaxGarmentDesigner {
     let garmentDesigner = DigitalaxGarmentDesigner.load(garmentDesignerId);
     if (garmentDesigner == null) {
         garmentDesigner = new DigitalaxGarmentDesigner(garmentDesignerId);
