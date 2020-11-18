@@ -348,7 +348,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
             uint256 aboveReservePrice = winningBid.sub(auction.reservePrice);
 
             // Work out platform fee from above reserve amount
-            uint256 platformFeeAboveReserve = (aboveReservePrice.div(1000)).mul(platformFee);
+            uint256 platformFeeAboveReserve = aboveReservePrice.mul(platformFee).div(1000);
 
             // Send platform fee
             (bool platformTransferSuccess,) = platformFeeRecipient.call{value : platformFeeAboveReserve}("");
