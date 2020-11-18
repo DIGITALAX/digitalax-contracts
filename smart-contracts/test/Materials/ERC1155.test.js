@@ -15,6 +15,9 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
   const emptyData = web3.utils.encodePacked('');
 
   const STRAND_ONE_ID = '1';
+  const STRAND_TWO_ID = '2';
+  const STRAND_THREE_ID = '3';
+  const STRAND_FOUR_ID = '4';
 
   beforeEach(async function () {
     this.accessControls = await DigitalaxAccessControls.new({from: admin});
@@ -85,10 +88,28 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
 
     describe('_mintBatch', function () {
       beforeEach(async function () {
-        await this.token.batchCreateChildren(
-          [initialURI, initialURI, initialURI],
+        const uri2 = 'uriChild2';
+        const uri3 = 'uriChild3';
+        const uri4 = 'uriChild4';
+        const {receipt} = await this.token.batchCreateChildren(
+          [uri2, uri3, uri4],
           {from: operator}
         );
+
+        await expectEvent(receipt, 'URI', {
+          id: STRAND_TWO_ID,
+          value: uri2
+        });
+
+        await expectEvent(receipt, 'URI', {
+          id: STRAND_THREE_ID,
+          value: uri3
+        });
+
+        await expectEvent(receipt, 'URI', {
+          id: STRAND_FOUR_ID,
+          value: uri4
+        });
       });
 
       it('reverts with a zero destination address', async function () {
@@ -313,7 +334,12 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
     it('sets the first and second token URI correctly', async function() {
       expect(await this.token.uri(STRAND_ONE_ID)).to.be.equal(initialURI);
 
-      await this.token.createChild(secondTokenURI, {from: otherAccounts[0]});
+      const {receipt} = await this.token.createChild(secondTokenURI, {from: otherAccounts[0]});
+      await expectEvent(receipt, 'URI', {
+        value: secondTokenURI,
+        id: secondTokenID
+      });
+
       expect(await this.token.uri(secondTokenID)).to.be.equal(secondTokenURI);
     });
   });
