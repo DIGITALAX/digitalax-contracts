@@ -1,3 +1,16 @@
+type Day @entity {
+  id: ID!
+  totalBidValue: BigInt!
+  totalWithdrawalValue: BigInt!
+  totalNetBidActivity: BigInt!
+}
+
+type DigitalaxGarmentNFTGlobalStat @entity {
+  id: ID!
+  totalSalesValue: BigInt! # Eth value in WEI accross all successful auctions
+  totalActiveBidsValue: BigInt! # Eth value of the active aggregate bids across all in flight auctions
+}
+
 type GenesisContributor @entity {
   id: ID!
   contributor: Bytes! # address
@@ -17,8 +30,10 @@ type DigitalaxGenesisContract @entity {
   totalContributions: BigInt!
 }
 
-type DigitalaxMaterialOwner @entity {
-  id: ID!
+type DigitalaxGarmentChild @entity {
+  id: ID! # {parent-token-id}-{child-token-id}
+  parentId: BigInt! # parent token ID
+  childId: BigInt! # child token ID
   amount: BigInt!
   contract: Bytes!
   tokenUri: String!
@@ -30,19 +45,29 @@ type DigitalaxGarment @entity {
   owner: Bytes!
   primarySalePrice: BigInt!
   tokenUri: String!
-  strands: [DigitalaxMaterialOwner!]!
+  children: [DigitalaxGarmentChild!]!
 }
 
+# Total support of all children
 type DigitalaxMaterial @entity {
   id: ID!
   tokenUri: String!
   totalSupply: BigInt!
 }
 
+type DigitalaxChildOwner @entity {
+  id: ID! # {parent-token-id-holder}-{child-token-id}
+  childId: BigInt! # the child token ID
+  owner: Bytes! # token owner
+  amount: BigInt!
+  contract: Bytes!
+  tokenUri: String!
+}
+
 type DigitalaxCollector @entity {
   id: ID!
-  garmentsOwned: [DigitalaxGarment!]!
-  strandsOwned: [DigitalaxMaterialOwner!]!
+  parentsOwned: [DigitalaxGarment!]! # only parents owned by the
+  childrenOwned: [DigitalaxChildOwner!]! # only given children when a parent is burnt
 }
 
 type DigitalaxGarmentDesigner @entity {
