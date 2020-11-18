@@ -1,18 +1,16 @@
-import {log, BigInt} from "@graphprotocol/graph-ts/index";
+import {BigInt, log} from "@graphprotocol/graph-ts/index";
 
 import {
     ChildCreated,
     ChildrenCreated,
+    DigitalaxMaterials as DigitalaxMaterialsContract,
     TransferBatch,
-    TransferSingle,
-    DigitalaxMaterials as DigitalaxMaterialsContract
+    TransferSingle
 } from "../generated/DigitalaxMaterials/DigitalaxMaterials";
 
-import {
-    DigitalaxMaterial
-} from "../generated/schema";
+import {DigitalaxMaterial} from "../generated/schema";
 
-import {ZERO_ADDRESS, ZERO} from "./constants";
+import {ZERO, ZERO_ADDRESS} from "./constants";
 import {loadOrCreateDigitalaxCollector} from "./factory/DigitalaxCollector.factory";
 import {isChildInList} from "./ArrayHelpers";
 import {loadOrCreateDigitalaxChildOwner} from "./factory/DigitalaxChildOwner.factory";
@@ -66,8 +64,8 @@ export function handleSingleTransfer(event: TransferSingle): void {
         let updatedChildren = new Array<string>();
 
         // Iterate all children currently owned
-        for (let j = 0; j < totalChildOwned; j++) {
-            let childTokenId = childrenOwned.pop();
+        for (let j: number = 0; j < totalChildOwned; j++) {
+            let childTokenId = childrenOwned[j as i32];
 
             // For each ID being transferred
             let id: BigInt = event.params.id;
@@ -113,10 +111,10 @@ export function handleSingleTransfer(event: TransferSingle): void {
         if (isChildInList(compositeId, childrenOwned)) {
 
             // Iterate all children currently owned
-            for (let k = 0; k < totalChildOwned; k++) {
+            for (let k: number = 0; k < totalChildOwned; k++) {
 
                 // Find the matching child
-                let currentChildId = childrenOwned.pop();
+                let currentChildId = childrenOwned[k as i32];
                 if (currentChildId.toString() === compositeId) {
 
                     // Load collector and add to its balance
@@ -150,12 +148,13 @@ export function handleBatchTransfer(event: TransferBatch): void {
 
     let contract: DigitalaxMaterialsContract = DigitalaxMaterialsContract.bind(event.address);
 
-    let totalIdsTransferred = event.params.ids.length;
-    let childrenIds: Array<BigInt> = event.params.ids;
+    let allValuesInBatch = event.params.values;
+    let allIdsInBatch = event.params.ids;
+    let totalIdsTransferred = allIdsInBatch.length;
 
     // Model total supply - Ensure total supply is correct in cases of birthing or burning
-    for (let i = 0; i < totalIdsTransferred; i++) {
-        let childId: BigInt = childrenIds.pop();
+    for (let i: number = 0; i < totalIdsTransferred; i++) {
+        let childId: BigInt = allIdsInBatch[i as i32];
         let child: DigitalaxMaterial | null = DigitalaxMaterial.load(childId.toString());
         child.totalSupply = contract.tokenTotalSupply(childId);
         child.save();
@@ -170,13 +169,13 @@ export function handleBatchTransfer(event: TransferBatch): void {
         let updatedChildren = new Array<string>();
 
         // Iterate all children currently owned
-        for (let j = 0; j < totalChildrenOwned; j++) {
-            let childTokenId = childrenOwned.pop();
+        for (let j: number = 0; j < totalChildrenOwned; j++) {
+            let childTokenId = childrenOwned[j as i32];
 
             // For each ID being transferred
-            for (let k = 0; k < totalIdsTransferred; k++) {
-                let id: BigInt = event.params.ids.pop();
-                let amount: BigInt = event.params.values.pop();
+            for (let k: number = 0; k < totalIdsTransferred; k++) {
+                let id: BigInt = allIdsInBatch[k as i32];
+                let amount: BigInt = allValuesInBatch[k as i32];
 
                 // Expected child owner ID
                 let compositeId = event.params.from.toHexString() + '-' + id.toString()
@@ -210,9 +209,9 @@ export function handleBatchTransfer(event: TransferBatch): void {
         let updatedChildren = new Array<string>();
 
         // for each ID being transferred
-        for (let j = 0; j < totalIdsTransferred; j++) {
-            let id: BigInt = event.params.ids.pop();
-            let amount: BigInt = event.params.values.pop();
+        for (let j: number = 0; j < totalIdsTransferred; j++) {
+            let id: BigInt = allIdsInBatch[j as i32];
+            let amount: BigInt = allValuesInBatch[j as i32];
 
             // Expected child owner ID
             let compositeId = event.params.to.toHexString() + '-' + id.toString()
@@ -221,10 +220,10 @@ export function handleBatchTransfer(event: TransferBatch): void {
             if (isChildInList(compositeId, childrenOwned)) {
 
                 // Iterate all children currently owned
-                for (let k = 0; k < totalChildOwned; k++) {
+                for (let k: number = 0; k < totalChildOwned; k++) {
 
                     // Find the matching child
-                    let currentChildId = childrenOwned.pop();
+                    let currentChildId = childrenOwned[k as i32];
                     if (currentChildId === compositeId) {
 
                         // Load collector and add to its balance
