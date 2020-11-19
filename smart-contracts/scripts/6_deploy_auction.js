@@ -1,7 +1,7 @@
 const prompt = require('prompt-sync')();
 const DigitalaxAuctionArtifact = require('../artifacts/DigitalaxAuction.json');
 const AccessControlsArtifact = require('../artifacts/DigitalaxAccessControls.json');
-const {FUND_MULTISIG_ADDRESS, GENESIS_TOKEN_URI} = require('./constants');
+const {FUND_MULTISIG_ADDRESS} = require('./constants');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -47,9 +47,6 @@ async function main() {
   );
   console.log('Changing withdrawal lock time to 24hrs');
   await auctionContract.updateBidWithdrawalLockTime('86400');
-
-  console.log('Changing min bid increment to 0.2 ETH');
-  await auctionContract.updateMinBidIncrement('200000000000000000');
 
   console.log('Changing platform fee to 0%');
   await auctionContract.updatePlatformFee('0');
