@@ -1,11 +1,11 @@
 const prompt = require('prompt-sync')();
-const FactoryArtifact = require('../artifacts/DigitalaxGarmentFactory.json');
+const FactoryArtifact = require('../../artifacts/DigitalaxGarmentFactory.json');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
   const deployerAddress = await deployer.getAddress();
   console.log(
-    "Creating a garment and wrapping using factory with address:",
+    'Creating a garment and wrapping using factory with address:',
     deployerAddress
   );
 
@@ -26,7 +26,7 @@ async function main() {
   await factory.mintParentWithChildren(
     'https://gateway.pinata.cloud/ipfs/QmeF4uEJaW5JTcRCL58w5vKq4cbqMJ9VFDfhch8Zz1qypN',
     '0xA9d8b169783100639Bb137eC09f7277DC7948760',
-    ['7','8'],
+    ['7', '8'],
     ['9', '4'],
     deployerAddress
   );

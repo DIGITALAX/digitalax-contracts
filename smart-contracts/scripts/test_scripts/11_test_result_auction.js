@@ -1,14 +1,14 @@
 const prompt = require('prompt-sync')();
-const FactoryArtifact = require('../artifacts/DigitalaxGarmentFactory.json');
-const AuctionArtifact = require('../artifacts/DigitalaxAuction.json');
-const GarmentArtifact = require('../artifacts/DigitalaxGarmentNFT.json');
-const AccessControlsArtifact = require('../artifacts/DigitalaxAccessControls.json');
+const FactoryArtifact = require('../../artifacts/DigitalaxGarmentFactory.json');
+const AuctionArtifact = require('../../artifacts/DigitalaxAuction.json');
+const GarmentArtifact = require('../../artifacts/DigitalaxGarmentNFT.json');
+const AccessControlsArtifact = require('../../artifacts/DigitalaxAccessControls.json');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
   const deployerAddress = await deployer.getAddress();
   console.log(
-    "Using signer address:",
+    'Using signer address:',
     deployerAddress
   );
 
