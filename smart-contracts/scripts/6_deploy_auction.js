@@ -1,6 +1,7 @@
 const prompt = require('prompt-sync')();
 const DigitalaxAuctionArtifact = require('../artifacts/DigitalaxAuction.json');
 const AccessControlsArtifact = require('../artifacts/DigitalaxAccessControls.json');
+const DigitalaxGarmentNFTArtifact = require('../artifacts/DigitalaxGarmentNFT.json');
 const {FUND_MULTISIG_ADDRESS} = require('./constants');
 
 async function main() {
@@ -45,6 +46,18 @@ async function main() {
 
   console.log('Changing platform fee to 0%');
   await auction.updatePlatformFee('0');
+
+  //////////////////////
+  // Setting approval //
+  //////////////////////
+
+  const nftAddress = new ethers.Contract(
+    ERC721_GARMENT_ADDRESS,
+    DigitalaxGarmentNFTArtifact.abi,
+    deployer
+  );
+  console.log('Setting approval for all deployer');
+  await nftAddress.setApprovalForAll(auction.address, true);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
