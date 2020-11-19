@@ -128,7 +128,8 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
      */
     function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _amount, bytes memory _data)
     virtual
-    public override
+    external
+    override
     returns (bytes4) {
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
 
@@ -152,8 +153,10 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
      @notice Batch ERC1155 receiver callback hook, used to enforce child token bindings to a given parent token ID
      */
     function onERC1155BatchReceived(address _operator, address _from, uint256[] memory _ids, uint256[] memory _values, bytes memory _data)
-    virtual public
-    override returns (bytes4) {
+    virtual
+    external
+    override
+    returns (bytes4) {
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
 
         uint256 _receiverTokenId = _extractIncomingTokenId();
@@ -276,7 +279,8 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
      @dev Get the child token balances held by the contract, assumes caller knows the correct child contract
      */
     function childBalance(uint256 _tokenId, address _childContract, uint256 _childTokenId)
-    public view
+    public
+    view
     override
     returns (uint256) {
         return _childContract == address(childContract) ? balances[_tokenId][_childTokenId] : 0;
@@ -350,7 +354,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
 
     function _receiveChild(uint256 _tokenId, address, uint256 _childTokenId, uint256 _amount) private {
         if (balances[_tokenId][_childTokenId] == 0) {
-            parentToChildMapping[_tokenId].add(_childTokenId);
+           parentToChildMapping[_tokenId].add(_childTokenId);
         }
         balances[_tokenId][_childTokenId] = balances[_tokenId][_childTokenId].add(_amount);
     }
@@ -362,13 +366,6 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
             childToParentMapping[_childTokenId].remove(_tokenId);
             parentToChildMapping[_tokenId].remove(_childTokenId);
         }
-    }
-
-    function _asSingletonArray(uint256 element) private pure returns (uint256[] memory) {
-        uint256[] memory array = new uint256[](1);
-        array[0] = element;
-
-        return array;
     }
 
     /**

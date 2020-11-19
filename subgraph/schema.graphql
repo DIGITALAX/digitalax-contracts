@@ -102,6 +102,12 @@ type DigitalaxGarmentAuction @entity {
   topBidder: DigitalaxCollector
   topBid: BigInt
   lastBidTime: BigInt
+
+  ## Foreign key link to Garment, designer, history and contract
+  garment: DigitalaxGarment!
+  designer: DigitalaxGarmentDesigner!
+  history: DigitalaxGarmentAuctionHistory!
+  contract: DigitalaxAuctionContract!
 }
 
 type DigitalaxGarmentAuctionHistory @entity {

@@ -3,7 +3,7 @@
 
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.6.0;
+pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts/token/ERC1155/IERC1155MetadataURI.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
@@ -114,7 +114,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     /**
      * @dev See {IERC1155-setApprovalForAll}.
      */
-    function setApprovalForAll(address operator, bool approved) public virtual override {
+    function setApprovalForAll(address operator, bool approved) external virtual override {
         require(_msgSender() != operator, "ERC1155: setting approval status for self");
 
         _operatorApprovals[_msgSender()][operator] = approved;
@@ -138,7 +138,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         uint256 amount,
         bytes memory data
     )
-    public
+    external
     virtual
     override
     {
@@ -170,7 +170,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         uint256[] memory amounts,
         bytes memory data
     )
-    public
+    external
     virtual
     override
     {
@@ -206,6 +206,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
      */
     function _setURI(uint256 tokenId, string memory newuri) internal virtual {
         tokenUris[tokenId] = newuri;
+        emit URI(newuri, tokenId);
     }
 
     /**
