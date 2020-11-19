@@ -1,6 +1,7 @@
 const prompt = require('prompt-sync')();
 const DigitalaxAuctionArtifact = require('../artifacts/DigitalaxAuction.json');
 const AccessControlsArtifact = require('../artifacts/DigitalaxAccessControls.json');
+const {FUND_MULTISIG_ADDRESS, GENESIS_TOKEN_URI} = require('./constants');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -12,19 +13,16 @@ async function main() {
 
   const {
     ACCESS_CONTROLS_ADDRESS,
-    AUCTION_ADDRESS,
     ERC721_GARMENT_ADDRESS
   } = process.env;
   console.log(`ACCESS_CONTROLS_ADDRESS found [${ACCESS_CONTROLS_ADDRESS}]`);
   console.log(`ERC721_GARMENT_ADDRESS found [${ERC721_GARMENT_ADDRESS}]`);
 
-  const platformFeeRecipientAddress = prompt('Platform Fee Recipient address? ');
-
   const DigitalaxAuctionFactory = await ethers.getContractFactory('DigitalaxAuction');
   const auction = await DigitalaxAuctionFactory.deploy(
     ACCESS_CONTROLS_ADDRESS,
     ERC721_GARMENT_ADDRESS,
-    platformFeeRecipientAddress,
+    FUND_MULTISIG_ADDRESS,
   );
 
   await auction.deployed();
@@ -49,6 +47,9 @@ async function main() {
   );
   console.log('Changing withdrawal lock time to 24hrs');
   await auctionContract.updateBidWithdrawalLockTime('86400');
+
+  console.log('Changing min bid increment to 0.2 ETH');
+  await auctionContract.updateMinBidIncrement('200000000000000000');
 
   console.log('Changing platform fee to 0%');
   await auctionContract.updatePlatformFee('0');
