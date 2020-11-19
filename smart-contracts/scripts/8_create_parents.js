@@ -1,5 +1,6 @@
 const prompt = require('prompt-sync')();
 const FactoryArtifact = require('../artifacts/DigitalaxGarmentFactory.json');
+const {DESIGNERS} = require('./constants');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -19,55 +20,55 @@ async function main() {
     deployer
   );
 
-  // Crypto Bitch
+  // Msistema / Crypto Bitch
   await factory.mintParentWithChildren(
     require('../../../nft-minting-scripts/auction-metadata/token-data/parents/crypto_bitch/hash.json').uri, // garmentTokenUri
-    '', // designer
+    DESIGNERS.msistema, // designer
     ['1','2'], // childTokenIds
     ['1', '1'], // childTokenAmounts
     deployerAddress // beneficiary
   );
 
-  // The Puurse
+  // Lorena / The Puurse
   await factory.mintParentWithChildren(
     require('../../../nft-minting-scripts/auction-metadata/token-data/parents/the_puurse/hash.json').uri, // garmentTokenUri
-    '', // designer
+    DESIGNERS.lorena, // designer
     ['3','4'], // childTokenIds
     ['1', '1'], // childTokenAmounts
     deployerAddress // beneficiary
   );
 
-  // DeFi Summer (Male)
+  // Rendoo / DeFi Summer (Male)
   await factory.mintParentWithChildren(
     require('../../../nft-minting-scripts/auction-metadata/token-data/parents/defi_summer_male/hash.json').uri, // garmentTokenUri
-    '', // designer
+    DESIGNERS.rendoo, // designer
     ['5','6', '7'], // childTokenIds
     ['1', '1', '1'], // childTokenAmounts
     deployerAddress // beneficiary
   );
 
-  // To the moon
+  // Vitaly / To The Moon
   await factory.mintParentWithChildren(
     require('../../../nft-minting-scripts/auction-metadata/token-data/parents/vitaly/hash.json').uri, // garmentTokenUri
-    '', // designer
+    DESIGNERS.vitaly, // designer
     ['8','9', '10', '11', '12', '13', '14', '15'], // childTokenIds
     ['1', '1', '1', '1', '1', '1', '1', '1'], // childTokenAmounts
     deployerAddress // beneficiary
   );
 
-  // Lightning Network
+  // Xander / Lightning Network
   await factory.mintParentWithChildren(
     require('../../../nft-minting-scripts/auction-metadata/token-data/parents/xander/hash.json').uri, // garmentTokenUri
-    '', // designer
+    DESIGNERS.xander, // designer
     ['16','17'], // childTokenIds
     ['1', '1'], // childTokenAmounts
     deployerAddress // beneficiary
   );
 
-  // DAI DAI DAI
+  // HonoreHL / DAI DAI DAI
   await factory.mintParentWithChildren(
     require('../../../nft-minting-scripts/auction-metadata/token-data/parents/honore_hl/hash.json').uri, // garmentTokenUri
-    '', // designer
+    DESIGNERS.honore, // designer
     ['18','19'], // childTokenIds
     ['1', '1'], // childTokenAmounts
     deployerAddress // beneficiary
