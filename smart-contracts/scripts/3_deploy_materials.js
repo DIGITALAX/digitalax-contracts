@@ -1,20 +1,19 @@
-var prompt = require('prompt-sync')();
-
 async function main() {
   const [deployer] = await ethers.getSigners();
   const deployerAddress = await deployer.getAddress();
   console.log(
-    "Deploying materials with address:",
+    'Deploying materials with address:',
     deployerAddress
   );
 
-  const accessControlsAddress = prompt('Access controls address? ');
+  const {ACCESS_CONTROLS_ADDRESS} = process.env;
+  console.log(`ACCESS_CONTROLS_ADDRESS found [${ACCESS_CONTROLS_ADDRESS}]`);
 
   const DigitalaxMaterials = await ethers.getContractFactory('DigitalaxMaterials');
   const materials = await DigitalaxMaterials.deploy(
-    "DigitalaxMaterials",
-    "DXM",
-    accessControlsAddress
+    'DigitalaxMaterials',
+    'DXM',
+    ACCESS_CONTROLS_ADDRESS
   );
 
   await materials.deployed();

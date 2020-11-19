@@ -1,23 +1,27 @@
-var prompt = require('prompt-sync')();
 const AccessControlsArtifact = require('../artifacts/DigitalaxAccessControls.json');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
   const deployerAddress = await deployer.getAddress();
   console.log(
-    "Deploying garment factory with address:",
+    'Deploying garment factory with address:',
     deployerAddress
   );
 
-  const accessControlsAddress = prompt('Access controls address? ');
-  const garmentAddress = prompt('garment address? ');
-  const materialsAddress = prompt('Materials address? ');
+  const {
+    ACCESS_CONTROLS_ADDRESS,
+    ERC1155_MATERIALS_ADDRESS,
+    ERC721_GARMENT_ADDRESS
+  } = process.env;
+  console.log(`ACCESS_CONTROLS_ADDRESS found [${ACCESS_CONTROLS_ADDRESS}]`);
+  console.log(`ERC1155_MATERIALS_ADDRESS found [${ERC1155_MATERIALS_ADDRESS}]`);
+  console.log(`ERC721_GARMENT_ADDRESS found [${ERC721_GARMENT_ADDRESS}]`);
 
   const DigitalaxGarmentFactory = await ethers.getContractFactory('DigitalaxGarmentFactory');
   const garmentFactory = await DigitalaxGarmentFactory.deploy(
-    garmentAddress,
-    materialsAddress,
-    accessControlsAddress,
+    ERC721_GARMENT_ADDRESS,
+    ERC1155_MATERIALS_ADDRESS,
+    ACCESS_CONTROLS_ADDRESS,
   );
 
   await garmentFactory.deployed();
@@ -25,7 +29,7 @@ async function main() {
   console.log('Garment factory deployed at', garmentFactory.address);
   console.log('Granting garment factory smart contract role');
   const accessControls = new ethers.Contract(
-    accessControlsAddress,
+    ACCESS_CONTROLS_ADDRESS,
     AccessControlsArtifact.abi,
     deployer
   );
