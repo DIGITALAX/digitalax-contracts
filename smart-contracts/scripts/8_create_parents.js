@@ -24,7 +24,7 @@ async function main() {
   await factory.mintParentWithChildren(
     require('../../../nft-minting-scripts/auction-metadata/token-data/parents/crypto_bitch/hash.json').uri, // garmentTokenUri
     DESIGNERS.msistema, // designer
-    ['1','2'], // childTokenIds
+    ['1', '2'], // childTokenIds
     ['1', '1'], // childTokenAmounts
     deployerAddress // beneficiary
   );
@@ -33,17 +33,17 @@ async function main() {
   await factory.mintParentWithChildren(
     require('../../../nft-minting-scripts/auction-metadata/token-data/parents/the_puurse/hash.json').uri, // garmentTokenUri
     DESIGNERS.lorena, // designer
-    ['3','4'], // childTokenIds
+    ['3', '4'], // childTokenIds
     ['1', '1'], // childTokenAmounts
     deployerAddress // beneficiary
   );
 
-  // Rendoo / DeFi Summer (Male)
+  // ddy / Decentralised Dress
   await factory.mintParentWithChildren(
     require('../../../nft-minting-scripts/auction-metadata/token-data/parents/defi_summer_male/hash.json').uri, // garmentTokenUri
-    DESIGNERS.rendoo, // designer
-    ['5','6', '7'], // childTokenIds
-    ['1', '1', '1'], // childTokenAmounts
+    DESIGNERS.eddy, // designer
+    ['5', '6'], // childTokenIds
+    ['1', '1'], // childTokenAmounts
     deployerAddress // beneficiary
   );
 
@@ -51,7 +51,7 @@ async function main() {
   await factory.mintParentWithChildren(
     require('../../../nft-minting-scripts/auction-metadata/token-data/parents/vitaly/hash.json').uri, // garmentTokenUri
     DESIGNERS.vitaly, // designer
-    ['8','9', '10', '11', '12', '13', '14', '15'], // childTokenIds
+    ['7', '8', '9', '10', '11', '12', '13', '14'], // childTokenIds
     ['1', '1', '1', '1', '1', '1', '1', '1'], // childTokenAmounts
     deployerAddress // beneficiary
   );
@@ -60,7 +60,7 @@ async function main() {
   await factory.mintParentWithChildren(
     require('../../../nft-minting-scripts/auction-metadata/token-data/parents/xander/hash.json').uri, // garmentTokenUri
     DESIGNERS.xander, // designer
-    ['16','17'], // childTokenIds
+    ['15', '16'], // childTokenIds
     ['1', '1'], // childTokenAmounts
     deployerAddress // beneficiary
   );
@@ -69,7 +69,7 @@ async function main() {
   await factory.mintParentWithChildren(
     require('../../../nft-minting-scripts/auction-metadata/token-data/parents/honore_hl/hash.json').uri, // garmentTokenUri
     DESIGNERS.honore, // designer
-    ['18','19'], // childTokenIds
+    ['17', '18'], // childTokenIds
     ['1', '1'], // childTokenAmounts
     deployerAddress // beneficiary
   );
