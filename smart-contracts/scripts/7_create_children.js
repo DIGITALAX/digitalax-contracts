@@ -27,26 +27,25 @@ async function main() {
     require(`${childrenMetadataDirectory}/BL1011/hash.json`).uri, // Msistema / Crypto Bitch / 2
     require(`${childrenMetadataDirectory}/BL1555/hash.json`).uri, // Lorena / The Puurse / 3
     require(`${childrenMetadataDirectory}/LB2011/hash.json`).uri, // Lorena / The Puurse / 4
-    require(`${childrenMetadataDirectory}/NY1344/hash.json`).uri, // Rendoo / DeFi Summer (Male) / 5
-    require(`${childrenMetadataDirectory}/NP1344/hash.json`).uri, // Rendoo / DeFi Summer (Male) / 6
-    require(`${childrenMetadataDirectory}/RL1314/hash.json`).uri, // Rendoo / DeFi Summer (Male) / 7
-    require(`${childrenMetadataDirectory}/AL1345/hash.json`).uri, // Vitaly / To The Moon / 8
-    require(`${childrenMetadataDirectory}/CP2222/hash.json`).uri, // Vitaly / To The Moon / 9
-    require(`${childrenMetadataDirectory}/DS3676/hash.json`).uri, // Vitaly / To The Moon / 10
+    require(`${childrenMetadataDirectory}/EH1444/hash.json`).uri, // Eddy / Decentralised Dress / 5
+    require(`${childrenMetadataDirectory}/EH1442/hash.json`).uri, // Eddy / Decentralised Dress / 6
+    require(`${childrenMetadataDirectory}/AL1345/hash.json`).uri, // Vitaly / To The Moon / 7
+    require(`${childrenMetadataDirectory}/CP2222/hash.json`).uri, // Vitaly / To The Moon / 8
+    require(`${childrenMetadataDirectory}/DS3676/hash.json`).uri, // Vitaly / To The Moon / 9
   ]);
 
   await tx.wait();
 
   await factory.createNewChildren([
-    require(`${childrenMetadataDirectory}/RP1414/hash.json`).uri, // Vitaly / To The Moon / 11
-    require(`${childrenMetadataDirectory}/VS9843/hash.json`).uri, // Vitaly / To The Moon / 12
-    require(`${childrenMetadataDirectory}/YN7657/hash.json`).uri, // Vitaly / To The Moon / 13
-    require(`${childrenMetadataDirectory}/YP5555/hash.json`).uri, // Vitaly / To The Moon / 14
-    require(`${childrenMetadataDirectory}/YR2343/hash.json`).uri, // Vitaly / To The Moon / 15
-    require(`${childrenMetadataDirectory}/DL9090/hash.json`).uri, // Xander / Lightning Network / 16
-    require(`${childrenMetadataDirectory}/GN2011/hash.json`).uri, // Xander / Lightning Network / 17
-    require(`${childrenMetadataDirectory}/HG1515/hash.json`).uri, // HonoreHL / DAI DAI DAI / 18
-    require(`${childrenMetadataDirectory}/TM3334/hash.json`).uri, // HonoreHL / DAI DAI DAI / 19
+    require(`${childrenMetadataDirectory}/RP1414/hash.json`).uri, // Vitaly / To The Moon / 10
+    require(`${childrenMetadataDirectory}/VS9843/hash.json`).uri, // Vitaly / To The Moon / 11
+    require(`${childrenMetadataDirectory}/YN7657/hash.json`).uri, // Vitaly / To The Moon / 12
+    require(`${childrenMetadataDirectory}/YP5555/hash.json`).uri, // Vitaly / To The Moon / 13
+    require(`${childrenMetadataDirectory}/YR2343/hash.json`).uri, // Vitaly / To The Moon / 14
+    require(`${childrenMetadataDirectory}/DL9090/hash.json`).uri, // Xander / Lightning Network / 15
+    require(`${childrenMetadataDirectory}/GN2011/hash.json`).uri, // Xander / Lightning Network / 16
+    require(`${childrenMetadataDirectory}/HG1515/hash.json`).uri, // HonoreHL / DAI DAI DAI / 17
+    require(`${childrenMetadataDirectory}/TM3334/hash.json`).uri, // HonoreHL / DAI DAI DAI / 18
   ]);
 }
 
