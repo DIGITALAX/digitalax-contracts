@@ -31,12 +31,12 @@ DigitalaxAuction: TODO
 
 ### Rinkeby Deployments
 ```
-DigitalaxAccessControls - 0x386c30961E47c38f3aa899464FF4bBc9dF9949f5
+DigitalaxAccessControls - 0xe2324f98F0fF1DaC348f633829Ed426462E813E3
 DigitalaxGenesisNFT - 0x064A6151F99ba2610f2D6600Dcb2b2Ed3a276356
-DigitalaxMaterials - 0x5988db41A39F4AB0d6DeB9cf99C74F691bbD236a
-DigitalaxGarment - 0xBf379898e6C392Fe2A131046B8f3daE9A8748454
-DigitalaxGarmentFactory - 0x4B613A9b2a9122bDa2240011da48f9C6a6964b20
-DigitalaxAuction - 0x18ff4ECCf9397C4CEF2A8611a33CbD5052f3679E
+DigitalaxMaterials - 
+DigitalaxGarment - 
+DigitalaxGarmentFactory - 
+DigitalaxAuction - 
 ```
 
 ### Running tests

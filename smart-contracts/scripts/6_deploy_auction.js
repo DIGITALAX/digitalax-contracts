@@ -40,16 +40,11 @@ async function main() {
   // Tweaking configs //
   //////////////////////
 
-  const auctionContract = new ethers.Contract(
-    auction.address,
-    DigitalaxAuctionArtifact.abi,
-    deployer
-  );
   console.log('Changing withdrawal lock time to 24hrs');
-  await auctionContract.updateBidWithdrawalLockTime('86400');
+  await auction.updateBidWithdrawalLockTime('86400');
 
   console.log('Changing platform fee to 0%');
-  await auctionContract.updatePlatformFee('0');
+  await auction.updatePlatformFee('0');
 }
 
 // We recommend this pattern to be able to use async/await everywhere
