@@ -27,7 +27,7 @@ async function main() {
   await auction.createAuction(
     1, // garmentTokenId
     _0_POINT_0_2_ETH, // reservePrice
-    Date.now(), // startTimestamp
+    0, // startTimestamp
     moment().add(1, 'days').startOf('day').unix() // endTimestamp
   );
 
@@ -35,15 +35,15 @@ async function main() {
   await auction.createAuction(
     2, // garmentTokenId
     _0_POINT_0_2_ETH, // reservePrice
-    Date.now(), // startTimestamp
+    0, // startTimestamp
     moment().add(1, 'days').endOf('day').unix() // endTimestamp
   );
 
-  // Rendoo / DeFi Summer (Male)
+  // ddy / Decentralised Dress
   await auction.createAuction(
     3, // garmentTokenId
     _0_POINT_0_2_ETH, // reservePrice
-    Date.now(), // startTimestamp
+    0, // startTimestamp
     moment().add(3, 'days').endOf('day').unix() // endTimestamp
   );
 
