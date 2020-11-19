@@ -63,6 +63,8 @@ export function handleAuctionCreated(event: AuctionCreated): void {
     auction.resulted = auctionResult.value3;
     auction.resultedTime = event.block.timestamp;
     auction.save();
+
+    loadOrCreateGarmentNFTGlobalStats();
 }
 
 export function handleDigitalaxAuctionContractDeployed(event: DigitalaxAuctionContractDeployed): void {
