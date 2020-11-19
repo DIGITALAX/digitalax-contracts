@@ -19,125 +19,59 @@ async function main() {
     deployer
   );
 
-  // christina
+  // Crypto Bitch
   await factory.mintParentWithChildren(
-    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/christina/hash').hash, // garmentTokenUri
+    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/crypto_bitch/hash.json').uri, // garmentTokenUri
     '', // designer
-    [], // childTokenIds
-    [], // childTokenAmounts
-    '' // beneficiary
+    ['1','2'], // childTokenIds
+    ['1', '1'], // childTokenAmounts
+    deployerAddress // beneficiary
   );
 
-  // crypto_bitch
+  // The Puurse
   await factory.mintParentWithChildren(
-    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/crypto_bitch/hash').hash, // garmentTokenUri
+    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/the_puurse/hash.json').uri, // garmentTokenUri
     '', // designer
-    [], // childTokenIds
-    [], // childTokenAmounts
-    '' // beneficiary
+    ['3','4'], // childTokenIds
+    ['1', '1'], // childTokenAmounts
+    deployerAddress // beneficiary
   );
 
-  // crypto_winter
+  // DeFi Summer (Male)
   await factory.mintParentWithChildren(
-    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/crypto_winter/hash').hash, // garmentTokenUri
+    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/defi_summer_male/hash.json').uri, // garmentTokenUri
     '', // designer
-    [], // childTokenIds
-    [], // childTokenAmounts
-    '' // beneficiary
+    ['5','6', '7'], // childTokenIds
+    ['1', '1', '1'], // childTokenAmounts
+    deployerAddress // beneficiary
   );
 
-  // defi_shoes
+  // To the moon
   await factory.mintParentWithChildren(
-    '', // garmentTokenUri
+    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/vitaly/hash.json').uri, // garmentTokenUri
     '', // designer
-    [], // childTokenIds
-    [], // childTokenAmounts
-    '' // beneficiary
+    ['8','9', '10', '11', '12', '13', '14', '15'], // childTokenIds
+    ['1', '1', '1', '1', '1', '1', '1', '1'], // childTokenAmounts
+    deployerAddress // beneficiary
   );
 
-  // eddy
+  // Lightning Network
   await factory.mintParentWithChildren(
-    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/eddy/hash').hash, // garmentTokenUri
+    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/xander/hash.json').uri, // garmentTokenUri
     '', // designer
-    [], // childTokenIds
-    [], // childTokenAmounts
-    '' // beneficiary
+    ['16','17'], // childTokenIds
+    ['1', '1'], // childTokenAmounts
+    deployerAddress // beneficiary
   );
 
-  // honore_hl
+  // DAI DAI DAI
   await factory.mintParentWithChildren(
-    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/honore_hl/hash').hash, // garmentTokenUri
+    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/honore_hl/hash.json').uri, // garmentTokenUri
     '', // designer
-    [], // childTokenIds
-    [], // childTokenAmounts
-    '' // beneficiary
+    ['18','19'], // childTokenIds
+    ['1', '1'], // childTokenAmounts
+    deployerAddress // beneficiary
   );
-
-  // ico_suit
-  await factory.mintParentWithChildren(
-    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/ico_suit/hash').hash, // garmentTokenUri
-    '', // designer
-    [], // childTokenIds
-    [], // childTokenAmounts
-    '' // beneficiary
-  );
-
-  // mar
-  await factory.mintParentWithChildren(
-    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/mar/hash').hash, // garmentTokenUri
-    '', // designer
-    [], // childTokenIds
-    [], // childTokenAmounts
-    '' // beneficiary
-  );
-
-  // mcafee
-  await factory.mintParentWithChildren(
-    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/mcafee/hash').hash, // garmentTokenUri
-    '', // designer
-    [], // childTokenIds
-    [], // childTokenAmounts
-    '' // beneficiary
-  );
-
-  // the_puurse
-  await factory.mintParentWithChildren(
-    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/the_puurse/hash').hash, // garmentTokenUri
-    '', // designer
-    [], // childTokenIds
-    [], // childTokenAmounts
-    '' // beneficiary
-  );
-
-  // the_puurse_v2
-  await factory.mintParentWithChildren(
-    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/the_puurse_v2/hash').hash, // garmentTokenUri
-    '', // designer
-    [], // childTokenIds
-    [], // childTokenAmounts
-    '' // beneficiary
-  );
-
-  // vitaly
-  await factory.mintParentWithChildren(
-    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/vitaly/hash').hash, // garmentTokenUri
-    '', // designer
-    [], // childTokenIds
-    [], // childTokenAmounts
-    '' // beneficiary
-  );
-
-  // xander
-  await factory.mintParentWithChildren(
-    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/xander/hash').hash, // garmentTokenUri
-    '', // designer
-    [], // childTokenIds
-    [], // childTokenAmounts
-    '' // beneficiary
-  );
-
-  await tx.wait();
-
 }
 
 // We recommend this pattern to be able to use async/await everywhere
