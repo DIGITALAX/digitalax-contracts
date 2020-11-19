@@ -4,6 +4,7 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/GSN/Context.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./DigitalaxGarmentNFT.sol";
 import "./DigitalaxMaterials.sol";
 import "../DigitalaxAccessControls.sol";
@@ -13,7 +14,7 @@ import "../DigitalaxAccessControls.sol";
  * @dev To facilitate the creation of child and parents NFTs
  * @dev This contract needs to be given the smart contract role in order to be given access to mint tokens
  */
-contract DigitalaxGarmentFactory is Context {
+contract DigitalaxGarmentFactory is Context, ReentrancyGuard {
 
     // @notice event emitted on garment creation
     event GarmentCreated(
@@ -75,7 +76,7 @@ contract DigitalaxGarmentFactory is Context {
         uint256[] calldata childTokenIds,
         uint256[] calldata childTokenAmounts,
         address beneficiary
-    ) external {
+    ) external nonReentrant {
         require(
             accessControls.hasMinterRole(_msgSender()),
             "DigitalaxGarmentFactory.mintParentWithChildren: Sender must be minter"
@@ -98,7 +99,7 @@ contract DigitalaxGarmentFactory is Context {
         string calldata garmentTokenUri,
         address designer,
         address beneficiary
-    ) external {
+    ) external nonReentrant {
         require(
             accessControls.hasMinterRole(_msgSender()),
             "DigitalaxGarmentFactory.mintParentWithoutChildren: Sender must be minter"

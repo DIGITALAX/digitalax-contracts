@@ -27,18 +27,6 @@ export function handleAuctionCreated(event: AuctionCreated): void {
     let contract = DigitalaxAuction.bind(event.address);
     let tokenId = event.params.garmentTokenId;
 
-    // TODO: handle re-listing
-    let auction = new DigitalaxGarmentAuction(tokenId.toString());
-
-    // Auction config
-    let auctionResult = contract.auctions(tokenId);
-    auction.reservePrice = auctionResult.value0;
-    auction.startTime = auctionResult.value1;
-    auction.endTime = auctionResult.value2;
-    auction.resulted = auctionResult.value3;
-    auction.resultedTime = event.block.timestamp;
-    auction.save();
-
     let garmentDesigner = loadOrCreateGarmentDesigner(tokenId.toString());
     let listings = garmentDesigner.listings;
     listings.push(tokenId.toString());
@@ -53,11 +41,28 @@ export function handleAuctionCreated(event: AuctionCreated): void {
         .concat(event.transaction.index.toString());
 
     let auctionEvent = new DigitalaxGarmentAuctionHistory(eventId);
-    auctionEvent.token = DigitalaxGarment.load(event.params.garmentTokenId.toString()).id
+    auctionEvent.token = tokenId.toString();
     auctionEvent.eventName = "AuctionCreated"
     auctionEvent.timestamp = event.block.timestamp
     auctionEvent.transactionHash = event.transaction.hash
     auctionEvent.save()
+
+    // TODO: handle re-listing
+    let auction = new DigitalaxGarmentAuction(tokenId.toString());
+    let garment = DigitalaxGarment.load(event.params.garmentTokenId.toString());
+    auction.garment = tokenId.toString();
+    auction.designer = garment.designer.toHexString();
+    auction.history = tokenId.toString();
+    auction.contract = event.address.toHexString();
+
+    // Auction config
+    let auctionResult = contract.auctions(tokenId);
+    auction.reservePrice = auctionResult.value0;
+    auction.startTime = auctionResult.value1;
+    auction.endTime = auctionResult.value2;
+    auction.resulted = auctionResult.value3;
+    auction.resultedTime = event.block.timestamp;
+    auction.save();
 }
 
 export function handleDigitalaxAuctionContractDeployed(event: DigitalaxAuctionContractDeployed): void {
