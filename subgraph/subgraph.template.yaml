@@ -119,15 +119,15 @@ dataSources:
           handler: handleAuctionCancelled
         - event: UpdateBidWithdrawalLockTime(uint256)
           handler: handleUpdateBidWithdrawalLockTime
-        - event: UpdateMinBidIncrement(indexed uint256)
+        - event: UpdateMinBidIncrement(uint256)
           handler: handleUpdateMinBidIncrement
-        - event: UpdateAuctionReservePrice(uint256 indexed,uint256)
+        - event: UpdateAuctionReservePrice(indexed uint256,uint256)
           handler: handleUpdateAuctionReservePrice
-        - event: UpdateAuctionStartTime(uint256 indexed,uint256)
+        - event: UpdateAuctionStartTime(indexed uint256,uint256)
           handler: handleUpdateAuctionStartTime
-        - event: UpdateAuctionEndTime(uint256 indexed,uint256)
+        - event: UpdateAuctionEndTime(indexed uint256,uint256)
           handler: handleUpdateAuctionEndTime
-        - event: UpdatePlatformFee()
+        - event: UpdatePlatformFee(uint256)
           handler: handleUpdatePlatformFee
         - event: UpdatePlatformFeeRecipient(address)
           handler: handleUpdatePlatformFeeRecipient
