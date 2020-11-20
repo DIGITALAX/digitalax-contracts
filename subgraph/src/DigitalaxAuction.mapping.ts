@@ -7,7 +7,11 @@ import {
     BidPlaced,
     BidWithdrawn,
     DigitalaxAuction,
-    DigitalaxAuctionContractDeployed
+    DigitalaxAuctionContractDeployed,
+    UpdateAuctionEndTime,
+    UpdateAuctionReservePrice,
+    UpdateAuctionStartTime,
+    UpdateBidWithdrawalLockTime, UpdateMinBidIncrement, UpdatePlatformFee, UpdatePlatformFeeRecipient
 } from "../generated/DigitalaxAuction/DigitalaxAuction";
 
 import {
@@ -230,4 +234,84 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
     auction.topBid = null
     auction.lastBidTime = null
     auction.save();
+}
+
+export function handleUpdateBidWithdrawalLockTime(event: UpdateBidWithdrawalLockTime): void {
+/*
+    event UpdateBidWithdrawalLockTime(
+        uint256 bidWithdrawalLockTime
+    );
+ */
+    let auctionConfig = DigitalaxAuctionContract.load(event.address.toHexString());
+    auctionConfig.bidWithdrawalLockTime = event.params.bidWithdrawalLockTime;
+    auctionConfig.save();
+}
+
+export function handleUpdateMinBidIncrement(event: UpdateMinBidIncrement): void {
+/*
+    event UpdateMinBidIncrement(
+        uint256 minBidIncrement
+    );
+ */
+    let auctionConfig = DigitalaxAuctionContract.load(event.address.toHexString());
+    auctionConfig.minBidIncrement = event.params.minBidIncrement;
+    auctionConfig.save();
+}
+
+export function handleUpdateAuctionReservePrice(event: UpdateAuctionReservePrice): void {
+/*
+    event UpdateAuctionReservePrice(
+        uint256 indexed garmentTokenId,
+        uint256 reservePrice
+    );
+ */
+    let auction = DigitalaxGarmentAuction.load(event.params.garmentTokenId.toString());
+    auction.reservePrice = event.params.reservePrice
+    auction.save();
+}
+
+export function handleUpdateAuctionStartTime(event: UpdateAuctionStartTime): void {
+/*
+    event UpdateAuctionStartTime(
+        uint256 indexed garmentTokenId,
+        uint256 startTime
+    );
+ */
+    let auction = DigitalaxGarmentAuction.load(event.params.garmentTokenId.toString());
+    auction.startTime = event.params.startTime
+    auction.save();
+}
+
+export function handleUpdateAuctionEndTime(event: UpdateAuctionEndTime): void {
+/*
+    event UpdateAuctionEndTime(
+        uint256 indexed garmentTokenId,
+        uint256 endTime
+    );
+ */
+    let auction = DigitalaxGarmentAuction.load(event.params.garmentTokenId.toString());
+    auction.endTime = event.params.endTime
+    auction.save();
+}
+
+export function handleUpdatePlatformFee(event: UpdatePlatformFee): void {
+/*
+event UpdatePlatformFee(
+    uint256 platformFee
+);
+ */
+    let auctionConfig = DigitalaxAuctionContract.load(event.address.toHexString());
+    auctionConfig.platformFee = event.params.platformFee;
+    auctionConfig.save();
+}
+
+export function handleUpdatePlatformFeeRecipient(event: UpdatePlatformFeeRecipient): void {
+/*
+    event UpdatePlatformFeeRecipient(
+        address payable platformFeeRecipient
+    );
+ */
+    let auctionConfig = DigitalaxAuctionContract.load(event.address.toHexString());
+    auctionConfig.platformFeeRecipient = event.params.platformFeeRecipient;
+    auctionConfig.save();
 }
