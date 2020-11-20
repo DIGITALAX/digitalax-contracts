@@ -156,6 +156,114 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
     });
   });
 
+  describe('createNewChildrenWithBalances()', () => {
+    it('Reverts when sender does not have the minter role', async () => {
+      const childTokenAmounts = [1, 2, 3, 4];
+      const childTokenUri = ['1', '1', '1', '1'];
+      await expectRevert(
+        this.factory.createNewChildrenWithBalances(
+          childTokenUri,
+          childTokenAmounts,
+          tokenHolder,
+          {from: tokenHolder}
+        ),
+        'DigitalaxGarmentFactory.createNewChildrenWithBalances: Sender must be minter'
+      );
+    });
+
+    it('Reverts when with empty arrays', async () => {
+      const childTokenAmounts = [];
+      const childTokenUri = ['1', '1', '1', '1'];
+      await expectRevert(
+        this.factory.createNewChildrenWithBalances(
+          childTokenUri,
+          childTokenAmounts,
+          tokenHolder,
+          {from: minter}
+        ),
+        'DigitalaxMaterials.batchMintChildren: Array lengths are invalid'
+      );
+    });
+
+    it('Reverts when with arrays are not the same size', async () => {
+      const childTokenAmounts = [1, 2, 3];
+      const childTokenUri = ['1', '1', '1', '1'];
+      await expectRevert(
+        this.factory.createNewChildrenWithBalances(
+          childTokenUri,
+          childTokenAmounts,
+          tokenHolder,
+          {from: minter}
+        ),
+        'DigitalaxMaterials.batchMintChildren: Array lengths are invalid'
+      );
+    });
+
+    it('Can mint children with balances', async () => {
+      const childTokenAmounts = [1, 2, 3, 4];
+      const childTokenUri = ['tokenUri1', 'tokenUri2', 'tokenUri3', 'tokenUri4'];
+      await this.factory.createNewChildrenWithBalances(
+        childTokenUri,
+        childTokenAmounts,
+        tokenHolder,
+        {from: minter}
+      );
+
+      expect(await this.digitalaxMaterials.uri(STRAND_ONE_ID)).to.be.equal('tokenUri1');
+      expect(await this.digitalaxMaterials.balanceOf(tokenHolder, STRAND_ONE_ID)).to.be.bignumber.equal('1');
+
+      expect(await this.digitalaxMaterials.uri(STRAND_TWO_ID)).to.be.equal('tokenUri2');
+      expect(await this.digitalaxMaterials.balanceOf(tokenHolder, STRAND_TWO_ID)).to.be.bignumber.equal('2');
+
+      expect(await this.digitalaxMaterials.uri(STRAND_THREE_ID)).to.be.equal('tokenUri3');
+      expect(await this.digitalaxMaterials.balanceOf(tokenHolder, STRAND_THREE_ID)).to.be.bignumber.equal('3');
+
+      expect(await this.digitalaxMaterials.uri(STRAND_FOUR_ID)).to.be.equal('tokenUri4');
+      expect(await this.digitalaxMaterials.balanceOf(tokenHolder, STRAND_FOUR_ID)).to.be.bignumber.equal('4');
+    });
+  });
+
+  describe('createNewChildrenWithBalanceAndGarment()', () => {
+    it('Reverts when sender does not have the minter role', async () => {
+      const garmentTokenUri = 'garmentTokenUri';
+      const childTokenAmounts = [1, 2, 3, 4];
+      const childTokenUri = ['tokenUri1', 'tokenUri2', 'tokenUri3', 'tokenUri4'];
+      await expectRevert(
+        this.factory.createNewChildrenWithBalanceAndGarment(
+          garmentTokenUri,
+          designer,
+          childTokenUri,
+          childTokenAmounts,
+          tokenHolder,
+          {from: tokenHolder}
+        ),
+        'DigitalaxGarmentFactory.createNewChildrenWithBalanceAndGarment: Sender must be minter'
+      );
+    });
+
+    it('Can mint children with balances and asign to garment', async () => {
+      const garmentTokenUri = 'garmentTokenUri';
+      const childTokenAmounts = [1, 2, 3, 4];
+      const childTokenUri = ['tokenUri1', 'tokenUri2', 'tokenUri3', 'tokenUri4'];
+      await this.factory.createNewChildrenWithBalanceAndGarment(
+        garmentTokenUri,
+        designer,
+        childTokenUri,
+        childTokenAmounts,
+        tokenHolder,
+        {from: minter}
+      );
+
+      expect(await this.garment.ownerOf(TOKEN_ONE_ID)).to.be.equal(tokenHolder);
+
+      await expectGarmentToOwnAGivenSetOfStrandIds(TOKEN_ONE_ID, [STRAND_ONE_ID, STRAND_TWO_ID, STRAND_THREE_ID, STRAND_FOUR_ID]);
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_ONE_ID, '1');
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_TWO_ID, '2');
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_THREE_ID, '3');
+      await expectStrandBalanceOfGarmentToBe(TOKEN_ONE_ID, STRAND_FOUR_ID, '4');
+    });
+  });
+
   const expectStrandBalanceOfGarmentToBe = async (garmentTokenId, strandId, expectedStrandBalance) => {
     const garmentStrandBalance = await this.garment.childBalance(
       garmentTokenId,
