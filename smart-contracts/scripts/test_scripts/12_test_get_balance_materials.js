@@ -1,11 +1,11 @@
-var prompt = require('prompt-sync')();
-const MaterialsArtifact = require('../artifacts/DigitalaxMaterials.json');
+const prompt = require('prompt-sync')();
+const MaterialsArtifact = require('../../artifacts/DigitalaxMaterials.json');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
   const deployerAddress = await deployer.getAddress();
   console.log(
-    "Query address:",
+    'Query address:',
     deployerAddress
   );
 
@@ -16,7 +16,7 @@ async function main() {
     deployer
   );
 
-  for(let i = 1; i <= 6; i++) {
+  for (let i = 1; i <= 6; i++) {
     console.log(
       `Balance of strand [${i}]`,
       (await materials.balanceOf('0xd677aed0965ac9b54e709f01a99ceca205aebc4b', i)).toString()

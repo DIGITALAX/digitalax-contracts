@@ -1,11 +1,11 @@
 const prompt = require('prompt-sync')();
-const GarmentArtifact = require('../artifacts/DigitalaxGarmentNFT.json');
+const GarmentArtifact = require('../../artifacts/DigitalaxGarmentNFT.json');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
   const deployerAddress = await deployer.getAddress();
   console.log(
-    "Burning a garment with signer address:",
+    'Burning a garment with signer address:',
     deployerAddress
   );
 
