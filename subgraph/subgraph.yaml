@@ -117,4 +117,18 @@ dataSources:
           handler: handleAuctionResulted
         - event: AuctionCancelled(indexed uint256)
           handler: handleAuctionCancelled
+        - event: UpdateBidWithdrawalLockTime(uint256)
+          handler: handleUpdateBidWithdrawalLockTime
+        - event: UpdateMinBidIncrement(uint256)
+          handler: handleUpdateMinBidIncrement
+        - event: UpdateAuctionReservePrice(indexed uint256,uint256)
+          handler: handleUpdateAuctionReservePrice
+        - event: UpdateAuctionStartTime(indexed uint256,uint256)
+          handler: handleUpdateAuctionStartTime
+        - event: UpdateAuctionEndTime(indexed uint256,uint256)
+          handler: handleUpdateAuctionEndTime
+        - event: UpdatePlatformFee(uint256)
+          handler: handleUpdatePlatformFee
+        - event: UpdatePlatformFeeRecipient(address)
+          handler: handleUpdatePlatformFeeRecipient
       file: ./src/DigitalaxAuction.mapping.ts
