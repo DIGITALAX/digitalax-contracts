@@ -67,6 +67,53 @@ contract DigitalaxGarmentFactory is Context, ReentrancyGuard {
     }
 
     /**
+     @notice Creates a batch of child ERC1155 tokens with balances, assigning them to the beneficiary
+     @dev Only callable with minter role
+     */
+    function createNewChildrenWithBalances(
+        string[] calldata _childTokenUris,
+        uint256[] calldata _childTokenAmounts,
+        address _beneficiary
+    ) external nonReentrant {
+        require(
+            accessControls.hasMinterRole(_msgSender()),
+            "DigitalaxGarmentFactory.createNewChildrenWithBalances: Sender must be minter"
+        );
+
+        // Create new children
+        uint256[] memory childTokenIds = materials.batchCreateChildren(_childTokenUris);
+
+        // Mint balances of children
+        materials.batchMintChildren(childTokenIds, _childTokenAmounts, _beneficiary, abi.encodePacked(""));
+    }
+
+    /**
+     @notice Creates a batch of child ERC1155 tokens with balances, assigning them to a newly minted garment
+     @dev Only callable with minter role
+     */
+    function createNewChildrenWithBalanceAndGarment(
+        string calldata _garmentTokenUri,
+        address _designer,
+        string[] calldata _childTokenUris,
+        uint256[] calldata _childTokenAmounts,
+        address _beneficiary
+    ) external nonReentrant {
+        require(
+            accessControls.hasMinterRole(_msgSender()),
+            "DigitalaxGarmentFactory.createNewChildrenWithBalanceAndGarment: Sender must be minter"
+        );
+
+        // Generate parent 721 token
+        uint256 garmentTokenId = garmentToken.mint(_beneficiary, _garmentTokenUri, _designer);
+
+        // Create new children
+        uint256[] memory childTokenIds = materials.batchCreateChildren(_childTokenUris);
+
+        // Mint balances of children
+        materials.batchMintChildren(childTokenIds, _childTokenAmounts, address(garmentToken), abi.encodePacked(garmentTokenId));
+    }
+
+    /**
      @notice Creates a single ERC721 parent token, along with a batch of assigned child ERC1155 tokens
      @dev Only callable with minter role
      */
