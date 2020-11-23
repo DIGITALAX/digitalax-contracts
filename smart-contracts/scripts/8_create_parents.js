@@ -40,7 +40,7 @@ async function main() {
 
   // ddy / Decentralised Dress
   await factory.mintParentWithChildren(
-    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/defi_summer_male/hash.json').uri, // garmentTokenUri
+    require('../../../nft-minting-scripts/auction-metadata/token-data/parents/eddy/hash.json').uri, // garmentTokenUri
     DESIGNERS.eddy, // designer
     ['5', '6'], // childTokenIds
     ['1', '1'], // childTokenAmounts
