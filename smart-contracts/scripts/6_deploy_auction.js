@@ -1,5 +1,3 @@
-const prompt = require('prompt-sync')();
-const DigitalaxAuctionArtifact = require('../artifacts/DigitalaxAuction.json');
 const AccessControlsArtifact = require('../artifacts/DigitalaxAccessControls.json');
 const DigitalaxGarmentNFTArtifact = require('../artifacts/DigitalaxGarmentNFT.json');
 const {FUND_MULTISIG_ADDRESS} = require('./constants');
