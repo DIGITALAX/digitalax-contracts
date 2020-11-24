@@ -1,4 +1,3 @@
-const prompt = require('prompt-sync')();
 const FactoryArtifact = require('../artifacts/DigitalaxGarmentFactory.json');
 const {DESIGNERS} = require('./constants');
 
@@ -38,7 +37,7 @@ async function main() {
     deployerAddress // beneficiary
   );
 
-  // ddy / Decentralised Dress
+  // Eddy / Decentralised Dress
   await factory.mintParentWithChildren(
     require('../../../nft-minting-scripts/auction-metadata/token-data/parents/eddy/hash.json').uri, // garmentTokenUri
     DESIGNERS.eddy, // designer

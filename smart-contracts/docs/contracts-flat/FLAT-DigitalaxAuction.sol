@@ -2,7 +2,7 @@
 
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.6.0;
+pragma solidity ^0.6.12;
 
 /*
  * @dev Provides information about the current execution context, including the
@@ -29,7 +29,7 @@ abstract contract Context {
 
 
 
-pragma solidity ^0.6.0;
+
 
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
@@ -191,7 +191,7 @@ library SafeMath {
 
 
 
-pragma solidity ^0.6.0;
+
 
 /**
  * @dev Contract module that helps prevent reentrant calls to a function.
@@ -400,7 +400,7 @@ library Address {
 
 
 
-pragma solidity ^0.6.0;
+
 
 /**
  * @dev Library for managing
@@ -646,7 +646,7 @@ library EnumerableSet {
 
 
 
-pragma solidity ^0.6.0;
+
 
 
 
@@ -1015,7 +1015,7 @@ contract DigitalaxAccessControls is AccessControl {
 
 
 
-pragma solidity ^0.6.0;
+
 
 /**
  * @dev Interface of the ERC165 standard, as defined in the
@@ -1533,7 +1533,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
             uint256 aboveReservePrice = winningBid.sub(auction.reservePrice);
 
             // Work out platform fee from above reserve amount
-            uint256 platformFeeAboveReserve = (aboveReservePrice.div(1000)).mul(platformFee);
+            uint256 platformFeeAboveReserve = aboveReservePrice.mul(platformFee).div(1000);
 
             // Send platform fee
             (bool platformTransferSuccess,) = platformFeeRecipient.call{value : platformFeeAboveReserve}("");

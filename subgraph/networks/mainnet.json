@@ -1,5 +1,11 @@
 {
   "network": "mainnet",
   "DigitalaxGenesisNFTAddress": "0x89505d2a27b7e8ac56252081d721ecd525e4241e",
-  "DigitalaxGenesisNFTStartBlock": 11157574
+  "DigitalaxGenesisNFTStartBlock": 11157574,
+  "DigitalaxGarmentNFTAddress": "0x0b509f4b044f713a91bb50535914f7ad160532fe",
+  "DigitalaxGarmentNFTStartBlock": 11320285,
+  "DigitalaxMaterialsAddress": "0xe6822e8b4d91b85f9ca00cca79bf92bab14bc221",
+  "DigitalaxMaterialsStartBlock": 11320271,
+  "DigitalaxAuctionAddress": "0xd84E216a4804A5e6BAa4f936838E4a3d1A0D3C53",
+  "DigitalaxAuctionStartBlock": 11320386
 }

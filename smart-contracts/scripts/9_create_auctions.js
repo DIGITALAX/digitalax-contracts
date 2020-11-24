@@ -19,56 +19,57 @@ async function main() {
     deployer
   );
 
-  const _0_POINT_0_2_ETH = '200000000000000000';
+  const reservePrice = '100000000000000000';
 
-  // FIXME - ADD PROPER DATES WHEN WE KNOW
+  const startTime = '1606260600'; // 11/24/2020 @ 11:30pm (UTC) | 3:30pm pst November 24th
+  const endTime = '1606865400';   // 12/01/2020 @ 11:30pm (UTC) | 3:30pm pst December 1st
 
   // Msistema / Crypto Bitch
   await auction.createAuction(
     1, // garmentTokenId
-    _0_POINT_0_2_ETH, // reservePrice
-    0, // startTimestamp
-    moment().add(1, 'days').startOf('day').unix() // endTimestamp
+    reservePrice, // reservePrice
+    startTime, // startTimestamp
+    endTime // endTimestamp
   );
 
   // Lorena / The Puurse
   await auction.createAuction(
     2, // garmentTokenId
-    _0_POINT_0_2_ETH, // reservePrice
-    0, // startTimestamp
-    moment().add(1, 'days').endOf('day').unix() // endTimestamp
+    reservePrice, // reservePrice
+    startTime, // startTimestamp
+    endTime // endTimestamp
   );
 
   // ddy / Decentralised Dress
   await auction.createAuction(
     3, // garmentTokenId
-    _0_POINT_0_2_ETH, // reservePrice
-    0, // startTimestamp
-    moment().add(3, 'days').endOf('day').unix() // endTimestamp
+    reservePrice, // reservePrice
+    startTime, // startTimestamp
+    endTime // endTimestamp
   );
 
   // Vitaly / To The Moon
   await auction.createAuction(
     4, // garmentTokenId
-    _0_POINT_0_2_ETH, // reservePrice
-    moment().startOf('day').unix(), // startTimestamp
-    moment().add(4, 'days').endOf('day').unix() // endTimestamp
+    reservePrice, // reservePrice
+    startTime, // startTimestamp
+    endTime // endTimestamp
   );
 
   // Xander / Lightning Network
   await auction.createAuction(
     5, // garmentTokenId
-    _0_POINT_0_2_ETH, // reservePrice
-    moment().startOf('day').unix(), // startTimestamp
-    moment().add(4, 'days').endOf('day').unix() // endTimestamp
+    reservePrice, // reservePrice
+    startTime, // startTimestamp
+    endTime // endTimestamp
   );
 
   // HonoreHL / DAI DAI DAI
   await auction.createAuction(
     6, // garmentTokenId
-    _0_POINT_0_2_ETH, // reservePrice
-    moment().startOf('day').unix(), // startTimestamp
-    moment().add(5, 'days').endOf('day').unix() // endTimestamp
+    reservePrice, // reservePrice
+    startTime, // startTimestamp
+    endTime // endTimestamp
   );
 
 }

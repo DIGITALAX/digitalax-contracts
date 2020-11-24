@@ -1,5 +1,3 @@
-const prompt = require('prompt-sync')();
-const DigitalaxAuctionArtifact = require('../artifacts/DigitalaxAuction.json');
 const AccessControlsArtifact = require('../artifacts/DigitalaxAccessControls.json');
 const DigitalaxGarmentNFTArtifact = require('../artifacts/DigitalaxGarmentNFT.json');
 const {FUND_MULTISIG_ADDRESS} = require('./constants');
@@ -18,6 +16,7 @@ async function main() {
   } = process.env;
   console.log(`ACCESS_CONTROLS_ADDRESS found [${ACCESS_CONTROLS_ADDRESS}]`);
   console.log(`ERC721_GARMENT_ADDRESS found [${ERC721_GARMENT_ADDRESS}]`);
+  console.log(`FUND_MULTISIG_ADDRESS found [${FUND_MULTISIG_ADDRESS}]`);
 
   const DigitalaxAuctionFactory = await ethers.getContractFactory('DigitalaxAuction');
   const auction = await DigitalaxAuctionFactory.deploy(
@@ -46,6 +45,9 @@ async function main() {
 
   console.log('Changing platform fee to 0%');
   await auction.updatePlatformFee('0');
+
+  console.log('Changing bid increment to 0.01 ETH');
+  await auction.updateMinBidIncrement('10000000000000000');
 
   //////////////////////
   // Setting approval //
