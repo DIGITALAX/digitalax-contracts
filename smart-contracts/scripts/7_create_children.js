@@ -1,6 +1,4 @@
-const prompt = require('prompt-sync')();
 const FactoryArtifact = require('../artifacts/DigitalaxGarmentFactory.json');
-const DigitalaxAccessControlsArtifact = require('../artifacts/DigitalaxAccessControls.json');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -10,18 +8,8 @@ async function main() {
     deployerAddress
   );
 
-  const {
-    GARMENT_FACTORY_ADDRESS,
-    ACCESS_CONTROLS_ADDRESS
-  } = process.env;
-
-  const accessControls = new ethers.Contract(
-    ACCESS_CONTROLS_ADDRESS,
-    DigitalaxAccessControlsArtifact.abi,
-    deployer
-  );
-  let tx = await accessControls.addMinterRole(deployerAddress);
-  await tx.wait();
+  const {GARMENT_FACTORY_ADDRESS} = process.env;
+  console.log(`GARMENT_FACTORY_ADDRESS found [${GARMENT_FACTORY_ADDRESS}]`);
 
   const factory = new ethers.Contract(
     GARMENT_FACTORY_ADDRESS,
@@ -32,7 +20,7 @@ async function main() {
   const childrenMetadataDirectory = '../../../nft-minting-scripts/auction-metadata/token-data/children';
 
   // Create children
-  tx = await factory.createNewChildren([
+  let tx = await factory.createNewChildren([
     require(`${childrenMetadataDirectory}/MB1111/hash.json`).uri, // Msistema / Crypto Bitch / 1
     require(`${childrenMetadataDirectory}/BL1011/hash.json`).uri, // Msistema / Crypto Bitch / 2
     require(`${childrenMetadataDirectory}/BL1555/hash.json`).uri, // Lorena / The Puurse / 3
