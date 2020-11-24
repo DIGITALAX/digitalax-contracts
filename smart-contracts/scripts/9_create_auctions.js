@@ -19,14 +19,18 @@ async function main() {
     deployer
   );
 
-  const _0_POINT_0_2_ETH = '200000000000000000';
+  const reservePrice = '100000000000000000';
 
   // FIXME - ADD PROPER DATES WHEN WE KNOW
+  /*
+    Start will be 3:30pm pst November 24th (today)
+  And end time wil be 7 days from now
+   */
 
   // Msistema / Crypto Bitch
   await auction.createAuction(
     1, // garmentTokenId
-    _0_POINT_0_2_ETH, // reservePrice
+    reservePrice, // reservePrice
     0, // startTimestamp
     moment().add(1, 'days').startOf('day').unix() // endTimestamp
   );
@@ -34,7 +38,7 @@ async function main() {
   // Lorena / The Puurse
   await auction.createAuction(
     2, // garmentTokenId
-    _0_POINT_0_2_ETH, // reservePrice
+    reservePrice, // reservePrice
     0, // startTimestamp
     moment().add(1, 'days').endOf('day').unix() // endTimestamp
   );
@@ -42,7 +46,7 @@ async function main() {
   // ddy / Decentralised Dress
   await auction.createAuction(
     3, // garmentTokenId
-    _0_POINT_0_2_ETH, // reservePrice
+    reservePrice, // reservePrice
     0, // startTimestamp
     moment().add(3, 'days').endOf('day').unix() // endTimestamp
   );
@@ -50,7 +54,7 @@ async function main() {
   // Vitaly / To The Moon
   await auction.createAuction(
     4, // garmentTokenId
-    _0_POINT_0_2_ETH, // reservePrice
+    reservePrice, // reservePrice
     moment().startOf('day').unix(), // startTimestamp
     moment().add(4, 'days').endOf('day').unix() // endTimestamp
   );
@@ -58,7 +62,7 @@ async function main() {
   // Xander / Lightning Network
   await auction.createAuction(
     5, // garmentTokenId
-    _0_POINT_0_2_ETH, // reservePrice
+    reservePrice, // reservePrice
     moment().startOf('day').unix(), // startTimestamp
     moment().add(4, 'days').endOf('day').unix() // endTimestamp
   );
@@ -66,7 +70,7 @@ async function main() {
   // HonoreHL / DAI DAI DAI
   await auction.createAuction(
     6, // garmentTokenId
-    _0_POINT_0_2_ETH, // reservePrice
+    reservePrice, // reservePrice
     moment().startOf('day').unix(), // startTimestamp
     moment().add(5, 'days').endOf('day').unix() // endTimestamp
   );

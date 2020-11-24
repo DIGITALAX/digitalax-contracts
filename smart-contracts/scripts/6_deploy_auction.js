@@ -47,6 +47,9 @@ async function main() {
   console.log('Changing platform fee to 0%');
   await auction.updatePlatformFee('0');
 
+  console.log('Changing bid increment to 0.01 ETH');
+  await auction.updateMinBidIncrement('10000000000000000');
+
   //////////////////////
   // Setting approval //
   //////////////////////
