@@ -2,7 +2,7 @@
 
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.6.0;
+pragma solidity ^0.6.12;
 
 /*
  * @dev Provides information about the current execution context, including the
@@ -29,7 +29,7 @@ abstract contract Context {
 
 
 
-pragma solidity ^0.6.0;
+
 
 /**
  * @dev Interface of the ERC165 standard, as defined in the
@@ -56,7 +56,7 @@ interface IERC165 {
 
 
 
-pragma solidity ^0.6.2;
+
 
 
 /**
@@ -187,7 +187,7 @@ interface IERC721 is IERC165 {
 
 
 
-pragma solidity ^0.6.2;
+
 
 
 /**
@@ -216,7 +216,7 @@ interface IERC721Metadata is IERC721 {
 
 
 
-pragma solidity ^0.6.2;
+
 
 
 /**
@@ -247,7 +247,7 @@ interface IERC721Enumerable is IERC721 {
 
 
 
-pragma solidity ^0.6.0;
+
 
 /**
  * @title ERC721 token receiver interface
@@ -272,7 +272,7 @@ interface IERC721Receiver {
 
 
 
-pragma solidity ^0.6.0;
+
 
 
 /**
@@ -328,7 +328,7 @@ contract ERC165 is IERC165 {
 
 
 
-pragma solidity ^0.6.0;
+
 
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
@@ -490,7 +490,7 @@ library SafeMath {
 
 
 
-pragma solidity ^0.6.2;
+
 
 /**
  * @dev Collection of functions related to the address type
@@ -634,7 +634,7 @@ library Address {
 
 
 
-pragma solidity ^0.6.0;
+
 
 /**
  * @dev Library for managing
@@ -880,7 +880,7 @@ library EnumerableSet {
 
 
 
-pragma solidity ^0.6.0;
+
 
 /**
  * @dev Library for managing an enumerable variant of Solidity's
@@ -1120,7 +1120,7 @@ library EnumerableMap {
 
 
 
-pragma solidity ^0.6.0;
+
 
 /**
  * @dev String operations.
@@ -1157,7 +1157,7 @@ library Strings {
 
 
 
-pragma solidity ^0.6.0;
+
 
 
 
@@ -1632,7 +1632,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
 
 
 
-pragma solidity ^0.6.0;
+
 
 
 /**
@@ -1691,7 +1691,7 @@ interface IERC1155Receiver is IERC165 {
 
 
 
-pragma solidity ^0.6.0;
+
 
 
 
@@ -1711,7 +1711,7 @@ abstract contract ERC1155Receiver is ERC165, IERC1155Receiver {
 
 
 
-pragma solidity ^0.6.2;
+
 
 
 /**
@@ -1816,7 +1816,7 @@ interface IERC1155 is IERC165 {
 
 
 
-pragma solidity ^0.6.2;
+
 
 
 /**
@@ -1842,7 +1842,7 @@ interface IERC1155MetadataURI is IERC1155 {
 
 
 
-pragma solidity ^0.6.0;
+pragma solidity 0.6.12;
 
 
 
@@ -1952,7 +1952,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     /**
      * @dev See {IERC1155-setApprovalForAll}.
      */
-    function setApprovalForAll(address operator, bool approved) public virtual override {
+    function setApprovalForAll(address operator, bool approved) external virtual override {
         require(_msgSender() != operator, "ERC1155: setting approval status for self");
 
         _operatorApprovals[_msgSender()][operator] = approved;
@@ -1976,7 +1976,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         uint256 amount,
         bytes memory data
     )
-    public
+    external
     virtual
     override
     {
@@ -2008,7 +2008,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         uint256[] memory amounts,
         bytes memory data
     )
-    public
+    external
     virtual
     override
     {
@@ -2044,6 +2044,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
      */
     function _setURI(uint256 tokenId, string memory newuri) internal virtual {
         tokenUris[tokenId] = newuri;
+        emit URI(newuri, tokenId);
     }
 
     /**
@@ -2243,7 +2244,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
 
 
 
-pragma solidity ^0.6.0;
+
 
 
 
@@ -2619,13 +2620,10 @@ pragma solidity 0.6.12;
 interface IERC998ERC1155TopDown is IERC1155Receiver {
 
     event ReceivedChild(address indexed from, uint256 indexed toTokenId, address indexed childContract, uint256 childTokenId, uint256 amount);
-    event TransferSingleChild(uint256 indexed fromTokenId, address indexed to, address indexed childContract, uint256 childTokenId, uint256 amount);
     event TransferBatchChild(uint256 indexed fromTokenId, address indexed to, address indexed childContract, uint256[] childTokenIds, uint256[] amounts);
 
     function childContractsFor(uint256 tokenId) external view returns (address[] memory childContracts);
-
     function childIdsForOn(uint256 tokenId, address childContract) external view returns (uint256[] memory childIds);
-
     function childBalance(uint256 tokenId, address childContract, uint256 childTokenId) external view returns (uint256);
 }
 
@@ -2729,6 +2727,11 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         return tokenId;
     }
 
+    /**
+     @notice Burns a DigitalaxGarmentNFT, releasing any composed 1155 tokens held by the token itseld
+     @dev Only the owner or an approved sender can call this method
+     @param _tokenId the token ID to burn
+     */
     function burn(uint256 _tokenId) external {
         address operator = _msgSender();
         require(
@@ -2747,11 +2750,16 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
 
         // Clean up designer mapping
         delete garmentDesigners[_tokenId];
+        delete primarySalePrice[_tokenId];
     }
 
+    /**
+     @notice Single ERC1155 receiver callback hook, used to enforce children token binding to a given parent token
+     */
     function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _amount, bytes memory _data)
     virtual
-    public override
+    external
+    override
     returns (bytes4) {
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
 
@@ -2771,9 +2779,14 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         return this.onERC1155Received.selector;
     }
 
+    /**
+     @notice Batch ERC1155 receiver callback hook, used to enforce child token bindings to a given parent token ID
+     */
     function onERC1155BatchReceived(address _operator, address _from, uint256[] memory _ids, uint256[] memory _values, bytes memory _data)
-    virtual public
-    override returns (bytes4) {
+    virtual
+    external
+    override
+    returns (bytes4) {
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
 
         uint256 _receiverTokenId = _extractIncomingTokenId();
@@ -2795,6 +2808,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     }
 
     function _extractIncomingTokenId() internal pure returns (uint256) {
+        // Extract out the embedded token ID from the sender
         uint256 _receiverTokenId;
         uint256 _index = msg.data.length - 32;
         assembly {_receiverTokenId := calldataload(_index)}
@@ -2891,13 +2905,20 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         return _exists(_tokenId);
     }
 
+    /**
+     @dev Get the child token balances held by the contract, assumes caller knows the correct child contract
+     */
     function childBalance(uint256 _tokenId, address _childContract, uint256 _childTokenId)
-    public view
+    public
+    view
     override
     returns (uint256) {
         return _childContract == address(childContract) ? balances[_tokenId][_childTokenId] : 0;
     }
 
+    /**
+     @dev Get list of supported child contracts, always a list of 0 or 1 in our case
+     */
     function childContractsFor(uint256 _tokenId) override external view returns (address[] memory) {
         if (!_exists(_tokenId)) {
             return new address[](0);
@@ -2908,6 +2929,9 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         return childContracts;
     }
 
+    /**
+     @dev Gets mapped IDs for child tokens
+     */
     function childIdsForOn(uint256 _tokenId, address _childContract) override public view returns (uint256[] memory) {
         if (!_exists(_tokenId) || _childContract != address(childContract)) {
             return new uint256[](0);
@@ -2922,6 +2946,9 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         return childTokenIds;
     }
 
+    /**
+     @dev Get total number of children mapped to the token
+     */
     function totalChildrenMapped(uint256 _tokenId) external view returns (uint256) {
         return parentToChildMapping[_tokenId].length();
     }
@@ -2957,7 +2984,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
 
     function _receiveChild(uint256 _tokenId, address, uint256 _childTokenId, uint256 _amount) private {
         if (balances[_tokenId][_childTokenId] == 0) {
-            parentToChildMapping[_tokenId].add(_childTokenId);
+           parentToChildMapping[_tokenId].add(_childTokenId);
         }
         balances[_tokenId][_childTokenId] = balances[_tokenId][_childTokenId].add(_amount);
     }
@@ -2969,13 +2996,6 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
             childToParentMapping[_childTokenId].remove(_tokenId);
             parentToChildMapping[_tokenId].remove(_childTokenId);
         }
-    }
-
-    function _asSingletonArray(uint256 element) private pure returns (uint256[] memory) {
-        uint256[] memory array = new uint256[](1);
-        array[0] = element;
-
-        return array;
     }
 
     /**

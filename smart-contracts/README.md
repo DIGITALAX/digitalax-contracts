@@ -23,10 +23,10 @@ DigitalaxGenesisNFT: 0x89505d2a27b7e8AC56252081d721ECd525E4241e - Reviewed
 
 * Phase 2 (Parent and Child NFT tokens with Primary Auctions)
 ```
-DigitalaxMaterials: TODO
-DigitalaxGarmentNFT: TODO
-DigitalaxGarmentFactory: TODO
-DigitalaxAuction: TODO
+DigitalaxMaterials: 0xe6822e8b4d91b85f9ca00cca79bf92bab14bc221
+DigitalaxGarmentNFT: 0x0b509f4b044f713a91bb50535914f7ad160532fe
+DigitalaxGarmentFactory: 0xe4d5d731f71cCAFe4e571961A825Ba7bE2E7405a
+DigitalaxAuction: 0xd84E216a4804A5e6BAa4f936838E4a3d1A0D3C53
 ```
 
 ### Rinkeby Deployments

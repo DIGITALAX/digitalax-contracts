@@ -6,11 +6,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DigitalaxGenesisNFT
-    network: 'rinkeby'
+    network: 'mainnet'
     source:
-      address: '0x064A6151F99ba2610f2D6600Dcb2b2Ed3a276356'
+      address: '0x89505d2a27b7e8ac56252081d721ecd525e4241e'
       abi: DigitalaxGenesisNFT
-      startBlock: 7459382
+      startBlock: 11157574
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -32,11 +32,11 @@ dataSources:
       file: ./src/DigitalaxGenesisNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentNFT
-    network: 'rinkeby'
+    network: 'mainnet'
     source:
-      address: '0x600Afa65bD9b3467F39F321c18C3E8c2FbdE990c'
+      address: '0x0b509f4b044f713a91bb50535914f7ad160532fe'
       abi: DigitalaxGarmentNFT
-      startBlock: 7576230
+      startBlock: 11320285
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -56,11 +56,11 @@ dataSources:
       file: ./src/DigitalaxGarmentNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterials
-    network: 'rinkeby'
+    network: 'mainnet'
     source:
-      address: '0x0963895b10b1311EF6fb84cAc5268904e34EdE38'
+      address: '0xe6822e8b4d91b85f9ca00cca79bf92bab14bc221'
       abi: DigitalaxMaterials
-      startBlock: 7576227
+      startBlock: 11320271
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -85,11 +85,11 @@ dataSources:
       file: ./src/DigitalaxMaterials.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuction
-    network: 'rinkeby'
+    network: 'mainnet'
     source:
-      address: '0xC62F5508d4721EbdD3EB1C0cAC49FCD391672c6a'
+      address: '0xd84E216a4804A5e6BAa4f936838E4a3d1A0D3C53'
       abi: DigitalaxAuction
-      startBlock: 7576239
+      startBlock: 11320386
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

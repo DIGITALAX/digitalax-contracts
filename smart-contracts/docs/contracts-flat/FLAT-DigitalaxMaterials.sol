@@ -2,7 +2,7 @@
 
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.6.0;
+pragma solidity ^0.6.12;
 
 /**
  * @dev Interface of the ERC165 standard, as defined in the
@@ -29,7 +29,7 @@ interface IERC165 {
 
 
 
-pragma solidity ^0.6.2;
+
 
 
 /**
@@ -134,7 +134,7 @@ interface IERC1155 is IERC165 {
 
 
 
-pragma solidity ^0.6.2;
+
 
 
 /**
@@ -157,7 +157,7 @@ interface IERC1155MetadataURI is IERC1155 {
 
 
 
-pragma solidity ^0.6.0;
+
 
 
 /**
@@ -216,7 +216,7 @@ interface IERC1155Receiver is IERC165 {
 
 
 
-pragma solidity ^0.6.0;
+
 
 /*
  * @dev Provides information about the current execution context, including the
@@ -243,7 +243,7 @@ abstract contract Context {
 
 
 
-pragma solidity ^0.6.0;
+
 
 
 /**
@@ -299,7 +299,7 @@ contract ERC165 is IERC165 {
 
 
 
-pragma solidity ^0.6.0;
+
 
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
@@ -461,7 +461,7 @@ library SafeMath {
 
 
 
-pragma solidity ^0.6.2;
+
 
 /**
  * @dev Collection of functions related to the address type
@@ -608,7 +608,7 @@ library Address {
 
 
 
-pragma solidity ^0.6.0;
+pragma solidity 0.6.12;
 
 
 
@@ -718,7 +718,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     /**
      * @dev See {IERC1155-setApprovalForAll}.
      */
-    function setApprovalForAll(address operator, bool approved) public virtual override {
+    function setApprovalForAll(address operator, bool approved) external virtual override {
         require(_msgSender() != operator, "ERC1155: setting approval status for self");
 
         _operatorApprovals[_msgSender()][operator] = approved;
@@ -742,7 +742,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         uint256 amount,
         bytes memory data
     )
-    public
+    external
     virtual
     override
     {
@@ -774,7 +774,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         uint256[] memory amounts,
         bytes memory data
     )
-    public
+    external
     virtual
     override
     {
@@ -810,6 +810,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
      */
     function _setURI(uint256 tokenId, string memory newuri) internal virtual {
         tokenUris[tokenId] = newuri;
+        emit URI(newuri, tokenId);
     }
 
     /**
@@ -1021,22 +1022,22 @@ pragma solidity 0.6.12;
  * _Available since v3.1._
  */
 abstract contract ERC1155Burnable is ERC1155 {
-    function burn(address account, uint256 id, uint256 value) public virtual {
+    function burn(address account, uint256 id, uint256 amount) public virtual {
         require(
             account == _msgSender() || isApprovedForAll(account, _msgSender()),
             "ERC1155: caller is not owner nor approved"
         );
 
-        _burn(account, id, value);
+        _burn(account, id, amount);
     }
 
-    function burnBatch(address account, uint256[] memory ids, uint256[] memory values) public virtual {
+    function burnBatch(address account, uint256[] memory ids, uint256[] memory amounts) public virtual {
         require(
             account == _msgSender() || isApprovedForAll(account, _msgSender()),
             "ERC1155: caller is not owner nor approved"
         );
 
-        _burnBatch(account, ids, values);
+        _burnBatch(account, ids, amounts);
     }
 }
 
@@ -1044,7 +1045,7 @@ abstract contract ERC1155Burnable is ERC1155 {
 
 
 
-pragma solidity ^0.6.0;
+
 
 /**
  * @dev Library for managing
@@ -1290,7 +1291,7 @@ library EnumerableSet {
 
 
 
-pragma solidity ^0.6.0;
+
 
 
 
@@ -1670,12 +1671,15 @@ pragma experimental ABIEncoderV2;
  */
 contract DigitalaxMaterials is ERC1155Burnable {
 
+    // @notice event emitted on contract creation
     event DigitalaxMaterialsDeployed();
 
+    // @notice a single child has been created
     event ChildCreated(
         uint256 indexed childId
     );
 
+    // @notice a batch of children have been created
     event ChildrenCreated(
         uint256[] childIds
     );
@@ -1683,8 +1687,10 @@ contract DigitalaxMaterials is ERC1155Burnable {
     string public name;
     string public symbol;
 
+    // @notice current token ID pointer
     uint256 public tokenIdPointer;
 
+    // @notice enforcing access controls
     DigitalaxAccessControls public accessControls;
 
     constructor(
@@ -1702,6 +1708,11 @@ contract DigitalaxMaterials is ERC1155Burnable {
     // Creating new children //
     ///////////////////////////
 
+    /**
+     @notice Creates a single child ERC1155 token
+     @dev Only callable with smart contact role
+     @return id the generated child Token ID
+     */
     function createChild(string calldata _uri) external returns (uint256 id) {
         require(
             accessControls.hasSmartContractRole(_msgSender()),
@@ -1718,6 +1729,11 @@ contract DigitalaxMaterials is ERC1155Burnable {
         emit ChildCreated(id);
     }
 
+    /**
+     @notice Creates a batch of child ERC1155 tokens
+     @dev Only callable with smart contact role
+     @return tokenIds the generated child Token IDs
+     */
     function batchCreateChildren(string[] calldata _uris) external returns (uint256[] memory tokenIds) {
         require(
             accessControls.hasSmartContractRole(_msgSender()),
@@ -1726,19 +1742,18 @@ contract DigitalaxMaterials is ERC1155Burnable {
 
         require(_uris.length > 0, "DigitalaxMaterials.batchCreateChildren: No data supplied in array");
 
-        tokenIds = new uint256[](_uris.length);
-        for (uint i = 0; i < _uris.length; i++) {
+        uint256 urisLength = _uris.length;
+        tokenIds = new uint256[](urisLength);
+        for (uint256 i = 0; i < urisLength; i++) {
             string memory uri = _uris[i];
             require(bytes(uri).length > 0, "DigitalaxMaterials.batchCreateChildren: URI is a blank string");
-
             tokenIdPointer = tokenIdPointer.add(1);
-            uint256 id = tokenIdPointer;
 
-            _setURI(id, uri);
-
-            tokenIds[i] = id;
+            _setURI(tokenIdPointer, uri);
+            tokenIds[i] = tokenIdPointer;
         }
 
+        // Batched event for GAS savings
         emit ChildrenCreated(tokenIds);
     }
 
@@ -1746,6 +1761,11 @@ contract DigitalaxMaterials is ERC1155Burnable {
     // Minting of existing children //
     //////////////////////////////////
 
+    /**
+      @notice Mints a single child ERC1155 tokens, increasing its supply by the _amount specified. msg.data along with the
+      parent contract as the recipient can be used to map the created children to a given parent token
+      @dev Only callable with smart contact role
+     */
     function mintChild(uint256 _childTokenId, uint256 _amount, address _beneficiary, bytes calldata _data) external {
         require(
             accessControls.hasSmartContractRole(_msgSender()),
@@ -1758,6 +1778,11 @@ contract DigitalaxMaterials is ERC1155Burnable {
         _mint(_beneficiary, _childTokenId, _amount, _data);
     }
 
+    /**
+      @notice Mints a batch of child ERC1155 tokens, increasing its supply by the _amounts specified. msg.data along with the
+      parent contract as the recipient can be used to map the created children to a given parent token
+      @dev Only callable with smart contact role
+     */
     function batchMintChildren(
         uint256[] calldata _childTokenIds,
         uint256[] calldata _amounts,
@@ -1773,7 +1798,7 @@ contract DigitalaxMaterials is ERC1155Burnable {
         require(_childTokenIds.length > 0, "DigitalaxMaterials.batchMintChildren: No data supplied in arrays");
 
         // Check the strands exist and no zero amounts
-        for (uint i = 0; i < _childTokenIds.length; i++) {
+        for (uint256 i = 0; i < _childTokenIds.length; i++) {
             uint256 strandId = _childTokenIds[i];
             require(bytes(tokenUris[strandId]).length > 0, "DigitalaxMaterials.batchMintChildren: Strand does not exist");
 
