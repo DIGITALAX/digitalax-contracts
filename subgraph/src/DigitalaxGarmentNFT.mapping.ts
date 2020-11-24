@@ -3,6 +3,7 @@ import {log, BigInt, Address, store} from "@graphprotocol/graph-ts/index";
 import {
     Transfer,
     ReceivedChild,
+    DigitalaxGarmentTokenUriUpdate,
     DigitalaxGarmentNFT as DigitalaxGarmentNFTContract
 } from "../generated/DigitalaxGarmentNFT/DigitalaxGarmentNFT";
 
@@ -99,5 +100,11 @@ export function handleChildReceived(event: ReceivedChild): void {
     children.push(child.id);
     garment.children = children;
 
+    garment.save();
+}
+
+export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
+    let garment = DigitalaxGarment.load(event.params._tokenId.toString());
+    garment.tokenUri = event.params._tokenUri;
     garment.save();
 }

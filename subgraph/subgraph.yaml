@@ -53,6 +53,8 @@ dataSources:
           handler: handleTransfer
         - event: ReceivedChild(indexed address,indexed uint256,indexed address,uint256,uint256)
           handler: handleChildReceived
+        - event: DigitalaxGarmentTokenUriUpdate(indexed uint256,string)
+          handler: handleUriUpdated
       file: ./src/DigitalaxGarmentNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterials
