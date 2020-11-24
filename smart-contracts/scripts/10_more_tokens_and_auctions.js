@@ -12,9 +12,10 @@ async function main() {
 
   const {
     AUCTION_ADDRESS,
+    GARMENT_FACTORY_ADDRESS,
   } = process.env;
 
-  const {GARMENT_FACTORY_ADDRESS} = process.env;
+  console.log(`AUCTION_ADDRESS found [${AUCTION_ADDRESS}]`);
   console.log(`GARMENT_FACTORY_ADDRESS found [${GARMENT_FACTORY_ADDRESS}]`);
 
   const factory = new ethers.Contract(
@@ -31,14 +32,15 @@ async function main() {
   let tx = await factory.createNewChildren([
     require(`../../../nft-minting-scripts/auction-metadata/token-data/children/SD1820/hash.json`).uri, // 3dBehemoth/deigo / HODL King - 19
     require(`../../../nft-minting-scripts/auction-metadata/token-data/children/SD1830/hash.json`).uri, // 3dBehemoth/deigo / HODL King - 20
-    require(`../../../nft-minting-scripts/auction-metadata/token-data/children/GB2345/hash.json`).uri, // 3dBehemoth/deigo / HODL King - 21
+    require(`../../../nft-minting-scripts/auction-metadata/token-data/children/BM1111/hash.json`).uri, // 3dBehemoth/deigo / HODL King - 21
+    require(`../../../nft-minting-scripts/auction-metadata/token-data/children/GB2345/hash.json`).uri, // 3dBehemoth/deigo / HODL King - 22
 
-    require(`../../../nft-minting-scripts/auction-metadata/token-data/children/BF4433/hash.json`).uri, // Stanislav Mclygin / crypto winter - 22
-    require(`../../../nft-minting-scripts/auction-metadata/token-data/children/PP3248/hash.json`).uri, // Stanislav Mclygin / crypto winter - 23
-    require(`../../../nft-minting-scripts/auction-metadata/token-data/children/PF4422/hash.json`).uri, // Stanislav Mclygin / crypto winter - 24
+    require(`../../../nft-minting-scripts/auction-metadata/token-data/children/BF4433/hash.json`).uri, // Stanislav Mclygin / crypto winter - 23
+    require(`../../../nft-minting-scripts/auction-metadata/token-data/children/PP3248/hash.json`).uri, // Stanislav Mclygin / crypto winter - 24
+    require(`../../../nft-minting-scripts/auction-metadata/token-data/children/PF4422/hash.json`).uri, // Stanislav Mclygin / crypto winter - 25
 
-    require(`../../../nft-minting-scripts/auction-metadata/token-data/children/LN4545/hash.json`).uri, // Christina Lalch / Bitcoin for pizza - 25
-    require(`../../../nft-minting-scripts/auction-metadata/token-data/children/EC1116/hash.json`).uri  // Christina Lalch / Bitcoin for pizza - 26
+    require(`../../../nft-minting-scripts/auction-metadata/token-data/children/LN4545/hash.json`).uri, // Christina Lalch / Bitcoin for pizza - 26
+    require(`../../../nft-minting-scripts/auction-metadata/token-data/children/EC1116/hash.json`).uri  // Christina Lalch / Bitcoin for pizza - 27
   ]);
   await tx.wait();
 
@@ -46,8 +48,8 @@ async function main() {
   await factory.mintParentWithChildren(
     require('../../../nft-minting-scripts/auction-metadata/token-data/parents/deigo/hash.json').uri, // garmentTokenUri - 7
     DESIGNERS._3dBehemoth, // designer
-    ['19', '20', '21'], // childTokenIds
-    ['1', '1', '1'], // childTokenAmounts
+    ['19', '20', '21', '22'], // childTokenIds
+    ['1', '1', '1', '1'], // childTokenAmounts
     deployerAddress // beneficiary
   );
 
@@ -55,19 +57,20 @@ async function main() {
   await factory.mintParentWithChildren(
     require('../../../nft-minting-scripts/auction-metadata/token-data/parents/crypto_winter/hash.json').uri, // garmentTokenUri - 8
     DESIGNERS.stanislav, // designer
-    ['22', '23', '24'], // childTokenIds
+    ['23', '24', '25'], // childTokenIds
     ['1', '1', '1'], // childTokenAmounts
     deployerAddress // beneficiary
   );
 
   // Christina Lalch / Bitcoin for pizza
-  await factory.mintParentWithChildren(
+  tx = await factory.mintParentWithChildren(
     require('../../../nft-minting-scripts/auction-metadata/token-data/parents/christina/hash.json').uri, // garmentTokenUri - 9
     DESIGNERS.christina, // designer
-    ['25', '26'], // childTokenIds
+    ['26', '27'], // childTokenIds
     ['1', '1'], // childTokenAmounts
     deployerAddress // beneficiary
   );
+  await tx.wait();
 
   ////////////////////
   // Create Auction //
