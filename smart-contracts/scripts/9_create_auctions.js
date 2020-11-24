@@ -1,4 +1,3 @@
-const moment = require('moment');
 const AuctionArtifact = require('../artifacts/DigitalaxAuction.json');
 
 async function main() {
