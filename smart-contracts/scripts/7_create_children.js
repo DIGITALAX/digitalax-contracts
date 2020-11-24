@@ -15,13 +15,13 @@ async function main() {
     ACCESS_CONTROLS_ADDRESS
   } = process.env;
 
-  // const accessControls = new ethers.Contract(
-  //   ACCESS_CONTROLS_ADDRESS,
-  //   DigitalaxAccessControlsArtifact.abi,
-  //   deployer
-  // );
-  // let tx = await accessControls.addMinterRole(deployerAddress);
-  // await tx.wait();
+  const accessControls = new ethers.Contract(
+    ACCESS_CONTROLS_ADDRESS,
+    DigitalaxAccessControlsArtifact.abi,
+    deployer
+  );
+  let tx = await accessControls.addMinterRole(deployerAddress);
+  await tx.wait();
 
   const factory = new ethers.Contract(
     GARMENT_FACTORY_ADDRESS,
@@ -32,7 +32,7 @@ async function main() {
   const childrenMetadataDirectory = '../../../nft-minting-scripts/auction-metadata/token-data/children';
 
   // Create children
-  let tx = await factory.createNewChildren([
+  tx = await factory.createNewChildren([
     require(`${childrenMetadataDirectory}/MB1111/hash.json`).uri, // Msistema / Crypto Bitch / 1
     require(`${childrenMetadataDirectory}/BL1011/hash.json`).uri, // Msistema / Crypto Bitch / 2
     require(`${childrenMetadataDirectory}/BL1555/hash.json`).uri, // Lorena / The Puurse / 3
