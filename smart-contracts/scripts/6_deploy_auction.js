@@ -18,6 +18,7 @@ async function main() {
   } = process.env;
   console.log(`ACCESS_CONTROLS_ADDRESS found [${ACCESS_CONTROLS_ADDRESS}]`);
   console.log(`ERC721_GARMENT_ADDRESS found [${ERC721_GARMENT_ADDRESS}]`);
+  console.log(`FUND_MULTISIG_ADDRESS found [${FUND_MULTISIG_ADDRESS}]`);
 
   const DigitalaxAuctionFactory = await ethers.getContractFactory('DigitalaxAuction');
   const auction = await DigitalaxAuctionFactory.deploy(
