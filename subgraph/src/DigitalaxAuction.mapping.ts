@@ -53,9 +53,8 @@ export function handleAuctionCreated(event: AuctionCreated): void {
 
     // TODO: handle re-listing
     let auction = new DigitalaxGarmentAuction(tokenId.toString());
-    let garment = DigitalaxGarment.load(event.params.garmentTokenId.toString());
     auction.garment = tokenId.toString();
-    auction.designer = garment.designer.toHexString();
+    auction.designer = tokenId.toString();
     auction.history = tokenId.toString();
     auction.contract = event.address.toHexString();
 
