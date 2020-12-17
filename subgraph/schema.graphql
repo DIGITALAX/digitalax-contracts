@@ -41,7 +41,7 @@ type DigitalaxGarmentChild @entity {
 
 type DigitalaxGarment @entity {
   id: ID!
-  designer: Bytes!
+  designer: String!
   owner: Bytes!
   primarySalePrice: BigInt!
   tokenUri: String!
