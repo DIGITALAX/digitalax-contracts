@@ -24,7 +24,8 @@ export function handleTransfer(event: Transfer): void {
     if (event.params.from.equals(ZERO_ADDRESS)) {
         let garmentId = event.params.tokenId.toString();
         let garment = new DigitalaxGarment(garmentId);
-        garment.designer = garmentId;
+        let garmentDesigner = loadOrCreateGarmentDesigner(garmentId);
+        garment.designer = garmentDesigner.id;
         garment.owner = contract.ownerOf(event.params.tokenId);
         garment.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
         garment.tokenUri = contract.tokenURI(event.params.tokenId);
@@ -36,8 +37,6 @@ export function handleTransfer(event: Transfer): void {
         parentsOwned.push(garmentId);
         collector.parentsOwned = parentsOwned;
         collector.save();
-
-        let garmentDesigner = loadOrCreateGarmentDesigner(garmentId);
 
         let garments = garmentDesigner.garments;
         garments.push(garmentId);
