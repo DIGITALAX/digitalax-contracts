@@ -7,24 +7,24 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./DigitalaxAccessControls.sol";
 
 /**
- * @title Digitalax Dede NFT
- * @dev To facilitate the dede sale for the Digitialax platform
+ * @title Digitalax Pode NFT
+ * @dev To facilitate the pode sale for the Digitialax platform
  */
-contract DigitalaxDedeNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxDede", "DXD") {
+contract DigitalaxPodeNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxPode", "PODE") {
     using SafeMath for uint256;
 
     // @notice event emitted upon construction of this contract, used to bootstrap external indexers
-    event DigitalaxDedeNFTContractDeployed();
+    event DigitalaxPodeNFTContractDeployed();
 
-    // @notice event emitted when a contributor buys a Dede NFT
-    event DedePurchased(
+    // @notice event emitted when a contributor buys a Pode NFT
+    event PodePurchased(
         address indexed buyer,
         uint256 indexed tokenId,
         uint256 contribution
     );
 
-    // @notice event emitted when a admin mints a Dede NFT
-    event AdminDedeMinted(
+    // @notice event emitted when a admin mints a Pode NFT
+    event AdminPodeMinted(
         address indexed beneficiary,
         address indexed admin,
         uint256 indexed tokenId
@@ -37,8 +37,8 @@ contract DigitalaxDedeNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxDede",
     );
 
     // @notice event emitted when end date is changed
-    event DedeEndUpdated(
-        uint256 dedeEndTimestamp,
+    event PodeEndUpdated(
+        uint256 podeEndTimestamp,
         address indexed admin
     );
 
@@ -50,20 +50,20 @@ contract DigitalaxDedeNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxDede",
     // @notice responsible for enforcing admin access
     DigitalaxAccessControls public accessControls;
 
-    // @notice all funds will be sent to this address pon purchase of a Dede NFT
+    // @notice all funds will be sent to this address pon purchase of a Pode NFT
     address payable public fundsMultisig;
 
-    // @notice start date for them the Dede sale is open to the public, before this data no purchases can be made
-    uint256 public dedeStartTimestamp;
+    // @notice start date for them the Pode sale is open to the public, before this data no purchases can be made
+    uint256 public podeStartTimestamp;
 
-    // @notice end date for them the Dede sale is closed, no more purchased can be made after this point
-    uint256 public dedeEndTimestamp;
+    // @notice end date for them the Pode sale is closed, no more purchased can be made after this point
+    uint256 public podeEndTimestamp;
 
     // @notice set after end time has been changed once, prevents further changes to end timestamp
-    bool public dedeEndTimestampLocked;
+    bool public podeEndTimestampLocked;
 
-    // @notice set the transfer lock time, so no noe can move Dede NFT
-    uint256 public dedeLockTimestamp;
+    // @notice set the transfer lock time, so no noe can move Pode NFT
+    uint256 public podeLockTimestamp;
 
     // @notice the minimum amount a buyer can contribute in a single go
     uint256 public constant minimumContributionAmount = 1 ether;
@@ -74,30 +74,30 @@ contract DigitalaxDedeNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxDede",
     // @notice global accumulative contribution amount
     uint256 public totalContributions;
 
-    // @notice max number of paid contributions to the dede sale
-    uint256 public constant maxDedeContributionTokens = 500;
+    // @notice max number of paid contributions to the pode sale
+    uint256 public constant maxPodeContributionTokens = 500;
 
     uint256 public totalAdminMints;
 
     constructor(
         DigitalaxAccessControls _accessControls,
         address payable _fundsMultisig,
-        uint256 _dedeStartTimestamp,
-        uint256 _dedeEndTimestamp,
-        uint256 _dedeLockTimestamp,
+        uint256 _podeStartTimestamp,
+        uint256 _podeEndTimestamp,
+        uint256 _podeLockTimestamp,
         string memory _tokenURI
     ) public {
         accessControls = _accessControls;
         fundsMultisig = _fundsMultisig;
-        dedeStartTimestamp = _dedeStartTimestamp;
-        dedeEndTimestamp = _dedeEndTimestamp;
-        dedeLockTimestamp = _dedeLockTimestamp;
+        podeStartTimestamp = _podeStartTimestamp;
+        podeEndTimestamp = _podeEndTimestamp;
+        podeLockTimestamp = _podeLockTimestamp;
         tokenURI_ = _tokenURI;
-        emit DigitalaxDedeNFTContractDeployed();
+        emit DigitalaxPodeNFTContractDeployed();
     }
 
     /**
-     * @dev Proxy method for facilitating a single point of entry to either buy or contribute additional value to the Dede sale
+     * @dev Proxy method for facilitating a single point of entry to either buy or contribute additional value to the Pode sale
      * @dev Cannot contribute less than minimumContributionAmount
      */
     function buyOrIncreaseContribution() external payable {
@@ -109,54 +109,54 @@ contract DigitalaxDedeNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxDede",
     }
 
     /**
-     * @dev Facilitating the initial purchase of a Dede NFT
+     * @dev Facilitating the initial purchase of a Pode NFT
      * @dev Cannot contribute less than minimumContributionAmount
-     * @dev Reverts if already owns an dede token
+     * @dev Reverts if already owns an pode token
      * @dev Buyer receives a NFT on success
      * @dev All funds move to fundsMultisig
      */
     function buy() public payable {
-        require(contribution[_msgSender()] == 0, "DigitalaxDedeNFT.buy: You already own a dede NFT");
+        require(contribution[_msgSender()] == 0, "DigitalaxPodeNFT.buy: You already own a pode NFT");
         require(
-            _getNow() >= dedeStartTimestamp && _getNow() <= dedeEndTimestamp,
-            "DigitalaxDedeNFT.buy: No dede are available outside of the dede window"
+            _getNow() >= podeStartTimestamp && _getNow() <= podeEndTimestamp,
+            "DigitalaxPodeNFT.buy: No pode are available outside of the pode window"
         );
 
         uint256 _contributionAmount = msg.value;
         require(
             _contributionAmount >= minimumContributionAmount,
-            "DigitalaxDedeNFT.buy: Contribution does not meet minimum requirement"
+            "DigitalaxPodeNFT.buy: Contribution does not meet minimum requirement"
         );
 
-        require(remainingDedeTokens() > 0, "DigitalaxDedeNFT.buy: Total number of dede token holders reached");
+        require(remainingPodeTokens() > 0, "DigitalaxPodeNFT.buy: Total number of pode token holders reached");
 
         contribution[_msgSender()] = _contributionAmount;
         totalContributions = totalContributions.add(_contributionAmount);
 
         (bool fundsTransferSuccess,) = fundsMultisig.call{value : _contributionAmount}("");
-        require(fundsTransferSuccess, "DigitalaxDedeNFT.buy: Unable to send contribution to funds multisig");
+        require(fundsTransferSuccess, "DigitalaxPodeNFT.buy: Unable to send contribution to funds multisig");
 
         uint256 tokenId = totalSupply().add(1);
         _safeMint(_msgSender(), tokenId);
 
-        emit DedePurchased(_msgSender(), tokenId, _contributionAmount);
+        emit PodePurchased(_msgSender(), tokenId, _contributionAmount);
     }
 
     /**
      * @dev Facilitates an owner to increase there contribution
      * @dev Cannot contribute less than minimumContributionAmount
-     * @dev Reverts if caller does not already owns an dede token
+     * @dev Reverts if caller does not already owns an pode token
      * @dev All funds move to fundsMultisig
      */
     function increaseContribution() public payable {
         require(
-            _getNow() >= dedeStartTimestamp && _getNow() <= dedeEndTimestamp,
-            "DigitalaxDedeNFT.increaseContribution: No increases are possible outside of the dede window"
+            _getNow() >= podeStartTimestamp && _getNow() <= podeEndTimestamp,
+            "DigitalaxPodeNFT.increaseContribution: No increases are possible outside of the pode window"
         );
 
         require(
             contribution[_msgSender()] > 0,
-            "DigitalaxDedeNFT.increaseContribution: You do not own a dede NFT"
+            "DigitalaxPodeNFT.increaseContribution: You do not own a pode NFT"
         );
 
         uint256 _amountToIncrease = msg.value;
@@ -167,7 +167,7 @@ contract DigitalaxDedeNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxDede",
         (bool fundsTransferSuccess,) = fundsMultisig.call{value : _amountToIncrease}("");
         require(
             fundsTransferSuccess,
-            "DigitalaxDedeNFT.increaseContribution: Unable to send contribution to funds multisig"
+            "DigitalaxPodeNFT.increaseContribution: Unable to send contribution to funds multisig"
         );
 
         emit ContributionIncreased(_msgSender(), _amountToIncrease);
@@ -183,10 +183,10 @@ contract DigitalaxDedeNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxDede",
     function adminBuy(address _beneficiary) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxDedeNFT.adminBuy: Sender must be admin"
+            "DigitalaxPodeNFT.adminBuy: Sender must be admin"
         );
-        require(_beneficiary != address(0), "DigitalaxDedeNFT.adminBuy: Beneficiary cannot be ZERO");
-        require(balanceOf(_beneficiary) == 0, "DigitalaxDedeNFT.adminBuy: Beneficiary already owns a dede NFT");
+        require(_beneficiary != address(0), "DigitalaxPodeNFT.adminBuy: Beneficiary cannot be ZERO");
+        require(balanceOf(_beneficiary) == 0, "DigitalaxPodeNFT.adminBuy: Beneficiary already owns a pode NFT");
 
         uint256 tokenId = totalSupply().add(1);
         _safeMint(_beneficiary, tokenId);
@@ -194,50 +194,50 @@ contract DigitalaxDedeNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxDede",
         // Increase admin mint counts
         totalAdminMints = totalAdminMints.add(1);
 
-        emit AdminDedeMinted(_beneficiary, _msgSender(), tokenId);
+        emit AdminPodeMinted(_beneficiary, _msgSender(), tokenId);
     }
 
     /**
-     * @dev Allows a whitelisted admin to update the end date of the dede
+     * @dev Allows a whitelisted admin to update the end date of the pode
      */
-    function updateDedeEnd(uint256 _end) external {
+    function updatePodeEnd(uint256 _end) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxDedeNFT.updateDedeEnd: Sender must be admin"
+            "DigitalaxPodeNFT.updatePodeEnd: Sender must be admin"
         );
         // If already passed, dont allow opening again
-        require(dedeEndTimestamp > _getNow(), "DigitalaxDedeNFT.updateDedeEnd: End time already passed");
+        require(podeEndTimestamp > _getNow(), "DigitalaxPodeNFT.updatePodeEnd: End time already passed");
 
         // Only allow setting this once
-        require(!dedeEndTimestampLocked, "DigitalaxDedeNFT.updateDedeEnd: End time locked");
+        require(!podeEndTimestampLocked, "DigitalaxPodeNFT.updatePodeEnd: End time locked");
 
-        dedeEndTimestamp = _end;
+        podeEndTimestamp = _end;
 
         // Lock future end time modifications
-        dedeEndTimestampLocked = true;
+        podeEndTimestampLocked = true;
 
-        emit DedeEndUpdated(dedeEndTimestamp, _msgSender());
+        emit PodeEndUpdated(podeEndTimestamp, _msgSender());
     }
 
     /**
-     * @dev Allows a whitelisted admin to update the start date of the dede
+     * @dev Allows a whitelisted admin to update the start date of the pode
      */
     function updateAccessControls(DigitalaxAccessControls _accessControls) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxDedeNFT.updateAccessControls: Sender must be admin"
+            "DigitalaxPodeNFT.updateAccessControls: Sender must be admin"
         );
-        require(address(_accessControls) != address(0), "DigitalaxDedeNFT.updateAccessControls: Zero Address");
+        require(address(_accessControls) != address(0), "DigitalaxPodeNFT.updateAccessControls: Zero Address");
         accessControls = _accessControls;
 
         emit AccessControlsUpdated(address(_accessControls));
     }
 
     /**
-    * @dev Returns total remaining number of tokens available in the Dede sale
+    * @dev Returns total remaining number of tokens available in the Pode sale
     */
-    function remainingDedeTokens() public view returns (uint256) {
-        return _getMaxDedeContributionTokens() - (totalSupply() - totalAdminMints);
+    function remainingPodeTokens() public view returns (uint256) {
+        return _getMaxPodeContributionTokens() - (totalSupply() - totalAdminMints);
     }
 
     // Internal
@@ -246,16 +246,16 @@ contract DigitalaxDedeNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxDede",
         return block.timestamp;
     }
 
-    function _getMaxDedeContributionTokens() internal virtual view returns (uint256) {
-        return maxDedeContributionTokens;
+    function _getMaxPodeContributionTokens() internal virtual view returns (uint256) {
+        return maxPodeContributionTokens;
     }
 
     /**
-     * @dev Before token transfer hook to enforce that no token can be moved to another address until the dede sale has ended
+     * @dev Before token transfer hook to enforce that no token can be moved to another address until the pode sale has ended
      */
     function _beforeTokenTransfer(address from, address, uint256) internal override {
-        if (from != address(0) && _getNow() <= dedeLockTimestamp) {
-            revert("DigitalaxDedeNFT._beforeTokenTransfer: Transfers are currently locked at this time");
+        if (from != address(0) && _getNow() <= podeLockTimestamp) {
+            revert("DigitalaxPodeNFT._beforeTokenTransfer: Transfers are currently locked at this time");
         }
     }
 }
