@@ -1,6 +1,7 @@
 module.exports = {
   FUND_MULTISIG_ADDRESS: '0x10C0B0DA2A682C12bD36516A95CB8474C02d83De',
   GENESIS_TOKEN_URI: 'https://gateway.pinata.cloud/ipfs/QmRjiYPGEm3GkWYW6Mpp3ZGHvYA6odo8pHbPNvtTjLfYF4',
+  PODE_TOKEN_URI: 'https://gateway.pinata.cloud/ipfs/QmSHJtkZLANXcvgeS1BkUkH7PeATdg3b7LGfUYgCzL3uHL',
   DESIGNERS: {
     msistema: '0xFF0c60609522fb053E58AC106EBb7D48ff3d0CCB',
     rendooo: '0xa336D3F47EC35517035a85eE8a0D09094801E2e7',

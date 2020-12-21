@@ -9,20 +9,14 @@ contract DigitalaxPodeNFTMock is DigitalaxPodeNFT {
     uint256 public maxPodeContributionTokensOverride;
 
     constructor(
-        DigitalaxAccessControls _accessControls,
         address payable _fundsMultisig,
         uint256 _podeStart,
         uint256 _podeEnd,
         uint256 _podeLockTime,
         string memory _tokenURI
     )
-    DigitalaxPodeNFT(_accessControls, _fundsMultisig, _podeStart, _podeEnd, _podeLockTime, _tokenURI)
+    DigitalaxPodeNFT(_fundsMultisig, _podeStart, _podeEnd, _podeLockTime, _tokenURI)
     public {}
-
-    function addContribution(uint256 _contributionAmount) external {
-        contribution[_msgSender()] = _contributionAmount;
-        totalContributions = totalContributions.add(_contributionAmount);
-    }
 
     function setNowOverride(uint256 _now) external {
         nowOverride = _now;

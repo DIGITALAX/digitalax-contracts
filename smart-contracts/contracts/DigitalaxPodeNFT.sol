@@ -4,7 +4,6 @@ pragma solidity 0.6.12;
 
 import "./ERC721/ERC721WithSameTokenURIForAllTokens.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "./DigitalaxAccessControls.sol";
 
 /**
  * @title Digitalax Pode NFT
@@ -23,32 +22,11 @@ contract DigitalaxPodeNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxPode",
         uint256 contribution
     );
 
-    // @notice event emitted when a admin mints a Pode NFT
-    event AdminPodeMinted(
-        address indexed beneficiary,
-        address indexed admin,
-        uint256 indexed tokenId
-    );
-
     // @notice event emitted when a contributors amount is increased
     event ContributionIncreased(
         address indexed buyer,
         uint256 contribution
     );
-
-    // @notice event emitted when end date is changed
-    event PodeEndUpdated(
-        uint256 podeEndTimestamp,
-        address indexed admin
-    );
-
-    // @notice event emitted when DigitalaxAccessControls is updated
-    event AccessControlsUpdated(
-        address indexed newAdress
-    );
-
-    // @notice responsible for enforcing admin access
-    DigitalaxAccessControls public accessControls;
 
     // @notice all funds will be sent to this address pon purchase of a Pode NFT
     address payable public fundsMultisig;
@@ -77,35 +55,19 @@ contract DigitalaxPodeNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxPode",
     // @notice max number of paid contributions to the pode sale
     uint256 public constant maxPodeContributionTokens = 500;
 
-    uint256 public totalAdminMints;
-
     constructor(
-        DigitalaxAccessControls _accessControls,
         address payable _fundsMultisig,
         uint256 _podeStartTimestamp,
         uint256 _podeEndTimestamp,
         uint256 _podeLockTimestamp,
         string memory _tokenURI
     ) public {
-        accessControls = _accessControls;
         fundsMultisig = _fundsMultisig;
         podeStartTimestamp = _podeStartTimestamp;
         podeEndTimestamp = _podeEndTimestamp;
         podeLockTimestamp = _podeLockTimestamp;
         tokenURI_ = _tokenURI;
         emit DigitalaxPodeNFTContractDeployed();
-    }
-
-    /**
-     * @dev Proxy method for facilitating a single point of entry to either buy or contribute additional value to the Pode sale
-     * @dev Cannot contribute less than minimumContributionAmount
-     */
-    function buyOrIncreaseContribution() external payable {
-        if (contribution[_msgSender()] == 0) {
-            buy();
-        } else {
-            increaseContribution();
-        }
     }
 
     /**
@@ -143,101 +105,10 @@ contract DigitalaxPodeNFT is ERC721WithSameTokenURIForAllTokens("DigitalaxPode",
     }
 
     /**
-     * @dev Facilitates an owner to increase there contribution
-     * @dev Cannot contribute less than minimumContributionAmount
-     * @dev Reverts if caller does not already owns an pode token
-     * @dev All funds move to fundsMultisig
-     */
-    function increaseContribution() public payable {
-        require(
-            _getNow() >= podeStartTimestamp && _getNow() <= podeEndTimestamp,
-            "DigitalaxPodeNFT.increaseContribution: No increases are possible outside of the pode window"
-        );
-
-        require(
-            contribution[_msgSender()] > 0,
-            "DigitalaxPodeNFT.increaseContribution: You do not own a pode NFT"
-        );
-
-        uint256 _amountToIncrease = msg.value;
-        contribution[_msgSender()] = contribution[_msgSender()].add(_amountToIncrease);
-
-        totalContributions = totalContributions.add(_amountToIncrease);
-
-        (bool fundsTransferSuccess,) = fundsMultisig.call{value : _amountToIncrease}("");
-        require(
-            fundsTransferSuccess,
-            "DigitalaxPodeNFT.increaseContribution: Unable to send contribution to funds multisig"
-        );
-
-        emit ContributionIncreased(_msgSender(), _amountToIncrease);
-    }
-
-    // Admin
-
-    /**
-     * @dev Allows a whitelisted admin to mint a token and issue it to a beneficiary
-     * @dev One token per holder
-     * @dev All holders contribution as set o zero on creation
-     */
-    function adminBuy(address _beneficiary) external {
-        require(
-            accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxPodeNFT.adminBuy: Sender must be admin"
-        );
-        require(_beneficiary != address(0), "DigitalaxPodeNFT.adminBuy: Beneficiary cannot be ZERO");
-        require(balanceOf(_beneficiary) == 0, "DigitalaxPodeNFT.adminBuy: Beneficiary already owns a pode NFT");
-
-        uint256 tokenId = totalSupply().add(1);
-        _safeMint(_beneficiary, tokenId);
-
-        // Increase admin mint counts
-        totalAdminMints = totalAdminMints.add(1);
-
-        emit AdminPodeMinted(_beneficiary, _msgSender(), tokenId);
-    }
-
-    /**
-     * @dev Allows a whitelisted admin to update the end date of the pode
-     */
-    function updatePodeEnd(uint256 _end) external {
-        require(
-            accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxPodeNFT.updatePodeEnd: Sender must be admin"
-        );
-        // If already passed, dont allow opening again
-        require(podeEndTimestamp > _getNow(), "DigitalaxPodeNFT.updatePodeEnd: End time already passed");
-
-        // Only allow setting this once
-        require(!podeEndTimestampLocked, "DigitalaxPodeNFT.updatePodeEnd: End time locked");
-
-        podeEndTimestamp = _end;
-
-        // Lock future end time modifications
-        podeEndTimestampLocked = true;
-
-        emit PodeEndUpdated(podeEndTimestamp, _msgSender());
-    }
-
-    /**
-     * @dev Allows a whitelisted admin to update the start date of the pode
-     */
-    function updateAccessControls(DigitalaxAccessControls _accessControls) external {
-        require(
-            accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxPodeNFT.updateAccessControls: Sender must be admin"
-        );
-        require(address(_accessControls) != address(0), "DigitalaxPodeNFT.updateAccessControls: Zero Address");
-        accessControls = _accessControls;
-
-        emit AccessControlsUpdated(address(_accessControls));
-    }
-
-    /**
     * @dev Returns total remaining number of tokens available in the Pode sale
     */
     function remainingPodeTokens() public view returns (uint256) {
-        return _getMaxPodeContributionTokens() - (totalSupply() - totalAdminMints);
+        return _getMaxPodeContributionTokens() - totalSupply();
     }
 
     // Internal
