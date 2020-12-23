@@ -50,3 +50,9 @@ yarn test
 ```
 yarn run coverage
 ```
+
+### Deployment scripts
+
+```
+npx buidler run --network rinkeby scripts/1_deploy_access_controls.js
+```
