@@ -7,7 +7,7 @@ const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
 const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
 const DigitalaxGarmentFactoryTest = artifacts.require('DigitalaxGarmentFactory');
 
-contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, designer, ...otherAccounts]) {
+contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, designer, verifiedMinter, ...otherAccounts]) {
   const name = 'DigitalaxMaterials';
   const symbol = 'DXM';
 
@@ -25,6 +25,7 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
   beforeEach(async () => {
     this.accessControls = await DigitalaxAccessControls.new({from: admin});
     await this.accessControls.addMinterRole(minter, {from: admin});
+    await this.accessControls.addVerifiedMinterRole(verifiedMinter, {from: admin});
 
     this.digitalaxMaterials = await DigitalaxMaterials.new(
       name,
@@ -76,6 +77,83 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
         this.factory.createNewChildren([randomStrandURI, randomStrandURI], {from: tokenHolder}),
         'DigitalaxGarmentFactory.createNewChildren: Sender must be minter'
       );
+    });
+  });
+
+  describe('createNewChildWithVerifiedRole()', () => {
+      it('Creates a new strand successfully', async () => {
+          await this.factory.createNewChildWithVerifiedRole(randomStrandURI, 1, { from: verifiedMinter });
+          expect(await this.digitalaxMaterials.uri(STRAND_ONE_ID)).to.be.equal(randomStrandURI);
+      });
+
+      it('Reverts when sender is not a verified minter', async () => {
+          await expectRevert(
+              this.factory.createNewChildWithVerifiedRole(randomStrandURI, 1, { from: tokenHolder }),
+              'DigitalaxGarmentFactory.createNewChildWithVerifiedRole: Sender must be verified minter',
+          );
+      });
+  });
+
+  describe('createNewChildrenWithVerifiedRole()', () => {
+    it('Reverts when sender does not have the verified minter role', async () => {
+      const childTokenAmounts = [1, 2, 3, 4];
+      const childTokenUri = ['1', '1', '1', '1'];
+      await expectRevert(
+        this.factory.createNewChildrenWithVerifiedRole(
+          childTokenUri,
+          childTokenAmounts,
+          {from: tokenHolder}
+        ),
+        'DigitalaxGarmentFactory.createNewChildrenWithVerifiedRole: Sender must be a verified minter'
+      );
+    });
+
+    it('Reverts when with empty arrays', async () => {
+      const childTokenAmounts = [];
+      const childTokenUri = ['1', '1', '1', '1'];
+      await expectRevert(
+        this.factory.createNewChildrenWithVerifiedRole(
+          childTokenUri,
+          childTokenAmounts,
+          {from: verifiedMinter}
+        ),
+        'DigitalaxMaterials.batchMintChildren: Array lengths are invalid'
+      );
+    });
+
+    it('Reverts when with arrays are not the same size', async () => {
+      const childTokenAmounts = [1, 2, 3];
+      const childTokenUri = ['1', '1', '1', '1'];
+      await expectRevert(
+        this.factory.createNewChildrenWithVerifiedRole(
+          childTokenUri,
+          childTokenAmounts,
+          {from: verifiedMinter}
+        ),
+        'DigitalaxMaterials.batchMintChildren: Array lengths are invalid'
+      );
+    });
+
+    it('Can mint children with balances', async () => {
+      const childTokenAmounts = [1, 2, 3, 4];
+      const childTokenUri = ['tokenUri1', 'tokenUri2', 'tokenUri3', 'tokenUri4'];
+      await this.factory.createNewChildrenWithVerifiedRole(
+        childTokenUri,
+        childTokenAmounts,
+        {from: verifiedMinter}
+      );
+
+      expect(await this.digitalaxMaterials.uri(STRAND_ONE_ID)).to.be.equal('tokenUri1');
+      expect(await this.digitalaxMaterials.balanceOf(verifiedMinter, STRAND_ONE_ID)).to.be.bignumber.equal('1');
+
+      expect(await this.digitalaxMaterials.uri(STRAND_TWO_ID)).to.be.equal('tokenUri2');
+      expect(await this.digitalaxMaterials.balanceOf(verifiedMinter, STRAND_TWO_ID)).to.be.bignumber.equal('2');
+
+      expect(await this.digitalaxMaterials.uri(STRAND_THREE_ID)).to.be.equal('tokenUri3');
+      expect(await this.digitalaxMaterials.balanceOf(verifiedMinter, STRAND_THREE_ID)).to.be.bignumber.equal('3');
+
+      expect(await this.digitalaxMaterials.uri(STRAND_FOUR_ID)).to.be.equal('tokenUri4');
+      expect(await this.digitalaxMaterials.balanceOf(verifiedMinter, STRAND_FOUR_ID)).to.be.bignumber.equal('4');
     });
   });
 
