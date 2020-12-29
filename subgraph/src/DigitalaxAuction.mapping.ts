@@ -31,7 +31,7 @@ export function handleAuctionCreated(event: AuctionCreated): void {
     let contract = DigitalaxAuction.bind(event.address);
     let tokenId = event.params.garmentTokenId;
 
-    let garmentDesigner = loadOrCreateGarmentDesigner(tokenId);
+    let garmentDesigner = loadOrCreateGarmentDesigner(tokenId.toString());
     let listings = garmentDesigner.listings;
     listings.push(tokenId.toString());
     garmentDesigner.listings = listings;
