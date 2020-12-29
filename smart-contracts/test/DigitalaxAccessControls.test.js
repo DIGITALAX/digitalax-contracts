@@ -7,7 +7,7 @@ const onlyAdminRoleErrorGrantMsg = "AccessControl: sender must be an admin to gr
 const onlyAdminRoleErrorRevokeMsg = "AccessControl: sender must be an admin to revoke";
 
 contract('DigitalaxAccessControls', (accounts) => {
-    const [admin, minter, smart_contract, anotherAccount] = accounts;
+    const [admin, minter, smart_contract, verifiedMinter, anotherAccount] = accounts;
 
     beforeEach(async function () {
         this.accessControls = await DigitalaxAccessControls.new({from: admin});
@@ -52,6 +52,47 @@ contract('DigitalaxAccessControls', (accounts) => {
                 onlyAdminRoleErrorRevokeMsg
             );
         });
+    });
+
+    describe('VERIFIED_MINTER_ROLE', async function() {
+      beforeEach(async function() {
+        expect(await this.accessControls.hasAdminRole(admin)).to.equal(true); // creator is admin
+        expect(await this.accessControls.hasVerifiedMinterRole(verifiedMinter)).to.equal(false);
+        await this.accessControls.addVerifiedMinterRole(verifiedMinter, { from: admin });
+      });
+
+      it('should allow admin to add verified minters', async function() {
+        expect(await this.accessControls.hasVerifiedMinterRole(verifiedMinter)).to.equal(true);
+      });
+
+      it('should allow admin to remove verified minters', async function() {
+        expect(await this.accessControls.hasVerifiedMinterRole(verifiedMinter)).to.equal(true);
+        await this.accessControls.removeVerifiedMinterRole(verifiedMinter, { from: admin });
+        expect(await this.accessControls.hasVerifiedMinterRole(verifiedMinter)).to.equal(false);
+      });
+
+      it('should revert if not admin', async function() {
+        await expectRevert(
+          this.accessControls.addVerifiedMinterRole(verifiedMinter, { from: verifiedMinter }),
+          onlyAdminRoleErrorGrantMsg,
+        );
+      });
+
+      it('should revert even if minter is adding already a verified minter', async function() {
+        await expectRevert(
+          this.accessControls.addVerifiedMinterRole(verifiedMinter, { from: verifiedMinter }),
+          onlyAdminRoleErrorGrantMsg,
+        );
+      });
+
+      it('should revert if does not have the correct role', async function() {
+        expect(await this.accessControls.hasVerifiedMinterRole(verifiedMinter)).to.equal(true);
+        await this.accessControls.removeVerifiedMinterRole(verifiedMinter, { from: admin });
+        await expectRevert(
+          this.accessControls.removeVerifiedMinterRole(verifiedMinter, { from: verifiedMinter }),
+          onlyAdminRoleErrorRevokeMsg,
+        );
+      });
     });
 
     describe('SMART_CONTRACT_ROLE', async function () {

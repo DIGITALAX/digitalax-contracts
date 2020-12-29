@@ -14,6 +14,8 @@ async function main() {
 
   await accessControls.addAdminRole(FUND_MULTISIG_ADDRESS);
   console.log('DigitalaxAccessControls added multisig as admin:', accessControls.address);
+  await accessControls.addAdminRole('0x9683BB5f133d24Ce2c8ACFAaee3D83C118E72503');
+  console.log('DigitalaxAccessControls added an admin:', '0x9683BB5f133d24Ce2c8ACFAaee3D83C118E72503');
 
   // TODO: should anyone be given this by default?
   await accessControls.addMinterRole('0xd4a3A8188aAA583057dB1A68224deA8EC1e582e3');
