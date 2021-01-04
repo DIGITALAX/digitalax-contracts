@@ -19,10 +19,7 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard {
     /// @notice Event emitted only on construction. To be used by indexers
     event DigitalaxGarmentCollectionContractDeployed();
     event MintGarmentCollection(
-        address beneficiary,
-        string tokenUri,
-        address designer,
-        uint256 amount
+        uint256 collectionId
     );
     event BurnGarmentCollection(
         uint256 collectionId
@@ -89,7 +86,7 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard {
             garmentCollections[_collectionId].garmentTokenIds.push(_mintedTokenId);
         }
 
-        emit MintGarmentCollection(_beneficiary, _tokenUri, _designer, _amount);
+        emit MintGarmentCollection(_collectionId);
         return _collectionId;
     }
 
