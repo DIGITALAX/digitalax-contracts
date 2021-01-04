@@ -70,7 +70,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     DigitalaxAccessControls public accessControls;
     /// @notice Mona to Ether Oracle
     UniswapPairOracle_MONA_WETH public oracle;
-    /// @notice initial platform fee for first time sellers, assumed to always be to 1 decimal place i.e. 120 = 12.0%
+    /// @notice platform fee that will be sent to the platformFeeRecipient, assumed to always be to 1 decimal place i.e. 120 = 12.0%
     uint256 public platformFee = 120;
     /// @notice discount to pay fully in erc20 token (Mona), assumed to always be to 1 decimal place i.e. 20 = 2.0%
     uint256 public discountToPayERC20 = 20;
@@ -80,7 +80,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     address public monaErc20Token;
     /// @notice the WETH
     address public weth;
-    /// @notice for switching off marketplace functionalities
+    /// @notice for pausing marketplace functionalities
     bool public isPaused;
     modifier whenNotPaused() {
         require(!isPaused, "Function is currently paused");
@@ -118,6 +118,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
      @dev Only the owner of a garment can create an offer and must have ALREADY approved the contract
      @dev In addition to owning the garment, the sender also has to have the MINTER role.
      @dev End time for the offer will be in the future, at a time from now till expiry duration
+     @dev There cannot be a duplicate offer created
      @param _garmentCollectionId Collection ID of the garment being offered to marketplace
      @param _primarySalePrice Garment cannot be sold for less than this
      */
@@ -128,7 +129,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         // Ensure caller has privileges
         require(
             accessControls.hasMinterRole(_msgSender()),
-            "DigitalaxAuction.createAuction: Sender must have the minter role"
+            "DigitalaxMarketplace.createOffer: Sender must have the minter role"
         );
         // Ensure the collection does exists
         require(garmentCollection.getSupply(_garmentCollectionId) > 0, "DigitalaxMarketplace.createOffer: Collection does not exist");
@@ -144,12 +145,13 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         );
     }
     /**
-     @notice Buys an open offer with eth and/or erc20
+     @notice Buys an open offer with eth or erc20
      @dev Only callable when the offer is open
-     @dev Only callable when the offer is open
-     @dev Bids from smart contracts are prohibited
+     @dev Bids from smart contracts are prohibited - a user must buy directly from their address
+     @dev Contract must have been approved on the buy offer previously
+     @dev The sale must have started (start time) to make a successful buy
      @param _garmentCollectionId Collection ID of the garment being offered
-     @param _payWithMona Whether to pay only in Mona
+     @param _payWithMona Whether to pay with ERC20 Mona token instead of ETH (possible discount for buyer)
      */
     function buyOffer(uint256 _garmentCollectionId, bool _payWithMona) external payable nonReentrant whenNotPaused {
         // Check the offers to see if this is a valid
@@ -190,7 +192,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
             // Send platform fee in ETH to the platform fee recipient, there is a discount that is subtracted from this
             (bool platformTransferSuccess,) = platformFeeRecipient.call{value : feeInETH}("");
             require(platformTransferSuccess, "DigitalaxMarketplace.buyOffer: Failed to send platform fee");
-            // Send remaining to designer in ETH, the discount does not effect this
+            // Send remaining to designer in ETH, the discount does not effect the amount designers receive
             (bool designerTransferSuccess,) = garmentNft.garmentDesigners(garmentTokenId).call{value : offer.primarySalePrice.sub(feeInETH)}("");
             require(designerTransferSuccess, "DigitalaxMarketplace.buyOffer: Failed to send the designer their royalties");
         }
@@ -203,7 +205,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         emit OfferPurchased(garmentTokenId, _msgSender(), offer.primarySalePrice, _payWithMona);
     }
     /**
-     @notice Cancels and inflight and un-resulted offer
+     @notice Cancels an inflight and un-resulted offer
      @dev Only admin
      @param _garmentCollectionId Token ID of the garment being offered
      */
@@ -234,6 +236,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     /**
      @notice Update the marketplace discount
      @dev Only admin
+     @dev This discount is taken away from the received fees, so the discount cannot exceed the platform fee
      @param _marketplaceDiscount New marketplace discount
      */
     function updateMarketplaceDiscountToPayInErc20(uint256 _marketplaceDiscount) external {
@@ -246,6 +249,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     /**
      @notice Update the marketplace fee
      @dev Only admin
+     @dev There is a discount that can be taken away from received fees, so that discount cannot exceed the platform fee
      @param _platformFee New marketplace fee
      */
     function updateMarketplacePlatformFee(uint256 _platformFee) external {
