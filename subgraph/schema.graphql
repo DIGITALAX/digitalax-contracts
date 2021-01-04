@@ -140,5 +140,5 @@ type DigitalaxMarketplacePurchaseHistory @entity {
   token: DigitalaxGarment!
   buyer: Bytes!
   value: BigInt!
-  isPayWithMona: Boolean!
+  isPaidWithMona: Boolean!
 }

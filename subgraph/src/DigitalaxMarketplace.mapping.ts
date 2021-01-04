@@ -35,6 +35,6 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     history.token = event.params.garmentTokenId.toString();
     history.buyer = event.params.buyer;
     history.value = event.params.primarySalePrice;
-    history.isPayWithMona = event.params.paidInErc20;
+    history.isPaidWithMona = event.params.paidInErc20;
     history.save();
 }
