@@ -367,6 +367,14 @@ contract('DigitalaxMarketplace', (accounts) => {
           "Function is currently paused"
         );
       });
+
+      it('fails if you try to create an offer with a non minter address', async () => {
+        await this.marketplace.setNowOverride('2');
+        await expectRevert(
+           this.marketplace.createOffer('98', ether('0.05'), {from: tokenBuyer}),
+          "DigitalaxMarketplace.createOffer: Sender must have the minter role"
+        );
+      });
     });
 
     describe('successful creation', async () => {
@@ -561,6 +569,13 @@ contract('DigitalaxMarketplace', (accounts) => {
           this.marketplace.cancelOffer(9999, {from: admin}),
           'DigitalaxMarketplace.cancelOffer: Offer does not exist'
         );
+      });
+
+      it('can cancel an offer', async () => {
+        const {receipt} = await this.marketplace.cancelOffer(0, {from: admin});
+        await expectEvent(receipt, 'OfferCancelled', {
+          garmentTokenId: (new BN('0'))
+        });
       });
   });
   });
