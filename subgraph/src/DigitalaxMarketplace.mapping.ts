@@ -4,7 +4,9 @@ import {
     OfferCreated,
     OfferPurchased,
     UpdateOfferPrimarySalePrice,
-    DigitalaxMarketplace as DigitalaxMarketplaceContract
+    DigitalaxMarketplace as DigitalaxMarketplaceContract,
+    OfferCancelled,
+    DigitalaxMarketplace
 } from "../generated/DigitalaxMarketplace/DigitalaxMarketplace";
 
 import {
@@ -37,4 +39,11 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     history.value = event.params.primarySalePrice;
     history.isPaidWithMona = event.params.paidInErc20;
     history.save();
+}
+
+export function handleOfferCancelled(event: OfferCancelled): void {
+    let offer = DigitalaxMarketplaceOffer.load(event.params.garmentTokenId.toString());
+    offer.primarySalePrice = null;
+    offer.garmentCollection = null;
+    offer.save();
 }
