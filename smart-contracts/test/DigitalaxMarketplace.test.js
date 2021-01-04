@@ -580,6 +580,41 @@ contract('DigitalaxMarketplace', (accounts) => {
   });
   });
 
+  describe('updateOfferPrimarySalePrice()', async () => {
+
+    beforeEach(async () => {
+      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+      const garmentIds = await this.garmentCollection.getTokenIds(0);
+      for (let i = 0; i < garmentIds.length; i ++) {
+        await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
+      }
+      await this.marketplace.setNowOverride('2');
+      await this.marketplace.createOffer(
+        0,
+        ether('0.1'),
+        {from: minter}
+      );
+    });
+
+    describe('validation', async () => {
+
+      it('cannot update the offer primary sale price if not an admin', async () => {
+        await expectRevert(
+          this.marketplace.updateOfferPrimarySalePrice(0, ether('0.05'), {from: tokenBuyer}),
+            'DigitalaxMarketplace.updateOfferPrimarySalePrice: Sender must be admin'
+        );
+      });
+
+      it('can update the offer primary sale price', async () => {
+        const {receipt} = await this.marketplace.updateOfferPrimarySalePrice(0, ether('0.05'), {from: admin});
+        await expectEvent(receipt, 'UpdateOfferPrimarySalePrice', {
+          garmentTokenId: (new BN('0')),
+          primarySalePrice: (ether('0.05'))
+        });
+      });
+  });
+  });
+
   async function getGasCosts(receipt) {
     const tx = await web3.eth.getTransaction(receipt.tx);
     const gasPrice = new BN(tx.gasPrice);
