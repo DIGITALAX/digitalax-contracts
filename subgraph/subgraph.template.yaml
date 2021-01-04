@@ -154,3 +154,29 @@ dataSources:
         - event: MintGarmentCollection(uint256)
           handler: handleGarmentCollectionMinted
       file: ./src/DigitalaxGarmentCollection.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxMarketplace
+    network: '{{network}}'
+    source:
+      address: '{{DigitalaxMarketplaceAddress}}'
+      abi: DigitalaxMarketplace
+      startBlock: {{DigitalaxMarketplaceStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - OfferCreated
+        - UpdateOfferPrimarySalePrice
+        - OfferPurchased
+      abis:
+        - name: DigitalaxMarketplace
+          file: ./abis/DigitalaxMarketplace.json
+      eventHandlers:
+        - event: OfferCreated(indexed uint256)
+          handler: handleOfferCreated
+        - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
+          handler: handleOfferPrimarySalePriceUpdated
+        - event: OfferPurchased(indexed uint256,indexed address,uint256,bool)
+          handler: handleOfferPurchased
+      file: ./src/DigitalaxMarketplace.mapping.ts
