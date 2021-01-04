@@ -180,6 +180,6 @@ dataSources:
           handler: handleOfferPrimarySalePriceUpdated
         - event: OfferPurchased(indexed uint256,indexed address,uint256,bool)
           handler: handleOfferPurchased
-        - event: OfferCancelled(uint256)
+        - event: OfferCancelled(indexed uint256)
           handler: handleOfferCancelled
       file: ./src/DigitalaxMarketplace.mapping.ts
