@@ -119,3 +119,15 @@ type DigitalaxGarmentAuctionHistory @entity {
   bidder: DigitalaxCollector
   value: BigInt
 }
+
+type DigitalaxMarketplaceOffer @entity {
+  id: ID!
+
+}
+
+type DigitalaxGarmentCollection @entity {
+  id: ID!
+  tokenIds: [BigInt!]!
+  designer: DigitalaxGarmentDesigner!
+  tokenUri: String!
+}
