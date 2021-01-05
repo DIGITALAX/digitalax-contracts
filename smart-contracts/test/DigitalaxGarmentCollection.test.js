@@ -151,6 +151,62 @@ contract('DigitalaxGarmentCollection', (accounts) => {
     });
   });
 
+  describe('burnCollection()', async () => {
+    beforeEach(async () => {
+      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+      const garmentIds = await this.garmentCollection.getTokenIds(0);
+      for (let i = 0; i < garmentIds.length; i ++) {
+        await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
+      }
+    });
+
+    describe('validation', async () => {
+      it('can successfully burn collection', async () => {
+        const garmentIds = await this.garmentCollection.getTokenIds(0);
+        for (let i = 0; i < garmentIds.length; i ++) {
+          await this.token.approve(this.garmentCollection.address, garmentIds[i], {from: minter});
+        }
+
+        const {receipt} = await this.garmentCollection.burnCollection(0, {from: minter});
+        await expectEvent(receipt, 'BurnGarmentCollection', {
+          collectionId: (new BN('0')),
+        });
+      });
+      it('will revert on burn collection if the garment collection contract is not approved and is not owner', async () => {
+        await expectRevert(
+            this.garmentCollection.burnCollection(0, {from: minter}
+            ),
+            "DigitalaxGarmentNFT.burn: Only garment owner or approved"
+        );
+      });
+    });
+  });
+
+  describe('getters', async () => {
+    beforeEach(async () => {
+      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+      const garmentIds = await this.garmentCollection.getTokenIds(0);
+      for (let i = 0; i < garmentIds.length; i ++) {
+        await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
+      }
+    });
+
+    describe('validation', async () => {
+      it('can get token ids', async () => {
+        const garmentIds = await this.garmentCollection.getTokenIds(0);
+        expect(garmentIds.length).to.equal(10);
+      });
+
+      it('can get token collection', async () => {
+        const collection = await this.garmentCollection.getCollection(0);
+        expect(collection[0].length).to.equal(10);
+        expect(collection[1]).to.equal === COLLECTION_SIZE;
+        expect(collection[2]).to.equal(randomTokenURI);
+        expect(collection[3]).to.equal(designer);
+      });
+    });
+  });
+
   async function getGasCosts(receipt) {
     const tx = await web3.eth.getTransaction(receipt.tx);
     const gasPrice = new BN(tx.gasPrice);
