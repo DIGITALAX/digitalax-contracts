@@ -467,11 +467,10 @@ contract('DigitalaxMarketplace', (accounts) => {
         await this.marketplace.setNowOverride('2');
         await this.marketplace.buyOffer(0, false, {from: tokenBuyer, value: ether('0.1')});
 
-        const {_primarySalePrice, _startTime, _availableAmount, _canceled} = await this.marketplace.getOffer(0);
+        const {_primarySalePrice, _startTime, _availableAmount} = await this.marketplace.getOffer(0);
         expect(_primarySalePrice).to.be.bignumber.equal(ether('0.1'));
         expect(_startTime).to.be.bignumber.equal('1');
         expect(_availableAmount).to.be.bignumber.equal('9');
-        expect(_canceled).to.be.equal(false);
       });
 
       it('transfer funds to the token creator and platform', async () => {
