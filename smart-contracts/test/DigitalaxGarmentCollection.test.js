@@ -204,6 +204,21 @@ contract('DigitalaxGarmentCollection', (accounts) => {
         expect(collection[2]).to.equal(randomTokenURI);
         expect(collection[3]).to.equal(designer);
       });
+
+      it('can get token supply', async () => {
+        const supply = await this.garmentCollection.getSupply(0);
+        expect(supply).to.equal === COLLECTION_SIZE;
+      });
+
+      it('can get balance of address', async () => {
+        const balance = await this.garmentCollection.balanceOfAddress(0, minter);
+        expect(balance).to.equal === COLLECTION_SIZE;
+      });
+
+      it('can check whether user owns entire collection', async () => {
+        const owns = await this.garmentCollection.hasOwnedOf(0, minter);
+        expect(owns).to.be.true;
+      });
     });
   });
 
