@@ -30,7 +30,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         bool freezeETHPayment
     );
     event OfferCreated(
-        uint256 indexed garmentTokenId
+        uint256 indexed garmentCollectionId
     );
     event UpdateAccessControls(
         address indexed accessControls
@@ -42,7 +42,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         uint256 discount
     );
     event UpdateOfferPrimarySalePrice(
-        uint256 indexed garmentTokenId,
+        uint256 indexed garmentCollectionId,
         uint256 primarySalePrice
     );
     event UpdatePlatformFeeRecipient(
@@ -62,7 +62,6 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         uint256 primarySalePrice;
         uint256 startTime;
         uint256 availableIndex;
-        bool canceled;
     }
     /// @notice Garment ERC721 Token ID -> Offer Parameters
     mapping(uint256 => Offer) public offers;
@@ -353,14 +352,13 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     function getOffer(uint256 _garmentCollectionId)
     external
     view
-    returns (uint256 _primarySalePrice, uint256 _startTime, uint256 _availableAmount, bool _canceled) {
+    returns (uint256 _primarySalePrice, uint256 _startTime, uint256 _availableAmount) {
         Offer storage offer = offers[_garmentCollectionId];
         uint256 availableAmount = garmentCollection.getSupply(_garmentCollectionId).sub(offer.availableIndex);
         return (
             offer.primarySalePrice,
             offer.startTime,
-            availableAmount,
-            offer.canceled
+            availableAmount
         );
     }
 
@@ -425,8 +423,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         offers[_garmentCollectionId] = Offer({
             primarySalePrice : _primarySalePrice,
             startTime : _startTimestamp,
-            availableIndex : 0,
-            canceled: false
+            availableIndex : 0
         });
         emit OfferCreated(_garmentCollectionId);
     }
