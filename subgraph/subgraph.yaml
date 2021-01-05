@@ -6,11 +6,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DigitalaxGenesisNFT
-    network: 'mainnet'
+    network: 'rinkeby'
     source:
-      address: '0x89505d2a27b7e8ac56252081d721ecd525e4241e'
+      address: '0x064A6151F99ba2610f2D6600Dcb2b2Ed3a276356'
       abi: DigitalaxGenesisNFT
-      startBlock: 11157574
+      startBlock: 7459382
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -32,11 +32,11 @@ dataSources:
       file: ./src/DigitalaxGenesisNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentNFT
-    network: 'mainnet'
+    network: 'rinkeby'
     source:
-      address: '0x0b509f4b044f713a91bb50535914f7ad160532fe'
+      address: '0xbA1b4438Eb1Ff572d467b820330AabeE9A241947'
       abi: DigitalaxGarmentNFT
-      startBlock: 11320285
+      startBlock: 7576230
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -58,11 +58,11 @@ dataSources:
       file: ./src/DigitalaxGarmentNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterials
-    network: 'mainnet'
+    network: 'rinkeby'
     source:
-      address: '0xe6822e8b4d91b85f9ca00cca79bf92bab14bc221'
+      address: '0x80E71735A8234Fb761B9Db16519D319B8628d6F4'
       abi: DigitalaxMaterials
-      startBlock: 11320271
+      startBlock: 7576227
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -87,11 +87,11 @@ dataSources:
       file: ./src/DigitalaxMaterials.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuction
-    network: 'mainnet'
+    network: 'rinkeby'
     source:
-      address: '0xd84E216a4804A5e6BAa4f936838E4a3d1A0D3C53'
+      address: '0x70D097AbFFC8f78a837242a1f0ACF9Ef703fd899'
       abi: DigitalaxAuction
-      startBlock: 11320386
+      startBlock: 7576239
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -134,3 +134,52 @@ dataSources:
         - event: UpdatePlatformFeeRecipient(address)
           handler: handleUpdatePlatformFeeRecipient
       file: ./src/DigitalaxAuction.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxGarmentCollection
+    network: 'rinkeby'
+    source:
+      address: '0x9f3077F6062Ab74c2d7D79885Be4744F8a839E93'
+      abi: DigitalaxGarmentCollection
+      startBlock: 
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - MintGarmentCollection
+      abis:
+        - name: DigitalaxGarmentCollection
+          file: ./abis/DigitalaxGarmentCollection.json
+      eventHandlers:
+        - event: MintGarmentCollection(uint256)
+          handler: handleGarmentCollectionMinted
+      file: ./src/DigitalaxGarmentCollection.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxMarketplace
+    network: 'rinkeby'
+    source:
+      address: '0x837CA13b6E6Ea4cb3ccbDBBE4EF7e49E40305F3d'
+      abi: DigitalaxMarketplace
+      startBlock: 7827826
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - OfferCreated
+        - UpdateOfferPrimarySalePrice
+        - OfferPurchased
+        - OfferCancelled
+      abis:
+        - name: DigitalaxMarketplace
+          file: ./abis/DigitalaxMarketplace.json
+      eventHandlers:
+        - event: OfferCreated(indexed uint256)
+          handler: handleOfferCreated
+        - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
+          handler: handleOfferPrimarySalePriceUpdated
+        - event: OfferPurchased(indexed uint256,indexed address,uint256,bool)
+          handler: handleOfferPurchased
+        - event: OfferCancelled(indexed uint256)
+          handler: handleOfferCancelled
+      file: ./src/DigitalaxMarketplace.mapping.ts
