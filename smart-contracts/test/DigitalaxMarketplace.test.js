@@ -675,7 +675,7 @@ contract('DigitalaxMarketplace', (accounts) => {
       it('can update the offer primary sale price', async () => {
         const {receipt} = await this.marketplace.updateOfferPrimarySalePrice(0, ether('0.05'), {from: admin});
         await expectEvent(receipt, 'UpdateOfferPrimarySalePrice', {
-          garmentTokenId: (new BN('0')),
+          garmentCollectionId: (new BN('0')),
           primarySalePrice: (ether('0.05'))
         });
       });
