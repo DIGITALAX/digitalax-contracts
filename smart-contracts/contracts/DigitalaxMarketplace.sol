@@ -23,6 +23,12 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     event PauseToggled(
         bool isPaused
     );
+    event FreezeMonaERC20PaymentToggled(
+        bool freezeMonaERC20Payment
+    );
+    event FreezeETHPaymentToggled(
+        bool freezeETHPayment
+    );
     event OfferCreated(
         uint256 indexed garmentTokenId
     );
@@ -82,6 +88,11 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     address public weth;
     /// @notice for pausing marketplace functionalities
     bool public isPaused;
+    /// @notice for freezing mona payment option
+    bool public freezeMonaERC20Payment;
+    /// @notice for freezing eth payment option
+    bool public freezeETHPayment;
+
     modifier whenNotPaused() {
         require(!isPaused, "Function is currently paused");
         _;
@@ -111,6 +122,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         platformFeeRecipient = _platformFeeRecipient;
         monaErc20Token = _monaErc20Token;
         weth = _weth;
+
         emit DigitalaxMarketplaceContractDeployed();
     }
     /**
@@ -167,27 +179,36 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         require(garmentNft.isApproved(garmentTokenId, address(this)), "DigitalaxMarketplace.buyOffer: offer not approved");
         require(_getNow() >= offer.startTime, "DigitalaxMarketplace.buyOffer: Purchase outside of the offer window");
 
+        uint256 feeInETH = offer.primarySalePrice.mul(platformFee).div(maxShare);
+
         // Work out platform fee on sale amount
         if(_payWithMona) {
+            require(!freezeMonaERC20Payment, "DigitalaxMarketplace.buyOffer: mona erc20 payments currently frozen");
+
             oracle.update();
-            uint256 amountOfMonaToTransfer = _estimateMonaAmount(_garmentCollectionId, msg.value);
-            uint256 feeInETH = msg.value.mul(platformFee).div(maxShare);
-            uint256 feeInMona = amountOfMonaToTransfer.mul(platformFee).div(maxShare);
-            
+
+            // Designer receives (Primary Sale Price minus Protocol Fee)
+            uint256 amountOfETHDesignerReceives = offer.primarySalePrice.sub(feeInETH);
+            uint256 amountOfMonaToTransferToDesigner = _estimateMonaAmount(amountOfETHDesignerReceives);
+
+            // There is a discount on Fees paying in Mona
+            uint256 amountOfDiscountOnETHPrice = offer.primarySalePrice.mul(discountToPayERC20).div(maxShare);
+            uint256 amountOfETHToBePaidInFees = feeInETH.sub(amountOfDiscountOnETHPrice);
+            uint256 amountOfMonaToTransferAsFees = _estimateMonaAmount(amountOfETHToBePaidInFees);
+
+            // Then calculate how much Mona the buyer must send
+            uint256 amountOfMonaToTransfer = amountOfMonaToTransferToDesigner.add(amountOfMonaToTransferAsFees);
+
             // Check that there is enough ERC20 to cover the rest of the value (minus the discount already taken)
             require(IERC20(monaErc20Token).allowance(msg.sender, address(this)) >= amountOfMonaToTransfer, "DigitalaxMarketplace.buyOffer: Failed to supply ERC20 Allowance");
             // Transfer ERC20 token from user to contract(this) escrow
-            IERC20(monaErc20Token).transferFrom(msg.sender, garmentNft.garmentDesigners(garmentTokenId), amountOfMonaToTransfer.sub(feeInMona));
-            IERC20(monaErc20Token).transferFrom(msg.sender, platformFeeRecipient, feeInMona);
-            
-            // Transfer ETH to the desired addresses.
-            (bool platformTransferSuccess,) = platformFeeRecipient.call{value : feeInETH}("");
-            require(platformTransferSuccess, "DigitalaxMarketplace.buyOffer: Failed to send platform fee");
-            (bool designerTransferSuccess,) = garmentNft.garmentDesigners(garmentTokenId).call{value : msg.value.sub(feeInETH)}("");
-            require(designerTransferSuccess, "DigitalaxMarketplace.buyOffer: Failed to send the designer their royalties");
+            IERC20(monaErc20Token).transferFrom(msg.sender, garmentNft.garmentDesigners(garmentTokenId), amountOfMonaToTransferToDesigner);
+            IERC20(monaErc20Token).transferFrom(msg.sender, platformFeeRecipient, amountOfMonaToTransferAsFees);
+
         } else {
+            require(!freezeETHPayment, "DigitalaxMarketplace.buyOffer: eth payments currently frozen");
+
             require(msg.value >= offer.primarySalePrice, "DigitalaxMarketplace.buyOffer: Failed to supply funds");
-            uint256 feeInETH = offer.primarySalePrice.mul(platformFee).div(maxShare);
 
             // Send platform fee in ETH to the platform fee recipient, there is a discount that is subtracted from this
             (bool platformTransferSuccess,) = platformFeeRecipient.call{value : feeInETH}("");
@@ -231,6 +252,26 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.toggleIsPaused: Sender must be admin");
         isPaused = !isPaused;
         emit PauseToggled(isPaused);
+    }
+
+    /**
+     @notice Toggle freeze ETH
+     @dev Only admin
+     */
+    function toggleFreezeETHPayment() external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.toggleFreezeETHPayment: Sender must be admin");
+        freezeETHPayment = !freezeETHPayment;
+        emit FreezeETHPaymentToggled(freezeETHPayment);
+    }
+
+    /**
+     @notice Toggle freeze Mona ERC20
+     @dev Only admin
+     */
+    function toggleFreezeMonaERC20Payment() external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.toggleFreezeMonaERC20Payment: Sender must be admin");
+        freezeMonaERC20Payment = !freezeMonaERC20Payment;
+        emit FreezeMonaERC20PaymentToggled(freezeMonaERC20Payment);
     }
 
     /**
@@ -326,8 +367,8 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     /**
      @notice Method for getting estimation of Mona amount
      */
-    function estimateMonaAmount(uint256 _garmentCollectionId, uint256 _amountInETH) external view returns (uint256) {
-        return _estimateMonaAmount(_garmentCollectionId, _amountInETH);
+    function estimateMonaAmount(uint256 _priceInETH) external view returns (uint256) {
+        return _estimateMonaAmount(_priceInETH);
     }
 
     /////////////////////////
@@ -359,13 +400,10 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
 
     /**
      @notice Private method to estimate MONA for paying
-     @param _garmentCollectionId Id of the collection
      @param _amountInETH ETH amount in wei
      */
-    function _estimateMonaAmount(uint256 _garmentCollectionId, uint256 _amountInETH) internal virtual view returns (uint256) {
-        Offer storage offer = offers[_garmentCollectionId];
-        uint256 priceInMona = offer.primarySalePrice.sub(_amountInETH).mul(discountToPayERC20).div(1000);
-        uint256 amountOfMonaToTransfer = oracle.consult(address(weth), priceInMona);
+    function _estimateMonaAmount(uint256 _amountInETH) internal virtual view returns (uint256) {
+        uint256 amountOfMonaToTransfer = oracle.consult(address(weth), _amountInETH);
 
         return amountOfMonaToTransfer;
     }
