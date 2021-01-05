@@ -281,7 +281,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
      */
     function updateMarketplaceDiscountToPayInErc20(uint256 _marketplaceDiscount) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.updateMarketplaceDiscountToPayInErc20: Sender must be admin");
-        require(_marketplaceDiscount < platformFee, "DigitalaxMarketplace.updateMarketplaceDiscountToPayInErc20: Discount cannot be greater then fee");
+        require(_marketplaceDiscount <= platformFee, "DigitalaxMarketplace.updateMarketplaceDiscountToPayInErc20: Discount cannot be greater then fee");
         discountToPayERC20 = _marketplaceDiscount;
         emit UpdateMarketplaceDiscountToPayInErc20(_marketplaceDiscount);
     }
@@ -294,7 +294,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
      */
     function updateMarketplacePlatformFee(uint256 _platformFee) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.updateMarketplacePlatformFee: Sender must be admin");
-        require(_platformFee > discountToPayERC20, "DigitalaxMarketplace.updateMarketplacePlatformFee: Discount cannot be greater then fee");
+        require(_platformFee >= discountToPayERC20, "DigitalaxMarketplace.updateMarketplacePlatformFee: Discount cannot be greater then fee");
         platformFee = _platformFee;
         emit UpdateMarketplacePlatformFee(_platformFee);
     }
