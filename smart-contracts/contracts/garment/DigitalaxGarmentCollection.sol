@@ -24,10 +24,6 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard {
     event BurnGarmentCollection(
         uint256 collectionId
     );
-    event ApproveGarmentCollection(
-        address to,
-        uint256 collectionId
-    );
 
     /// @notice Parameters of a NFTs Collection
     struct Collection {
