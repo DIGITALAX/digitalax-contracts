@@ -1,8 +1,8 @@
 # Introduction
 
-### Welcome to Digitalax!
+### Welcome to DIGITALAX!
 
->First off, thank you for considering contributing to Digitalax. This documentation is meant to help internal and external collaborators make meaningful contributions to the project
+>First off, thank you for considering contributing to DIGITALAX. This documentation is meant to help internal and external collaborators make meaningful contributions to the project
 
 ### Getting Started
 
@@ -10,7 +10,7 @@
 >
 >
 
-To work on this repository, you should first develop a good understanding of the Digitalax project and the different components working. Please Check Out: [Digitalax Gitbook](https://digitalax.gitbook.io/digitalax/) to read our intro to Digitalax.
+To work on this repository, you should first develop a good understanding of the DIGITALAX project and the different components working. Please Check Out: [DIGITALAX Gitbook](https://digitalax.gitbook.io/digitalax/) to read our intro to DIGITALAX.
 Make sure to read the relevant README files in the repository you are looking to modify or create an issue for.
 
 ### What is an acceptable contribution?
@@ -75,7 +75,7 @@ If you find a security vulnerability, do NOT open an issue. Email emma.jane@digi
 # How to submit a pull request contribution
 
 ### We Develop with Github
-We use github to host code, to track issues and feature requests, as well as accept pull requests.
+We use github to host DIGITALAX project code, to track issues and feature requests, as well as accept pull requests.
 
 ### We Use Github Flow, So All Code Changes Happen Through Pull Requests
 Pull requests are the best way to propose changes to the codebase. We actively welcome your pull requests:
@@ -91,7 +91,7 @@ Pull requests are the best way to propose changes to the codebase. We actively w
 
 ### Code review process
 
-If you submit a Pull request, we will review it within a reasonable time frame. 
+If you submit a Pull request, the DIGITALAX team will review it within a reasonable time frame. 
 
 One certified reviewer who is part of the organization will review, and then either approve the PR or request changes from you.
 
@@ -120,7 +120,7 @@ Examples of unacceptable behavior by participants include:
 
 ### Our Responsibilities
 
-Project maintainers are responsible for clarifying the standards of acceptable behavior and are expected to take appropriate and fair corrective action in response to any instances of unacceptable behavior.
+DIGITALAX Project maintainers are responsible for clarifying the standards of acceptable behavior and are expected to take appropriate and fair corrective action in response to any instances of unacceptable behavior.
 
 Project maintainers have the right and responsibility to remove, edit, or reject comments, commits, code, wiki edits, issues, and other contributions that are not aligned to this Code of Conduct, or to ban temporarily or permanently any contributor for other behaviors that they deem inappropriate, threatening, offensive, or harmful.
 
