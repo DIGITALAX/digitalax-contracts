@@ -8,5 +8,3 @@ export const MAX_UINT_256 = BigInt.fromUnsignedBytes(Bytes.fromHexString("0xffff
 
 export const ONE_ETH = new BigDecimal(BigInt.fromI32(1).times(BigInt.fromI32(10).pow(18)))
 export const SECONDS_IN_DAY = BigInt.fromI32(86400)
-
-export const NFT_DESIGNER_MAP: string[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '10', '12', '13', '8', '15', '15', '1', '18', '2', '20', '21', '22', '23', '24', '25', '18', '27', '28', '29'];

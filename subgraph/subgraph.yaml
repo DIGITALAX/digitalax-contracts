@@ -175,3 +175,48 @@ dataSources:
         - event: VerifiedMinterRoleRemoved(indexed address,indexed address)
           handler: handleVerifiedMinterRoleRemoved
       file: ./src/DigitalaxAccessControls.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxGarmentCollection
+    network: 'rinkeby'
+    source:
+      address: '0x9f3077F6062Ab74c2d7D79885Be4744F8a839E93'
+      abi: DigitalaxGarmentCollection
+      startBlock: 
+        - MintGarmentCollection
+      abis:
+        - name: DigitalaxGarmentCollection
+          file: ./abis/DigitalaxGarmentCollection.json
+      eventHandlers:
+        - event: MintGarmentCollection(uint256)
+          handler: handleGarmentCollectionMinted
+      file: ./src/DigitalaxGarmentCollection.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxMarketplace
+    network: 'rinkeby'
+    source:
+      address: '0x837CA13b6E6Ea4cb3ccbDBBE4EF7e49E40305F3d'
+      abi: DigitalaxMarketplace
+      startBlock: 7827826
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - OfferCreated
+        - UpdateOfferPrimarySalePrice
+        - OfferPurchased
+        - OfferCancelled
+      abis:
+        - name: DigitalaxMarketplace
+          file: ./abis/DigitalaxMarketplace.json
+      eventHandlers:
+        - event: OfferCreated(indexed uint256)
+          handler: handleOfferCreated
+        - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
+          handler: handleOfferPrimarySalePriceUpdated
+        - event: OfferPurchased(indexed uint256,indexed address,uint256,bool)
+          handler: handleOfferPurchased
+        - event: OfferCancelled(indexed uint256)
+          handler: handleOfferCancelled
+      file: ./src/DigitalaxMarketplace.mapping.ts
+
