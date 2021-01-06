@@ -12,6 +12,7 @@ contract DigitalaxAccessControls is AccessControl {
     /// @notice Role definitions
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant SMART_CONTRACT_ROLE = keccak256("SMART_CONTRACT_ROLE");
+    bytes32 public constant VERIFIED_MINTER_ROLE = keccak256("VERIFIED_MINTER_ROLE");
 
     /// @notice Events for adding and removing various roles
     event AdminRoleGranted(
@@ -44,6 +45,16 @@ contract DigitalaxAccessControls is AccessControl {
         address indexed caller
     );
 
+    event VerifiedMinterRoleGranted(
+        address indexed beneficiary,
+        address indexed caller
+    );
+
+    event VerifiedMinterRoleRemoved(
+        address indexed beneficiary,
+        address indexed caller
+    );
+
     /**
      * @notice The deployer is automatically given the admin role which will allow them to then grant roles to other addresses
      */
@@ -71,6 +82,19 @@ contract DigitalaxAccessControls is AccessControl {
      */
     function hasMinterRole(address _address) external view returns (bool) {
         return hasRole(MINTER_ROLE, _address);
+    }
+
+    /**
+     * @notice Used to check whether an address has the verified minter role
+     * @param _address EOA or contract being checked
+     * @return bool True if the account has the role or false if it does not
+     */
+    function hasVerifiedMinterRole(address _address)
+        external
+        view
+        returns (bool)
+    {
+        return hasRole(VERIFIED_MINTER_ROLE, _address);
     }
 
     /**
@@ -124,6 +148,26 @@ contract DigitalaxAccessControls is AccessControl {
     function removeMinterRole(address _address) external {
         revokeRole(MINTER_ROLE, _address);
         emit MinterRoleRemoved(_address, _msgSender());
+    }
+
+    /**
+     * @notice Grants the verified minter role to an address
+     * @dev The sender must have the admin role
+     * @param _address EOA or contract receiving the new role
+     */
+    function addVerifiedMinterRole(address _address) external {
+        grantRole(VERIFIED_MINTER_ROLE, _address);
+        emit VerifiedMinterRoleGranted(_address, _msgSender());
+    }
+
+    /**
+     * @notice Removes the verified minter role from an address
+     * @dev The sender must have the admin role
+     * @param _address EOA or contract affected
+     */
+    function removeVerifiedMinterRole(address _address) external {
+        revokeRole(VERIFIED_MINTER_ROLE, _address);
+        emit VerifiedMinterRoleRemoved(_address, _msgSender());
     }
 
     /**

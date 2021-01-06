@@ -67,6 +67,54 @@ contract DigitalaxGarmentFactory is Context, ReentrancyGuard {
     }
 
     /**
+     @notice Creates a child ERC1155 token with balance, assigning them to the beneficiary
+     @dev Only callable with verified minter role
+     @return childTokenId the generated child Token ID
+     */
+    function createNewChildWithVerifiedRole(
+        string calldata _childTokenUri,
+        uint256 _childTokenAmount
+    ) external nonReentrant returns (uint256 childTokenId) {
+        require(
+            accessControls.hasVerifiedMinterRole(_msgSender()),
+            "DigitalaxGarmentFactory.createNewChildWithVerifiedRole: Sender must be verified minter"
+        );
+
+        // Create new children
+        uint256 _childTokenId = materials.createChild(_childTokenUri);
+
+        // Mint balances of children
+        materials.mintChild(
+            _childTokenId,
+            _childTokenAmount,
+            _msgSender(),
+            abi.encodePacked("")
+        );
+
+        return _childTokenId;
+    }
+
+    /**
+     @notice Creates a batch of child ERC1155 tokens with balances, assigning them to the beneficiary
+     @dev Only callable with verified minter role
+     */
+    function createNewChildrenWithVerifiedRole(
+        string[] calldata _childTokenUris,
+        uint256[] calldata _childTokenAmounts
+    ) external nonReentrant {
+        require(
+            accessControls.hasVerifiedMinterRole(_msgSender()),
+            "DigitalaxGarmentFactory.createNewChildrenWithVerifiedRole: Sender must be a verified minter"
+        );
+
+        // Create new children
+        uint256[] memory childTokenIds = materials.batchCreateChildren(_childTokenUris);
+
+        // Mint balances of children
+        materials.batchMintChildren(childTokenIds, _childTokenAmounts, _msgSender(), abi.encodePacked(""));
+    }
+
+    /**
      @notice Creates a batch of child ERC1155 tokens with balances, assigning them to the beneficiary
      @dev Only callable with minter role
      */

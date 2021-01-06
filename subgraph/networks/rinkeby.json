@@ -8,6 +8,8 @@
   "DigitalaxMaterialsStartBlock": 7576227,
   "DigitalaxAuctionAddress": "0x70D097AbFFC8f78a837242a1f0ACF9Ef703fd899",
   "DigitalaxAuctionStartBlock": 7576239,
+  "DigitalaxAccessControlsAddress": "0xe6fff33bdef5e1894d898b24b366fbec6d74c073",
+  "DigitalaxAccessControlsStartBlock": 7807928
   "DigitalaxGarmentCollectionAddress": "0x9f3077F6062Ab74c2d7D79885Be4744F8a839E93",
   "DigitalaxGarmentCOllectionStartBlock": 7825302,
   "DigitalaxMarketplaceAddress": "0x837CA13b6E6Ea4cb3ccbDBBE4EF7e49E40305F3d",
