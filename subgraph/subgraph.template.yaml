@@ -134,3 +134,44 @@ dataSources:
         - event: UpdatePlatformFeeRecipient(address)
           handler: handleUpdatePlatformFeeRecipient
       file: ./src/DigitalaxAuction.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxAccessControls
+    network: '{{network}}'
+    source:
+      address: '{{DigitalaxAccessControlsAddress}}'
+      abi: DigitalaxAccessControls
+      startBlock: {{DigitalaxAccessControlsStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - AdminRoleGranted
+        - AdminRoleRemoved
+        - MinterRoleGranted
+        - MinterRoleRemoved
+        - SmartContractRoleGranted
+        - SmartContractRoleRemoved
+        - VerifiedMinterRoleGranted
+        - VerifiedMinterRoleRemoved
+      abis:
+        - name: DigitalaxAccessControls
+          file: ./abis/DigitalaxAccessControls.json
+      eventHandlers:
+        - event: AdminRoleGranted(indexed address,indexed address)
+          handler: handleAdminRoleGranted
+        - event: AdminRoleRemoved(indexed address,indexed address)
+          handler: handleAdminRoleRemoved
+        - event: MinterRoleGranted(indexed address,indexed address)
+          handler: handleMinterRoleGranted
+        - event: MinterRoleRemoved(indexed address,indexed address)
+          handler: handleMinterRoleRemoved
+        - event: SmartContractRoleGranted(indexed address,indexed address)
+          handler: handleSmartContractRoleGranted
+        - event: SmartContractRoleRemoved(indexed address,indexed address)
+          handler: handleSmartContractRoleRemoved
+        - event: VerifiedMinterRoleGranted(indexed address,indexed address)
+          handler: handleVerifiedMinterRoleGranted
+        - event: VerifiedMinterRoleRemoved(indexed address,indexed address)
+          handler: handleVerifiedMinterRoleRemoved
+      file: ./src/DigitalaxAccessControls.mapping.ts
