@@ -21,7 +21,7 @@ export function handleGarmentCollectionMinted(event: MintGarmentCollection): voi
 }
 
 export function handleGarmentCollectionBurned(event: BurnGarmentCollection): void {
-    let collection = DigitalaxGarmentCollectionContract.load(event.params.collectionId.toString());
+    let collection = DigitalaxGarmentCollection.load(event.params.collectionId.toString());
     collection.tokenIds = null;
     collection.tokenUri = null;
     collection.designer = null;
