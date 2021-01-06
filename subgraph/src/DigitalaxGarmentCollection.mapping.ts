@@ -1,5 +1,3 @@
-import {log, BigInt, Address, store} from "@graphprotocol/graph-ts/index";
-
 import {
     MintGarmentCollection,
     BurnGarmentCollection,
@@ -17,8 +15,9 @@ export function handleGarmentCollectionMinted(event: MintGarmentCollection): voi
     let collection = new DigitalaxGarmentCollection(event.params.collectionId.toString());
 
     let mintedGarments = new Array<string>();
-    for(let i = 0; i < collectionData.value1; i++) {
-            mintedGarments.push(DigitalaxGarment.load(collectionData.value0[i]));
+    for(let i = 0; i < collectionData.value1.toI32(); i++) {
+        const garmentToken = DigitalaxGarment.load(collectionData.value0[i].toString());
+        mintedGarments.push(garmentToken.id);
     }
     collection.garments = mintedGarments;
     collection.tokenUri = collectionData.value2;
