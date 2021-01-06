@@ -179,24 +179,32 @@ dataSources:
     name: DigitalaxGarmentCollection
     network: 'rinkeby'
     source:
-      address: '0x9f3077F6062Ab74c2d7D79885Be4744F8a839E93'
+      address: '0x9a24Dd21E32893b4C9A0430fD206553617ca26e1'
       abi: DigitalaxGarmentCollection
-      startBlock: 
+      startBlock: 7848795
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
         - MintGarmentCollection
+        - BurnGarmentCollection
       abis:
         - name: DigitalaxGarmentCollection
           file: ./abis/DigitalaxGarmentCollection.json
       eventHandlers:
         - event: MintGarmentCollection(uint256)
           handler: handleGarmentCollectionMinted
+        - event: BurnGarmentCollection(uint256)
+          handler: handleGarmentCollectionBurned
       file: ./src/DigitalaxGarmentCollection.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMarketplace
     network: 'rinkeby'
     source:
-      address: '0x837CA13b6E6Ea4cb3ccbDBBE4EF7e49E40305F3d'
+      address: '0x5f4667ff7317e7a43fA8D8dc3cDc85639E7Cc44c'
       abi: DigitalaxMarketplace
-      startBlock: 7827826
+      startBlock: 7848808
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -219,4 +227,3 @@ dataSources:
         - event: OfferCancelled(indexed uint256)
           handler: handleOfferCancelled
       file: ./src/DigitalaxMarketplace.mapping.ts
-
