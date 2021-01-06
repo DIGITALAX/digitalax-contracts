@@ -80,6 +80,21 @@ contract('DigitalaxGarmentCollection', (accounts) => {
         const owner = await this.token.ownerOf(TOKEN_ONE_ID);
         expect(owner).to.be.equal(minter);
       });
+      it('reverts if sender not admin or minter ', async () => {
+        await expectRevert(
+            this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: designer}
+            ),
+            "DigitalaxGarmentCollection.mintCollection: Sender must have the minter or contract role"
+          );
+      });
+      it('reverts if collection size is greater then the max garment per collection ', async () => {
+        const maxGarments = await this.garmentCollection.maxGarmentsPerCollection();
+        await expectRevert(
+            this.garmentCollection.mintCollection(minter, randomTokenURI, designer, (maxGarments + 1), {from: minter}
+            ),
+            "DigitalaxGarmentCollection.mintCollection: Amount cannot exceed maxGarmentsPerCollection"
+          );
+      });
     });
   });
 
@@ -106,6 +121,35 @@ contract('DigitalaxGarmentCollection', (accounts) => {
             ),
             "DigitalaxGarmentNFT.burn: Only garment owner or approved"
         );
+      });
+    });
+  });
+
+  describe('updateMaxGarmentsPerCollection()', async () => {
+    beforeEach(async () => {
+      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+    });
+
+    describe('validation', async () => {
+      it('Can update access controls as admin', async () => {
+        expect(await this.garmentCollection.maxGarmentsPerCollection()).to.be.bignumber.equal("10");
+        await this.garmentCollection.updateMaxGarmentsPerCollection("20", {from: admin});
+        expect(await this.garmentCollection.maxGarmentsPerCollection()).to.be.bignumber.equal("20");
+      });
+
+      it('Reverts when sender is not admin', async () => {
+        await expectRevert(
+            this.garmentCollection.updateMaxGarmentsPerCollection("20", {from: designer}),
+            "DigitalaxGarmentNFT.updateMaxGarmentsPerCollection: Sender must be admin"
+        );
+      });
+
+      it('can successfully update max garments per collection and mint up to 30 tokens', async () => {
+        await this.garmentCollection.updateMaxGarmentsPerCollection("30", {from: admin});
+        const {receipt} = await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE.mul(new BN('3')), {from: minter});
+        await expectEvent(receipt, 'MintGarmentCollection', {
+          collectionId: (new BN('1')),
+        });
       });
     });
   });
