@@ -98,7 +98,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     }
 
     /**
-     @notice Burns a DigitalaxGarmentNFT, releasing any composed 1155 tokens held by the token itseld
+     @notice Burns a DigitalaxGarmentNFT, releasing any composed 1155 tokens held by the token itself
      @dev Only the owner or an approved sender can call this method
      @param _tokenId the token ID to burn
      */
