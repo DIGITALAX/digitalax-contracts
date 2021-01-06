@@ -135,17 +135,53 @@ dataSources:
           handler: handleUpdatePlatformFeeRecipient
       file: ./src/DigitalaxAuction.mapping.ts
   - kind: ethereum/contract
+    name: DigitalaxAccessControls
+    network: 'rinkeby'
+    source:
+      address: '0xe6fff33bdef5e1894d898b24b366fbec6d74c073'
+      abi: DigitalaxAccessControls
+      startBlock: 7807928
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - AdminRoleGranted
+        - AdminRoleRemoved
+        - MinterRoleGranted
+        - MinterRoleRemoved
+        - SmartContractRoleGranted
+        - SmartContractRoleRemoved
+        - VerifiedMinterRoleGranted
+        - VerifiedMinterRoleRemoved
+      abis:
+        - name: DigitalaxAccessControls
+          file: ./abis/DigitalaxAccessControls.json
+      eventHandlers:
+        - event: AdminRoleGranted(indexed address,indexed address)
+          handler: handleAdminRoleGranted
+        - event: AdminRoleRemoved(indexed address,indexed address)
+          handler: handleAdminRoleRemoved
+        - event: MinterRoleGranted(indexed address,indexed address)
+          handler: handleMinterRoleGranted
+        - event: MinterRoleRemoved(indexed address,indexed address)
+          handler: handleMinterRoleRemoved
+        - event: SmartContractRoleGranted(indexed address,indexed address)
+          handler: handleSmartContractRoleGranted
+        - event: SmartContractRoleRemoved(indexed address,indexed address)
+          handler: handleSmartContractRoleRemoved
+        - event: VerifiedMinterRoleGranted(indexed address,indexed address)
+          handler: handleVerifiedMinterRoleGranted
+        - event: VerifiedMinterRoleRemoved(indexed address,indexed address)
+          handler: handleVerifiedMinterRoleRemoved
+      file: ./src/DigitalaxAccessControls.mapping.ts
+  - kind: ethereum/contract
     name: DigitalaxGarmentCollection
     network: 'rinkeby'
     source:
       address: '0x9f3077F6062Ab74c2d7D79885Be4744F8a839E93'
       abi: DigitalaxGarmentCollection
       startBlock: 
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      entities:
         - MintGarmentCollection
       abis:
         - name: DigitalaxGarmentCollection
@@ -183,3 +219,4 @@ dataSources:
         - event: OfferCancelled(indexed uint256)
           handler: handleOfferCancelled
       file: ./src/DigitalaxMarketplace.mapping.ts
+
