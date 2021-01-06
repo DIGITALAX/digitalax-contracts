@@ -119,3 +119,12 @@ type DigitalaxGarmentAuctionHistory @entity {
   bidder: DigitalaxCollector
   value: BigInt
 }
+
+type DigitalaxAccessControlsHistory @entity {
+  id: ID!
+  eventName: String!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  beneficiary: Bytes!
+  caller: Bytes!
+}
