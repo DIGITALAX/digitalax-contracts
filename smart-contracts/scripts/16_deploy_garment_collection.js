@@ -2,7 +2,7 @@ async function main() {
 
     const [deployer] = await ethers.getSigners();
     const deployerAddress = await deployer.getAddress();
-    console.log('Deploying DigitalaxPodeNFT with the account:', deployerAddress);
+    console.log('Deploying DigitalaxGarmentCollection with the account:', deployerAddress);
   
     const {ACCESS_CONTROLS_ADDRESS, ERC721_GARMENT_ADDRESS} = process.env;
     console.log(`ACCESS_CONTROLS_ADDRESS found [${ACCESS_CONTROLS_ADDRESS}]`);
