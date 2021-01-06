@@ -39,6 +39,10 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard {
     /// @notice Array of garment collections
     Collection[] private garmentCollections;
 
+    /// @dev max ERC721 Garments a Collection can hold
+    /// @dev if admin configuring this value, recommend no higher then 40 garments/collection due to gas
+    uint256 public maxGarmentsPerCollection = 10;
+
     /**
      @param _accessControls Address of the Digitalax access control contract
      @param _garmentNft Garment NFT token address
@@ -73,6 +77,11 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard {
             "DigitalaxGarmentCollection.mintCollection: Sender must have the minter or contract role"
         );
 
+        require(
+            _amount <= maxGarmentsPerCollection,
+            "DigitalaxGarmentCollection.mintCollection: Amount cannot exceed maxGarmentsPerCollection"
+        );
+
         Collection memory _newCollection = Collection(new uint256[](0), _amount, _tokenUri, _designer);
         uint256 _collectionId = garmentCollections.length;
         garmentCollections.push(_newCollection);
@@ -98,6 +107,16 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard {
         }
         emit BurnGarmentCollection(_collectionId);
         delete garmentCollections[_collectionId];
+    }
+
+    /**
+     @notice Method for updating max nfts garments a collection can hold
+     @dev Only admin
+     @param _maxGarmentsPerCollection uint256 the max children a token can hold
+     */
+    function updateMaxGarmentsPerCollection(uint256 _maxGarmentsPerCollection) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentNFT.updateMaxGarmentsPerCollection: Sender must be admin");
+        maxGarmentsPerCollection = _maxGarmentsPerCollection;
     }
 
     /**
