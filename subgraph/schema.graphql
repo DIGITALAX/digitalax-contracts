@@ -131,7 +131,7 @@ type DigitalaxAccessControlsHistory @entity {
 
 type DigitalaxGarmentCollection @entity {
   id: ID!
-  tokenIds: [BigInt!]!
+  garments: [DigitalaxGarment!]!
   designer: DigitalaxGarmentDesigner!
   tokenUri: String!
 }
