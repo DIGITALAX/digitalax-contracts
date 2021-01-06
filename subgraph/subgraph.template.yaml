@@ -188,12 +188,15 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - MintGarmentCollection
+        - BurnGarmentCollection
       abis:
         - name: DigitalaxGarmentCollection
           file: ./abis/DigitalaxGarmentCollection.json
       eventHandlers:
         - event: MintGarmentCollection(uint256)
           handler: handleGarmentCollectionMinted
+        - event: BurnGarmentCollection(uint256)
+          handler: handleGarmentCollectionBurned
       file: ./src/DigitalaxGarmentCollection.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMarketplace
