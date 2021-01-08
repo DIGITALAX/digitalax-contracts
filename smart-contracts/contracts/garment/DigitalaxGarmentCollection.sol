@@ -98,7 +98,9 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard {
             uint256 _mintedTokenId = garmentNft.mint(_beneficiary, _tokenUri, _designer);
 
             // Batch mint child tokens and assign to generated 721 token ID
-            materials.batchMintChildren(_childTokenIds, _childTokenAmounts, address(garmentNft), abi.encodePacked(_mintedTokenId));
+            if(_childTokenIds.length > 0){
+                materials.batchMintChildren(_childTokenIds, _childTokenAmounts, address(garmentNft), abi.encodePacked(_mintedTokenId));
+            }
             garmentCollections[_collectionId].garmentTokenIds.push(_mintedTokenId);
         }
 

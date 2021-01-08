@@ -91,9 +91,11 @@ contract('DigitalaxMarketplace', (accounts) => {
 
     this.garmentCollection = await DigitalaxGarmentCollection.new(
       this.accessControls.address,
-      this.token.address
+      this.token.address,
+      this.digitalaxMaterials.address,
     );
     await this.accessControls.addMinterRole(this.garmentCollection.address, {from: admin});
+    await this.accessControls.addSmartContractRole(this.garmentCollection.address, {from: admin});
 
     this.marketplace = await DigitalaxMarketplace.new(
       this.accessControls.address,
@@ -196,7 +198,7 @@ contract('DigitalaxMarketplace', (accounts) => {
 
   describe('Admin functions', () => {
     beforeEach(async () => {
-      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, [], [], {from: minter});
       const garmentIds = await this.garmentCollection.getTokenIds(0);
       for (let i = 0; i < garmentIds.length; i ++) {
         await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
@@ -381,7 +383,7 @@ contract('DigitalaxMarketplace', (accounts) => {
 
     describe('validation', async () => {
       beforeEach(async () => {
-        await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+        await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, [], [], {from: minter});
         const garmentIds = await this.garmentCollection.getTokenIds(0);
         for (let i = 0; i < garmentIds.length; i ++) {
           await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
@@ -412,7 +414,7 @@ contract('DigitalaxMarketplace', (accounts) => {
         await this.marketplace.setNowOverride('2');
         await expectRevert(
            this.marketplace.createOffer('98', ether('0.05'), {from: tokenBuyer}),
-          "DigitalaxMarketplace.createOffer: Sender must have the minter role"
+          "DigitalaxMarketplace.createOffer: Sender must have the minter or admin role"
         );
       });
     });
@@ -420,7 +422,7 @@ contract('DigitalaxMarketplace', (accounts) => {
     describe('successful creation', async () => {
       it('Token retains in the ownership of the marketplace creator', async () => {
         await this.marketplace.setNowOverride('2');
-        await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+        await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, [], [], {from: minter});
         const garmentIds = await this.garmentCollection.getTokenIds(0);
         for (let i = 0; i < garmentIds.length; i ++) {
           await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
@@ -445,7 +447,7 @@ contract('DigitalaxMarketplace', (accounts) => {
           {from: admin}
         );
 
-        await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+        await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, [], [], {from: minter});
         const garmentIds = await this.garmentCollection.getTokenIds(0);
         for (let i = 0; i < garmentIds.length; i ++) {
           await this.token.approve(marketplace.address, garmentIds[i], {from: minter});
@@ -463,7 +465,7 @@ contract('DigitalaxMarketplace', (accounts) => {
     describe('validation', () => {
 
       beforeEach(async () => {
-        await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+        await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, [], [], {from: minter});
         const garmentIds = await this.garmentCollection.getTokenIds(0);
         for (let i = 0; i < garmentIds.length; i ++) {
           await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
@@ -498,7 +500,7 @@ contract('DigitalaxMarketplace', (accounts) => {
     describe('try to buy offer', () => {
 
       beforeEach(async () => {
-        await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+        await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, [], [], {from: minter});
         const garmentIds = await this.garmentCollection.getTokenIds(0);
         for (let i = 0; i < garmentIds.length; i ++) {
           await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
@@ -609,7 +611,7 @@ contract('DigitalaxMarketplace', (accounts) => {
   describe('cancelOffer()', async () => {
 
     beforeEach(async () => {
-      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, [], [], {from: minter});
       const garmentIds = await this.garmentCollection.getTokenIds(0);
       for (let i = 0; i < garmentIds.length; i ++) {
         await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
@@ -627,7 +629,7 @@ contract('DigitalaxMarketplace', (accounts) => {
       it('cannot cancel if not an admin', async () => {
         await expectRevert(
           this.marketplace.cancelOffer(0, {from: tokenBuyer}),
-          'DigitalaxMarketplace.cancelOffer: Sender must be admin or smart contract'
+          'DigitalaxMarketplace.cancelOffer: Sender must be admin or minter contract'
         );
       });
 
@@ -650,7 +652,7 @@ contract('DigitalaxMarketplace', (accounts) => {
   describe('updateOfferPrimarySalePrice()', async () => {
 
     beforeEach(async () => {
-      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, [], [], {from: minter});
       const garmentIds = await this.garmentCollection.getTokenIds(0);
       for (let i = 0; i < garmentIds.length; i ++) {
         await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
