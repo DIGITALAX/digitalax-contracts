@@ -45,7 +45,7 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard, IERC721Receiver
     IDigitalaxMaterials public materials;
 
     /// @dev max ERC721 Garments a Collection can hold
-    /// @dev if admin configuring this value, recommend no higher then 40 garments/collection due to gas
+    /// @dev if admin configuring this value, should test previously how many parents x children can do in one call due to gas
     uint256 public maxGarmentsPerCollection = 10;
 
     /**
