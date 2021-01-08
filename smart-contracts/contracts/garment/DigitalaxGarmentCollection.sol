@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../DigitalaxAccessControls.sol";
+import "./IDigitalaxMaterials.sol";
 import "./IDigitalaxGarmentNFT.sol";
 
 /**
@@ -36,8 +37,10 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard {
     IDigitalaxGarmentNFT public garmentNft;
     /// @notice responsible for enforcing admin access
     DigitalaxAccessControls public accessControls;
-    /// @notice Array of garment collections
+    /// @dev Array of garment collections
     Collection[] private garmentCollections;
+    /// @notice the child ERC1155 strand tokens
+    IDigitalaxMaterials public materials;
 
     /// @dev max ERC721 Garments a Collection can hold
     /// @dev if admin configuring this value, recommend no higher then 40 garments/collection due to gas
@@ -49,12 +52,15 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard {
      */
     constructor(
         DigitalaxAccessControls _accessControls,
-        IDigitalaxGarmentNFT _garmentNft
+        IDigitalaxGarmentNFT _garmentNft,
+        IDigitalaxMaterials _materials
     ) public {
         require(address(_accessControls) != address(0), "DigitalaxGarmentCollection: Invalid Access Controls");
         require(address(_garmentNft) != address(0), "DigitalaxGarmentCollection: Invalid NFT");
+        require(address(_materials) != address(0), "DigitalaxGarmentCollection: Invalid Child ERC1155 address");
         accessControls = _accessControls;
         garmentNft = _garmentNft;
+        materials = _materials;
 
         emit DigitalaxGarmentCollectionContractDeployed();
     }
@@ -70,7 +76,9 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard {
         address _beneficiary,
         string calldata _tokenUri,
         address _designer,
-        uint256 _amount
+        uint256 _amount,
+        uint256[] calldata _childTokenIds,
+        uint256[] calldata _childTokenAmounts
     ) external returns (uint256) {
         require(
             accessControls.hasAdminRole(_msgSender()) || accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasMinterRole(_msgSender()),
@@ -88,6 +96,9 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard {
 
         for (uint i = 0; i < _amount; i ++) {
             uint256 _mintedTokenId = garmentNft.mint(_beneficiary, _tokenUri, _designer);
+
+            // Batch mint child tokens and assign to generated 721 token ID
+            materials.batchMintChildren(_childTokenIds, _childTokenAmounts, address(garmentNft), abi.encodePacked(_mintedTokenId));
             garmentCollections[_collectionId].garmentTokenIds.push(_mintedTokenId);
         }
 
@@ -115,7 +126,7 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard {
      @param _maxGarmentsPerCollection uint256 the max children a token can hold
      */
     function updateMaxGarmentsPerCollection(uint256 _maxGarmentsPerCollection) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentNFT.updateMaxGarmentsPerCollection: Sender must be admin");
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentCollection.updateMaxGarmentsPerCollection: Sender must be admin");
         maxGarmentsPerCollection = _maxGarmentsPerCollection;
     }
 
@@ -187,5 +198,15 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard {
             }
         }
         return _amount;
+    }
+
+    /**
+     @notice Method for updating the access controls contract
+     @dev Only admin
+     @param _accessControls Address of the new access controls contract
+     */
+    function updateAccessControls(DigitalaxAccessControls _accessControls) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentCollection.updateAccessControls: Sender must be admin");
+        accessControls = _accessControls;
     }
 }
