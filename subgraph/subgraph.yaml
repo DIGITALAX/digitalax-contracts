@@ -179,9 +179,9 @@ dataSources:
     name: DigitalaxGarmentCollection
     network: 'rinkeby'
     source:
-      address: '0x9a24Dd21E32893b4C9A0430fD206553617ca26e1'
+      address: '0xba8E37dE41B3EAed0Eec0344932bc2619dd7AD9d'
       abi: DigitalaxGarmentCollection
-      startBlock: 7848795
+      startBlock: 7859075
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -202,9 +202,9 @@ dataSources:
     name: DigitalaxMarketplace
     network: 'rinkeby'
     source:
-      address: '0x5f4667ff7317e7a43fA8D8dc3cDc85639E7Cc44c'
+      address: '0xBdA9991811B6Bb4511147cd6858a0D93c9E92eae'
       abi: DigitalaxMarketplace
-      startBlock: 7848808
+      startBlock: 7859230
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
