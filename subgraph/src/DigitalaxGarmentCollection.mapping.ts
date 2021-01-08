@@ -8,6 +8,7 @@ import {
     DigitalaxGarmentCollection,
     DigitalaxGarment,
 } from "../generated/schema";
+import {loadOrCreateGarmentDesigner} from "./factory/DigitalaxGarmentDesigner.factory";
 
 export function handleGarmentCollectionMinted(event: MintGarmentCollection): void {
     let contract = DigitalaxGarmentCollectionContract.bind(event.address);
@@ -16,12 +17,14 @@ export function handleGarmentCollectionMinted(event: MintGarmentCollection): voi
 
     let mintedGarments = new Array<string>();
     for(let i = 0; i < collectionData.value1.toI32(); i++) {
-        const garmentToken = DigitalaxGarment.load(collectionData.value0[i].toString());
+        let garmentToken = DigitalaxGarment.load(collectionData.value0[i].toString());
         mintedGarments.push(garmentToken.id);
+        
+        let garmentDesigner = loadOrCreateGarmentDesigner(garmentToken.id);
+        collection.designer = garmentDesigner.id;
     }
     collection.garments = mintedGarments;
     collection.tokenUri = collectionData.value2;
-    collection.designer = collectionData.value3.toHexString();
     collection.save();
 }
 
