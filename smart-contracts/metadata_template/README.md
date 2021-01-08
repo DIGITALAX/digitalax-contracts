@@ -49,7 +49,7 @@ This metadata is stored on IPFS and it's IPFS link is stored as the URI identifi
   "Description": ",
   "attributes": [
     {
-      "trait_type": "Degree of Exclusivity",
+      "trait_type": "Rarity",
       "value": " "
     },
     {
