@@ -6,7 +6,7 @@ export function loadOrCreateMarketplaceGlobalStats(): DigitalaxMarketplaceGlobal
 
     if (globalStats == null) {
         globalStats = new DigitalaxMarketplaceGlobalStat('DigitalaxMarkeplaceGlobalStats');
-        globalStats.totalEthSalesValue = ZERO;
+        globalStats.totalETHSalesValue = ZERO;
         globalStats.totalMonaSalesValue = ZERO;
         globalStats.save();
     }
