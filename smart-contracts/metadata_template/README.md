@@ -10,7 +10,7 @@ Metadata on IPFS is stored in JSON format and allows to define the characteristi
 
 This metadata is stored on IPFS and it's IPFS link is stored as the URI identifier of the NFTs.
 
-### Parent NFT Structure
+### Parent ERC721 NFT Structure
 ```
 {
     "name": "",
@@ -42,7 +42,7 @@ This metadata is stored on IPFS and it's IPFS link is stored as the URI identifi
 }
 ```
 
-### Child NFT Structure
+### Child ERC1155 NFT Structure
 ```
 {
   "Artist Name": " ",
