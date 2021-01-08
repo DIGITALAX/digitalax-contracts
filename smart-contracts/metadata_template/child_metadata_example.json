@@ -1,0 +1,21 @@
+{
+  "Artist Name": "DF001",
+  "Description": "DF001",
+  "attributes": [
+    {
+      "trait_type": "Degree of Exclusivity",
+      "value": "Common"
+    },
+    {
+      "trait_type": "Type",
+      "value": "DF001"
+    },
+    {
+      "trait_type": "Issue No.",
+      "value": "1"
+    }
+  ],
+  "files": {
+    "graphic": "https://gateway.pinata.cloud/ipfs/QmQVBe8s2YGySkHbmV1CUd1wcbE6nS9ie7krQ5NtFDxfCH"
+  }
+}
