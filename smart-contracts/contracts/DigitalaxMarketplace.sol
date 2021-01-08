@@ -127,7 +127,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     /**
      @notice Creates a new offer for a given garment
      @dev Only the owner of a garment can create an offer and must have ALREADY approved the contract
-     @dev In addition to owning the garment, the sender also has to have the MINTER role.
+     @dev In addition to owning the garment, the sender also has to have the MINTER or ADMIN role.
      @dev End time for the offer will be in the future, at a time from now till expiry duration
      @dev There cannot be a duplicate offer created
      @param _garmentCollectionId Collection ID of the garment being offered to marketplace
@@ -139,8 +139,8 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     ) external whenNotPaused {
         // Ensure caller has privileges
         require(
-            accessControls.hasMinterRole(_msgSender()),
-            "DigitalaxMarketplace.createOffer: Sender must have the minter role"
+            accessControls.hasMinterRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxMarketplace.createOffer: Sender must have the minter or admin role"
         );
         // Ensure the collection does exists
         require(garmentCollection.getSupply(_garmentCollectionId) > 0, "DigitalaxMarketplace.createOffer: Collection does not exist");
@@ -232,8 +232,8 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     function cancelOffer(uint256 _garmentCollectionId) external nonReentrant {
         // Admin only resulting function
         require(
-            accessControls.hasAdminRole(_msgSender()) || accessControls.hasSmartContractRole(_msgSender()),
-            "DigitalaxMarketplace.cancelOffer: Sender must be admin or smart contract"
+            accessControls.hasAdminRole(_msgSender()) || accessControls.hasMinterRole(_msgSender()),
+            "DigitalaxMarketplace.cancelOffer: Sender must be admin or minter contract"
         );
         // Check valid and not resulted
         Offer storage offer = offers[_garmentCollectionId];
