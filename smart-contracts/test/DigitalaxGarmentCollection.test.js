@@ -169,7 +169,7 @@ contract('DigitalaxGarmentCollection', (accounts) => {
         await expectRevert(
             this.garmentCollection.burnCollection(0, {from: minter}
             ),
-            "DigitalaxGarmentNFT.burn: Only garment owner or approved"
+            "ERC721: transfer caller is not owner nor approved"
         );
       });
     });
