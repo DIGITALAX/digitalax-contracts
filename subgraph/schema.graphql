@@ -134,6 +134,7 @@ type DigitalaxGarmentCollection @entity {
   garments: [DigitalaxGarment!]!
   designer: DigitalaxGarmentDesigner!
   tokenUri: String!
+  rarity: String!
 }
 
 type DigitalaxMarketplaceOffer @entity {
