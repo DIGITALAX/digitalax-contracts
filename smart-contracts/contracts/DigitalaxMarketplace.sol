@@ -50,9 +50,11 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     );
     event OfferPurchased(
         uint256 indexed garmentTokenId,
+        uint256 indexed garmentCollectionId,
         address indexed buyer,
         uint256 primarySalePrice,
-        bool paidInErc20
+        bool paidInErc20,
+        uint256 monaTransferredAmount
     );
     event OfferCancelled(
         uint256 indexed garmentTokenId
@@ -179,6 +181,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         require(_getNow() >= offer.startTime, "DigitalaxMarketplace.buyOffer: Purchase outside of the offer window");
 
         uint256 feeInETH = offer.primarySalePrice.mul(platformFee).div(maxShare);
+        uint256 amountOfMonaToTransfer = 0;
 
         // Work out platform fee on sale amount
         if(_payWithMona) {
@@ -196,7 +199,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
             uint256 amountOfMonaToTransferAsFees = _estimateMonaAmount(amountOfETHToBePaidInFees);
 
             // Then calculate how much Mona the buyer must send
-            uint256 amountOfMonaToTransfer = amountOfMonaToTransferToDesigner.add(amountOfMonaToTransferAsFees);
+            amountOfMonaToTransfer = amountOfMonaToTransferToDesigner.add(amountOfMonaToTransferAsFees);
 
             // Check that there is enough ERC20 to cover the rest of the value (minus the discount already taken)
             require(IERC20(monaErc20Token).allowance(msg.sender, address(this)) >= amountOfMonaToTransfer, "DigitalaxMarketplace.buyOffer: Failed to supply ERC20 Allowance");
@@ -222,7 +225,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         garmentNft.setPrimarySalePrice(garmentTokenId, offer.primarySalePrice);
         // Transfer the token to the purchaser
         garmentNft.safeTransferFrom(garmentNft.ownerOf(garmentTokenId), msg.sender, garmentTokenId);
-        emit OfferPurchased(garmentTokenId, _msgSender(), offer.primarySalePrice, _payWithMona);
+        emit OfferPurchased(garmentTokenId, _garmentCollectionId, _msgSender(), offer.primarySalePrice, _payWithMona, amountOfMonaToTransfer);
     }
     /**
      @notice Cancels an inflight and un-resulted offer
