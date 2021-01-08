@@ -5,14 +5,12 @@ import {
     OfferPurchased,
     UpdateOfferPrimarySalePrice,
     DigitalaxMarketplace as DigitalaxMarketplaceContract,
-    OfferCancelled,
-    DigitalaxMarketplace
+    OfferCancelled
 } from "../generated/DigitalaxMarketplace/DigitalaxMarketplace";
 
 import {
     DigitalaxMarketplaceOffer,
     DigitalaxMarketplacePurchaseHistory,
-    DigitalaxGarmentCollection,
 } from "../generated/schema";
 import {loadOrCreateMarketplaceGlobalStats} from "./factory/DigitalaxMarketplaceGlobalStats.factory";
 
@@ -45,15 +43,14 @@ export function handleOfferPurchased(event: OfferPurchased): void {
 
     let globalStats = loadOrCreateMarketplaceGlobalStats();
     if(history.isPaidWithMona) {
-        globalStats.totalMonaSalesValue = globalStats.totalMonaSalesValue.add((history.monaTransferredAmount as BigInt));
+        globalStats.totalMonaSalesValue = new BigInt(globalStats.totalMonaSalesValue.toI32() + history.monaTransferredAmount);
     } else {
-        globalStats.totalEthSalesValue = globalStats.totalEthSalesValue.add((history.value as BigInt));
+        globalStats.totalETHSalesValue = new BigInt(globalStats.totalETHSalesValue.toI32() + history.value);
     }
     globalStats.save();
-
-    let collection = new DigitalaxGarmentCollection(event.params.garmentCollectionId.toString());
-    collection.amountSold = collection.amountSold.add(1 as BigInt);
-    collection.save();
+    let offer = DigitalaxMarketplaceOffer.load(event.params.garmentCollectionId.toString());
+    offer.amountSold = new BigInt(offer.amountSold.toI32() + 1);
+    offer.save();
 }
 
 export function handleOfferCancelled(event: OfferCancelled): void {
