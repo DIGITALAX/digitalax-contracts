@@ -1,0 +1,28 @@
+{
+  "name": "Testing one",
+  "description": "This metadata is uploaded for testing.",
+  "external_url": "https://www.digitalax.xyz",
+  "image": "https://gateway.pinata.cloud/ipfs/QmNvRvMKCbfXEE7K5bf4j1vFfZAzMDJ77Cj1MMEvFCvY1r",
+  "attributes": [
+    {
+      "trait_type": "Designer",
+      "value": "ROBNESS"
+    },
+    {
+      "trait_type": "Collection",
+      "value": "Dimensional Fabrics"
+    },
+    {
+      "trait_type": "Auction",
+      "value": "03"
+    },
+    {
+      "trait_type": "Outfit",
+      "value": "20/28"
+    },
+    {
+      "trait_type": "Rarity",
+      "value": "Common"
+    }
+  ]
+}
