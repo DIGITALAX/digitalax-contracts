@@ -11,13 +11,6 @@ import {
 } from "../generated/schema";
 import {loadOrCreateGarmentDesigner} from "./factory/DigitalaxGarmentDesigner.factory";
 
-export function processitem(value: JSONValue, data: Value): void {
-    let collection = DigitalaxGarmentCollection.load("0");
-    //let obj = value.toObject();
-    collection.rarity = "Normal";
-    collection.save();
-}
-
 export function handleGarmentCollectionMinted(event: MintGarmentCollection): void {
     let contract = DigitalaxGarmentCollectionContract.bind(event.address);
     let collectionData = contract.getCollection(event.params.collectionId);
@@ -35,7 +28,6 @@ export function handleGarmentCollectionMinted(event: MintGarmentCollection): voi
     collection.tokenUri = collectionData.value2;
     collection.rarity = "Common";
     collection.save();
-    ipfs.mapJSON("QmeyJCm8EWJ5DAgiNq2gwDy6RTFM1Y5LSY2yLGpYuN7FmX", "processItem", Value.fromString('id'));
 }
 
 
