@@ -134,6 +134,7 @@ type DigitalaxGarmentCollection @entity {
   garments: [DigitalaxGarment!]!
   designer: DigitalaxGarmentDesigner!
   tokenUri: String!
+  rarity: String!
 }
 
 type DigitalaxMarketplaceOffer @entity {
@@ -141,6 +142,7 @@ type DigitalaxMarketplaceOffer @entity {
   garmentCollection: DigitalaxGarmentCollection!
   primarySalePrice: BigInt!
   startTime: BigInt!
+  amountSold: BigInt!
 }
 
 type DigitalaxMarketplacePurchaseHistory @entity {
@@ -150,4 +152,11 @@ type DigitalaxMarketplacePurchaseHistory @entity {
   buyer: Bytes!
   value: BigInt!
   isPaidWithMona: Boolean!
+  monaTransferredAmount: BigInt!
+}
+
+type DigitalaxMarketplaceGlobalStat @entity {
+  id: ID!
+  totalETHSalesValue: BigInt! # Eth value collected in WEI across all marketplace
+  totalMonaSalesValue: BigInt! # Mona value collected in WEI across all marketplace
 }
