@@ -37,6 +37,7 @@ type DigitalaxGarmentChild @entity {
   amount: BigInt!
   contract: Bytes!
   tokenUri: String!
+  rarity: String!
 }
 
 type DigitalaxGarment @entity {
@@ -131,9 +132,8 @@ type DigitalaxAccessControlsHistory @entity {
 
 type DigitalaxGarmentCollection @entity {
   id: ID!
+  garmentAuctionID: BigInt!
   garments: [DigitalaxGarment!]!
-  designer: DigitalaxGarmentDesigner!
-  tokenUri: String!
   rarity: String!
 }
 
@@ -153,6 +153,7 @@ type DigitalaxMarketplacePurchaseHistory @entity {
   value: BigInt!
   isPaidWithMona: Boolean!
   monaTransferredAmount: BigInt!
+  garmentAuctionId: BigInt!
 }
 
 type DigitalaxMarketplaceGlobalStat @entity {

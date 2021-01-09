@@ -25,7 +25,8 @@ export function loadOrCreateDigitalaxGarmentChild(
         garmentChild.parentId = parentTokenId;
         garmentChild.contract = contract.childContract();
         garmentChild.tokenUri = childContract.uri(childTokenId);
-        garmentChild.amount = ZERO
+        garmentChild.amount = ZERO;
+        garmentChild.rarity = 'Common'; // This needs to be updated from the token uri or hardcoded
     }
     garmentChild.save();
 

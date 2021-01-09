@@ -9,7 +9,6 @@ import {
     DigitalaxGarmentCollection,
     DigitalaxGarment,
 } from "../generated/schema";
-import {loadOrCreateGarmentDesigner} from "./factory/DigitalaxGarmentDesigner.factory";
 
 export function handleGarmentCollectionMinted(event: MintGarmentCollection): void {
     let contract = DigitalaxGarmentCollectionContract.bind(event.address);
@@ -20,13 +19,10 @@ export function handleGarmentCollectionMinted(event: MintGarmentCollection): voi
     for(let i = 0; i < collectionData.value1.toI32(); i++) {
         let garmentToken = DigitalaxGarment.load(collectionData.value0[i].toString());
         mintedGarments.push(garmentToken.id);
-
-        let garmentDesigner = loadOrCreateGarmentDesigner(garmentToken.id);
-        collection.designer = garmentDesigner.id;
     }
     collection.garments = mintedGarments;
-    collection.tokenUri = collectionData.value2;
-    collection.rarity = "Common";
+    collection.garmentAuctionId = 1 // This is 721 auction nft tokenid- needs to be connected to ipfs, or we need to modify MintGarmentCollection event, or we need to change subgraph
+    collection.rarity = "Common"; // This needs to be connected to ipfs, or we need to modify MintGarmentCollection event, or we need to change the subgraph
     collection.save();
 }
 
@@ -34,7 +30,7 @@ export function handleGarmentCollectionMinted(event: MintGarmentCollection): voi
 export function handleGarmentCollectionBurned(event: BurnGarmentCollection): void {
     let collection = DigitalaxGarmentCollection.load(event.params.collectionId.toString());
     collection.garments = null;
-    collection.tokenUri = null;
-    collection.designer = null;
+    collection.garmentAuctionId = null;
+    collection.rarity = null;
     collection.save();
 }
