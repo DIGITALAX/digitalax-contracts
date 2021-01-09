@@ -204,6 +204,68 @@ contract('DigitalaxGarmentCollection', (accounts) => {
     });
   });
 
+  describe('updateRarity()', async () => {
+    beforeEach(async () => {
+      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+    });
+
+    describe('validation', async () => {
+      it('Can update rarity as admin', async () => {
+        expect(await this.garmentCollection.rarity()).to.be.equal("Common");
+        await this.garmentCollection.updateRarity("Semirare", {from: admin});
+        expect(await this.garmentCollection.rarity()).to.be.bignumber.equal("Semirare");
+      });
+
+      it('Reverts when sender is not admin', async () => {
+        await expectRevert(
+            this.garmentCollection.updateRarity("Semirare", {from: designer}),
+            "DigitalaxGarmentCollection.updateRarity: Sender must be admin"
+        );
+      });
+
+      it('can successfully update rarity and mint', async () => {
+        await this.garmentCollection.updateRarity("Semirare", {from: admin});
+        const {receipt} = await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+        await expectEvent(receipt, 'MintGarmentCollection', {
+          collectionId: (new BN('1')),
+          auctionTokenId: (new BN('0')),
+          rarity: "Semirare",
+        });
+      });
+    });
+  });
+
+  describe('updateAuctionTokenId()', async () => {
+    beforeEach(async () => {
+      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+    });
+
+    describe('validation', async () => {
+      it('Can update auction token id as admin', async () => {
+        expect(await this.garmentCollection.auctionTokenId()).to.be.bignumber.equal(new BN('0'));
+        await this.garmentCollection.updateAuctionTokenId(new BN('5'), {from: admin});
+        expect(await this.garmentCollection.auctionTokenId()).to.be.bignumber.equal(new BN('5'));
+      });
+
+      it('Reverts when sender is not admin', async () => {
+        await expectRevert(
+            this.garmentCollection.updateAuctionTokenId(new BN('5'), {from: designer}),
+            "DigitalaxGarmentCollection.updateAuctionTokenId: Sender must be admin"
+        );
+      });
+
+      it('can successfully update auction id and mint', async () => {
+        await this.garmentCollection.updateAuctionTokenId(new BN('5'),{from: admin});
+        const {receipt} = await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+        await expectEvent(receipt, 'MintGarmentCollection', {
+          collectionId: (new BN('1')),
+          auctionTokenId: (new BN('5')),
+          rarity: "Common",
+        });
+      });
+    });
+  });
+
   describe('Updating access controls', () => {
     it('Can update access controls as admin', async () => {
       const currentAccessControlsAddress = await this.garmentCollection.accessControls();

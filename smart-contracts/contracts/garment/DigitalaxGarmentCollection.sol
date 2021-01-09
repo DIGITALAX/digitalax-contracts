@@ -22,7 +22,9 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard, IERC721Receiver
     /// @notice Event emitted only on construction. To be used by indexers
     event DigitalaxGarmentCollectionContractDeployed();
     event MintGarmentCollection(
-        uint256 collectionId
+        uint256 collectionId,
+        uint256 auctionTokenId,
+        string rarity
     );
     event BurnGarmentCollection(
         uint256 collectionId
@@ -47,6 +49,12 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard, IERC721Receiver
     /// @dev max ERC721 Garments a Collection can hold
     /// @dev if admin configuring this value, should test previously how many parents x children can do in one call due to gas
     uint256 public maxGarmentsPerCollection = 10;
+
+    /// @dev need rarity attached to collections
+    string public rarity = 'Common';
+
+    /// @dev need as well the auction token id
+    uint256 public auctionTokenId = 0;
 
     /**
      @param _accessControls Address of the Digitalax access control contract
@@ -106,7 +114,7 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard, IERC721Receiver
             garmentCollections[_collectionId].garmentTokenIds.push(_mintedTokenId);
         }
 
-        emit MintGarmentCollection(_collectionId);
+        emit MintGarmentCollection(_collectionId, auctionTokenId, rarity);
         return _collectionId;
     }
 
@@ -134,6 +142,26 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard, IERC721Receiver
     function updateMaxGarmentsPerCollection(uint256 _maxGarmentsPerCollection) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentCollection.updateMaxGarmentsPerCollection: Sender must be admin");
         maxGarmentsPerCollection = _maxGarmentsPerCollection;
+    }
+
+    /**
+     @notice Method for updating rarity minted by collections
+     @dev Only admin
+     @param _rarity uint256 the max children a token can hold
+     */
+    function updateRarity(string calldata _rarity) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentCollection.updateRarity: Sender must be admin");
+        rarity = _rarity;
+    }
+
+    /**
+     @notice Method for updating auction token id minted by collections
+     @dev Only admin
+     @param _auctionTokenId uint256 auction token id
+     */
+    function updateAuctionTokenId(uint256 _auctionTokenId) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentCollection.updateAuctionTokenId: Sender must be admin");
+        auctionTokenId = _auctionTokenId;
     }
 
     /**
