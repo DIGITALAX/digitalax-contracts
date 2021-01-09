@@ -202,9 +202,9 @@ dataSources:
     name: DigitalaxMarketplace
     network: 'rinkeby'
     source:
-      address: '0xBdA9991811B6Bb4511147cd6858a0D93c9E92eae'
+      address: '0x2C4bA433e5A036297925504682B5f60454AF117F'
       abi: DigitalaxMarketplace
-      startBlock: 7859230
+      startBlock: 7861305
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -222,7 +222,7 @@ dataSources:
           handler: handleOfferCreated
         - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
           handler: handleOfferPrimarySalePriceUpdated
-        - event: OfferPurchased(indexed uint256,indexed address,uint256,bool)
+        - event: OfferPurchased(indexed uint256,indexed uint256,indexed address,uint256,bool,uint256)
           handler: handleOfferPurchased
         - event: OfferCancelled(indexed uint256)
           handler: handleOfferCancelled
