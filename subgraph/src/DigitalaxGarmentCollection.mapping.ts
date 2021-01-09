@@ -21,8 +21,8 @@ export function handleGarmentCollectionMinted(event: MintGarmentCollection): voi
         mintedGarments.push(garmentToken.id);
     }
     collection.garments = mintedGarments;
-    collection.garmentAuctionId = 1 // This is 721 auction nft tokenid- needs to be connected to ipfs, or we need to modify MintGarmentCollection event, or we need to change subgraph
-    collection.rarity = "Common"; // This needs to be connected to ipfs, or we need to modify MintGarmentCollection event, or we need to change the subgraph
+    collection.garmentAuctionId = event.params.auctionTokenId;
+    collection.rarity = event.params.rarity;
     collection.save();
 }
 

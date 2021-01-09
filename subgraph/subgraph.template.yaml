@@ -193,7 +193,7 @@ dataSources:
         - name: DigitalaxGarmentCollection
           file: ./abis/DigitalaxGarmentCollection.json
       eventHandlers:
-        - event: MintGarmentCollection(uint256)
+        - event: MintGarmentCollection(uint256, uint256, string)
           handler: handleGarmentCollectionMinted
         - event: BurnGarmentCollection(uint256)
           handler: handleGarmentCollectionBurned
