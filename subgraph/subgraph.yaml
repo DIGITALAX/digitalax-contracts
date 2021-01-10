@@ -179,9 +179,9 @@ dataSources:
     name: DigitalaxGarmentCollection
     network: 'rinkeby'
     source:
-      address: '0xba8E37dE41B3EAed0Eec0344932bc2619dd7AD9d'
+      address: '0x9909E943255741356Aa2004C6f13CcfF56b96BE8'
       abi: DigitalaxGarmentCollection
-      startBlock: 7859075
+      startBlock: 7871549
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -193,7 +193,7 @@ dataSources:
         - name: DigitalaxGarmentCollection
           file: ./abis/DigitalaxGarmentCollection.json
       eventHandlers:
-        - event: MintGarmentCollection(uint256)
+        - event: MintGarmentCollection(uint256,uint256,string)
           handler: handleGarmentCollectionMinted
         - event: BurnGarmentCollection(uint256)
           handler: handleGarmentCollectionBurned
@@ -202,9 +202,9 @@ dataSources:
     name: DigitalaxMarketplace
     network: 'rinkeby'
     source:
-      address: '0x2C4bA433e5A036297925504682B5f60454AF117F'
+      address: '0x46F8be754A84c53e9100f942F629F6f876714751'
       abi: DigitalaxMarketplace
-      startBlock: 7861305
+      startBlock: 7871564
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

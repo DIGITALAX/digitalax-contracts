@@ -22,7 +22,9 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard, IERC721Receiver
     /// @notice Event emitted only on construction. To be used by indexers
     event DigitalaxGarmentCollectionContractDeployed();
     event MintGarmentCollection(
-        uint256 collectionId
+        uint256 collectionId,
+        uint256 auctionTokenId,
+        string rarity
     );
     event BurnGarmentCollection(
         uint256 collectionId
@@ -34,6 +36,8 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard, IERC721Receiver
         uint256 garmentAmount;
         string metadata;
         address designer;
+        uint256 auctionTokenId;
+        string rarity;
     }
     /// @notice Garment ERC721 NFT - the only NFT that can be offered in this contract
     IDigitalaxGarmentNFT public garmentNft;
@@ -69,16 +73,16 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard, IERC721Receiver
 
     /**
      @notice Method for mint the NFT collection with the same metadata
-     @param _beneficiary Recipient of the NFT collection
      @param _tokenUri URI for the metadata
      @param _designer Garment designer address
      @param _amount NFTs amount of the collection
      */
     function mintCollection(
-        address _beneficiary,
         string calldata _tokenUri,
         address _designer,
         uint256 _amount,
+        uint256 _auctionId,
+        string calldata _rarity,
         uint256[] calldata _childTokenIds,
         uint256[] calldata _childTokenAmounts
     ) external returns (uint256) {
@@ -92,12 +96,12 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard, IERC721Receiver
             "DigitalaxGarmentCollection.mintCollection: Amount cannot exceed maxGarmentsPerCollection"
         );
 
-        Collection memory _newCollection = Collection(new uint256[](0), _amount, _tokenUri, _designer);
+        Collection memory _newCollection = Collection(new uint256[](0), _amount, _tokenUri, _designer, _auctionId, _rarity);
         uint256 _collectionId = garmentCollections.length;
         garmentCollections.push(_newCollection);
 
         for (uint i = 0; i < _amount; i ++) {
-            uint256 _mintedTokenId = garmentNft.mint(_beneficiary, _tokenUri, _designer);
+            uint256 _mintedTokenId = garmentNft.mint(_msgSender(), _newCollection.metadata, _newCollection.designer);
 
             // Batch mint child tokens and assign to generated 721 token ID
             if(_childTokenIds.length > 0){
@@ -106,7 +110,7 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard, IERC721Receiver
             garmentCollections[_collectionId].garmentTokenIds.push(_mintedTokenId);
         }
 
-        emit MintGarmentCollection(_collectionId);
+        emit MintGarmentCollection(_collectionId, _auctionId, _rarity);
         return _collectionId;
     }
 

@@ -26,6 +26,8 @@ contract('DigitalaxGarmentCollection', (accounts) => {
   const STRAND_TWO_ID = new BN('2');
   const erc1155ChildStrandIds = [STRAND_ONE_ID, STRAND_TWO_ID];
 
+  const auctionID = new BN('0');
+
   beforeEach(async () => {
     this.accessControls = await DigitalaxAccessControls.new({from: admin});
     await this.accessControls.addMinterRole(minter, {from: admin});
@@ -111,7 +113,8 @@ contract('DigitalaxGarmentCollection', (accounts) => {
   describe('mintCollection()', async () => {
     describe('validation', async () => {
       it('can successfully mint collection with Child nfts that have been created previously', async () => {
-        const {receipt} = await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+
+        const {receipt} = await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common',erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
 
         await expectEvent(receipt, 'MintGarmentCollection', {
           collectionId: (new BN('0')),
@@ -121,7 +124,7 @@ contract('DigitalaxGarmentCollection', (accounts) => {
         expect(owner).to.be.equal(minter);
       });
       it('can successfully mint collection without any child nfts', async () => {
-        const {receipt} = await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, [], [], {from: minter});
+        const {receipt} = await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common', [], [], {from: minter});
 
         await expectEvent(receipt, 'MintGarmentCollection', {
           collectionId: (new BN('0')),
@@ -132,7 +135,7 @@ contract('DigitalaxGarmentCollection', (accounts) => {
       });
       it('reverts if sender not admin or minter ', async () => {
         await expectRevert(
-            this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, erc1155ChildStrandIds, amountsOfChildToken, {from: designer}
+            this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common', erc1155ChildStrandIds, amountsOfChildToken, {from: designer}
             ),
             "DigitalaxGarmentCollection.mintCollection: Sender must have the minter or contract role"
           );
@@ -140,7 +143,7 @@ contract('DigitalaxGarmentCollection', (accounts) => {
       it('reverts if collection size is greater then the max garment per collection ', async () => {
         const maxGarments = await this.garmentCollection.maxGarmentsPerCollection();
         await expectRevert(
-            this.garmentCollection.mintCollection(minter, randomTokenURI, designer, (maxGarments + 1), erc1155ChildStrandIds, amountsOfChildToken, {from: minter}
+            this.garmentCollection.mintCollection(randomTokenURI, designer, (maxGarments + 1), auctionID, 'Common',erc1155ChildStrandIds, amountsOfChildToken, {from: minter}
             ),
             "DigitalaxGarmentCollection.mintCollection: Amount cannot exceed maxGarmentsPerCollection"
           );
@@ -150,7 +153,7 @@ contract('DigitalaxGarmentCollection', (accounts) => {
 
   describe('burnCollection()', async () => {
     beforeEach(async () => {
-      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+      await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common',erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
     });
 
     describe('validation', async () => {
@@ -177,7 +180,7 @@ contract('DigitalaxGarmentCollection', (accounts) => {
 
   describe('updateMaxGarmentsPerCollection()', async () => {
     beforeEach(async () => {
-      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+      await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common',erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
     });
 
     describe('validation', async () => {
@@ -196,7 +199,7 @@ contract('DigitalaxGarmentCollection', (accounts) => {
 
       it('can successfully update max garments per collection and mint up to 20 tokens', async () => {
         await this.garmentCollection.updateMaxGarmentsPerCollection("20", {from: admin});
-        const {receipt} = await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE.mul(new BN('2')), erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+        const {receipt} = await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE.mul(new BN('2')), auctionID, 'Common', erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
         await expectEvent(receipt, 'MintGarmentCollection', {
           collectionId: (new BN('1')),
         });
@@ -222,7 +225,7 @@ contract('DigitalaxGarmentCollection', (accounts) => {
 
   describe('getters', async () => {
     beforeEach(async () => {
-      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+      await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common', erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
     });
 
     describe('validation', async () => {
