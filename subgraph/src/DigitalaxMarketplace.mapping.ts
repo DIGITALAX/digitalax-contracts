@@ -11,6 +11,7 @@ import {
 import {
     DigitalaxMarketplaceOffer,
     DigitalaxMarketplacePurchaseHistory,
+    DigitalaxGarmentCollection,
 } from "../generated/schema";
 import {loadOrCreateMarketplaceGlobalStats} from "./factory/DigitalaxMarketplaceGlobalStats.factory";
 import { ZERO } from "./constants";
@@ -33,6 +34,7 @@ export function handleOfferPrimarySalePriceUpdated(event: UpdateOfferPrimarySale
 }
 
 export function handleOfferPurchased(event: OfferPurchased): void {
+    let collection = DigitalaxGarmentCollection.load(event.params.garmentCollectionId.toString());
     let history = new DigitalaxMarketplacePurchaseHistory(event.params.garmentTokenId.toString());
     history.token = event.params.garmentTokenId.toString();
     history.transactionHash = event.transaction.hash;
@@ -41,6 +43,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     history.value = event.params.primarySalePrice;
     history.isPaidWithMona = event.params.paidInErc20;
     history.monaTransferredAmount = event.params.monaTransferredAmount;
+    history.garmentAuctionId = collection.garmentAuctionID;
     history.save();
 
     let globalStats = loadOrCreateMarketplaceGlobalStats();
