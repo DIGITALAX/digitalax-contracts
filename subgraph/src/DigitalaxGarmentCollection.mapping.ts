@@ -21,7 +21,7 @@ export function handleGarmentCollectionMinted(event: MintGarmentCollection): voi
         mintedGarments.push(garmentToken.id);
     }
     collection.garments = mintedGarments;
-    collection.garmentAuctionId = event.params.auctionTokenId;
+    collection.garmentAuctionID = event.params.auctionTokenId;
     collection.rarity = event.params.rarity;
     collection.save();
 }
@@ -30,7 +30,7 @@ export function handleGarmentCollectionMinted(event: MintGarmentCollection): voi
 export function handleGarmentCollectionBurned(event: BurnGarmentCollection): void {
     let collection = DigitalaxGarmentCollection.load(event.params.collectionId.toString());
     collection.garments = null;
-    collection.garmentAuctionId = null;
+    collection.garmentAuctionID = null;
     collection.rarity = null;
     collection.save();
 }
