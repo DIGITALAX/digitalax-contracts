@@ -155,10 +155,13 @@ type DigitalaxMarketplacePurchaseHistory @entity {
   monaTransferredAmount: BigInt!
   garmentAuctionId: BigInt!
   discount: BigInt!
+  platformFee: BigInt!
 }
 
 type DigitalaxMarketplaceGlobalStat @entity {
   id: ID!
   totalETHSalesValue: BigInt! # Eth value collected in WEI across all marketplace
   totalMonaSalesValue: BigInt! # Mona value collected in WEI across all marketplace
+  platformFee: BigInt! # The platform fee that will be deducted from the designers revenue (designer always receives the same regardless of discount)
+  monaDiscount: BigInt! # The discount if paying ERC20 Mona, this is deducted from platform fee (10% fee - 2% discount on purchase price means 8% is platform fee)
 }
