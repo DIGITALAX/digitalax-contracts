@@ -154,6 +154,7 @@ type DigitalaxMarketplacePurchaseHistory @entity {
   isPaidWithMona: Boolean!
   monaTransferredAmount: BigInt!
   garmentAuctionId: BigInt!
+  discount: BigInt!
 }
 
 type DigitalaxMarketplaceGlobalStat @entity {
