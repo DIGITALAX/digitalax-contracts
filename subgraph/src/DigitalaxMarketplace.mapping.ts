@@ -34,6 +34,7 @@ export function handleOfferPrimarySalePriceUpdated(event: UpdateOfferPrimarySale
 }
 
 export function handleOfferPurchased(event: OfferPurchased): void {
+    let contract = DigitalaxMarketplaceContract.bind(event.address);
     let collection = DigitalaxGarmentCollection.load(event.params.garmentCollectionId.toString());
     let history = new DigitalaxMarketplacePurchaseHistory(event.params.garmentTokenId.toString());
     history.token = event.params.garmentTokenId.toString();
@@ -44,6 +45,11 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     history.isPaidWithMona = event.params.paidInErc20;
     history.monaTransferredAmount = event.params.monaTransferredAmount;
     history.garmentAuctionId = collection.garmentAuctionID;
+    if(history.isPaidWithMona){
+        history.discount = contract.discountToPayERC20();
+    } else {
+        history.discount = new BigInt(0);
+    }
     history.save();
 
     let globalStats = loadOrCreateMarketplaceGlobalStats();
