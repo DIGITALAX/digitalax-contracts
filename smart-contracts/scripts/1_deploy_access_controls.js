@@ -25,6 +25,7 @@ async function main() {
   await accessControls.addMinterRole(OTHER_MULTISIG);
   console.log(`DigitalaxAccessControls added minter: ${OTHER_MULTISIG}`);
 
+  await accessControls.addVerifiedMinterRole(SUPER_ADMIN);
   await accessControls.addVerifiedMinterRole('0x1e8E749b2B578E181Ca01962e9448006772b24a2');
   await accessControls.addVerifiedMinterRole('0xF91569595BCDAF780c3f1662f204E157949af8b2');
   await accessControls.addVerifiedMinterRole('0x3d7e3FCA7123e687601dA8631fE0922a1999A3A7');
