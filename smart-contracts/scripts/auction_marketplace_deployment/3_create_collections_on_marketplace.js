@@ -38,23 +38,26 @@ async function main() {
   const designer = FUND_MULTISIG_ADDRESS;
   const beneficiary = FUND_MULTISIG_ADDRESS;
   // fill in uris for the nfts
-  const testTokenIds =  ['128', '129', '130'];
+  const testTokenIds =  ['134', '135', '136'];
   const testTokenIdAmounts = ['1', '1', '1'];
   const reservePrice = '1000000000000000';
+  const reservePrice2 = '2000000000000000';
 
-  // Use the auction id's processed in the last script to build auction id specific collections in this script
-  const auctionId = 121
+  const startTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th
+
+  // Use the single auction id processed in the last script to build auction id specific collections in this script
+  const auctionId = 168
 
   // Next step is mint collections and open buy offers
   const collectionUris = [
     {
       // Collection 1 Tester Semirare
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/tester_semirare/hash.json').uri,
-      price: reservePrice,
+      price: reservePrice2,
       collectionDesigner: designer,
       amountToMintInCollection: 3,
       auctionIdToLink: auctionId,
-      rarity: 'SemiRare',
+      rarity: 'Semi-Rare',
       tokendIds: testTokenIds,
       tokenAmounts: testTokenIdAmounts,
     },
@@ -119,6 +122,7 @@ async function main() {
     await marketplace.createOffer(
         createCollectionId, // Collection id
         collectionForMarketplace.price, // reservePrice for all collection items
+        startTime, // Marketplace buy offer available after start time
     );
     console.log(`--Marketplace created for collection--`);
     console.log(`----------------------`);
