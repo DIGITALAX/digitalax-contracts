@@ -1,4 +1,5 @@
 import {log, BigInt, Address, store} from "@graphprotocol/graph-ts/index";
+import {ONE} from "./constants";
 
 import {
     OfferCreated,
@@ -54,7 +55,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     }
     globalStats.save();
     let offer = DigitalaxMarketplaceOffer.load(event.params.garmentCollectionId.toString());
-    offer.amountSold = new BigInt(offer.amountSold.toI32() + 1);
+    offer.amountSold = offer.amountSold + ONE;
     offer.save();
 }
 
