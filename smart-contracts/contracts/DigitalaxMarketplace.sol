@@ -137,7 +137,8 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
      */
     function createOffer(
         uint256 _garmentCollectionId,
-        uint256 _primarySalePrice
+        uint256 _primarySalePrice,
+        uint256 _startTimestamp
     ) external whenNotPaused {
         // Ensure caller has privileges
         require(
@@ -154,7 +155,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         _createOffer(
             _garmentCollectionId,
             _primarySalePrice,
-            _getNow()
+            _startTimestamp
         );
     }
     /**

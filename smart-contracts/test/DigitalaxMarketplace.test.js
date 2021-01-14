@@ -227,6 +227,7 @@ contract('DigitalaxMarketplace', (accounts) => {
       await this.marketplace.createOffer(
         0,
         ether('0.1'),  // Price of 1 eth
+          '1',
         {from: minter}
       );
     });
@@ -412,10 +413,10 @@ contract('DigitalaxMarketplace', (accounts) => {
 
       it('fails if token already has marketplace in play', async () => {
         await this.marketplace.setNowOverride('2');
-        await this.marketplace.createOffer(0,  ether('0.1'), {from: minter});
+        await this.marketplace.createOffer(0,  ether('0.1'), '1', {from: minter});
 
         await expectRevert(
-          this.marketplace.createOffer(0,  ether('0.1'), {from: minter}),
+          this.marketplace.createOffer(0,  ether('0.1'), '1', {from: minter}),
           'DigitalaxMarketplace.createOffer: Cannot duplicate current offer'
         );
       });
@@ -424,7 +425,7 @@ contract('DigitalaxMarketplace', (accounts) => {
         await this.marketplace.setNowOverride('2');
         await this.marketplace.toggleIsPaused({from: admin});
         await expectRevert(
-           this.marketplace.createOffer('99', ether('0.1'), {from: minter}),
+           this.marketplace.createOffer('99', ether('0.1'), '1', {from: minter}),
           "Function is currently paused"
         );
       });
@@ -432,7 +433,7 @@ contract('DigitalaxMarketplace', (accounts) => {
       it('fails if you try to create an offer with a non minter address', async () => {
         await this.marketplace.setNowOverride('2');
         await expectRevert(
-           this.marketplace.createOffer('98', ether('0.05'), {from: tokenBuyer}),
+           this.marketplace.createOffer('98', ether('0.05'), '1', {from: tokenBuyer}),
           "DigitalaxMarketplace.createOffer: Sender must have the minter or admin role"
         );
       });
@@ -446,7 +447,7 @@ contract('DigitalaxMarketplace', (accounts) => {
         for (let i = 0; i < garmentIds.length; i ++) {
           await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
         }
-        await this.marketplace.createOffer(0, ether('0.1'), {from: minter});
+        await this.marketplace.createOffer(0, ether('0.1'), '1', {from: minter});
 
         const owner = await this.token.ownerOf(TOKEN_ONE_ID);
         expect(owner).to.be.equal(minter);
@@ -471,7 +472,7 @@ contract('DigitalaxMarketplace', (accounts) => {
         for (let i = 0; i < garmentIds.length; i ++) {
           await this.token.approve(marketplace.address, garmentIds[i], {from: minter});
         }
-        await marketplace.createOffer(0, ether('0.1'), {from: minter});
+        await marketplace.createOffer(0, ether('0.1'), '1', {from: minter});
 
         const owner = await this.token.ownerOf(TOKEN_ONE_ID);
         expect(owner).to.be.equal(minter);
@@ -494,6 +495,7 @@ contract('DigitalaxMarketplace', (accounts) => {
         await this.marketplace.createOffer(
           0, // ID
           ether('0.1'),
+            '1',
           {from: minter}
         );
       });
@@ -528,6 +530,7 @@ contract('DigitalaxMarketplace', (accounts) => {
         await this.marketplace.createOffer(
           0, // ID
           ether('0.1'),
+            '1',
           {from: minter}
         );
       });
@@ -550,6 +553,14 @@ contract('DigitalaxMarketplace', (accounts) => {
             "DigitalaxMarketplace.buyOffer: eth payments currently frozen"
         );
         await this.marketplace.toggleFreezeETHPayment({from: admin});
+      });
+
+      it('will fail if we have not reached start time', async () => {
+        await this.marketplace.setNowOverride('0');
+        await expectRevert(
+            this.marketplace.buyOffer(0, false, {from: tokenBuyer, value: ether('0.1')}),
+            "DigitalaxMarketplace.buyOffer: Purchase outside of the offer window"
+        );
       });
 
       it('will fail if mona erc20 payments are frozen', async () => {
@@ -639,6 +650,7 @@ contract('DigitalaxMarketplace', (accounts) => {
       await this.marketplace.createOffer(
         0,
         ether('0.1'),
+          '1',
         {from: minter}
       );
     });
@@ -680,6 +692,7 @@ contract('DigitalaxMarketplace', (accounts) => {
       await this.marketplace.createOffer(
         0,
         ether('0.1'),
+          '1',
         {from: minter}
       );
     });

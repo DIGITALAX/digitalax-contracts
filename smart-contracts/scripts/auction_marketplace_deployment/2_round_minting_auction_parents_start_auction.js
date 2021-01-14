@@ -38,9 +38,10 @@ async function main() {
   const designer = FUND_MULTISIG_ADDRESS;
   const beneficiary = FUND_MULTISIG_ADDRESS
   // fill in uris for the nfts
-  const testTokenIds =  ['128', '129', '130'];
+  const testTokenIds =  ['131','132','133'];
   const testTokenIdAmounts = ['1', '1', '1'];
-  const reservePrice = '10000000000000000';
+  const reservePrice = '1000000000000000';
+  const reservePrice2 = '2000000000000000';
   const startTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th
   const endTime = '1614556800';   // march 1
 
@@ -59,7 +60,7 @@ async function main() {
           uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/tester_exclusive/hash.json').uri,
           tokendIds: testTokenIds,
           tokenAmounts: testTokenIdAmounts,
-          price: reservePrice,
+          price: reservePrice2,
           auctionStartTime: startTime,
           auctionEndTime: endTime,
       }
