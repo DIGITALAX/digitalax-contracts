@@ -2,7 +2,7 @@
   "name": "Testing one",
   "description": "This metadata is uploaded for testing.",
   "external_url": "https://www.digitalax.xyz",
-  "image": "https://gateway.pinata.cloud/ipfs/QmNvRvMKCbfXEE7K5bf4j1vFfZAzMDJ77Cj1MMEvFCvY1r",
+  "image": "https://gateway.pinata.cloud/ipfs/QmPXjsA3uVVymnGdFvuUTKstw8SjDie6qrJoNaYSi8fSR2",
   "attributes": [
     {
       "trait_type": "Designer",
@@ -21,7 +21,7 @@
       "value": "20/28"
     },
     {
-      "trait_type": "Rarity",
+      "trait_type": "Degrees of Exclusivity",
       "value": "Common"
     }
   ]

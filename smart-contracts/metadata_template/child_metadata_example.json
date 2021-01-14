@@ -1,21 +1,24 @@
 {
-  "Artist Name": "DF001",
-  "Description": "DF001",
+  "name": "Emmatest1",
+  "description": "Hello Hello test 123",
+  "external_url": "https://www.digitalax.xyz",
+  "image": "https://gateway.pinata.cloud/ipfs/QmPa4jMEZT5jZEX4xQkR8WLaj1CU2GHzE32MNud1TUXuDd",
   "attributes": [
     {
-      "trait_type": "Rarity",
+      "trait_type": "Degrees of Exclusivity",
       "value": "Common"
     },
     {
       "trait_type": "Type",
-      "value": "DF001"
+      "value": "P"
     },
     {
       "trait_type": "Issue No.",
-      "value": "1"
+      "value": "4311"
+    },
+    {
+      "trait_type": "Artist",
+      "value": "Emmatest"
     }
-  ],
-  "files": {
-    "graphic": "https://gateway.pinata.cloud/ipfs/QmQVBe8s2YGySkHbmV1CUd1wcbE6nS9ie7krQ5NtFDxfCH"
-  }
+  ]
 }
