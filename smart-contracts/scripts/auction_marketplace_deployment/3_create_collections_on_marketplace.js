@@ -1,7 +1,9 @@
 const GarmentArtifact = require('../../artifacts/DigitalaxGarmentNFT.json');
 const GarmentCollectionArtifact = require('../../artifacts/DigitalaxGarmentCollection.json');
 const MarketplaceArtifact = require('../../artifacts/DigitalaxMarketplace.json');
-const {FUND_MULTISIG_ADDRESS} = require('../constants');
+const AccessControlsArtifact = require('../../artifacts/DigitalaxAccessControls.json');
+
+const {ROUND_3_DESIGNERS} = require('../constants');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -11,7 +13,7 @@ async function main() {
       deployerAddress
   );
 
-  const {ERC721_GARMENT_ADDRESS, GARMENT_COLLECTION_ADDRESS, MARKETPLACE_ADDRESS} = process.env;
+  const {ERC721_GARMENT_ADDRESS, GARMENT_COLLECTION_ADDRESS, MARKETPLACE_ADDRESS, ACCESS_CONTROLS_ADDRESS} = process.env;
   console.log(`ERC721_GARMENT_ADDRESS found [${ERC721_GARMENT_ADDRESS}]`);
 
   const garment = new ethers.Contract(
@@ -32,45 +34,139 @@ async function main() {
       deployer
   );
 
-  // await accessControls.addSmartContractRole(AUCTION_ADDRESS);
+  //Optional TODO decide if needed
+  const updateFee = await marketplace.updateMarketplacePlatformFee('420');
+  await updateFee.wait();
+  const updateDiscount = await marketplace.updateMarketplaceDiscountToPayInErc20('0');
+  await updateDiscount.wait();
+
+
+  const accessControls = new ethers.Contract(
+      ACCESS_CONTROLS_ADDRESS,
+      AccessControlsArtifact.abi,
+      deployer
+  );
+
+  //Optional TODO decide if needed
+//  await accessControls.addSmartContractRole(MARKETPLACE_ADDRESS);
+
 
   //// SETTINGS
-  const designer = FUND_MULTISIG_ADDRESS;
-  const beneficiary = FUND_MULTISIG_ADDRESS;
   // fill in uris for the nfts
-  const testTokenIds =  ['134', '135', '136'];
-  const testTokenIdAmounts = ['1', '1', '1'];
-  const reservePrice = '1000000000000000';
-  const reservePrice2 = '2000000000000000';
+  const tokenId_astral_chrysalis =  ['63']; // on mainnet 63 TODO confirm for mainnet
+  const tokenId_crux_firstarmor =  ['62']; // on mainnet 62 TODO confirm for mainnet
+  const tokenId_gridded_green_imagineer =  ['78']; // on mainnet 78 TODO confirm for mainnet
+  const tokenId_sit_in_green_freecolor =  ['79']; // on mainnet 79 TODO confirm for mainnet
 
-  const startTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th
+  const tokenId_waves_beyond_me =  ['56']; // on mainnet 56 TODO confirm for mainnet
+  const tokenId_clouds_bluefunk =  ['57']; // on mainnet 57 TODO confirm for mainnet
+  const tokenId_balancebliss_hagamonos =  ['65']; // on mainnet 65 TODO confirm for mainnet
+  const tokenId_wrappeddarkness_distantmark =  ['58']; // on mainnet 58 TODO confirm for mainnet
+
+  const tokenIdAmounts = ['1'];
+
+  const reservePrice_semirare = '270000000000000000';
+  const reservePrice2_common = '150000000000000000';
+
+ // const startTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th
+
+  const mainnet_startTime = '1610740800'; // Jan 15, 8pm
 
   // Use the single auction id processed in the last script to build auction id specific collections in this script
-  const auctionId = 168
+  const auctionId_3dBehemoth = 0; // transformation TODO update from result of last script (important)
+  const auctionId_yekaterina = 0; // harajuku TODO update from result of last script (important)
+  const auctionId_lorena = 0; // few charm TODO update from result of last script (important)
+  const auctionId_nina = 0; // cosmic one TODO update from result of last script (important)
 
-  // Next step is mint collections and open buy offers
+  // Next step is mint collections and open buy offers, run 1 at a time in production in case something drops
   const collectionUris = [
     {
-      // Collection 1 Tester Semirare
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/tester_semirare/hash.json').uri,
-      price: reservePrice2,
-      collectionDesigner: designer,
+      // Collection 1 Semirare
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Chrysalis/hash.json').uri,
+      price: reservePrice_semirare,
+      collectionDesigner: ROUND_3_DESIGNERS._3dBehemoth,
       amountToMintInCollection: 3,
-      auctionIdToLink: auctionId,
+      auctionIdToLink: auctionId_3dBehemoth,
       rarity: 'Semi-Rare',
-      tokendIds: testTokenIds,
-      tokenAmounts: testTokenIdAmounts,
+      tokendIds: tokenId_astral_chrysalis,
+      tokenAmounts: tokenIdAmounts,
     },
     {
-      // Collection 2 Tester Common
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/tester_common/hash.json').uri,
-      price: reservePrice,
-      collectionDesigner: designer,
+      // Collection 2 Common
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/First Armor/hash.json').uri,
+      price: reservePrice2_common,
+      collectionDesigner: ROUND_3_DESIGNERS._3dBehemoth,
       amountToMintInCollection: 7,
-      auctionIdToLink: auctionId,
+      auctionIdToLink: auctionId_3dBehemoth,
       rarity: 'Common',
-      tokendIds: testTokenIds,
-      tokenAmounts: testTokenIdAmounts,
+      tokendIds: tokenId_crux_firstarmor,
+      tokenAmounts: tokenIdAmounts,
+    },
+    {
+      // Collection 3 Semirare
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Imagineer/hash.json').uri,
+      price: reservePrice_semirare,
+      collectionDesigner: ROUND_3_DESIGNERS.yekatarina,
+      amountToMintInCollection: 3,
+      auctionIdToLink: auctionId_yekaterina,
+      rarity: 'Semi-Rare',
+      tokendIds: tokenId_gridded_green_imagineer,
+      tokenAmounts: tokenIdAmounts,
+    },
+    {
+      // Collection 4 Common
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Free Colour/hash.json').uri,
+      price: reservePrice2_common,
+      collectionDesigner: ROUND_3_DESIGNERS.yekatarina,
+      amountToMintInCollection: 7,
+      auctionIdToLink: auctionId_yekaterina,
+      rarity: 'Common',
+      tokendIds: tokenId_sit_in_green_freecolor,
+      tokenAmounts: tokenIdAmounts,
+    },
+    {
+      // Collection 5 Semirare
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Beyond Me/hash.json').uri,
+      price: reservePrice_semirare,
+      collectionDesigner: ROUND_3_DESIGNERS.lorena,
+      amountToMintInCollection: 3,
+      auctionIdToLink: auctionId_lorena,
+      rarity: 'Semi-Rare',
+      tokendIds: tokenId_waves_beyond_me,
+      tokenAmounts: tokenIdAmounts,
+    },
+    {
+      // Collection 6 Common
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Blue Funk/hash.json').uri,
+      price: reservePrice2_common,
+      collectionDesigner: ROUND_3_DESIGNERS.lorena,
+      amountToMintInCollection: 7,
+      auctionIdToLink: auctionId_lorena,
+      rarity: 'Common',
+      tokendIds: tokenId_clouds_bluefunk,
+      tokenAmounts: tokenIdAmounts,
+    },
+    {
+      // Collection 7 Semirare
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Hagemonos/hash.json').uri,
+      price: reservePrice_semirare,
+      collectionDesigner: ROUND_3_DESIGNERS.nina,
+      amountToMintInCollection: 3,
+      auctionIdToLink: auctionId_nina,
+      rarity: 'Semi-Rare',
+      tokendIds: tokenId_balancebliss_hagamonos,
+      tokenAmounts: tokenIdAmounts,
+    },
+    {
+      // Collection 8 Common
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Distant Mark/hash.json').uri,
+      price: reservePrice2_common,
+      collectionDesigner: ROUND_3_DESIGNERS.nina,
+      amountToMintInCollection: 7,
+      auctionIdToLink: auctionId_nina,
+      rarity: 'Common',
+      tokendIds: tokenId_wrappeddarkness_distantmark,
+      tokenAmounts: tokenIdAmounts,
     }
   ]
 
@@ -122,7 +218,7 @@ async function main() {
     await marketplace.createOffer(
         createCollectionId, // Collection id
         collectionForMarketplace.price, // reservePrice for all collection items
-        startTime, // Marketplace buy offer available after start time
+        mainnet_startTime, // Marketplace buy offer available after start time
     );
     console.log(`--Marketplace created for collection--`);
     console.log(`----------------------`);

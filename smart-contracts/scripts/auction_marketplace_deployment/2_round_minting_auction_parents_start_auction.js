@@ -1,7 +1,8 @@
 const FactoryArtifact = require('../../artifacts/DigitalaxGarmentFactory.json');
 const AuctionArtifact = require('../../artifacts/DigitalaxAuction.json');
 const GarmentArtifact = require('../../artifacts/DigitalaxGarmentNFT.json');
-const {FUND_MULTISIG_ADDRESS} = require('../constants');
+const AccessControlsArtifact = require('../../artifacts/DigitalaxAccessControls.json');
+const {ROUND_3_DESIGNERS} = require('../constants'); // This address you must be in control of so you can do token approvals
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -11,7 +12,7 @@ async function main() {
     deployerAddress
   );
 
-  const {GARMENT_FACTORY_ADDRESS, AUCTION_ADDRESS, ERC721_GARMENT_ADDRESS} = process.env;
+  const {GARMENT_FACTORY_ADDRESS, AUCTION_ADDRESS, ERC721_GARMENT_ADDRESS, ACCESS_CONTROLS_ADDRESS} = process.env;
   console.log(`GARMENT_FACTORY_ADDRESS found [${GARMENT_FACTORY_ADDRESS}]`);
 
   const factory = new ethers.Contract(
@@ -32,37 +33,74 @@ async function main() {
         deployer
    );
 
-  // await accessControls.addSmartContractRole(AUCTION_ADDRESS);
+    const accessControls = new ethers.Contract(
+        ACCESS_CONTROLS_ADDRESS,
+        AccessControlsArtifact.abi,
+        deployer
+    );
+
+    // OPTIONAL TODO use if needed
+   // await accessControls.addSmartContractRole(AUCTION_ADDRESS);
+   // OPTIONAL TODO use if needed
+   // const updateFee = await auction.updatePlatformFee('500');
+   // await updateFee.wait();
 
   //// SETTINGS
-  const designer = FUND_MULTISIG_ADDRESS;
-  const beneficiary = FUND_MULTISIG_ADDRESS
   // fill in uris for the nfts
-  const testTokenIds =  ['131','132','133'];
-  const testTokenIdAmounts = ['1', '1', '1'];
-  const reservePrice = '1000000000000000';
-  const reservePrice2 = '2000000000000000';
-  const startTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th
-  const endTime = '1614556800';   // march 1
+  const restingreen_harajuku =  ['80']; // rest in green harajuku --> mainnet 80 TODO confirm
+  const apis_mechanicus_transformation =  ['64']; // apis mechanicus --> mainnet 64 TODO confirm
+  const stripes_fewcharm =  ['55']; // stripes, few charm --> mainnet 55 TODO confirm
+  const turnheartupsidedown_cosmicone =  ['66']; // turn heart updside down, cosmic one --> mainnet 66 TODO confirm
+  const tokenIdAmounts = ['1'];
 
+  const reservePrice = '0';
+  const reservePrice2 = '0';
+
+//  const testStartTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th only test
+   const mainnet_startTime = '1610740800'; // Jan 15, 8pm utc TODO confirm
+   const mainnet_endTime = '1611086400';   // Jan 19, 8pm utc TODO confirm
+
+    // Run 1 at a time in production, in case something drops
   const uris = [
       {
-          // Auction 1 Tester Exclusive
-          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/tester_exclusive/hash.json').uri,
-          tokendIds: testTokenIds,
-          tokenAmounts: testTokenIdAmounts,
+          // Auction 1 Exclusive
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Transformation/hash.json').uri,
+          tokendIds: apis_mechanicus_transformation,
+          tokenAmounts: tokenIdAmounts,
           price: reservePrice,
-          auctionStartTime: startTime,
-          auctionEndTime: endTime,
+          auctionStartTime: mainnet_startTime,
+          auctionEndTime: mainnet_endTime,
+          designer: ROUND_3_DESIGNERS._3dBehemoth
       },
       {
-          // Auction 2 Tester Exclusive
-          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/tester_exclusive/hash.json').uri,
-          tokendIds: testTokenIds,
-          tokenAmounts: testTokenIdAmounts,
+          // Auction 2 Exclusive
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Harajuku Essence/hash.json').uri,
+          tokendIds: restingreen_harajuku,
+          tokenAmounts: tokenIdAmounts,
           price: reservePrice2,
-          auctionStartTime: startTime,
-          auctionEndTime: endTime,
+          auctionStartTime: mainnet_startTime,
+          auctionEndTime: mainnet_endTime,
+          designer: ROUND_3_DESIGNERS.yekatarina,
+      },
+      {
+          // Auction 3 Exclusive
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Few Charm/hash.json').uri,
+          tokendIds: stripes_fewcharm,
+          tokenAmounts: tokenIdAmounts,
+          price: reservePrice,
+          auctionStartTime: mainnet_startTime,
+          auctionEndTime: mainnet_endTime,
+          designer: ROUND_3_DESIGNERS.lorena
+      },
+      {
+          // Auction 4 Exclusive
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Cosmic One/hash.json').uri,
+          tokendIds: turnheartupsidedown_cosmicone,
+          tokenAmounts: tokenIdAmounts,
+          price: reservePrice2,
+          auctionStartTime: mainnet_startTime,
+          auctionEndTime: mainnet_endTime,
+          designer: ROUND_3_DESIGNERS.nina,
       }
   ]
 
@@ -72,10 +110,10 @@ async function main() {
       console.log(`Creating exclusive parent nft For uri: ${auctionGarmentInfo.uri} with child token ids of ${auctionGarmentInfo.tokendIds} and amounts: ${auctionGarmentInfo.tokenAmounts}`);
       const tx = await factory.mintParentWithChildren(
           auctionGarmentInfo.uri,
-          designer,
+          auctionGarmentInfo.designer,
           auctionGarmentInfo.tokendIds, // childTokenIds
           auctionGarmentInfo.tokenAmounts, // childTokenAmounts
-          beneficiary,
+          deployerAddress, // Who receives nft and can approve (beneficiary), should be deployer address
         );
 
       const createParentId = await new Promise((resolve, reject) => {
