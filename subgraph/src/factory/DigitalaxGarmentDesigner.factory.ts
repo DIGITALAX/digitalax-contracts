@@ -17,6 +17,14 @@ export function loadOrCreateGarmentDesigner(tokenId: string): DigitalaxGarmentDe
         garmentDesignerId = '2';
     } else if (tokenId == '26') {
         garmentDesignerId = '18';
+    } else if (tokenId == '39') {
+        garmentDesignerId = '7';
+    } else if (tokenId == '40') {
+        garmentDesignerId = '25';
+    } else if (tokenId == '41') {
+        garmentDesignerId = '2';
+    } else if (tokenId == '42') {
+        garmentDesignerId = '12';
     }
 
     let garmentDesigner = DigitalaxGarmentDesigner.load(garmentDesignerId);
