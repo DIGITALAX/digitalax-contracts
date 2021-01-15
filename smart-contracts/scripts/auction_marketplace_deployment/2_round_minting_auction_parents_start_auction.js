@@ -51,13 +51,12 @@ async function main() {
   const apis_mechanicus_transformation =  ['140']; // apis mechanicus --> mainnet 64 TODO confirm, update for mainnet
   const tokenIdAmounts = ['1'];
 
-  const reservePrice = '10000000000000000'; // TODO update for mainnet
-  const reservePrice2 = '10000000000000000'; // TODO update for mainnet
+  const reservePrice = '0';
+  const reservePrice2 = '0';
 
-  const startTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th TODO only test
-  // const mainnet_startTime = '1610740800'; // Jan 15, 8pm utc TODO use mainnet
-
-   const mainnet_endTime = '1611086400';   // Jan 19, 8pm utc TODO use mainnet
+ // const startTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th only test
+    const mainnet_startTime = '1610740800'; // Jan 15, 8pm utc
+   const mainnet_endTime = '1611086400';   // Jan 19, 8pm utc
 
     // Run 1 at a time in production, in case something drops
   const uris = [
@@ -67,7 +66,7 @@ async function main() {
           tokendIds: apis_mechanicus_transformation,
           tokenAmounts: tokenIdAmounts,
           price: reservePrice,
-          auctionStartTime: startTime,
+          auctionStartTime: mainnet_startTime,
           auctionEndTime: mainnet_endTime,
           designer: ROUND_3_DESIGNERS._3dBehemoth
       },
@@ -77,7 +76,7 @@ async function main() {
           tokendIds: restingreen_harajuku,
           tokenAmounts: tokenIdAmounts,
           price: reservePrice2,
-          auctionStartTime: startTime,
+          auctionStartTime: mainnet_startTime,
           auctionEndTime: mainnet_endTime,
           designer: ROUND_3_DESIGNERS.yekatarina,
       }

@@ -60,17 +60,17 @@ async function main() {
 
   const tokenIdAmounts = ['1'];
 
-  const reservePrice_chrysalis = '200000000000000000'; // TODO real price
-  const reservePrice2_firstarmor = '400000000000000000'; // TODO real price
-  const reservePrice3_imagineer = '200000000000000000'; // TODO real price
-  const reservePrice4_freecolor = '400000000000000000'; // TODO real price
+  const reservePrice_chrysalis = '270000000000000000';
+  const reservePrice2_firstarmor = '150000000000000000';
+  const reservePrice3_imagineer = '270000000000000000';
+  const reservePrice4_freecolor = '150000000000000000';
 
   const startTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th
 
   //const mainnet_startTime = '1610740800'; // Jan 15, 8pm
 
   // Use the single auction id processed in the last script to build auction id specific collections in this script
-  const auctionId_3dBehemoth = 223; // transfor TODO update from result of last script (important)
+  const auctionId_3dBehemoth = 223; // transformation TODO update from result of last script (important)
   const auctionId_yekaterina = 224; // harajuku TODO update from result of last script (important)
 
   // Next step is mint collections and open buy offers, run 1 at a time in production in case something drops
