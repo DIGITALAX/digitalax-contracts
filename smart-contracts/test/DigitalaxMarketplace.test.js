@@ -3,6 +3,7 @@ const {
   expectEvent,
   BN,
   ether,
+  send,
   constants,
   balance
 } = require('@openzeppelin/test-helpers');
@@ -28,6 +29,7 @@ const WethToken = artifacts.require('WethToken');
 const ONE_THOUSAND_TOKENS = '1000000000000000000000';
 const TWO_HUNDRED_TOKENS = new BN('200000000000000000000');
 const TWENTY_TOKENS = new BN('20000000000000000000');
+const TWO_ETH = ether('2');
 
 contract('DigitalaxMarketplace', (accounts) => {
   const [admin, smartContract, platformFeeAddress, minter, owner, designer, tokenBuyer, newRecipient] = accounts;
@@ -678,6 +680,61 @@ contract('DigitalaxMarketplace', (accounts) => {
         });
       });
   });
+  });
+
+  describe('reclaimETH()', async () => {
+    describe('validation', async () => {
+      it('cannot reclaim eth if it is not Admin', async () => {
+        await expectRevert(
+          this.marketplace.reclaimETH( {from: tokenBuyer}),
+          'DigitalaxMarketplace.reclaimETH: Sender must be admin'
+        );
+      });
+
+      it('can reclaim Eth', async () => {
+        await send.ether(tokenBuyer, this.marketplace.address, TWO_ETH); // Token buyer sends 2 random eth into contract
+        const marketplaceBalanceTracker = await balance.tracker(this.marketplace.address, 'ether');
+        const adminBalanceTracker = await balance.tracker(admin, 'ether');
+
+        const adminBalanceBeforeReclaim = await adminBalanceTracker.get('ether');
+
+        // Reclaim eth from contract
+        await this.marketplace.reclaimETH({from: admin});
+
+        expect(await marketplaceBalanceTracker.delta('ether')).to.be.bignumber.equal('-2');
+        expect((await marketplaceBalanceTracker.get('ether')).toString()).to.be.equal('0');
+
+        // Admin receives eth minus gas fees.
+        expect(await adminBalanceTracker.get('ether')).to.be.bignumber.greaterThan(adminBalanceBeforeReclaim);
+      });
+    });
+  });
+
+  describe('reclaimERC20()', async () => {
+    describe('validation', async () => {
+      it('cannot reclaim erc20 if it is not Admin', async () => {
+        await expectRevert(
+          this.marketplace.reclaimERC20(this.weth.address, {from: tokenBuyer}),
+          'DigitalaxMarketplace.reclaimERC20: Sender must be admin'
+        );
+      });
+
+      it('can reclaim Erc20', async () => {
+        // Send some wrapped eth
+        await this.weth.transfer(this.marketplace.address, TWENTY_TOKENS, { from: minter });
+
+        const adminBalanceBeforeReclaim = await this.weth.balanceOf(admin);
+        expect(await this.weth.balanceOf(this.marketplace.address)).to.be.bignumber.equal(TWENTY_TOKENS);
+
+        // Reclaim erc20 from contract
+        await this.marketplace.reclaimERC20(this.weth.address, {from: admin});
+
+        expect(await this.weth.balanceOf(this.marketplace.address)).to.be.bignumber.equal(new BN('0'));
+
+        // Admin receives eth minus gas fees.
+        expect(await this.weth.balanceOf(admin)).to.be.bignumber.greaterThan(adminBalanceBeforeReclaim);
+      });
+    });
   });
 
   describe('updateOfferPrimarySalePrice()', async () => {

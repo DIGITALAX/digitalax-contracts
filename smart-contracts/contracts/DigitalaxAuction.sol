@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/GSN/Context.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./DigitalaxAccessControls.sol";
 import "./garment/IDigitalaxGarmentNFT.sol";
 
@@ -646,5 +647,38 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         (bool successRefund,) = _currentHighestBidder.call{value : _currentHighestBid}("");
         require(successRefund, "DigitalaxAuction._refundHighestBidder: failed to refund previous bidder");
         emit BidRefunded(_currentHighestBidder, _currentHighestBid);
+    }
+
+    /**
+    * @notice Reclaims ERC20 Compatible tokens for entire balance
+    * @dev Only access controls admin
+    * @param _tokenContract The address of the token contract
+    */
+    function reclaimERC20(address _tokenContract) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxAuction.reclaimERC20: Sender must be admin"
+        );
+        require(_tokenContract != address(0), "Invalid address");
+        IERC20 token = IERC20(_tokenContract);
+        uint256 balance = token.balanceOf(address(this));
+        require(token.transfer(msg.sender, balance), "Transfer failed");
+    }
+
+    /**
+     * @notice Reclaims ETH
+     * @dev Only access controls admin can access
+     * @dev ONLY FOR EMERGENCY - THIS WILL DRAIN ALL ETH IN THE ACCOUNT and send it to the calling Admin
+     * @dev Technically, an admin can already change platformFeeRecipient, auction end time and resultAuction,
+     * @dev ...so the admin is always in control of funds on the contract anyways. This convenience method allows
+     * @dev ...the admin to recover extra eth sent to the account after auctions complete, or recover all funds in
+     * @dev ...case there is a malfunction in the auction operation.
+     */
+    function reclaimETH() external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxAuction.reclaimETH: Sender must be admin"
+        );
+        msg.sender.transfer(address(this).balance);
     }
 }
