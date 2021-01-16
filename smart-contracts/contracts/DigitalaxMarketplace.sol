@@ -431,4 +431,33 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         });
         emit OfferCreated(_garmentCollectionId);
     }
+
+    /**
+    * @notice Reclaims ERC20 Compatible tokens for entire balance
+    * @dev Only access controls admin
+    * @param _tokenContract The address of the token contract
+    */
+    function reclaimERC20(address _tokenContract) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxMarketplace.reclaimERC20: Sender must be admin"
+        );
+        require(_tokenContract != address(0), "Invalid address");
+        IERC20 token = IERC20(_tokenContract);
+        uint256 balance = token.balanceOf(address(this));
+        require(token.transfer(msg.sender, balance), "Transfer failed");
+    }
+
+    /**
+     * @notice Reclaims ETH, drains all ETH sitting on the smart contract
+     * @dev The instant buy feature means technically, ETH should never sit on contract.
+     * @dev Only access controls admin can access
+     */
+    function reclaimETH() external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxMarketplace.reclaimETH: Sender must be admin"
+        );
+        msg.sender.transfer(address(this).balance);
+    }
 }
