@@ -4,7 +4,8 @@ const {
   BN,
   ether,
   constants,
-  balance
+  balance,
+  send
 } = require('@openzeppelin/test-helpers');
 
 const {expect} = require('chai');
@@ -15,12 +16,14 @@ const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
 const DigitalaxAuction = artifacts.require('DigitalaxAuctionMock');
 const DigitalaxAuctionReal = artifacts.require('DigitalaxAuction');
 const BiddingContractMock = artifacts.require('BiddingContractMock');
+const WethToken = artifacts.require('WethToken');
 
 contract('DigitalaxAuction', (accounts) => {
   const [admin, smartContract, platformFeeAddress, minter, owner, designer, bidder, bidder2] = accounts;
 
   const TOKEN_ONE_ID = new BN('1');
   const TOKEN_TWO_ID = new BN('2');
+  const TWENTY_TOKENS = new BN('20000000000000000000');
 
   const randomTokenURI = 'rand';
 
@@ -40,6 +43,10 @@ contract('DigitalaxAuction', (accounts) => {
       this.accessControls.address,
       this.digitalaxMaterials.address,
       {from: admin}
+    );
+
+    this.weth = await WethToken.new(
+        { from: minter }
     );
 
     this.auction = await DigitalaxAuction.new(
@@ -1142,6 +1149,72 @@ contract('DigitalaxAuction', (accounts) => {
       );
     });
 
+  });
+
+  describe('reclaimETH()', async () => {
+    beforeEach(async () => {
+      await this.token.mint(minter, randomTokenURI, designer, {from: minter});
+      await this.token.approve(this.auction.address, TOKEN_ONE_ID, {from: minter});
+      await this.auction.setNowOverride('2');
+      await this.auction.createAuction(
+          TOKEN_ONE_ID,
+          '1',
+          '0',
+          '10',
+          {from: minter}
+      );
+      await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.2')});
+    });
+    describe('validation', async () => {
+      it('cannot reclaim eth if it is not Admin', async () => {
+        await expectRevert(
+            this.auction.reclaimETH( {from: bidder}),
+            'DigitalaxAuction.reclaimETH: Sender must be admin'
+        );
+      });
+
+      it('can reclaim Eth', async () => {
+        const auctionBalanceTracker = await balance.tracker(this.auction.address, 'ether');
+        const adminBalanceTracker = await balance.tracker(admin, 'ether');
+
+        const adminBalanceBeforeReclaim = await adminBalanceTracker.get('ether');
+
+        // Reclaim eth from contract
+        await this.auction.reclaimETH({from: admin});
+
+        expect((await auctionBalanceTracker.get('ether')).toString()).to.be.equal('0');
+
+        // Admin receives eth minus gas fees.
+        expect(await adminBalanceTracker.get('ether')).to.be.bignumber.greaterThan(adminBalanceBeforeReclaim);
+      });
+    });
+  });
+
+  describe('reclaimERC20()', async () => {
+    describe('validation', async () => {
+      it('cannot reclaim erc20 if it is not Admin', async () => {
+        await expectRevert(
+            this.auction.reclaimERC20(this.weth.address, {from: bidder}),
+            'DigitalaxAuction.reclaimERC20: Sender must be admin'
+        );
+      });
+
+      it('can reclaim Erc20', async () => {
+        // Send some wrapped eth
+        await this.weth.transfer(this.auction.address, TWENTY_TOKENS, { from: minter });
+
+        const adminBalanceBeforeReclaim = await this.weth.balanceOf(admin);
+        expect(await this.weth.balanceOf(this.auction.address)).to.be.bignumber.equal(TWENTY_TOKENS);
+
+        // Reclaim erc20 from contract
+        await this.auction.reclaimERC20(this.weth.address, {from: admin});
+
+        expect(await this.weth.balanceOf(this.auction.address)).to.be.bignumber.equal(new BN('0'));
+
+        // Admin receives eth minus gas fees.
+        expect(await this.weth.balanceOf(admin)).to.be.bignumber.greaterThan(adminBalanceBeforeReclaim);
+      });
+    });
   });
 
   async function getGasCosts(receipt) {
