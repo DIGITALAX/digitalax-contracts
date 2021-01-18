@@ -35,19 +35,38 @@ async function main() {
   //   require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/tester_common/hash.json`).uri,
   // ]);
 
+  // Round 3 tester
+  // let tx = await factory.createNewChildren([
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_rest_in_green/hash.json`).uri, // Harajuku -ex
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_gridded_greenery/hash.json`).uri, // Imagineer -sr
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_sit_in_green/hash.json`).uri, // Free colour -co
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_apis_mechanicus/hash.json`).uri, // Transformation -ex
+  //      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_crux_mechanicus/hash.json`).uri, // Chrysalis -sr
+  //      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_astral_mechanicus/hash.json`).uri, // First Armour -co
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_stripes/hash.json`).uri, // 55 stripes exclusive few charm
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_waves/hash.json`).uri, // 56 waves sr beyond me
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_clouds/hash.json`).uri, // 57 clouds commo blue funk
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_you_turn_my_heart_upside_down/hash.json`).uri, // 66 turn heart excl cosmic one
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_balance_of_bliss/hash.json`).uri, // 65 balance bliss sr hagemonos
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_wrapped_in_darkness/hash.json`).uri, // 58 wrapped darkness common distant mark
+  // ]);
+  // Round 4 tester
   let tx = await factory.createNewChildren([
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_rest_in_green/hash.json`).uri, // Harajuku -ex
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_gridded_greenery/hash.json`).uri, // Imagineer -sr
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_sit_in_green/hash.json`).uri, // Free colour -co
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_apis_mechanicus/hash.json`).uri, // Transformation -ex
-       require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_crux_mechanicus/hash.json`).uri, // Chrysalis -sr
-       require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_astral_mechanicus/hash.json`).uri, // First Armour -co
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_stripes/hash.json`).uri, // 55 stripes exclusive few charm
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_waves/hash.json`).uri, // 56 waves sr beyond me
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_clouds/hash.json`).uri, // 57 clouds commo blue funk
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_you_turn_my_heart_upside_down/hash.json`).uri, // 66 turn heart excl cosmic one
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_balance_of_bliss/hash.json`).uri, // 65 balance bliss sr hagemonos
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_wrapped_in_darkness/hash.json`).uri, // 58 wrapped darkness common distant mark
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_goodbye_sun_75/hash.json`).uri, // 150
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_seeing_sun_74/hash.json`).uri, // 151
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_peaches_73/hash.json`).uri, // 152
+
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_krkn_70/hash.json`).uri, // 153
+       require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_kero_71/hash.json`).uri, // 154
+       require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_vnkr_72/hash.json`).uri, // 155
+
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_green_bean_59/hash.json`).uri, // 156
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_blue_slide_60/hash.json`).uri, // 157
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_rainbow_wiggle_61/hash.json`).uri, // 158
+
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_deep_blue_67/hash.json`).uri, // 159
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_purple_cells_68/hash.json`).uri, // 160
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_walk_into_chaos_83/hash.json`).uri, // 161
   ]);
 
   const createChildIds = await new Promise((resolve, reject) => {
