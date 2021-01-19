@@ -222,7 +222,7 @@ dataSources:
           file: ./abis/DigitalaxMarketplace.json
       eventHandlers:
         - event: DigitalaxMarketplaceContractDeployed()
-          handler: handleMarketplaceContractDeployed
+          handler: handleMarketplaceDeployed
         - event: UpdateMarketplacePlatformFee(uint256)
           handler: handleUpdateMarketplacePlatformFee
         - event: UpdateMarketplaceDiscountToPayInErc20(uint256)
