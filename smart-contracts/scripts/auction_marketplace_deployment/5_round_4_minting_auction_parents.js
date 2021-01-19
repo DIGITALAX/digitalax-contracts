@@ -47,17 +47,17 @@ async function main() {
 
   //// SETTINGS
   // fill in uris for the nfts
-  const golden_spiral_peaches =  ['152']; // golden spiral peaches --> mainnet 73
-  const big_shot_vnkr =  ['155']; // big shot vnkr --> mainnet 72
-  const butterfly_rainbow_wiggle =  ['158']; // butterfly rainbow wiggle --> mainnet 61
-  const elimination_walk_in_chaos =  ['161']; // elimination walk in chaos --> mainnet 83
+  const golden_spiral_peaches =  ['73']; // golden spiral peaches --> mainnet 73 TODO double check
+  const big_shot_vnkr =  ['72']; // big shot vnkr --> mainnet 72 TODO double check
+  const butterfly_rainbow_wiggle =  ['61']; // butterfly rainbow wiggle --> mainnet 61 TODO double check
+  const elimination_walk_in_chaos =  ['83']; // elimination walk in chaos --> mainnet 83 TODO double check
 
   const tokenIdAmounts = ['1'];
 
   const reservePrice = '0';
 
-  const testStartTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th only test
- //  const mainnet_startTime = '1611086400';   // Jan 19, 8pm utc TODO confirm
+ // const testStartTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th only test
+   const mainnet_startTime = '1611086400';   // Jan 19, 8pm utc TODO confirm
    const mainnet_endTime = '1611432000'; // Jan 23, 8pm utc TODO confirm
 
     // Run 1 at a time in production, in case something drops
@@ -68,7 +68,7 @@ async function main() {
           tokendIds: golden_spiral_peaches,
           tokenAmounts: tokenIdAmounts,
           price: reservePrice,
-          auctionStartTime: testStartTime,
+          auctionStartTime: mainnet_startTime,
           auctionEndTime: mainnet_endTime,
           designer: ROUND_4_DESIGNERS.mar_guixa
       },
@@ -78,7 +78,7 @@ async function main() {
           tokendIds: big_shot_vnkr,
           tokenAmounts: tokenIdAmounts,
           price: reservePrice,
-          auctionStartTime: testStartTime,
+          auctionStartTime: mainnet_startTime,
           auctionEndTime: mainnet_endTime,
           designer: ROUND_4_DESIGNERS.msistema,
       },
@@ -88,7 +88,7 @@ async function main() {
           tokendIds: butterfly_rainbow_wiggle,
           tokenAmounts: tokenIdAmounts,
           price: reservePrice,
-          auctionStartTime: testStartTime,
+          auctionStartTime: mainnet_startTime,
           auctionEndTime: mainnet_endTime,
           designer: ROUND_4_DESIGNERS.alyona
       },
@@ -98,7 +98,7 @@ async function main() {
           tokendIds: elimination_walk_in_chaos,
           tokenAmounts: tokenIdAmounts,
           price: reservePrice,
-          auctionStartTime: testStartTime,
+          auctionStartTime: mainnet_startTime,
           auctionEndTime: mainnet_endTime,
           designer: ROUND_4_DESIGNERS.vitaly,
       }

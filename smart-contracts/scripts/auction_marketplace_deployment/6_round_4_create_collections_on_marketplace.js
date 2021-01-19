@@ -53,17 +53,17 @@ async function main() {
 
   //// SETTINGS
   // fill in uris for the nfts
-  const tokenId_goodbye_sun_unknown =  ['150']; // on mainnet 75 TODO confirm for mainnet
-  const tokenId_seeing_sun_unknown =  ['151']; // on mainnet 74 TODO confirm for mainnet
+  const tokenId_goodbye_sun_internal_treasure =  ['75']; // on mainnet 75 TODO confirm for mainnet
+  const tokenId_seeing_sun_serenity =  ['74']; // on mainnet 74 TODO confirm for mainnet
 
-  const tokenId_krkn_low_life =  ['153']; // on mainnet 70 TODO confirm for mainnet
-  const tokenId_kero_mercenary =  ['154']; // on mainnet 71 TODO confirm for mainnet
+  const tokenId_krkn_low_life =  ['70']; // on mainnet 70 TODO confirm for mainnet
+  const tokenId_kero_mercenary =  ['71']; // on mainnet 71 TODO confirm for mainnet
 
-  const tokenId_green_bean_caterpillar =  ['156']; // on mainnet 59 TODO confirm for mainnet
-  const tokenId_blue_slide_cocoon =  ['157']; // on mainnet 60 TODO confirm for mainnet
+  const tokenId_green_bean_caterpillar =  ['59']; // on mainnet 59 TODO confirm for mainnet
+  const tokenId_blue_slide_cocoon =  ['60']; // on mainnet 60 TODO confirm for mainnet
 
-  const tokenId_deep_blue_cybernetic =  ['159']; // on mainnet 67 TODO confirm for mainnet
-  const tokenId_purple_cells_master_dreams =  ['160']; // on mainnet 68 TODO confirm for mainnet
+  const tokenId_deep_blue_cybernetic =  ['67']; // on mainnet 67 TODO confirm for mainnet
+  const tokenId_purple_cells_master_dreams =  ['68']; // on mainnet 68 TODO confirm for mainnet
 
   const tokenIdAmounts = ['1'];
 
@@ -75,33 +75,33 @@ async function main() {
   const mainnet_startTime = '1611086400'; // Jan 19, 8pm
 
   // Use the single auction id processed in the last script to build auction id specific collections in this script
-  const auctionId_mar_guixa = 270; // golden spiral TODO update from result of last script (important)
-  const auctionId_msistema = 332; // big shot TODO update from result of last script (important)
-  const auctionId_alyona = 272; //butterfly TODO update from result of last script (important)
-  const auctionId_vitaly = 273; // elimination TODO update from result of last script (important)
+  const auctionId_mar_guixa = 0; // golden spiral TODO update from result of last script (important)
+  const auctionId_msistema = 0; // big shot TODO update from result of last script (important)
+  const auctionId_alyona = 0; //butterfly TODO update from result of last script (important)
+  const auctionId_vitaly = 0; // elimination TODO update from result of last script (important)
 
   // Next step is mint collections and open buy offers, run 1 at a time in production in case something drops
   const collectionUris = [
     {
       // Collection 1 Common
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Golden Spiral/hash.json').uri, // TODO UNKNOWN
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Internal Treasure/hash.json').uri, // TODO UNKNOWN
       price: reservePrice_common,
       collectionDesigner: ROUND_4_DESIGNERS.mar_guixa,
       amountToMintInCollection: 7,
       auctionIdToLink: auctionId_mar_guixa,
       rarity: 'Common',
-      tokendIds: tokenId_goodbye_sun_unknown,
+      tokendIds: tokenId_goodbye_sun_internal_treasure,
       tokenAmounts: tokenIdAmounts,
     },
     {
       // Collection 2 Semi-Rare
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Golden Spiral/hash.json').uri, // TODO UNKNOWN
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Serenity/hash.json').uri, // TODO UNKNOWN
       price: reservePrice2_semirare,
       collectionDesigner: ROUND_4_DESIGNERS.mar_guixa,
       amountToMintInCollection: 3,
       auctionIdToLink: auctionId_mar_guixa,
       rarity: 'Semi-Rare',
-      tokendIds: tokenId_seeing_sun_unknown,
+      tokendIds: tokenId_seeing_sun_serenity,
       tokenAmounts: tokenIdAmounts,
     },
     {
