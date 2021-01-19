@@ -15,6 +15,8 @@ export function loadOrCreateDay(date: string): Day | null {
         dayEntity.totalBidValue = ZERO;
         dayEntity.totalWithdrawalValue = ZERO;
         dayEntity.totalNetBidActivity = ZERO;
+        dayEntity.totalMarketplaceVolumeInETH = ZERO;
+        dayEntity.totalMarketplaceVolumeInMona = ZERO;
         dayEntity.save();
     }
 
