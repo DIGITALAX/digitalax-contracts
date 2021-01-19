@@ -3,12 +3,17 @@ type Day @entity {
   totalBidValue: BigInt!
   totalWithdrawalValue: BigInt!
   totalNetBidActivity: BigInt!
+  totalMarketplaceVolumeInETH: BigInt!
+  totalMarketplaceVolumeInMona: BigInt!
 }
 
 type DigitalaxGarmentNFTGlobalStat @entity {
   id: ID!
   totalSalesValue: BigInt! # Eth value in WEI accross all successful auctions
   totalActiveBidsValue: BigInt! # Eth value of the active aggregate bids across all in flight auctions
+  totalMarketplaceSalesInETH: BigInt! # Eth value collected in WEI across all marketplace
+  totalMarketplaceSalesInMona: BigInt! # Mona value collected in WEI across all marketplace 
+  marketplacePlatformFee: BigInt! # The platform fee that will be deducted from the designers revenue (designer always receives the same regardless of discount)
 }
 
 type GenesisContributor @entity {
@@ -147,6 +152,8 @@ type DigitalaxMarketplaceOffer @entity {
 
 type DigitalaxMarketplacePurchaseHistory @entity {
   id: ID!
+  eventName: String!
+  timestamp: BigInt!
   transactionHash: Bytes!
   token: DigitalaxGarment!
   buyer: Bytes!
@@ -154,14 +161,6 @@ type DigitalaxMarketplacePurchaseHistory @entity {
   isPaidWithMona: Boolean!
   monaTransferredAmount: BigInt!
   garmentAuctionId: BigInt!
-  discount: BigInt!
   platformFee: BigInt!
-}
-
-type DigitalaxMarketplaceGlobalStat @entity {
-  id: ID!
-  totalETHSalesValue: BigInt! # Eth value collected in WEI across all marketplace
-  totalMonaSalesValue: BigInt! # Mona value collected in WEI across all marketplace
-  platformFee: BigInt! # The platform fee that will be deducted from the designers revenue (designer always receives the same regardless of discount)
-  monaDiscount: BigInt! # The discount if paying ERC20 Mona, this is deducted from platform fee (10% fee - 2% discount on purchase price means 8% is platform fee)
+  rarity: String!
 }
