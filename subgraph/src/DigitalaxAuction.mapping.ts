@@ -55,7 +55,7 @@ export function handleAuctionCreated(event: AuctionCreated): void {
     let auction = new DigitalaxGarmentAuction(tokenId.toString());
     auction.garment = tokenId.toString();
     auction.designer = garmentDesigner.id;
-    auction.history = tokenId.toString();
+    auction.history = auctionEvent.id;
     auction.contract = event.address.toHexString();
 
     // Auction config

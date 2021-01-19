@@ -3,12 +3,17 @@ type Day @entity {
   totalBidValue: BigInt!
   totalWithdrawalValue: BigInt!
   totalNetBidActivity: BigInt!
+  totalMarketplaceVolumeInETH: BigInt!
+  totalMarketplaceVolumeInMona: BigInt!
 }
 
 type DigitalaxGarmentNFTGlobalStat @entity {
   id: ID!
   totalSalesValue: BigInt! # Eth value in WEI accross all successful auctions
   totalActiveBidsValue: BigInt! # Eth value of the active aggregate bids across all in flight auctions
+  totalMarketplaceSalesInETH: BigInt! # Eth value collected in WEI across all marketplace
+  totalMarketplaceSalesInMona: BigInt! # Mona value collected in WEI across all marketplace 
+  marketplacePlatformFee: BigInt! # The platform fee that will be deducted from the designers revenue (designer always receives the same regardless of discount)
 }
 
 type GenesisContributor @entity {
@@ -37,6 +42,7 @@ type DigitalaxGarmentChild @entity {
   amount: BigInt!
   contract: Bytes!
   tokenUri: String!
+  rarity: String!
 }
 
 type DigitalaxGarment @entity {
@@ -131,9 +137,9 @@ type DigitalaxAccessControlsHistory @entity {
 
 type DigitalaxGarmentCollection @entity {
   id: ID!
+  garmentAuctionID: BigInt!
   garments: [DigitalaxGarment!]!
-  designer: DigitalaxGarmentDesigner!
-  tokenUri: String!
+  rarity: String!
 }
 
 type DigitalaxMarketplaceOffer @entity {
@@ -141,13 +147,20 @@ type DigitalaxMarketplaceOffer @entity {
   garmentCollection: DigitalaxGarmentCollection!
   primarySalePrice: BigInt!
   startTime: BigInt!
+  amountSold: BigInt!
 }
 
 type DigitalaxMarketplacePurchaseHistory @entity {
   id: ID!
+  eventName: String!
+  timestamp: BigInt!
   transactionHash: Bytes!
   token: DigitalaxGarment!
   buyer: Bytes!
   value: BigInt!
   isPaidWithMona: Boolean!
+  monaTransferredAmount: BigInt!
+  garmentAuctionId: BigInt!
+  platformFee: BigInt!
+  rarity: String!
 }

@@ -50,9 +50,11 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     );
     event OfferPurchased(
         uint256 indexed garmentTokenId,
+        uint256 indexed garmentCollectionId,
         address indexed buyer,
         uint256 primarySalePrice,
-        bool paidInErc20
+        bool paidInErc20,
+        uint256 monaTransferredAmount
     );
     event OfferCancelled(
         uint256 indexed garmentTokenId
@@ -127,7 +129,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     /**
      @notice Creates a new offer for a given garment
      @dev Only the owner of a garment can create an offer and must have ALREADY approved the contract
-     @dev In addition to owning the garment, the sender also has to have the MINTER role.
+     @dev In addition to owning the garment, the sender also has to have the MINTER or ADMIN role.
      @dev End time for the offer will be in the future, at a time from now till expiry duration
      @dev There cannot be a duplicate offer created
      @param _garmentCollectionId Collection ID of the garment being offered to marketplace
@@ -135,12 +137,13 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
      */
     function createOffer(
         uint256 _garmentCollectionId,
-        uint256 _primarySalePrice
+        uint256 _primarySalePrice,
+        uint256 _startTimestamp
     ) external whenNotPaused {
         // Ensure caller has privileges
         require(
-            accessControls.hasMinterRole(_msgSender()),
-            "DigitalaxMarketplace.createOffer: Sender must have the minter role"
+            accessControls.hasMinterRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxMarketplace.createOffer: Sender must have the minter or admin role"
         );
         // Ensure the collection does exists
         require(garmentCollection.getSupply(_garmentCollectionId) > 0, "DigitalaxMarketplace.createOffer: Collection does not exist");
@@ -152,7 +155,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         _createOffer(
             _garmentCollectionId,
             _primarySalePrice,
-            _getNow()
+            _startTimestamp
         );
     }
     /**
@@ -179,6 +182,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         require(_getNow() >= offer.startTime, "DigitalaxMarketplace.buyOffer: Purchase outside of the offer window");
 
         uint256 feeInETH = offer.primarySalePrice.mul(platformFee).div(maxShare);
+        uint256 amountOfMonaToTransfer = 0;
 
         // Work out platform fee on sale amount
         if(_payWithMona) {
@@ -196,7 +200,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
             uint256 amountOfMonaToTransferAsFees = _estimateMonaAmount(amountOfETHToBePaidInFees);
 
             // Then calculate how much Mona the buyer must send
-            uint256 amountOfMonaToTransfer = amountOfMonaToTransferToDesigner.add(amountOfMonaToTransferAsFees);
+            amountOfMonaToTransfer = amountOfMonaToTransferToDesigner.add(amountOfMonaToTransferAsFees);
 
             // Check that there is enough ERC20 to cover the rest of the value (minus the discount already taken)
             require(IERC20(monaErc20Token).allowance(msg.sender, address(this)) >= amountOfMonaToTransfer, "DigitalaxMarketplace.buyOffer: Failed to supply ERC20 Allowance");
@@ -222,7 +226,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         garmentNft.setPrimarySalePrice(garmentTokenId, offer.primarySalePrice);
         // Transfer the token to the purchaser
         garmentNft.safeTransferFrom(garmentNft.ownerOf(garmentTokenId), msg.sender, garmentTokenId);
-        emit OfferPurchased(garmentTokenId, _msgSender(), offer.primarySalePrice, _payWithMona);
+        emit OfferPurchased(garmentTokenId, _garmentCollectionId, _msgSender(), offer.primarySalePrice, _payWithMona, amountOfMonaToTransfer);
     }
     /**
      @notice Cancels an inflight and un-resulted offer
@@ -232,8 +236,8 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     function cancelOffer(uint256 _garmentCollectionId) external nonReentrant {
         // Admin only resulting function
         require(
-            accessControls.hasAdminRole(_msgSender()) || accessControls.hasSmartContractRole(_msgSender()),
-            "DigitalaxMarketplace.cancelOffer: Sender must be admin or smart contract"
+            accessControls.hasAdminRole(_msgSender()) || accessControls.hasMinterRole(_msgSender()),
+            "DigitalaxMarketplace.cancelOffer: Sender must be admin or minter contract"
         );
         // Check valid and not resulted
         Offer storage offer = offers[_garmentCollectionId];
@@ -426,5 +430,34 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
             availableIndex : 0
         });
         emit OfferCreated(_garmentCollectionId);
+    }
+
+    /**
+    * @notice Reclaims ERC20 Compatible tokens for entire balance
+    * @dev Only access controls admin
+    * @param _tokenContract The address of the token contract
+    */
+    function reclaimERC20(address _tokenContract) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxMarketplace.reclaimERC20: Sender must be admin"
+        );
+        require(_tokenContract != address(0), "Invalid address");
+        IERC20 token = IERC20(_tokenContract);
+        uint256 balance = token.balanceOf(address(this));
+        require(token.transfer(msg.sender, balance), "Transfer failed");
+    }
+
+    /**
+     * @notice Reclaims ETH, drains all ETH sitting on the smart contract
+     * @dev The instant buy feature means technically, ETH should never sit on contract.
+     * @dev Only access controls admin can access
+     */
+    function reclaimETH() external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxMarketplace.reclaimETH: Sender must be admin"
+        );
+        msg.sender.transfer(address(this).balance);
     }
 }

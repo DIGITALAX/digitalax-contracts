@@ -3,6 +3,7 @@ const {
   expectEvent,
   BN,
   ether,
+  send,
   constants,
   balance
 } = require('@openzeppelin/test-helpers');
@@ -13,6 +14,7 @@ const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
 const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
 const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
 const DigitalaxGarmentCollection = artifacts.require('DigitalaxGarmentCollection');
+const DigitalaxGarmentFactory = artifacts.require('DigitalaxGarmentFactory');
 const DigitalaxMarketplace = artifacts.require('DigitalaxMarketplaceMock');
 const DigitalaxMarketplaceReal = artifacts.require('DigitalaxMarketplace');
 const MockERC20 = artifacts.require('MockERC20');
@@ -27,6 +29,7 @@ const WethToken = artifacts.require('WethToken');
 const ONE_THOUSAND_TOKENS = '1000000000000000000000';
 const TWO_HUNDRED_TOKENS = new BN('200000000000000000000');
 const TWENTY_TOKENS = new BN('20000000000000000000');
+const TWO_ETH = ether('2');
 
 contract('DigitalaxMarketplace', (accounts) => {
   const [admin, smartContract, platformFeeAddress, minter, owner, designer, tokenBuyer, newRecipient] = accounts;
@@ -36,6 +39,13 @@ contract('DigitalaxMarketplace', (accounts) => {
   const COLLECTION_SIZE = new BN('10');
 
   const randomTokenURI = 'rand';
+  const randomChildTokenURIs = ['randChild1', "randChild2"];
+  const amountsOfChildToken = [new BN('1'), new BN('1')]
+  const STRAND_ONE_ID = new BN('1');
+  const STRAND_TWO_ID = new BN('2');
+  const erc1155ChildStrandIds = [STRAND_ONE_ID, STRAND_TWO_ID];
+
+  const auctionID = new BN('0');
 
   beforeEach(async () => {
     this.accessControls = await DigitalaxAccessControls.new({from: admin});
@@ -91,9 +101,18 @@ contract('DigitalaxMarketplace', (accounts) => {
 
     this.garmentCollection = await DigitalaxGarmentCollection.new(
       this.accessControls.address,
-      this.token.address
+      this.token.address,
+      this.digitalaxMaterials.address,
     );
     await this.accessControls.addMinterRole(this.garmentCollection.address, {from: admin});
+    await this.accessControls.addSmartContractRole(this.garmentCollection.address, {from: admin});
+
+    this.garmentFactory = await DigitalaxGarmentFactory.new(
+        this.token.address,
+        this.digitalaxMaterials.address,
+        this.accessControls.address,
+        {from: admin}
+    );
 
     this.marketplace = await DigitalaxMarketplace.new(
       this.accessControls.address,
@@ -109,6 +128,10 @@ contract('DigitalaxMarketplace', (accounts) => {
     this.monaToken.approve(this.marketplace.address, ONE_THOUSAND_TOKENS);
 
     await this.accessControls.addSmartContractRole(this.marketplace.address, {from: admin});
+
+    await this.accessControls.addSmartContractRole(this.garmentFactory.address, {from: admin});
+    // Create some ERC1155's for use here
+    await this.garmentFactory.createNewChildren(randomChildTokenURIs, {from: minter});
   });
 
   describe('Contract deployment', () => {
@@ -196,7 +219,7 @@ contract('DigitalaxMarketplace', (accounts) => {
 
   describe('Admin functions', () => {
     beforeEach(async () => {
-      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+      await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common', erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
       const garmentIds = await this.garmentCollection.getTokenIds(0);
       for (let i = 0; i < garmentIds.length; i ++) {
         await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
@@ -206,6 +229,7 @@ contract('DigitalaxMarketplace', (accounts) => {
       await this.marketplace.createOffer(
         0,
         ether('0.1'),  // Price of 1 eth
+          '1',
         {from: minter}
       );
     });
@@ -381,7 +405,7 @@ contract('DigitalaxMarketplace', (accounts) => {
 
     describe('validation', async () => {
       beforeEach(async () => {
-        await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+        await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common', erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
         const garmentIds = await this.garmentCollection.getTokenIds(0);
         for (let i = 0; i < garmentIds.length; i ++) {
           await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
@@ -391,10 +415,10 @@ contract('DigitalaxMarketplace', (accounts) => {
 
       it('fails if token already has marketplace in play', async () => {
         await this.marketplace.setNowOverride('2');
-        await this.marketplace.createOffer(0,  ether('0.1'), {from: minter});
+        await this.marketplace.createOffer(0,  ether('0.1'), '1', {from: minter});
 
         await expectRevert(
-          this.marketplace.createOffer(0,  ether('0.1'), {from: minter}),
+          this.marketplace.createOffer(0,  ether('0.1'), '1', {from: minter}),
           'DigitalaxMarketplace.createOffer: Cannot duplicate current offer'
         );
       });
@@ -403,7 +427,7 @@ contract('DigitalaxMarketplace', (accounts) => {
         await this.marketplace.setNowOverride('2');
         await this.marketplace.toggleIsPaused({from: admin});
         await expectRevert(
-           this.marketplace.createOffer('99', ether('0.1'), {from: minter}),
+           this.marketplace.createOffer('99', ether('0.1'), '1', {from: minter}),
           "Function is currently paused"
         );
       });
@@ -411,8 +435,8 @@ contract('DigitalaxMarketplace', (accounts) => {
       it('fails if you try to create an offer with a non minter address', async () => {
         await this.marketplace.setNowOverride('2');
         await expectRevert(
-           this.marketplace.createOffer('98', ether('0.05'), {from: tokenBuyer}),
-          "DigitalaxMarketplace.createOffer: Sender must have the minter role"
+           this.marketplace.createOffer('98', ether('0.05'), '1', {from: tokenBuyer}),
+          "DigitalaxMarketplace.createOffer: Sender must have the minter or admin role"
         );
       });
     });
@@ -420,12 +444,12 @@ contract('DigitalaxMarketplace', (accounts) => {
     describe('successful creation', async () => {
       it('Token retains in the ownership of the marketplace creator', async () => {
         await this.marketplace.setNowOverride('2');
-        await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+        await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common', erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
         const garmentIds = await this.garmentCollection.getTokenIds(0);
         for (let i = 0; i < garmentIds.length; i ++) {
           await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
         }
-        await this.marketplace.createOffer(0, ether('0.1'), {from: minter});
+        await this.marketplace.createOffer(0, ether('0.1'), '1', {from: minter});
 
         const owner = await this.token.ownerOf(TOKEN_ONE_ID);
         expect(owner).to.be.equal(minter);
@@ -445,12 +469,12 @@ contract('DigitalaxMarketplace', (accounts) => {
           {from: admin}
         );
 
-        await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+        await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common', erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
         const garmentIds = await this.garmentCollection.getTokenIds(0);
         for (let i = 0; i < garmentIds.length; i ++) {
           await this.token.approve(marketplace.address, garmentIds[i], {from: minter});
         }
-        await marketplace.createOffer(0, ether('0.1'), {from: minter});
+        await marketplace.createOffer(0, ether('0.1'), '1', {from: minter});
 
         const owner = await this.token.ownerOf(TOKEN_ONE_ID);
         expect(owner).to.be.equal(minter);
@@ -463,7 +487,7 @@ contract('DigitalaxMarketplace', (accounts) => {
     describe('validation', () => {
 
       beforeEach(async () => {
-        await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+        await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common', erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
         const garmentIds = await this.garmentCollection.getTokenIds(0);
         for (let i = 0; i < garmentIds.length; i ++) {
           await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
@@ -473,6 +497,7 @@ contract('DigitalaxMarketplace', (accounts) => {
         await this.marketplace.createOffer(
           0, // ID
           ether('0.1'),
+            '1',
           {from: minter}
         );
       });
@@ -498,7 +523,7 @@ contract('DigitalaxMarketplace', (accounts) => {
     describe('try to buy offer', () => {
 
       beforeEach(async () => {
-        await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+        await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common', [], [], {from: minter});
         const garmentIds = await this.garmentCollection.getTokenIds(0);
         for (let i = 0; i < garmentIds.length; i ++) {
           await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
@@ -507,6 +532,7 @@ contract('DigitalaxMarketplace', (accounts) => {
         await this.marketplace.createOffer(
           0, // ID
           ether('0.1'),
+            '1',
           {from: minter}
         );
       });
@@ -529,6 +555,14 @@ contract('DigitalaxMarketplace', (accounts) => {
             "DigitalaxMarketplace.buyOffer: eth payments currently frozen"
         );
         await this.marketplace.toggleFreezeETHPayment({from: admin});
+      });
+
+      it('will fail if we have not reached start time', async () => {
+        await this.marketplace.setNowOverride('0');
+        await expectRevert(
+            this.marketplace.buyOffer(0, false, {from: tokenBuyer, value: ether('0.1')}),
+            "DigitalaxMarketplace.buyOffer: Purchase outside of the offer window"
+        );
       });
 
       it('will fail if mona erc20 payments are frozen', async () => {
@@ -609,7 +643,7 @@ contract('DigitalaxMarketplace', (accounts) => {
   describe('cancelOffer()', async () => {
 
     beforeEach(async () => {
-      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+      await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common', [], [], {from: minter});
       const garmentIds = await this.garmentCollection.getTokenIds(0);
       for (let i = 0; i < garmentIds.length; i ++) {
         await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
@@ -618,6 +652,7 @@ contract('DigitalaxMarketplace', (accounts) => {
       await this.marketplace.createOffer(
         0,
         ether('0.1'),
+          '1',
         {from: minter}
       );
     });
@@ -627,7 +662,7 @@ contract('DigitalaxMarketplace', (accounts) => {
       it('cannot cancel if not an admin', async () => {
         await expectRevert(
           this.marketplace.cancelOffer(0, {from: tokenBuyer}),
-          'DigitalaxMarketplace.cancelOffer: Sender must be admin or smart contract'
+          'DigitalaxMarketplace.cancelOffer: Sender must be admin or minter contract'
         );
       });
 
@@ -647,10 +682,65 @@ contract('DigitalaxMarketplace', (accounts) => {
   });
   });
 
+  describe('reclaimETH()', async () => {
+    describe('validation', async () => {
+      it('cannot reclaim eth if it is not Admin', async () => {
+        await expectRevert(
+          this.marketplace.reclaimETH( {from: tokenBuyer}),
+          'DigitalaxMarketplace.reclaimETH: Sender must be admin'
+        );
+      });
+
+      it('can reclaim Eth', async () => {
+        await send.ether(tokenBuyer, this.marketplace.address, TWO_ETH); // Token buyer sends 2 random eth into contract
+        const marketplaceBalanceTracker = await balance.tracker(this.marketplace.address, 'ether');
+        const adminBalanceTracker = await balance.tracker(admin, 'ether');
+
+        const adminBalanceBeforeReclaim = await adminBalanceTracker.get('ether');
+
+        // Reclaim eth from contract
+        await this.marketplace.reclaimETH({from: admin});
+
+        expect(await marketplaceBalanceTracker.delta('ether')).to.be.bignumber.equal('-2');
+        expect((await marketplaceBalanceTracker.get('ether')).toString()).to.be.equal('0');
+
+        // Admin receives eth minus gas fees.
+        expect(await adminBalanceTracker.get('ether')).to.be.bignumber.greaterThan(adminBalanceBeforeReclaim);
+      });
+    });
+  });
+
+  describe('reclaimERC20()', async () => {
+    describe('validation', async () => {
+      it('cannot reclaim erc20 if it is not Admin', async () => {
+        await expectRevert(
+          this.marketplace.reclaimERC20(this.weth.address, {from: tokenBuyer}),
+          'DigitalaxMarketplace.reclaimERC20: Sender must be admin'
+        );
+      });
+
+      it('can reclaim Erc20', async () => {
+        // Send some wrapped eth
+        await this.weth.transfer(this.marketplace.address, TWENTY_TOKENS, { from: minter });
+
+        const adminBalanceBeforeReclaim = await this.weth.balanceOf(admin);
+        expect(await this.weth.balanceOf(this.marketplace.address)).to.be.bignumber.equal(TWENTY_TOKENS);
+
+        // Reclaim erc20 from contract
+        await this.marketplace.reclaimERC20(this.weth.address, {from: admin});
+
+        expect(await this.weth.balanceOf(this.marketplace.address)).to.be.bignumber.equal(new BN('0'));
+
+        // Admin receives eth minus gas fees.
+        expect(await this.weth.balanceOf(admin)).to.be.bignumber.greaterThan(adminBalanceBeforeReclaim);
+      });
+    });
+  });
+
   describe('updateOfferPrimarySalePrice()', async () => {
 
     beforeEach(async () => {
-      await this.garmentCollection.mintCollection(minter, randomTokenURI, designer, COLLECTION_SIZE, {from: minter});
+      await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common', [], [], {from: minter});
       const garmentIds = await this.garmentCollection.getTokenIds(0);
       for (let i = 0; i < garmentIds.length; i ++) {
         await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
@@ -659,6 +749,7 @@ contract('DigitalaxMarketplace', (accounts) => {
       await this.marketplace.createOffer(
         0,
         ether('0.1'),
+          '1',
         {from: minter}
       );
     });

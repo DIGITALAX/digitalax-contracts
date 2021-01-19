@@ -1,0 +1,24 @@
+{
+  "name": "Emmatest1",
+  "description": "Hello Hello test 123",
+  "external_url": "https://www.digitalax.xyz",
+  "image": "https://gateway.pinata.cloud/ipfs/QmPa4jMEZT5jZEX4xQkR8WLaj1CU2GHzE32MNud1TUXuDd",
+  "attributes": [
+    {
+      "trait_type": "Degrees of Exclusivity",
+      "value": "Common"
+    },
+    {
+      "trait_type": "Type",
+      "value": "P"
+    },
+    {
+      "trait_type": "Issue No.",
+      "value": "4311"
+    },
+    {
+      "trait_type": "Artist",
+      "value": "Emmatest"
+    }
+  ]
+}

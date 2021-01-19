@@ -7,5 +7,11 @@
   "DigitalaxMaterialsAddress": "0xe6822e8b4d91b85f9ca00cca79bf92bab14bc221",
   "DigitalaxMaterialsStartBlock": 11320271,
   "DigitalaxAuctionAddress": "0xd84E216a4804A5e6BAa4f936838E4a3d1A0D3C53",
-  "DigitalaxAuctionStartBlock": 11320386
+  "DigitalaxAuctionStartBlock": 11320386,
+  "DigitalaxAccessControlsAddress": "0x980bC991b52240C6271F4fd607638e984c888621",
+  "DigitalaxAccessControlsStartBlock": 11637101,
+  "DigitalaxGarmentCollectionAddress": "0x569Ff451D7631917151b8C5b3F669156fdbeD251",
+  "DigitalaxGarmentCollectionStartBlock": 11660023,
+  "DigitalaxMarketplaceAddress": "0xCC48554581c17c2837C13B1685E0e784fADC1c3b",
+  "DigitalaxMarketplaceStartBlock": 11660955
 }

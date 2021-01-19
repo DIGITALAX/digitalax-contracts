@@ -193,7 +193,7 @@ dataSources:
         - name: DigitalaxGarmentCollection
           file: ./abis/DigitalaxGarmentCollection.json
       eventHandlers:
-        - event: MintGarmentCollection(uint256)
+        - event: MintGarmentCollection(uint256,uint256,string)
           handler: handleGarmentCollectionMinted
         - event: BurnGarmentCollection(uint256)
           handler: handleGarmentCollectionBurned
@@ -210,6 +210,9 @@ dataSources:
       apiVersion: 0.0.3
       language: wasm/assemblyscript
       entities:
+        - DigitalaxMarketplaceContractDeployed
+        - UpdateMarketplacePlatformFee
+        - UpdateMarketplaceDiscountToPayInErc20
         - OfferCreated
         - UpdateOfferPrimarySalePrice
         - OfferPurchased
@@ -218,11 +221,17 @@ dataSources:
         - name: DigitalaxMarketplace
           file: ./abis/DigitalaxMarketplace.json
       eventHandlers:
+        - event: DigitalaxMarketplaceContractDeployed()
+          handler: handleMarketplaceDeployed
+        - event: UpdateMarketplacePlatformFee(uint256)
+          handler: handleUpdateMarketplacePlatformFee
+        - event: UpdateMarketplaceDiscountToPayInErc20(uint256)
+          handler: handleUpdateMarketplaceDiscountToPayInErc20
         - event: OfferCreated(indexed uint256)
           handler: handleOfferCreated
         - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
           handler: handleOfferPrimarySalePriceUpdated
-        - event: OfferPurchased(indexed uint256,indexed address,uint256,bool)
+        - event: OfferPurchased(indexed uint256,indexed uint256,indexed address,uint256,bool,uint256)
           handler: handleOfferPurchased
         - event: OfferCancelled(indexed uint256)
           handler: handleOfferCancelled

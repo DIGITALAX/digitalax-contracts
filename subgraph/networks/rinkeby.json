@@ -6,12 +6,12 @@
   "DigitalaxGarmentNFTStartBlock": 7576230,
   "DigitalaxMaterialsAddress": "0x80E71735A8234Fb761B9Db16519D319B8628d6F4",
   "DigitalaxMaterialsStartBlock": 7576227,
-  "DigitalaxAuctionAddress": "0x70D097AbFFC8f78a837242a1f0ACF9Ef703fd899",
-  "DigitalaxAuctionStartBlock": 7576239,
+  "DigitalaxAuctionAddress": "0x43cE588290F6990dA40bFBe837B753faF41a58A4",
+  "DigitalaxAuctionStartBlock": 7895008,
   "DigitalaxAccessControlsAddress": "0xe6fff33bdef5e1894d898b24b366fbec6d74c073",
   "DigitalaxAccessControlsStartBlock": 7807928,
-  "DigitalaxGarmentCollectionAddress": "0x9a24Dd21E32893b4C9A0430fD206553617ca26e1",
-  "DigitalaxGarmentCollectionStartBlock": 7848795,
-  "DigitalaxMarketplaceAddress": "0x5f4667ff7317e7a43fA8D8dc3cDc85639E7Cc44c",
-  "DigitalaxMarketplaceStartBlock": 7848808
+  "DigitalaxGarmentCollectionAddress": "0x9909E943255741356Aa2004C6f13CcfF56b96BE8",
+  "DigitalaxGarmentCollectionStartBlock": 7871549,
+  "DigitalaxMarketplaceAddress": "0xAcA4eaf530085B062dB530634DA637e266a823C9",
+  "DigitalaxMarketplaceStartBlock": 7893813
 }

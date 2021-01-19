@@ -1,3 +1,4 @@
+import { log, ipfs, JSONValue, Value } from "@graphprotocol/graph-ts/index";
 import {
     MintGarmentCollection,
     BurnGarmentCollection,
@@ -16,19 +17,20 @@ export function handleGarmentCollectionMinted(event: MintGarmentCollection): voi
 
     let mintedGarments = new Array<string>();
     for(let i = 0; i < collectionData.value1.toI32(); i++) {
-        const garmentToken = DigitalaxGarment.load(collectionData.value0[i].toString());
+        let garmentToken = DigitalaxGarment.load(collectionData.value0[i].toString());
         mintedGarments.push(garmentToken.id);
     }
     collection.garments = mintedGarments;
-    collection.tokenUri = collectionData.value2;
-    collection.designer = collectionData.value3.toHexString();
+    collection.garmentAuctionID = event.params.auctionTokenId;
+    collection.rarity = event.params.rarity;
     collection.save();
 }
+
 
 export function handleGarmentCollectionBurned(event: BurnGarmentCollection): void {
     let collection = DigitalaxGarmentCollection.load(event.params.collectionId.toString());
     collection.garments = null;
-    collection.tokenUri = null;
-    collection.designer = null;
+    collection.garmentAuctionID = null;
+    collection.rarity = null;
     collection.save();
 }

@@ -89,9 +89,9 @@ dataSources:
     name: DigitalaxAuction
     network: 'rinkeby'
     source:
-      address: '0x70D097AbFFC8f78a837242a1f0ACF9Ef703fd899'
+      address: '0x43cE588290F6990dA40bFBe837B753faF41a58A4'
       abi: DigitalaxAuction
-      startBlock: 7576239
+      startBlock: 7895008
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -179,9 +179,9 @@ dataSources:
     name: DigitalaxGarmentCollection
     network: 'rinkeby'
     source:
-      address: '0x9a24Dd21E32893b4C9A0430fD206553617ca26e1'
+      address: '0x9909E943255741356Aa2004C6f13CcfF56b96BE8'
       abi: DigitalaxGarmentCollection
-      startBlock: 7848795
+      startBlock: 7871549
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -193,7 +193,7 @@ dataSources:
         - name: DigitalaxGarmentCollection
           file: ./abis/DigitalaxGarmentCollection.json
       eventHandlers:
-        - event: MintGarmentCollection(uint256)
+        - event: MintGarmentCollection(uint256,uint256,string)
           handler: handleGarmentCollectionMinted
         - event: BurnGarmentCollection(uint256)
           handler: handleGarmentCollectionBurned
@@ -202,14 +202,17 @@ dataSources:
     name: DigitalaxMarketplace
     network: 'rinkeby'
     source:
-      address: '0x5f4667ff7317e7a43fA8D8dc3cDc85639E7Cc44c'
+      address: '0xAcA4eaf530085B062dB530634DA637e266a823C9'
       abi: DigitalaxMarketplace
-      startBlock: 7848808
+      startBlock: 7893813
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
+        - DigitalaxMarketplaceContractDeployed
+        - UpdateMarketplacePlatformFee
+        - UpdateMarketplaceDiscountToPayInErc20
         - OfferCreated
         - UpdateOfferPrimarySalePrice
         - OfferPurchased
@@ -218,11 +221,17 @@ dataSources:
         - name: DigitalaxMarketplace
           file: ./abis/DigitalaxMarketplace.json
       eventHandlers:
+        - event: DigitalaxMarketplaceContractDeployed()
+          handler: handleMarketplaceDeployed
+        - event: UpdateMarketplacePlatformFee(uint256)
+          handler: handleUpdateMarketplacePlatformFee
+        - event: UpdateMarketplaceDiscountToPayInErc20(uint256)
+          handler: handleUpdateMarketplaceDiscountToPayInErc20
         - event: OfferCreated(indexed uint256)
           handler: handleOfferCreated
         - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
           handler: handleOfferPrimarySalePriceUpdated
-        - event: OfferPurchased(indexed uint256,indexed address,uint256,bool)
+        - event: OfferPurchased(indexed uint256,indexed uint256,indexed address,uint256,bool,uint256)
           handler: handleOfferPurchased
         - event: OfferCancelled(indexed uint256)
           handler: handleOfferCancelled
