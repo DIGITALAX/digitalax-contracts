@@ -35,10 +35,10 @@ async function main() {
   );
 
   //Optional TODO decide if needed
-  const updateFee = await marketplace.updateMarketplacePlatformFee('420');
-  await updateFee.wait();
-  const updateDiscount = await marketplace.updateMarketplaceDiscountToPayInErc20('0');
-  await updateDiscount.wait();
+  //const updateFee = await marketplace.updateMarketplacePlatformFee('420');
+  //await updateFee.wait();
+  //const updateDiscount = await marketplace.updateMarketplaceDiscountToPayInErc20('0');
+  //await updateDiscount.wait();
 
 
   const accessControls = new ethers.Contract(
@@ -73,14 +73,14 @@ async function main() {
   const mainnet_startTime = '1610740800'; // Jan 15, 8pm
 
   // Use the single auction id processed in the last script to build auction id specific collections in this script
-  const auctionId_3dBehemoth = 0; // transformation TODO update from result of last script (important)
-  const auctionId_yekaterina = 0; // harajuku TODO update from result of last script (important)
-  const auctionId_lorena = 0; // few charm TODO update from result of last script (important)
-  const auctionId_nina = 0; // cosmic one TODO update from result of last script (important)
+  const auctionId_3dBehemoth = 39; // transformation TODO update from result of last script (important)
+  const auctionId_yekaterina = 40; // harajuku TODO update from result of last script (important)
+  const auctionId_lorena = 41; // few charm TODO update from result of last script (important)
+  const auctionId_nina = 42; // cosmic one TODO update from result of last script (important)
 
   // Next step is mint collections and open buy offers, run 1 at a time in production in case something drops
   const collectionUris = [
-    {
+    /*{
       // Collection 1 Semirare
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Chrysalis/hash.json').uri,
       price: reservePrice_semirare,
@@ -156,7 +156,7 @@ async function main() {
       rarity: 'Semi-Rare',
       tokendIds: tokenId_balancebliss_hagamonos,
       tokenAmounts: tokenIdAmounts,
-    },
+    },*/
     {
       // Collection 8 Common
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Distant Mark/hash.json').uri,
@@ -215,11 +215,12 @@ async function main() {
     console.log(`Approvals Confirmed. Creating the marketplace for.. [${createCollectionId}]`)
 
     // Create a marketplace offer for this exclusive parent nft
-    await marketplace.createOffer(
+    const txOffer = await marketplace.createOffer(
         createCollectionId, // Collection id
         collectionForMarketplace.price, // reservePrice for all collection items
         mainnet_startTime, // Marketplace buy offer available after start time
     );
+    await txOffer.wait();
     console.log(`--Marketplace created for collection--`);
     console.log(`----------------------`);
   }
