@@ -48,7 +48,7 @@ async function main() {
   );
 
   //Optional TODO decide if needed
-//  await accessControls.addSmartContractRole(MARKETPLACE_ADDRESS);
+  await accessControls.addSmartContractRole(MARKETPLACE_ADDRESS);
 
 
   //// SETTINGS
@@ -221,6 +221,8 @@ async function main() {
         createCollectionId, // Collection id
         collectionForMarketplace.price, // reservePrice for all collection items
         mainnet_startTime, // Marketplace buy offer available after start time
+        '420',
+        '0'
     );
 
     await createOfferTx.wait();

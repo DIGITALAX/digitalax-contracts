@@ -40,10 +40,10 @@ async function main() {
     );
 
     // OPTIONAL TODO use if needed
-   // await accessControls.addSmartContractRole(AUCTION_ADDRESS);
+    await accessControls.addSmartContractRole(AUCTION_ADDRESS);
    // OPTIONAL TODO use if needed
-   // const updateFee = await auction.updatePlatformFee('500');
-   // await updateFee.wait();
+    const updateFee = await auction.updatePlatformFee('500');
+    await updateFee.wait();
 
   //// SETTINGS
   // fill in uris for the nfts
