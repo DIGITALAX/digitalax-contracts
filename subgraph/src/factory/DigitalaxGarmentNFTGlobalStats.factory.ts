@@ -10,7 +10,6 @@ export function loadOrCreateGarmentNFTGlobalStats(): DigitalaxGarmentNFTGlobalSt
         globalStats.totalActiveBidsValue = ZERO;
         globalStats.totalMarketplaceSalesInETH = ZERO;
         globalStats.totalMarketplaceSalesInMona = ZERO;
-        globalStats.marketplacePlatformFee = ZERO;
         globalStats.save();
     }
 
