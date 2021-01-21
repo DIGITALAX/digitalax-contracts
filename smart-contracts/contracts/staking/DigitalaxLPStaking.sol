@@ -3,12 +3,13 @@
 pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "./DigitalaxAccessControls.sol";
+import "../DigitalaxAccessControls.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "./Utils/UniswapV2Library.sol";
-import "../interfaces/IWETH9.sol";
-import "../interfaces/IUniswapV2Pair.sol";
-import "../interfaces/IDigitalaxRewards.sol";
+import "../uniswapv2/libraries/UniswapV2Library.sol";
+import "../uniswapv2/interfaces/IWETH.sol";
+import "../uniswapv2/interfaces/IUniswapV2Pair.sol";
+import "./interfaces/IDigitalaxRewards.sol";
+
 
 /**
  * @title Digitalax Staking

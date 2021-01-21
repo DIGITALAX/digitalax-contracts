@@ -4,7 +4,7 @@ pragma solidity ^0.6.12;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/GSN/Context.sol";
-import "./DigitalaxAccessControls.sol";
+import "../DigitalaxAccessControls.sol";
 
 // SPDX-License-Identifier: GPLv2
 contract MONA is Context, IERC20  {
