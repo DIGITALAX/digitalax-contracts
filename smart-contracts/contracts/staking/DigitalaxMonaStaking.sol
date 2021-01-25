@@ -5,9 +5,8 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../DigitalaxAccessControls.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "../uniswapv2/libraries/UniswapV2Library.sol";
-import "../uniswapv2/interfaces/IWETH.sol";
-import "../uniswapv2/interfaces/IUniswapV2Pair.sol";
+// import "../uniswapv2/libraries/UniswapV2Library.sol";
+// import "../uniswapv2/interfaces/IUniswapV2Pair.sol";
 import "./interfaces/IDigitalaxRewards.sol";
 
 
@@ -25,7 +24,6 @@ contract DigitalaxMonaStaking  {
 
     IERC20 public rewardsToken; // TODO Leave this for now, but will be combo of MONA and ETH. Before lp was staked, and mona was the reward
     address public monaToken; // MONA ERC20
-    IWETH public WETH;
 
     DigitalaxAccessControls public accessControls;
     IDigitalaxRewards public rewardsContract;
@@ -85,7 +83,6 @@ contract DigitalaxMonaStaking  {
     function initMonaStaking(
         IERC20 _rewardsToken,
         address _monaToken,
-        IWETH _WETH,
         DigitalaxAccessControls _accessControls
     )
         public
@@ -93,7 +90,6 @@ contract DigitalaxMonaStaking  {
         require(!initialised, "Already initialised");
         rewardsToken = _rewardsToken;
         monaToken = _monaToken;
-        WETH = _WETH;
         accessControls = _accessControls;
         lastUpdateTime = block.timestamp;
         initialised = true;
