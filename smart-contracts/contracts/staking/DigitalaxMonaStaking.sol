@@ -13,24 +13,24 @@ import "./interfaces/IDigitalaxRewards.sol";
 
 /**
  * @title Digitalax Staking
- * @dev Stake MONA LP tokens, earn MONA on the Digitialax platform
+ * @dev Stake MONA tokens, earn MONA on the Digitalax platform
  * @author Adrian Guerrera (deepyr)
  * @author DIGITALAX CORE TEAM
  */
 
 
-contract DigitalaxLPStaking  {
+contract DigitalaxMonaStaking  {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    IERC20 public rewardsToken;
-    address public lpToken; // Pool tokens for MONA/WETH pair
+    IERC20 public rewardsToken; // TODO Leave this for now, but will be combo of MONA and ETH. Before lp was staked, and mona was the reward
+    address public monaToken; // MONA ERC20
     IWETH public WETH;
 
     DigitalaxAccessControls public accessControls;
     IDigitalaxRewards public rewardsContract;
 
-    uint256 public stakedLPTotal;
+    uint256 public stakedMonaTotal;
     uint256 public lastUpdateTime;
     uint256 public rewardsPerTokenPoints;
     uint256 public totalUnclaimedRewards;
@@ -73,18 +73,18 @@ contract DigitalaxLPStaking  {
     event ClaimableStatusUpdated(bool status);
     event EmergencyUnstake(address indexed user, uint256 amount);
     event RewardsTokenUpdated(address indexed oldRewardsToken, address newRewardsToken );
-    event LpTokenUpdated(address indexed oldLpToken, address newLpToken );
+    event MonaTokenUpdated(address indexed oldMonaToken, address newMonaToken );
 
     constructor() public {
     }
 
      /**
      * @dev Single gateway to intialize the staking contract after deploying
-     * @dev Sets the contract with the MONA/WETH LP pair and MONA token 
+     * @dev Sets the contract with the MONA token
      */
-    function initLPStaking(
+    function initMonaStaking(
         IERC20 _rewardsToken,
-        address _lpToken,
+        address _monaToken,
         IWETH _WETH,
         DigitalaxAccessControls _accessControls
     )
@@ -92,44 +92,18 @@ contract DigitalaxLPStaking  {
     {
         require(!initialised, "Already initialised");
         rewardsToken = _rewardsToken;
-        lpToken = _lpToken;
+        monaToken = _monaToken;
         WETH = _WETH;
         accessControls = _accessControls;
         lastUpdateTime = block.timestamp;
         initialised = true;
     }
 
-    receive() external payable {
-        if(msg.sender != address(WETH)){
-            zapEth();
-        }
-    }
-
-    /// @notice Wrapper function zapEth() for UI 
-    function zapEth() 
-        public 
-        payable
-    {
-        uint256 startBal = IERC20(lpToken).balanceOf(address(this));
-        addLiquidityETHOnly(address(this));
-        uint256 endBal = IERC20(lpToken).balanceOf(address(this));
-
-        require(
-            endBal > startBal ,
-            "DigitalaxLPStaking.zapEth: Zap amount must be greater than 0"
-        );
-        uint256 amount = endBal.sub(startBal);
-
-        Staker storage staker = stakers[msg.sender];
-        if (staker.balance == 0 && staker.lastRewardPoints == 0 ) {
-          staker.lastRewardPoints = rewardsPerTokenPoints;
-        }
-
-        updateReward(msg.sender);
-        staker.balance = staker.balance.add(amount);
-        stakedLPTotal = stakedLPTotal.add(amount);
-        emit Staked(msg.sender, amount);
-    }
+//    receive() external payable {
+//        if(msg.sender != address(WETH)){
+//          //  zapEth();
+//        }
+//    }
 
     /// @notice Lets admin set the Rewards Token
     function setRewardsContract(
@@ -139,7 +113,7 @@ contract DigitalaxLPStaking  {
     {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxLPStaking.setRewardsContract: Sender must be admin"
+            "DigitalaxMonaStaking.setRewardsContract: Sender must be admin"
         );
         require(_addr != address(0));
         address oldAddr = address(rewardsContract);
@@ -147,20 +121,20 @@ contract DigitalaxLPStaking  {
         emit RewardsTokenUpdated(oldAddr, _addr);
     }
 
-    /// @notice Lets admin set the Uniswap LP Token
-    function setLpToken(
+    /// @notice Lets admin set the Mona Token
+    function setMonaToken(
         address _addr
     )
         external
     {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxLPStaking.setLpToken: Sender must be admin"
+            "DigitalaxMonaStaking.setMonaToken: Sender must be admin"
         );
         require(_addr != address(0));
-        address oldAddr = lpToken;
-        lpToken = _addr;
-        emit LpTokenUpdated(oldAddr, _addr);
+        address oldAddr = monaToken;
+        monaToken = _addr;
+        emit MonaTokenUpdated(oldAddr, _addr);
     }
 
     /// @notice Lets admin set when tokens are claimable
@@ -171,7 +145,7 @@ contract DigitalaxLPStaking  {
     {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxLPStaking.setTokensClaimable: Sender must be admin"
+            "DigitalaxMonaStaking.setTokensClaimable: Sender must be admin"
         );
         tokensClaimable = _enabled;
         emit ClaimableStatusUpdated(_enabled);
@@ -196,12 +170,12 @@ contract DigitalaxLPStaking  {
         returns (uint256)
     {
 
-        uint256 lpPerEth = getLPTokenPerEthUnit(1e18);
-        return stakedLPTotal.mul(1e18).div(lpPerEth);
+        uint256 monaPerEth = getMonaTokenPerEthUnit(1e18);
+        return stakedMonaTotal.mul(1e18).div(monaPerEth);
     }
 
 
-    /// @notice Stake MONA LP Tokens and earn rewards.
+    /// @notice Stake MONA Tokens and earn rewards.
     function stake(
         uint256 _amount
     )
@@ -210,11 +184,11 @@ contract DigitalaxLPStaking  {
         _stake(msg.sender, _amount);
     }
 
-    /// @notice Stake MONA LP Tokens and earn rewards.
+    /// @notice Stake All MONA Tokens in your wallet and earn rewards.
     function stakeAll()
         external
     {
-        uint256 balance = IERC20(lpToken).balanceOf(msg.sender);
+        uint256 balance = IERC20(monaToken).balanceOf(msg.sender);
         _stake(msg.sender, balance);
     }
 
@@ -231,7 +205,7 @@ contract DigitalaxLPStaking  {
     {
         require(
             _amount > 0 ,
-            "DigitalaxLPStaking._stake: Staked amount must be greater than 0"
+            "DigitalaxMonaStaking._stake: Staked amount must be greater than 0"
         );
         Staker storage staker = stakers[_user];
 
@@ -241,8 +215,8 @@ contract DigitalaxLPStaking  {
 
         updateReward(_user);
         staker.balance = staker.balance.add(_amount);
-        stakedLPTotal = stakedLPTotal.add(_amount);
-        IERC20(lpToken).safeTransferFrom(
+        stakedMonaTotal = stakedMonaTotal.add(_amount);
+        IERC20(monaToken).safeTransferFrom(
             address(_user),
             address(this),
             _amount
@@ -250,7 +224,7 @@ contract DigitalaxLPStaking  {
         emit Staked(_user, _amount);
     }
 
-    /// @notice Unstake MONA LP Tokens. 
+    /// @notice Unstake MONA Tokens.
     function unstake(
         uint256 _amount
     ) 
@@ -273,23 +247,23 @@ contract DigitalaxLPStaking  {
 
         require(
             stakers[_user].balance >= _amount,
-            "DigitalaxLPStaking._unstake: Sender must have staked tokens"
+            "DigitalaxMonaStaking._unstake: Sender must have staked tokens"
         );
         claimReward(_user);
         Staker storage staker = stakers[_user];
         
         staker.balance = staker.balance.sub(_amount);
-        stakedLPTotal = stakedLPTotal.sub(_amount);
+        stakedMonaTotal = stakedMonaTotal.sub(_amount);
 
         if (staker.balance == 0) {
             delete stakers[_user];
         }
 
-        uint256 tokenBal = IERC20(lpToken).balanceOf(address(this));
+        uint256 tokenBal = IERC20(monaToken).balanceOf(address(this));
         if (_amount > tokenBal) {
-            IERC20(lpToken).safeTransfer(address(_user), tokenBal);
+            IERC20(monaToken).safeTransfer(address(_user), tokenBal);
         } else {
-            IERC20(lpToken).safeTransfer(address(_user), _amount);
+            IERC20(monaToken).safeTransfer(address(_user), _amount);
         }
         emit Unstaked(_user, _amount);
     }
@@ -302,7 +276,7 @@ contract DigitalaxLPStaking  {
         stakers[msg.sender].balance = 0;
         stakers[msg.sender].rewardsEarned = 0;
 
-        IERC20(lpToken).safeTransfer(address(msg.sender), amount);
+        IERC20(monaToken).safeTransfer(address(msg.sender), amount);
         emit EmergencyUnstake(msg.sender, amount);
     }
 
@@ -314,14 +288,14 @@ contract DigitalaxLPStaking  {
     {
 
         rewardsContract.updateRewards();
-        uint256 lpRewards = rewardsContract.LPRewards(lastUpdateTime,
+        uint256 monaRewards = rewardsContract.MonaRewards(lastUpdateTime,
                                                         block.timestamp);
 
-        if (stakedLPTotal > 0) {
-            rewardsPerTokenPoints = rewardsPerTokenPoints.add(lpRewards
+        if (stakedMonaTotal > 0) {
+            rewardsPerTokenPoints = rewardsPerTokenPoints.add(monaRewards
                                                         .mul(1e18)
                                                         .mul(pointMultiplier)
-                                                        .div(stakedLPTotal));
+                                                        .div(stakedMonaTotal));
         }
         
         lastUpdateTime = block.timestamp;
@@ -361,17 +335,17 @@ contract DigitalaxLPStaking  {
         view
         returns(uint256)
     {
-        if (stakedLPTotal == 0) {
+        if (stakedMonaTotal == 0) {
             return 0;
         }
 
-        uint256 lpRewards = rewardsContract.LPRewards(lastUpdateTime,
+        uint256 monaRewards = rewardsContract.MonaRewards(lastUpdateTime,
                                                         block.timestamp);
 
-        uint256 newRewardPerToken = rewardsPerTokenPoints.add(lpRewards
+        uint256 newRewardPerToken = rewardsPerTokenPoints.add(monaRewards
                                                                 .mul(1e18)
                                                                 .mul(pointMultiplier)
-                                                                .div(stakedLPTotal))
+                                                                .div(stakedMonaTotal))
                                                          .sub(stakers[_user].lastRewardPoints);
 
         uint256 rewards = stakers[_user].balance.mul(newRewardPerToken)
@@ -408,105 +382,22 @@ contract DigitalaxLPStaking  {
         emit RewardPaid(_user, payableAmount);
     }
 
-    /* ========== Liquidity Zap ========== */
-    //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-    //
-    // LiquidityZAP - UniswapZAP
-    //   Copyright (c) 2020 deepyr.com
-    //
-    // UniswapZAP takes ETH and converts to a Uniswap liquidity tokens. 
-    //
-    // This program is free software: you can redistribute it and/or modify
-    // it under the terms of the GNU General Public License as published by
-    // the Free Software Foundation, either version 3 of the License
-    //
-    // This program is distributed in the hope that it will be useful,
-    // but WITHOUT ANY WARRANTY; without even the implied warranty of
-    // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    // GNU General Public License for more details.
-    //
-    // You should have received a copy of the GNU General Public License
-    // along with this program.  
-    // If not, see <https://github.com/apguerrera/LiquidityZAP/>.
-    //
-    // The above copyright notice and this permission notice shall be included 
-    // in all copies or substantial portions of the Software.
-    //
-    // Authors:
-    // * Adrian Guerrera / Deepyr Pty Ltd
-    // 
-    // Attribution: CORE / cvault.finance
-    //  https://github.com/cVault-finance/CORE-periphery/blob/master/contracts/COREv1Router.sol
-    // ---------------------------------------------------------------------
-    // SPDX-License-Identifier: GPL-3.0-or-later                        
-    // ---------------------------------------------------------------------
 
-    function addLiquidityETHOnly(address payable to) public payable {
-        require(to != address(0), "Invalid address");
 
-        uint256 buyAmount = msg.value.div(2);
-        require(buyAmount > 0, "Insufficient ETH amount");
-        WETH.deposit{value : msg.value}();
+    function getMonaTokenPerEthUnit(uint ethAmt) public view  returns (uint liquidity){
+//        (uint256 reserveWeth, uint256 reserveTokens) = getPairReserves();
+//        uint256 outTokens = UniswapV2Library.getAmountOut(ethAmt.div(2), reserveWeth, reserveTokens);
+//        uint _totalSupply =  IUniswapV2Pair(monaToken).totalSupply();
+//
+//        (address token0, ) = UniswapV2Library.sortTokens(address(WETH), address(rewardsToken));
+//        (uint256 amount0, uint256 amount1) = token0 == address(rewardsToken) ? (outTokens, ethAmt.div(2)) : (ethAmt.div(2), outTokens);
+//        (uint256 _reserve0, uint256 _reserve1) = token0 == address(rewardsToken) ? (reserveTokens, reserveWeth) : (reserveWeth, reserveTokens);
+//        liquidity = min(amount0.mul(_totalSupply) / _reserve0, amount1.mul(_totalSupply) / _reserve1);
 
-        (uint256 reserveWeth, uint256 reserveTokens) = getPairReserves();
-        uint256 outTokens = UniswapV2Library.getAmountOut(buyAmount, reserveWeth, reserveTokens);
-        
-        WETH.transfer(lpToken, buyAmount);
-
-        (address token0, address token1) = UniswapV2Library.sortTokens(address(WETH), address(rewardsToken));
-        IUniswapV2Pair(lpToken).swap(address(rewardsToken) == token0 ? outTokens : 0, address(rewardsToken) == token1 ? outTokens : 0, address(this), "");
-
-        _addLiquidity(outTokens, buyAmount, to);
-
+        // Todo convert mona to eth
+        return 1;
     }
 
-    function _addLiquidity(uint256 tokenAmount, uint256 wethAmount, address payable to) internal {
-        (uint256 wethReserve, uint256 tokenReserve) = getPairReserves();
-
-        uint256 optimalTokenAmount = UniswapV2Library.quote(wethAmount, wethReserve, tokenReserve);
-
-        uint256 optimalWETHAmount;
-        if (optimalTokenAmount > tokenAmount) {
-            optimalWETHAmount = UniswapV2Library.quote(tokenAmount, tokenReserve, wethReserve);
-            optimalTokenAmount = tokenAmount;
-        }
-        else
-            optimalWETHAmount = wethAmount;
-
-        assert(WETH.transfer(lpToken, optimalWETHAmount));
-        assert(rewardsToken.transfer(lpToken, optimalTokenAmount));
-
-        IUniswapV2Pair(lpToken).mint(to);
-        
-        //refund dust
-        if (tokenAmount > optimalTokenAmount)
-            rewardsToken.transfer(to, tokenAmount.sub(optimalTokenAmount));
-
-        if (wethAmount > optimalWETHAmount) {
-            uint256 withdrawAmount = wethAmount.sub(optimalWETHAmount);
-            WETH.withdraw(withdrawAmount);
-            to.transfer(withdrawAmount);
-        }
-    }
-
-
-    function getLPTokenPerEthUnit(uint ethAmt) public view  returns (uint liquidity){
-        (uint256 reserveWeth, uint256 reserveTokens) = getPairReserves();
-        uint256 outTokens = UniswapV2Library.getAmountOut(ethAmt.div(2), reserveWeth, reserveTokens);
-        uint _totalSupply =  IUniswapV2Pair(lpToken).totalSupply();
-
-        (address token0, ) = UniswapV2Library.sortTokens(address(WETH), address(rewardsToken));
-        (uint256 amount0, uint256 amount1) = token0 == address(rewardsToken) ? (outTokens, ethAmt.div(2)) : (ethAmt.div(2), outTokens);
-        (uint256 _reserve0, uint256 _reserve1) = token0 == address(rewardsToken) ? (reserveTokens, reserveWeth) : (reserveWeth, reserveTokens);
-        liquidity = min(amount0.mul(_totalSupply) / _reserve0, amount1.mul(_totalSupply) / _reserve1);
-    }
-
-    function getPairReserves() internal view returns (uint256 wethReserves, uint256 tokenReserves) {
-        (address token0,) = UniswapV2Library.sortTokens(address(WETH), address(rewardsToken));
-        (uint256 reserve0, uint reserve1,) = IUniswapV2Pair(lpToken).getReserves();
-        (wethReserves, tokenReserves) = token0 == address(rewardsToken) ? (reserve1, reserve0) : (reserve0, reserve1);
-    }
-    
     function min(uint256 a, uint256 b) internal pure returns (uint256 c) {
         c = a <= b ? a : b;
     }
