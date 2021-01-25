@@ -22,6 +22,10 @@ interface DigialaxStaking {
     function WETH() external view returns (address);
 }
 
+interface MONA is IERC20 {
+    function mint(address tokenOwner, uint tokens) external returns (bool);
+}
+
 contract DigitalaxRewards {
     using SafeMath for uint256;
 
@@ -248,7 +252,6 @@ contract DigitalaxRewards {
         (uint256 gW, uint256 pW, uint256 mW) = _getReturnWeights(g_net, p_net, m_net);
         _updateWeightingAcc(gW,pW,mW);
 
-        // TODO rework logic
         /// @dev This mints and sends rewards
         _updateGenesisRewards();
         _updateParentRewards();
@@ -432,8 +435,7 @@ contract DigitalaxRewards {
         rewards = genesisRewards(lastRewardTime, block.timestamp);
         if ( rewards > 0 ) {
             genesisRewardsPaid = genesisRewardsPaid.add(rewards);
-            // TODO rewards are now dropped into contract, not minted
-           // require(rewardsToken.mint(address(genesisStaking), rewards));
+            require(rewardsToken.mint(address(genesisStaking), rewards));
         }
     }
 
@@ -444,8 +446,7 @@ contract DigitalaxRewards {
         rewards = parentRewards(lastRewardTime, block.timestamp);
         if ( rewards > 0 ) {
             parentRewardsPaid = parentRewardsPaid.add(rewards);
-            // TODO rewards are now dropped into contract, not minted
-           // require(rewardsToken.mint(address(parentStaking), rewards));
+            require(rewardsToken.mint(address(parentStaking), rewards));
         }
     }
 
@@ -456,8 +457,7 @@ contract DigitalaxRewards {
         rewards = LPRewards(lastRewardTime, block.timestamp);
         if ( rewards > 0 ) {
             lpRewardsPaid = lpRewardsPaid.add(rewards);
-            // TODO rewards are now dropped into contract, not minted
-            //require(rewardsToken.mint(address(lpStaking), rewards));
+            require(rewardsToken.mint(address(lpStaking), rewards));
         }
     }
 
