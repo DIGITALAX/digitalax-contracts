@@ -22,10 +22,6 @@ interface DigialaxStaking {
     function WETH() external view returns (address);
 }
 
-interface MONA is IERC20 {
-    function mint(address tokenOwner, uint tokens) external returns (bool);
-}
-
 contract DigitalaxRewards {
     using SafeMath for uint256;
 
