@@ -18,7 +18,7 @@ import "../uniswapv2/libraries/UniswapV2Library.sol";
 
 interface DigitalaxStaking {
     function stakedEthTotal() external view returns (uint256);
-    function lpToken() external view returns (address);
+    function monaToken() external view returns (address);
     function WETH() external view returns (address);
 }
 
@@ -35,7 +35,7 @@ contract DigitalaxRewards {
     DigitalaxAccessControls public accessControls;
  //   DigitalaxStaking public genesisStaking;
  //   DigitalaxStaking public parentStaking;
-    DigitalaxStaking public lpStaking;
+    DigitalaxStaking public monaStaking;
 
     uint256 constant pointMultiplier = 10e18;
     uint256 constant SECONDS_PER_DAY = 24 * 60 * 60;
@@ -48,16 +48,15 @@ contract DigitalaxRewards {
     uint256 public startTime;
     uint256 public lastRewardTime;
 
-    uint256 public genesisRewardsPaid;
-    uint256 public parentRewardsPaid;
-    uint256 public lpRewardsPaid;
+
+    uint256 public rewardsPaid;
 
     /* ========== Structs ========== */
 
     struct Weights {
         uint256 genesisWtPoints;
         uint256 parentWtPoints;
-        uint256 lpWeightPoints;
+        uint256 monaWeightPoints;
     }
 
     /// @notice mapping of a staker to its current properties
@@ -74,24 +73,20 @@ contract DigitalaxRewards {
     constructor(
         MONA _rewardsToken,
         DigitalaxAccessControls _accessControls,
-        DigitalaxStaking _lpStaking,
+        DigitalaxStaking _monaStaking,
         uint256 _startTime,
         uint256 _lastRewardTime,
-        uint256 _genesisRewardsPaid,
-        uint256 _parentRewardsPaid,
-        uint256 _lpRewardsPaid
+        uint256 _rewardsPaid
 
     )
         public
     {
         rewardsToken = _rewardsToken;
         accessControls = _accessControls;
-        lpStaking = _lpStaking;
+        monaStaking = _monaStaking;
         startTime = _startTime;
         lastRewardTime = _lastRewardTime;
-        genesisRewardsPaid = _genesisRewardsPaid;
-        parentRewardsPaid = _parentRewardsPaid;
-        lpRewardsPaid = _lpRewardsPaid;        
+        rewardsPaid = _rewardsPaid;
     }
 
     /// @dev Setter functions for contract config
@@ -112,8 +107,8 @@ contract DigitalaxRewards {
     /// @dev Setter functions for contract config
     function setInitialPoints(
         uint256 week,
-        uint256 gW,
-        uint256 pW,
+//        uint256 gW,
+//        uint256 pW,
         uint256 mW
 
     )
@@ -124,22 +119,22 @@ contract DigitalaxRewards {
             "DigitalaxRewards.setStartTime: Sender must be admin"
         );
         Weights storage weights = weeklyWeightPoints[week];
-        weights.genesisWtPoints = gW;
-        weights.parentWtPoints = pW;
-        weights.lpWeightPoints = mW;
+//        weights.genesisWtPoints = gW;
+//        weights.parentWtPoints = pW;
+        weights.monaWeightPoints = mW;
 
     }
 
-    function setLPStaking(
+    function setmonaStaking(
         address _addr
     )
         external
     {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxRewards.setLPStaking: Sender must be admin"
+            "DigitalaxRewards.setmonaStaking: Sender must be admin"
         );
-        lpStaking = DigitalaxStaking(_addr);
+        monaStaking = DigitalaxStaking(_addr);
     } 
 
     /// @notice Set rewards distributed each week
@@ -207,7 +202,7 @@ contract DigitalaxRewards {
         }
 //        uint256 g_net = genesisStaking.stakedEthTotal();
 //        uint256 p_net = parentStaking.stakedEthTotal();
-        uint256 m_net  = lpStaking.stakedEthTotal();
+        uint256 m_net  = monaStaking.stakedEthTotal();
 
         /// @dev check that the staking pools have contributions, and rewards have started
         if (block.timestamp <= startTime) {
@@ -219,7 +214,7 @@ contract DigitalaxRewards {
         _updateWeightingAcc(mW);
 
         /// @dev This mints and sends rewards
-        _updateLPRewards();
+        _updateMonaRewards();
 
         /// @dev update accumulated reward
         lastRewardTime = block.timestamp;
@@ -231,7 +226,7 @@ contract DigitalaxRewards {
 
     /// @notice Gets the total rewards outstanding from last reward time
     function totalRewards() external view returns (uint256) {
-        uint256 lRewards = LPRewards(lastRewardTime, block.timestamp);
+        uint256 lRewards = MonaRewards(lastRewardTime, block.timestamp);
         return lRewards;
     }
 
@@ -242,7 +237,7 @@ contract DigitalaxRewards {
         view
         returns(uint256)
     {
-        return lpStaking.stakedEthTotal();
+        return monaStaking.stakedEthTotal();
     }
 
     /// @dev Getter functions for Rewards contract
@@ -259,12 +254,12 @@ contract DigitalaxRewards {
         view
         returns(uint256)
     {
-        return lpRewardsPaid;
+        return rewardsPaid;
     }
 
-    /// @notice Return LP rewards over the given _from to _to timestamp.
+    /// @notice Return mona rewards over the given _from to _to timestamp.
     /// @dev A fraction of the start, multiples of the middle weeks, fraction of the end
-    function LPRewards(uint256 _from, uint256 _to) public view returns (uint256 rewards) {
+    function MonaRewards(uint256 _from, uint256 _to) public view returns (uint256 rewards) {
         if (_to <= startTime) {
             return 0;
         }
@@ -277,43 +272,43 @@ contract DigitalaxRewards {
         if (fromWeek == toWeek) {
             return _rewardsFromPoints(weeklyRewardsPerSecond[fromWeek],
                                     _to.sub(_from),
-                                    weeklyWeightPoints[fromWeek].lpWeightPoints)
-                        .add(weeklyBonusPerSecond[address(lpStaking)][fromWeek].mul(_to.sub(_from)));
+                                    weeklyWeightPoints[fromWeek].monaWeightPoints)
+                        .add(weeklyBonusPerSecond[address(monaStaking)][fromWeek].mul(_to.sub(_from)));
         }
         /// @dev First count remainer of first week 
         uint256 initialRemander = startTime.add((fromWeek+1).mul(SECONDS_PER_WEEK)).sub(_from);
         rewards = _rewardsFromPoints(weeklyRewardsPerSecond[fromWeek],
                                     initialRemander,
-                                    weeklyWeightPoints[fromWeek].lpWeightPoints)
-                        .add(weeklyBonusPerSecond[address(lpStaking)][fromWeek].mul(initialRemander));
+                                    weeklyWeightPoints[fromWeek].monaWeightPoints)
+                        .add(weeklyBonusPerSecond[address(monaStaking)][fromWeek].mul(initialRemander));
 
         /// @dev add multiples of the week
         for (uint256 i = fromWeek+1; i < toWeek; i++) {
             rewards = rewards.add(_rewardsFromPoints(weeklyRewardsPerSecond[i],
                                     SECONDS_PER_WEEK,
-                                    weeklyWeightPoints[i].lpWeightPoints))
-                             .add(weeklyBonusPerSecond[address(lpStaking)][i].mul(SECONDS_PER_WEEK));
+                                    weeklyWeightPoints[i].monaWeightPoints))
+                             .add(weeklyBonusPerSecond[address(monaStaking)][i].mul(SECONDS_PER_WEEK));
         }
         /// @dev Adds any remaining time in the most recent week till _to
         uint256 finalRemander = _to.sub(toWeek.mul(SECONDS_PER_WEEK).add(startTime));
         rewards = rewards.add(_rewardsFromPoints(weeklyRewardsPerSecond[toWeek],
                                     finalRemander,
-                                    weeklyWeightPoints[toWeek].lpWeightPoints))
-                        .add(weeklyBonusPerSecond[address(lpStaking)][toWeek].mul(finalRemander));
+                                    weeklyWeightPoints[toWeek].monaWeightPoints))
+                        .add(weeklyBonusPerSecond[address(monaStaking)][toWeek].mul(finalRemander));
         return rewards;
     }
 
 
     /* ========== Internal Functions ========== */
 
-    function _updateLPRewards() 
+    function _updateMonaRewards()
         internal
         returns(uint256 rewards)
     {
-        rewards = LPRewards(lastRewardTime, block.timestamp);
+        rewards = MonaRewards(lastRewardTime, block.timestamp);
         if ( rewards > 0 ) {
-            lpRewardsPaid = lpRewardsPaid.add(rewards);
-            require(rewardsToken.mint(address(lpStaking), rewards));
+            rewardsPaid = rewardsPaid.add(rewards);
+            require(rewardsToken.mint(address(monaStaking), rewards));
         }
     }
 
@@ -339,11 +334,11 @@ contract DigitalaxRewards {
         uint256 startCurrentWeek = startTime.add(currentWeek.mul(SECONDS_PER_WEEK)); 
 
         /// @dev Initialisation of new weightings and fill gaps
-        if ( weeklyWeightPoints[0].lpWeightPoints == 0  ) {
+        if ( weeklyWeightPoints[0].monaWeightPoints == 0  ) {
             Weights storage weights = weeklyWeightPoints[0];
 //            weights.genesisWtPoints = gW;
 //            weights.parentWtPoints = pW;
-            weights.lpWeightPoints = mW;
+            weights.monaWeightPoints = mW;
         }
         /// @dev Fill gaps in weightings
         if (lastRewardWeek < currentWeek ) {
@@ -352,7 +347,7 @@ contract DigitalaxRewards {
                 Weights storage weights = weeklyWeightPoints[i];
 //                weights.genesisWtPoints = gW;
 //                weights.parentWtPoints = pW;
-                weights.lpWeightPoints = mW;
+                weights.monaWeightPoints = mW;
             }
             return;
         }      
@@ -360,7 +355,7 @@ contract DigitalaxRewards {
         Weights storage weights = weeklyWeightPoints[currentWeek];
 //        weights.genesisWtPoints = _calcWeightPoints(weights.genesisWtPoints,gW,startCurrentWeek);
 //        weights.parentWtPoints = _calcWeightPoints(weights.parentWtPoints,pW,startCurrentWeek);
-        weights.lpWeightPoints = _calcWeightPoints(weights.lpWeightPoints,mW,startCurrentWeek);
+        weights.monaWeightPoints = _calcWeightPoints(weights.monaWeightPoints,mW,startCurrentWeek);
     }
 
     /// @dev Time weighted average of the token weightings
@@ -489,34 +484,34 @@ contract DigitalaxRewards {
         return diffDays(startTime, block.timestamp) / 7;
     }
 
-    function getCurrentLpWeightPoints()
+    function getCurrentMonaWeightPoints()
         external
         view
         returns(uint256)
     {
         uint256 currentWeek = diffDays(startTime, block.timestamp) / 7;
-        return weeklyWeightPoints[currentWeek].lpWeightPoints;
+        return weeklyWeightPoints[currentWeek].monaWeightPoints;
     }
 
 
-    function getLpStakedEthTotal()
+    function getMonaStakedEthTotal()
         public
         view
         returns(uint256)
     {
-        return lpStaking.stakedEthTotal();
+        return monaStaking.stakedEthTotal();
     }
 
-    function getLpDailyAPY()
+    function getMonaDailyAPY()
         external
         view 
         returns (uint256) 
     {
-        uint256 stakedEth = getLpStakedEthTotal();
+        uint256 stakedEth = getMonaStakedEthTotal();
         if ( stakedEth == 0 ) {
             return 0;
         }
-        uint256 rewards = LPRewards(block.timestamp - 60, block.timestamp);
+        uint256 rewards = MonaRewards(block.timestamp - 60, block.timestamp);
         uint256 rewardsInEth = rewards.mul(getEthPerMona()).div(1e18);
         /// @dev minutes per year x 100 = 52560000
         return rewardsInEth.mul(52560000).mul(1e18).div(stakedEth);
@@ -541,8 +536,8 @@ contract DigitalaxRewards {
     }
 
     function getPairReserves() internal view returns (uint256 wethReserves, uint256 tokenReserves) {
-        (address token0,) = UniswapV2Library.sortTokens(address(lpStaking.WETH()), address(rewardsToken));
-        (uint256 reserve0, uint reserve1,) = IUniswapV2Pair(lpStaking.lpToken()).getReserves();
+        (address token0,) = UniswapV2Library.sortTokens(address(monaStaking.WETH()), address(rewardsToken));
+        (uint256 reserve0, uint reserve1,) = IUniswapV2Pair(monaStaking.monaToken()).getReserves();
         (wethReserves, tokenReserves) = token0 == address(rewardsToken) ? (reserve1, reserve0) : (reserve0, reserve1);
     }
 
