@@ -52,9 +52,6 @@ contract DigitalaxMonaStaking  {
     /// @notice mapping of a staker to its current properties
     mapping (address => Staker) public stakers;
 
-    // Mapping from token ID to owner address
-    mapping (uint256 => address) public tokenOwner;
-
     /// @notice sets the token to be claimable or not, cannot claim if it set to false
     bool public tokensClaimable;
     bool private initialised;
