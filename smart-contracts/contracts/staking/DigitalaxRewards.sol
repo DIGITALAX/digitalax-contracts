@@ -4,14 +4,13 @@ pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../DigitalaxAccessControls.sol";
-import "../DigitalaxGenesisNFT.sol";
 import "./interfaces/IERC20.sol";
 import "../uniswapv2/interfaces/IUniswapV2Pair.sol";
 import "../uniswapv2/libraries/UniswapV2Library.sol";
 
 /**
  * @title Digitalax Rewards
- * @dev Calculates the rewards for staking on the Digitialax platform
+ * @dev Calculates the rewards for staking on the Digitalax platform
  * @author Adrian Guerrera (deepyr)
  * @author DIGITALAX CORE TEAM
  */
@@ -33,8 +32,6 @@ contract DigitalaxRewards {
 
     MONA public rewardsToken;
     DigitalaxAccessControls public accessControls;
- //   DigitalaxStaking public genesisStaking;
- //   DigitalaxStaking public parentStaking;
     DigitalaxStaking public monaStaking;
 
     uint256 constant pointMultiplier = 10e18;
@@ -54,8 +51,6 @@ contract DigitalaxRewards {
     /* ========== Structs ========== */
 
     struct Weights {
-        uint256 genesisWtPoints;
-        uint256 parentWtPoints;
         uint256 monaWeightPoints;
     }
 
@@ -105,10 +100,8 @@ contract DigitalaxRewards {
     }
 
     /// @dev Setter functions for contract config
-    function setInitialPoints(
+    function setInitialPoints( // TODO convert to multi pools
         uint256 week,
-//        uint256 gW,
-//        uint256 pW,
         uint256 mW
 
     )
@@ -119,10 +112,7 @@ contract DigitalaxRewards {
             "DigitalaxRewards.setStartTime: Sender must be admin"
         );
         Weights storage weights = weeklyWeightPoints[week];
-//        weights.genesisWtPoints = gW;
-//        weights.parentWtPoints = pW;
         weights.monaWeightPoints = mW;
-
     }
 
     function setmonaStaking(
@@ -200,18 +190,12 @@ contract DigitalaxRewards {
         if (block.timestamp <= lastRewardTime) {
             return false;
         }
-//        uint256 g_net = genesisStaking.stakedEthTotal();
-//        uint256 p_net = parentStaking.stakedEthTotal();
-        uint256 m_net  = monaStaking.stakedEthTotal();
 
         /// @dev check that the staking pools have contributions, and rewards have started
         if (block.timestamp <= startTime) {
             lastRewardTime = block.timestamp;
             return false;
         }
-
-        (uint256 gW, uint256 pW, uint256 mW) = _getReturnWeights(m_net, m_net, m_net); // Dont take this out for now, just compute based on 1 pool
-        _updateWeightingAcc(mW);
 
         /// @dev This mints and sends rewards
         _updateMonaRewards();
@@ -327,117 +311,6 @@ contract DigitalaxRewards {
             .div(pointMultiplier);
     }
 
-    /// @dev Internal fuction to update the weightings 
-    function _updateWeightingAcc(uint256 mW) internal {
-        uint256 currentWeek = diffDays(startTime, block.timestamp) / 7;
-        uint256 lastRewardWeek = diffDays(startTime, lastRewardTime) / 7;
-        uint256 startCurrentWeek = startTime.add(currentWeek.mul(SECONDS_PER_WEEK)); 
-
-        /// @dev Initialisation of new weightings and fill gaps
-        if ( weeklyWeightPoints[0].monaWeightPoints == 0  ) {
-            Weights storage weights = weeklyWeightPoints[0];
-//            weights.genesisWtPoints = gW;
-//            weights.parentWtPoints = pW;
-            weights.monaWeightPoints = mW;
-        }
-        /// @dev Fill gaps in weightings
-        if (lastRewardWeek < currentWeek ) {
-            /// @dev Back fill missing weeks
-            for (uint256 i = lastRewardWeek+1; i <= currentWeek; i++) {
-                Weights storage weights = weeklyWeightPoints[i];
-//                weights.genesisWtPoints = gW;
-//                weights.parentWtPoints = pW;
-                weights.monaWeightPoints = mW;
-            }
-            return;
-        }      
-        /// @dev Calc the time weighted averages
-        Weights storage weights = weeklyWeightPoints[currentWeek];
-//        weights.genesisWtPoints = _calcWeightPoints(weights.genesisWtPoints,gW,startCurrentWeek);
-//        weights.parentWtPoints = _calcWeightPoints(weights.parentWtPoints,pW,startCurrentWeek);
-        weights.monaWeightPoints = _calcWeightPoints(weights.monaWeightPoints,mW,startCurrentWeek);
-    }
-
-    /// @dev Time weighted average of the token weightings
-    function _calcWeightPoints(
-        uint256 prevWeight,
-        uint256 newWeight,
-        uint256 startCurrentWeek
-    ) 
-        internal 
-        view 
-        returns(uint256) 
-    {
-        uint256 previousWeighting = prevWeight.mul(lastRewardTime.sub(startCurrentWeek));
-        uint256 currentWeighting = newWeight.mul(block.timestamp.sub(lastRewardTime));
-        return previousWeighting.add(currentWeighting)
-                                .div(block.timestamp.sub(startCurrentWeek));
-    }
-
-    function max(uint256 a, uint256 b) internal pure returns (uint256 c) {
-        c = a >= b ? a : b;
-    }
-    
-    /// @notice Normalised weightings of weights with point multiplier 
-    function _getReturnWeights(
-        uint256 _g,
-        uint256 _p,
-        uint256 _m
-    )   
-        internal
-        view
-        returns(uint256,uint256,uint256)
-    {
-        uint256 eg = _g.mul(_getSqrtWeight(_g,_p,_m));
-        uint256 ep = _p.mul(_getSqrtWeight(_p,_m,_g));
-        uint256 em = _m.mul(_getSqrtWeight(_m,_g,_p));
-
-        uint256 norm = eg.add(ep).add(em);
-
-        return (eg.mul(pointMultiplier).mul(1e18).div(norm), ep.mul(pointMultiplier).mul(1e18).div(norm), 
-                em.mul(pointMultiplier).mul(1e18).div(norm));
-
-    }
-
-
-    /// @notice Normalised weightings  
-    function _getSqrtWeight(
-        uint256 _a,
-        uint256 _b,
-        uint256 _c
-    )  
-        internal
-        view
-        returns(
-            uint256 wA
-        )
-    {
-        if ( _a <= _b.add(_c) ||  _b.add(_c) == 0  ) {
-            return 1e18;
-        }
-        /// @dev Normalised for each weighting
-        uint256 A1 = max(_a.mul(1e18).div(max(_b,1e18)),1e18);
-        uint256 A2 = max(_a.mul(1e18).div(max(_c,1e18)),1e18);
-        uint256 A = A1.mul(A2).div(1e18);
-
-        /// @dev sqrt needs to refactored by 1/2 decimals, ie 1e9
-        wA = _sqrt(uint256(1e18).mul(1e18).div(A)).mul(1e9);
-        
-    }
-
-    /// @dev babylonian method (https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method)
-    function _sqrt(uint y) internal pure returns (uint z) {
-        if (y > 3) {
-            z = y;
-            uint x = y / 2 + 1;
-            while (x < z) {
-                z = x;
-                x = (y / x + x) / 2;
-            }
-        } else if (y != 0) {
-            z = 1;
-        }
-    }
 
     /* ========== Recover ERC20 ========== */
 
