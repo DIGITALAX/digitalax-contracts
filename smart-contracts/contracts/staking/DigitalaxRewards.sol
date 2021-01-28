@@ -30,32 +30,48 @@ contract DigitalaxRewards {
 
     /* ========== Variables ========== */
 
-    MONA public rewardsToken;
+    MONA public monaToken;
     DigitalaxAccessControls public accessControls;
     DigitalaxStaking public monaStaking;
 
+    uint256 constant MAX_NUMBER_OF_POOLS = 20;
     uint256 constant pointMultiplier = 10e18;
     uint256 constant SECONDS_PER_DAY = 24 * 60 * 60;
     uint256 constant SECONDS_PER_WEEK = 7 * 24 * 60 * 60;
     
-    // weekNumber => rewards
-    mapping (uint256 => uint256) public weeklyRewardsPerSecond;
-    mapping (address => mapping(uint256 => uint256)) public weeklyBonusPerSecond;
+    mapping (uint256 => uint256) public weeklyMonaRevenueSharingPerSecond; // going to use this for mona revenue sharing
+    mapping (uint256 => uint256) public weeklyETHRevenueSharingPerSecond; // TODO going to use this for ETH revenue sharing
+
 
     uint256 public startTime;
-    uint256 public lastRewardTime;
+    uint256 public rewardsPaidTotal;
 
+    // We must trust admin to pass correct weighted values, if not we could use something like
+    // / @notice mapping of a staker to its current properties
+    //mapping (uint256 => uint256) public weeklyTotalWeightPoints;
 
-    uint256 public rewardsPaid;
+    /// @notice staking pool id to staking pool reward mapping
+    mapping (uint256 => StakingPoolRewards) public pools;
 
     /* ========== Structs ========== */
-
-    struct Weights {
-        uint256 monaWeightPoints;
+    /**
+       @notice Struct to track the active pools
+       @dev weeklyWeightPoints mapping the week to the weight for this pool
+       @dev lastRewardsTime last time the overall rewards
+       @dev rewardsPaid amount of rewards that have been paid to this pool
+       */
+    struct StakingPoolRewards {
+        mapping (uint256 => WeeklyRewards) weeklyWeightPoints;
+        uint256 lastRewardsTime;
+        uint256 rewardsPaid;
     }
 
-    /// @notice mapping of a staker to its current properties
-    mapping (uint256 => Weights) public weeklyWeightPoints;
+    struct WeeklyRewards {
+        uint256 weightPointsRevenueSharing; // Weekly weight points For revenue sharing
+        uint256 mintedMonaRewardPointsPerMona; // Weekly rewards points of Minted Mona /Mona staked
+        uint256 bonusMintedMonaRewardPointsPerMona; // Bonus Weekly rewards points of Minted Mona /Mona staked
+        uint256 depositedEthRewardPointsPerMona; // Weekly rewards points of ETH
+    }
 
     /* ========== Events ========== */
 
@@ -66,28 +82,25 @@ contract DigitalaxRewards {
     
     /* ========== Admin Functions ========== */
     constructor(
-        MONA _rewardsToken,
+        MONA _monaToken,
         DigitalaxAccessControls _accessControls,
         DigitalaxStaking _monaStaking,
         uint256 _startTime,
-        uint256 _lastRewardTime,
-        uint256 _rewardsPaid
+        uint256 _rewardsPaidTotal
 
     )
         public
     {
-        rewardsToken = _rewardsToken;
+        monaToken = _monaToken;
         accessControls = _accessControls;
         monaStaking = _monaStaking;
         startTime = _startTime;
-        lastRewardTime = _lastRewardTime;
-        rewardsPaid = _rewardsPaid;
+        rewardsPaidTotal = _rewardsPaidTotal;
     }
 
     /// @dev Setter functions for contract config
     function setStartTime(
-        uint256 _startTime,
-        uint256 _lastRewardTime
+        uint256 _startTime
     )
         external
     {
@@ -96,14 +109,12 @@ contract DigitalaxRewards {
             "DigitalaxRewards.setStartTime: Sender must be admin"
         );
         startTime = _startTime;
-        lastRewardTime = _lastRewardTime;
     }
 
-    /// @dev Setter functions for contract config
-    function setInitialPoints( // TODO convert to multi pools
-        uint256 week,
-        uint256 mW
-
+    /// @dev Setter functions for contract config custom last rewards time for a pool
+    function setLastRewardsTime(
+        uint256[] memory _poolIds,
+        uint256[] memory _lastRewardsTimes
     )
         external
     {
@@ -111,64 +122,117 @@ contract DigitalaxRewards {
             accessControls.hasAdminRole(msg.sender),
             "DigitalaxRewards.setStartTime: Sender must be admin"
         );
-        Weights storage weights = weeklyWeightPoints[week];
-        weights.monaWeightPoints = mW;
+        for (uint256 i = 0; i < _poolIds.length; i++) {
+            pools[_poolIds[i]].lastRewardsTime = _lastRewardsTimes[i];
+        }
     }
 
-    function setmonaStaking(
+    function setMonaStaking(
         address _addr
     )
-        external
+    external
     {
         require(
             accessControls.hasAdminRole(msg.sender),
             "DigitalaxRewards.setmonaStaking: Sender must be admin"
         );
         monaStaking = DigitalaxStaking(_addr);
-    } 
+    }
 
-    /// @notice Set rewards distributed each week
-    /// @dev this number is the total rewards that week with 18 decimals
-    function setRewards(
-        uint256[] memory rewardWeeks,
-        uint256[] memory amounts
+    /// @dev Setter functions for contract config
+    /// @param _week the week to be changed
+    /// @param _poolIds the ids of the pools that are being modified
+    /// @param _weightPointsRevenueSharing the weights of the pools to be entered (must be calculated off chain)
+    /// @param _mintedMonaRewardPointsPerMona the reward points for the minted mona for the week
+    /// @param _bonusMintedMonaRewardPointsPerMona the bonus reward points for the minted mona for the week
+    /// @param _depositedEthRewardPointsPerMona the reward points for depositedEth for the week
+    function setInitialPools(
+        uint256 _week,
+        uint256[] calldata _poolIds,
+        uint256[] calldata _weightPointsRevenueSharing,
+        uint256[] calldata _mintedMonaRewardPointsPerMona,
+        uint256[] calldata _bonusMintedMonaRewardPointsPerMona,
+        uint256[] calldata _depositedEthRewardPointsPerMona
     )
         external
     {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxRewards.setRewards: Sender must be admin"
+            "DigitalaxRewards.setInitialPoints: Sender must be admin"
         );
-        uint256 numRewards = rewardWeeks.length;
-        for (uint256 i = 0; i < numRewards; i++) {
-            uint256 week = rewardWeeks[i];
-            uint256 amount = amounts[i].mul(pointMultiplier)
-                                       .div(SECONDS_PER_WEEK)
-                                       .div(pointMultiplier);
-            weeklyRewardsPerSecond[week] = amount;
+
+        require(
+            _poolIds.length == _weightPointsRevenueSharing.length,
+            "DigitalaxRewards.setInitialPoints: Please check pool ids and weight point revenue lengths"
+        );
+
+        require(
+            _poolIds.length == _mintedMonaRewardPointsPerMona.length,
+            "DigitalaxRewards.setInitialPoints: Please check pool ids and minted mona reward pts lengths"
+        );
+
+        require(
+            _poolIds.length == _bonusMintedMonaRewardPointsPerMona.length,
+            "DigitalaxRewards.setInitialPoints: Please check pool ids and bonus mona reward pts lengths"
+        );
+
+        require(
+            _poolIds.length == _depositedEthRewardPointsPerMona.length,
+            "DigitalaxRewards.setInitialPoints: Please check pool ids and deposited ETH reward pts lengths"
+        );
+
+        for (uint256 i = 0; i < _poolIds.length; i++) {
+            WeeklyRewards storage weeklyRewards = pools[_poolIds[i]].weeklyWeightPoints[_week];
+            weeklyRewards.weightPointsRevenueSharing = _weightPointsRevenueSharing[i]; // Revenue sharing has no fixed return, just weight of the marketplace rewards
+            weeklyRewards.mintedMonaRewardPointsPerMona = _mintedMonaRewardPointsPerMona[i];
+            weeklyRewards.bonusMintedMonaRewardPointsPerMona = _bonusMintedMonaRewardPointsPerMona[i];
+            weeklyRewards.depositedEthRewardPointsPerMona = _depositedEthRewardPointsPerMona[i];
         }
     }
-    /// @notice Set rewards distributed each week
+
+    /// @notice Deposit revenue sharing rewards to be distributed during a certain week
     /// @dev this number is the total rewards that week with 18 decimals
-    function bonusRewards(
-        address pool,
-        uint256[] memory rewardWeeks,
-        uint256[] memory amounts
+    function depositRevenueSharingRewards(
+        uint256 _poolId,
+        uint256 _week,
+        uint256 _amount
     )
-        external
+        external payable
     {
         require(
             accessControls.hasAdminRole(msg.sender),
             "DigitalaxRewards.setRewards: Sender must be admin"
         );
-        uint256 numRewards = rewardWeeks.length;
-        for (uint256 i = 0; i < numRewards; i++) {
-            uint256 week = rewardWeeks[i];
-            uint256 amount = amounts[i].mul(pointMultiplier)
-                                       .div(SECONDS_PER_WEEK)
-                                       .div(pointMultiplier);
-            weeklyBonusPerSecond[pool][week] = amount;
-        }
+
+//        require(
+//            _week > getCurrentWeek(),
+//            "DigitalaxRewards.depositRevenueSharingRewards: The rewards generated should be set for the future weeks"
+//        );
+
+        require(IERC20(monaToken).allowance(msg.sender, address(monaStaking)) >= _amount, "DigitalaxRewards.depositRevenueSharingRewards: Failed to supply ERC20 Allowance");
+
+        // Send this amount of MONA to the staking contract
+        require(IERC20(monaToken).transferFrom(
+            address(msg.sender),
+            address(monaStaking),
+            _amount
+        ));
+
+
+        uint256 monaAmount = _amount.mul(pointMultiplier)
+                                   .div(SECONDS_PER_WEEK)
+                                   .div(pointMultiplier);
+
+        uint256 ethAmount = msg.value.mul(pointMultiplier)
+                                   .div(SECONDS_PER_WEEK)
+                                   .div(pointMultiplier);
+
+        // Increase the revenue sharing per second for the week for Mona
+        weeklyMonaRevenueSharingPerSecond[_week] = weeklyMonaRevenueSharingPerSecond[_week].add(monaAmount);
+
+        // Increase the revenue sharing per second for the week for deposited ETH
+        weeklyETHRevenueSharingPerSecond[_week] = weeklyETHRevenueSharingPerSecond[_week].add(ethAmount);
+
     }
 
     // From BokkyPooBah's DateTime Library v1.01
@@ -181,27 +245,31 @@ contract DigitalaxRewards {
 
     /* ========== Mutative Functions ========== */
 
-    /// @notice Calculate the current normalised weightings and update rewards
+    /// @notice Calculate and update rewards
     /// @dev 
-    function updateRewards() 
+    function updateRewards(uint256 _poolId)
         external
         returns(bool)
     {
-        if (block.timestamp <= lastRewardTime) {
+        if (block.timestamp <= pools[_poolId].lastRewardsTime) {
             return false;
         }
 
         /// @dev check that the staking pools have contributions, and rewards have started
         if (block.timestamp <= startTime) {
-            lastRewardTime = block.timestamp;
+            pools[_poolId].lastRewardsTime = block.timestamp;
             return false;
         }
 
-        /// @dev This mints and sends rewards
-        _updateMonaRewards();
+        /// @dev This sends rewards (Mona from revenue sharing)
+        _updateMonaRewards(_poolId);
+
+        // TODO update for ETH from revenue sharing
+
+        // TODO mona minted + bonus mona minted + deposited eth rewards
 
         /// @dev update accumulated reward
-        lastRewardTime = block.timestamp;
+        pools[_poolId].lastRewardsTime = block.timestamp;
         return true;
     }
 
@@ -209,11 +277,21 @@ contract DigitalaxRewards {
     /* ========== View Functions ========== */
 
     /// @notice Gets the total rewards outstanding from last reward time
-    function totalRewards() external view returns (uint256) {
-        uint256 lRewards = MonaRewards(lastRewardTime, block.timestamp);
+    function totalRewards(uint256 _poolId) external view returns (uint256) {
+        uint256 lRewards = MonaRewards(_poolId, pools[_poolId].lastRewardsTime, block.timestamp);
         return lRewards;
     }
 
+
+    /// @notice Get the last rewards time for a pool
+    /// @return last rewards time for a pool
+    function lastRewardsTime(uint256 _poolId)
+        external
+        view
+        returns(uint256)
+    {
+        return pools[_poolId].lastRewardsTime;
+    }
 
     /// @notice Gets the total contributions from the staked contracts
     function getTotalContributions()
@@ -238,12 +316,12 @@ contract DigitalaxRewards {
         view
         returns(uint256)
     {
-        return rewardsPaid;
+        return rewardsPaidTotal;
     }
 
-    /// @notice Return mona rewards over the given _from to _to timestamp.
+    /// @notice Return mona rewards over the given _from to _to timestamp. --> TODO this is currently just the mona part of revenue sharing, need to expand for the other reward sources
     /// @dev A fraction of the start, multiples of the middle weeks, fraction of the end
-    function MonaRewards(uint256 _from, uint256 _to) public view returns (uint256 rewards) {
+    function MonaRewards(uint256 _poolId, uint256 _from, uint256 _to) public view returns (uint256 rewards) {
         if (_to <= startTime) {
             return 0;
         }
@@ -254,45 +332,53 @@ contract DigitalaxRewards {
         uint256 toWeek = diffDays(startTime, _to) / 7;                          
 
         if (fromWeek == toWeek) {
-            return _rewardsFromPoints(weeklyRewardsPerSecond[fromWeek],
+            return _rewardsFromPoints(weeklyMonaRevenueSharingPerSecond[fromWeek],
                                     _to.sub(_from),
-                                    weeklyWeightPoints[fromWeek].monaWeightPoints)
-                        .add(weeklyBonusPerSecond[address(monaStaking)][fromWeek].mul(_to.sub(_from)));
+                                    pools[_poolId].weeklyWeightPoints[fromWeek].weightPointsRevenueSharing);
+                        // .add(weeklyBonusPerSecond[address(monaStaking)][fromWeek].mul(_to.sub(_from)));
         }
         /// @dev First count remainer of first week 
         uint256 initialRemander = startTime.add((fromWeek+1).mul(SECONDS_PER_WEEK)).sub(_from);
-        rewards = _rewardsFromPoints(weeklyRewardsPerSecond[fromWeek],
+        rewards = _rewardsFromPoints(weeklyMonaRevenueSharingPerSecond[fromWeek],
                                     initialRemander,
-                                    weeklyWeightPoints[fromWeek].monaWeightPoints)
-                        .add(weeklyBonusPerSecond[address(monaStaking)][fromWeek].mul(initialRemander));
+                                    pools[_poolId].weeklyWeightPoints[fromWeek].weightPointsRevenueSharing);
+                       // .add(weeklyBonusPerSecond[address(monaStaking)][fromWeek].mul(initialRemander));
 
         /// @dev add multiples of the week
         for (uint256 i = fromWeek+1; i < toWeek; i++) {
-            rewards = rewards.add(_rewardsFromPoints(weeklyRewardsPerSecond[i],
+            rewards = rewards.add(_rewardsFromPoints(weeklyMonaRevenueSharingPerSecond[i],
                                     SECONDS_PER_WEEK,
-                                    weeklyWeightPoints[i].monaWeightPoints))
-                             .add(weeklyBonusPerSecond[address(monaStaking)][i].mul(SECONDS_PER_WEEK));
+                                    pools[_poolId].weeklyWeightPoints[i].weightPointsRevenueSharing));
+                             // .add(weeklyBonusPerSecond[address(monaStaking)][i].mul(SECONDS_PER_WEEK));
         }
         /// @dev Adds any remaining time in the most recent week till _to
         uint256 finalRemander = _to.sub(toWeek.mul(SECONDS_PER_WEEK).add(startTime));
-        rewards = rewards.add(_rewardsFromPoints(weeklyRewardsPerSecond[toWeek],
+        rewards = rewards.add(_rewardsFromPoints(weeklyMonaRevenueSharingPerSecond[toWeek],
                                     finalRemander,
-                                    weeklyWeightPoints[toWeek].monaWeightPoints))
-                        .add(weeklyBonusPerSecond[address(monaStaking)][toWeek].mul(finalRemander));
+                                    pools[_poolId].weeklyWeightPoints[toWeek].weightPointsRevenueSharing));
+                       // .add(weeklyBonusPerSecond[address(monaStaking)][toWeek].mul(finalRemander));
         return rewards;
     }
 
 
     /* ========== Internal Functions ========== */
 
-    function _updateMonaRewards()
+    function _updateMonaRewards(uint256 _poolId)
         internal
         returns(uint256 rewards)
     {
-        rewards = MonaRewards(lastRewardTime, block.timestamp);
+        rewards = MonaRewards(_poolId, pools[_poolId].lastRewardsTime, block.timestamp);
         if ( rewards > 0 ) {
-            rewardsPaid = rewardsPaid.add(rewards);
-            require(rewardsToken.mint(address(monaStaking), rewards));
+            pools[_poolId].rewardsPaid = pools[_poolId].rewardsPaid.add(rewards);
+            rewardsPaidTotal = rewardsPaidTotal.add(rewards);
+
+            // Send this amount of MONA to the staking contract
+            IERC20(monaToken).transferFrom(
+                address(this),
+                address(monaStaking),
+                rewards
+            );
+           // require(monaToken.mint(address(monaStaking), rewards)); // TODO use mint to mint mona rewards per mona stake
         }
     }
 
@@ -327,7 +413,7 @@ contract DigitalaxRewards {
             "DigitalaxRewards.recoverERC20: Sender must be admin"
         );
         require(
-            tokenAddress != address(rewardsToken),
+            tokenAddress != address(monaToken),
             "Cannot withdraw the rewards token"
         );
         IERC20(tokenAddress).transfer(msg.sender, tokenAmount);
@@ -357,13 +443,13 @@ contract DigitalaxRewards {
         return diffDays(startTime, block.timestamp) / 7;
     }
 
-    function getCurrentMonaWeightPoints()
+    function getCurrentMonaWeightPoints(uint256 _poolId)
         external
         view
         returns(uint256)
     {
         uint256 currentWeek = diffDays(startTime, block.timestamp) / 7;
-        return weeklyWeightPoints[currentWeek].monaWeightPoints;
+        return pools[_poolId].weeklyWeightPoints[currentWeek].weightPointsRevenueSharing;
     }
 
 
@@ -375,7 +461,7 @@ contract DigitalaxRewards {
         return monaStaking.stakedEthTotal();
     }
 
-    function getMonaDailyAPY()
+    function getMonaDailyAPY(uint256 _poolId)
         external
         view 
         returns (uint256) 
@@ -384,7 +470,7 @@ contract DigitalaxRewards {
         if ( stakedEth == 0 ) {
             return 0;
         }
-        uint256 rewards = MonaRewards(block.timestamp - 60, block.timestamp);
+        uint256 rewards = MonaRewards(_poolId, block.timestamp - 60, block.timestamp);
         uint256 rewardsInEth = rewards.mul(getEthPerMona()).div(1e18);
         /// @dev minutes per year x 100 = 52560000
         return rewardsInEth.mul(52560000).mul(1e18).div(stakedEth);
@@ -409,9 +495,9 @@ contract DigitalaxRewards {
     }
 
     function getPairReserves() internal view returns (uint256 wethReserves, uint256 tokenReserves) {
-        (address token0,) = UniswapV2Library.sortTokens(address(monaStaking.WETH()), address(rewardsToken));
+        (address token0,) = UniswapV2Library.sortTokens(address(monaStaking.WETH()), address(monaToken));
         (uint256 reserve0, uint reserve1,) = IUniswapV2Pair(monaStaking.monaToken()).getReserves();
-        (wethReserves, tokenReserves) = token0 == address(rewardsToken) ? (reserve1, reserve0) : (reserve0, reserve1);
+        (wethReserves, tokenReserves) = token0 == address(monaToken) ? (reserve1, reserve0) : (reserve0, reserve1);
     }
 
 }
