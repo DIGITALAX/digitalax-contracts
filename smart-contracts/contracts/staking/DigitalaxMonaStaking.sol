@@ -25,6 +25,7 @@ contract DigitalaxMonaStaking  {
     IERC20 public rewardsToken; // TODO Leave this for now, but will be combo of MONA and ETH. Before lp was staked, and mona was the reward
     address public monaToken; // MONA ERC20
 
+    uint256 constant MAX_NUMBER_OF_POOLS = 20;
     DigitalaxAccessControls public accessControls;
     IDigitalaxRewards public rewardsContract;
 
@@ -146,7 +147,12 @@ contract DigitalaxMonaStaking  {
     {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxMonaStaking.setRewardsContract: Sender must be admin"
+            "DigitalaxMonaStaking.initMonaStakingPool: Sender must be admin"
+        );
+
+        require(
+            numberOfStakingPools < MAX_NUMBER_OF_POOLS,
+            "DigitalaxMonaStaking.initMonaStakingPool: Already reached max number of supported pools"
         );
 
         StakingPool storage stakingPool = pools[numberOfStakingPools];
@@ -363,9 +369,9 @@ contract DigitalaxMonaStaking  {
         public 
     {
 
-        rewardsContract.updateRewards(); // TODO maybe this needs poolId?
+        rewardsContract.updateRewards(_poolId);
 
-        uint256 monaRewards = rewardsContract.MonaRewards(pools[_poolId].lastUpdateTime,
+        uint256 monaRewards = rewardsContract.MonaRewards(_poolId, pools[_poolId].lastUpdateTime,
                                                         block.timestamp);
 
         if (pools[_poolId].stakedMonaTotalForPool > 0) {
@@ -375,7 +381,7 @@ contract DigitalaxMonaStaking  {
                                                         .div(pools[_poolId].stakedMonaTotalForPool));
         }
 
-        pools[_poolId].lastUpdateTime = block.timestamp;
+        pools[_poolId].lastUpdateTime = block.timestamp; // Instead of making this block.timestamp, make this end of last cycle
         uint256 rewards = rewardsOwing(_poolId, _user);
 
         Staker storage staker = pools[_poolId].stakers[_user];
@@ -418,7 +424,7 @@ contract DigitalaxMonaStaking  {
             return 0;
         }
 
-        uint256 monaRewards = rewardsContract.MonaRewards(pools[_poolId].lastUpdateTime,
+        uint256 monaRewards = rewardsContract.MonaRewards(_poolId, pools[_poolId].lastUpdateTime,
                                                         block.timestamp);
 
         uint256 newRewardPerToken = pools[_poolId].rewardsPerTokenPoints.add(monaRewards
