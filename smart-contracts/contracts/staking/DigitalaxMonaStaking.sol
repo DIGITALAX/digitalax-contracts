@@ -128,12 +128,29 @@ contract DigitalaxMonaStaking  {
     
     event ClaimableStatusUpdated(bool status);
     event EmergencyUnstake(address indexed user, uint256 amount);
-    event MonaTokenUpdated(address indexed oldMonaToken, address newMonaToken );
+    event MonaTokenUpdated(address indexed oldMonaToken, address newMonaToken );;
+    event RewardsTokenUpdated(address indexed oldRewardsToken, address newRewardsToken );
 
     constructor(address _monaToken, DigitalaxAccessControls _accessControls, IWETH _WETH) public {
         monaToken = _monaToken;
         accessControls = _accessControls;
         WETH = _WETH;
+    }
+
+    /// @notice Lets admin set the Rewards Token
+    function setRewardsContract(
+        address _addr
+    )
+    external
+    {
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "DigitalaxLPStaking.setRewardsContract: Sender must be admin"
+        );
+        require(_addr != address(0));
+        address oldAddr = address(rewardsContract);
+        rewardsContract = IDigitalaxRewards(_addr);
+        emit RewardsTokenUpdated(oldAddr, _addr);
     }
 
      /**
