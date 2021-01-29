@@ -45,7 +45,8 @@ contract DigitalaxRewards {
 
 
     uint256 public startTime;
-    uint256 public rewardsPaidTotal;
+    uint256 public monaRewardsPaidTotal;
+    uint256 public ethRewardsPaidTotal;
 
     // We must trust admin to pass correct weighted values, if not we could use something like
     // / @notice mapping of a staker to its current properties
@@ -64,7 +65,8 @@ contract DigitalaxRewards {
     struct StakingPoolRewards {
         mapping (uint256 => WeeklyRewards) weeklyWeightPoints;
         uint256 lastRewardsTime;
-        uint256 rewardsPaid;
+        uint256 monaRewardsPaid;
+        uint256 ethRewardsPaid;
     }
 
     struct WeeklyRewards {
@@ -87,7 +89,8 @@ contract DigitalaxRewards {
         DigitalaxAccessControls _accessControls,
         DigitalaxStaking _monaStaking,
         uint256 _startTime,
-        uint256 _rewardsPaidTotal
+        uint256 _monaRewardsPaidTotal,
+        uint256 _ethRewardsPaidTotal
 
     )
         public
@@ -96,7 +99,8 @@ contract DigitalaxRewards {
         accessControls = _accessControls;
         monaStaking = _monaStaking;
         startTime = _startTime;
-        rewardsPaidTotal = _rewardsPaidTotal;
+        monaRewardsPaidTotal = _monaRewardsPaidTotal;
+        ethRewardsPaidTotal = _ethRewardsPaidTotal;
     }
 
     /// @dev Setter functions for contract config
@@ -312,12 +316,20 @@ contract DigitalaxRewards {
         return diffDays(startTime, block.timestamp) / 7;
     }
 
-    function totalRewardsPaid()
+    function totalMonaRewardsPaid()
         external
         view
         returns(uint256)
     {
-        return rewardsPaidTotal;
+        return monaRewardsPaidTotal;
+    }
+
+    function totalETHRewardsPaid()
+        external
+        view
+        returns(uint256)
+    {
+        return ethRewardsPaidTotal;
     }
 
     /// @notice Return mona rewards over the given _from to _to timestamp. --> TODO need to expand for the other reward sources
@@ -411,8 +423,8 @@ contract DigitalaxRewards {
     {
         rewards = MonaRevenueRewards(_poolId, pools[_poolId].lastRewardsTime, block.timestamp);
         if ( rewards > 0 ) {
-            pools[_poolId].rewardsPaid = pools[_poolId].rewardsPaid.add(rewards);
-            rewardsPaidTotal = rewardsPaidTotal.add(rewards);
+            pools[_poolId].monaRewardsPaid = pools[_poolId].monaRewardsPaid.add(rewards);
+            monaRewardsPaidTotal = monaRewardsPaidTotal.add(rewards);
 
             // Send this amount of MONA to the staking contract
             IERC20(monaToken).transferFrom(
