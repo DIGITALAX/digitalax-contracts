@@ -128,7 +128,7 @@ contract DigitalaxMonaStaking  {
     
     event ClaimableStatusUpdated(bool status);
     event EmergencyUnstake(address indexed user, uint256 amount);
-    event MonaTokenUpdated(address indexed oldMonaToken, address newMonaToken );;
+    event MonaTokenUpdated(address indexed oldMonaToken, address newMonaToken );
     event RewardsTokenUpdated(address indexed oldRewardsToken, address newRewardsToken );
 
     constructor(address _monaToken, DigitalaxAccessControls _accessControls, IWETH _WETH) public {
