@@ -26,7 +26,7 @@ interface MONA is IERC20 {
     function mint(address tokenOwner, uint tokens) external returns (bool);
 }
 
-contract DigitalaxRewards {
+contract DigitalaxRewardsV2 {
     using SafeMath for uint256;
 
     /* ========== Variables ========== */
