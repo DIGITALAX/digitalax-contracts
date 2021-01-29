@@ -77,7 +77,9 @@ contract DigitalaxRewardsV2 {
     }
 
     /* ========== Events ========== */
-
+    event UpdateAccessControls(
+        address indexed accessControls
+    );
     event RewardAdded(address indexed addr, uint256 reward);
     event RewardDistributed(address indexed addr, uint256 reward);
     event Recovered(address indexed token, uint256 amount);
@@ -94,6 +96,18 @@ contract DigitalaxRewardsV2 {
     )
         public
     {
+        require(
+            address(_monaToken) != address(0),
+            "DigitalaxRewardsV2: Invalid Mona Address"
+        );
+        require(
+            address(_accessControls) != address(0),
+            "DigitalaxRewardsV2: Invalid Access Controls"
+        );
+        require(
+            address(_monaStaking) != address(0),
+            "DigitalaxRewardsV2: Invalid Mona Staking"
+        );
         monaToken = _monaToken;
         accessControls = _accessControls;
         monaStaking = _monaStaking;
@@ -277,6 +291,20 @@ contract DigitalaxRewardsV2 {
         return true;
     }
 
+    /**
+     @notice Method for updating the access controls contract used by the NFT
+     @dev Only admin
+     @param _accessControls Address of the new access controls contract (Cannot be zero address)
+     */
+    function updateAccessControls(DigitalaxAccessControls _accessControls) external {
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "DigitalaxRewardsV2.updateAccessControls: Sender must be admin"
+        );
+        require(address(_accessControls) != address(0), "DigitalaxRewardsV2.updateAccessControls: Zero Address");
+        accessControls = _accessControls;
+        emit UpdateAccessControls(address(_accessControls));
+    }
 
     /* ========== View Functions ========== */
 
