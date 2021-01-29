@@ -113,7 +113,9 @@ contract DigitalaxMonaStaking  {
     bool public tokensClaimable;
 
     /* ========== Events ========== */
-
+    event UpdateAccessControls(
+        address indexed accessControls
+    );
     /// @notice event emitted when a pool is initialized
     event PoolInitialized(uint256 poolId);
 
@@ -231,6 +233,21 @@ contract DigitalaxMonaStaking  {
         );
         tokensClaimable = _enabled;
         emit ClaimableStatusUpdated(_enabled);
+    }
+
+    /**
+     @notice Method for updating the access controls contract used by the NFT
+     @dev Only admin
+     @param _accessControls Address of the new access controls contract (Cannot be zero address)
+     */
+    function updateAccessControls(DigitalaxAccessControls _accessControls) external {
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "DigitalaxMonaStaking.updateAccessControls: Sender must be admin"
+        );
+        require(address(_accessControls) != address(0), "DigitalaxMonaStaking.updateAccessControls: Zero Address");
+        accessControls = _accessControls;
+        emit UpdateAccessControls(address(_accessControls));
     }
 
     /// @notice Getter functions for Staking contract
