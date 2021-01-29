@@ -236,3 +236,23 @@ dataSources:
         - event: OfferCancelled(indexed uint256)
           handler: handleOfferCancelled
       file: ./src/DigitalaxMarketplace.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxPodePortal
+    network: '{{network}}'
+    source:
+      address: '{{DigitalaxPodePortalAddress}}'
+      abi: DigitalaxPodePortal
+      startBlock: {{DigitalaxPodePortalStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - DigitalaxPodePortalMetadataAdded
+      abis:
+        - name: DigitalaxPodePortal
+          file: ./abis/DigitalaxPodePortal.json
+      eventHandlers:
+        - event: DigitalaxPodePortalMetadataAdded(uint256,string)
+          handler: handleMetadataAdded
+      file: ./src/DigitalaxPodePortal.mapping.ts
