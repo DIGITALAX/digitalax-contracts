@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 // import "../uniswapv2/libraries/UniswapV2Library.sol";
 // import "../uniswapv2/interfaces/IUniswapV2Pair.sol";
 import "./interfaces/IDigitalaxRewards.sol";
+import "./interfaces/IWETH9.sol";
 
 
 /**
@@ -22,8 +23,8 @@ contract DigitalaxMonaStaking  {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    IERC20 public rewardsToken; // TODO Leave this for now, but will be combo of MONA and ETH. Before lp was staked, and mona was the reward, we should probably refactor and remove this variable
-    address public monaToken; // MONA ERC20
+    address public monaToken; // MONA ERC20s
+    IWETH public WETH;
 
     uint256 constant MAX_NUMBER_OF_POOLS = 20;
     uint256 constant SECONDS_IN_A_DAY = 86400;
@@ -135,13 +136,12 @@ contract DigitalaxMonaStaking  {
     
     event ClaimableStatusUpdated(bool status);
     event EmergencyUnstake(address indexed user, uint256 amount);
-    event RewardsTokenUpdated(address indexed oldRewardsToken, address newRewardsToken );
     event MonaTokenUpdated(address indexed oldMonaToken, address newMonaToken );
 
-    constructor(IERC20 _rewardsToken, address _monaToken, DigitalaxAccessControls _accessControls) public {
-        rewardsToken = _rewardsToken;
+    constructor(address _monaToken, DigitalaxAccessControls _accessControls, IWETH _WETH) public {
         monaToken = _monaToken;
         accessControls = _accessControls;
+        WETH = _WETH;
     }
 
      /**
@@ -192,22 +192,6 @@ contract DigitalaxMonaStaking  {
         // Emit event with this pools id index, and increment the number of staking pools that exist
         emit PoolInitialized(numberOfStakingPools);
         numberOfStakingPools = numberOfStakingPools.add(1);
-    }
-
-    /// @notice Lets admin set the Rewards Token
-    function setRewardsContract(
-        address _addr
-    )
-        external
-    {
-        require(
-            accessControls.hasAdminRole(msg.sender),
-            "DigitalaxMonaStaking.setRewardsContract: Sender must be admin"
-        );
-        require(_addr != address(0));
-        address oldAddr = address(rewardsContract);
-        rewardsContract = IDigitalaxRewards(_addr);
-        emit RewardsTokenUpdated(oldAddr, _addr);
     }
 
     /// @notice Lets admin set the Mona Token
@@ -512,34 +496,66 @@ contract DigitalaxMonaStaking  {
     }
 
 
-    // TODO Next task - get this working for both pending and claimable rewards (so ui shows how much is claimable right away)
-    /// @notice Returns the about of rewards yet to be claimed (this currently includes pending and awarded together
-//    function unclaimedRewards(
-//        uint256 _poolId,
-//        address _user
-//    )
-//        public
-//        view
-//        returns(uint256)
-//    {
-//        if (pools[_poolId].stakedMonaTotalForPool == 0) {
-//            return 0;
-//        }
-//
-//        uint256 monaRewards = rewardsContract.MonaRevenueRewards(_poolId, pools[_poolId].lastUpdateTime,
-//                                                        block.timestamp);
-//
-//        uint256 newRewardPerToken = pools[_poolId].rewardsPerTokenPoints.add(monaRewards
-//                                                                .mul(1e18)
-//                                                                .mul(pointMultiplier)
-//                                                                .div(pools[_poolId].stakedMonaTotalForPool))
-//                                                         .sub(pools[_poolId].stakers[_user].lastRewardPoints);
-//
-//        uint256 rewards = pools[_poolId].stakers[_user].balance.mul(newRewardPerToken)
-//                                                .div(1e18)
-//                                                .div(pointMultiplier);
-//        return rewards.add(pools[_poolId].stakers[_user].monaRevenueRewardsEarned).sub(pools[_poolId].stakers[_user].monaRevenueRewardsReleased);
-//    }
+     /// @notice Returns the about of rewards yet to be claimed (this currently includes pending and awarded together
+     /// @param _poolId the id of the pool we are interested in
+     /// @param _user the user we are interested in
+     /// @dev returns the claimable rewards and pending rewards
+    function unclaimedRewards(
+        uint256 _poolId,
+        address _user
+    )
+        public
+        view
+        returns(uint256 claimableRewards, uint256 pendingRewards)
+    {
+        if (pools[_poolId].stakedMonaTotalForPool == 0) {
+            return (0,0);
+        }
+
+        uint256 monaRewards = rewardsContract.MonaRevenueRewards(_poolId, pools[_poolId].lastUpdateTime,
+                                                        block.timestamp);
+
+        uint256 newRewardPerToken = pools[_poolId].rewardsPerTokenPoints.add(monaRewards
+                                                                .mul(1e18)
+                                                                .mul(pointMultiplier)
+                                                                .div(pools[_poolId].stakedMonaTotalForPool))
+                                                         .sub(pools[_poolId].stakers[_user].lastRewardPoints);
+
+        uint256 newRewards = pools[_poolId].stakers[_user].balance.mul(newRewardPerToken)
+                                                .div(1e18)
+                                                .div(pointMultiplier);
+
+        // Figure out how much rewards are still pending
+        Staker storage staker = pools[_poolId].stakers[_user];
+        uint256 secondsInCycle = pools[_poolId].daysInCycle.mul(SECONDS_IN_A_DAY);
+        uint256 timeElapsedSinceStakingFromZero = block.timestamp.sub(staker.cycleStartTimestamp);
+        uint256 startOfCurrentCycle = block.timestamp.sub(timeElapsedSinceStakingFromZero.mod(secondsInCycle));
+
+        if(startOfCurrentCycle > staker.lastRewardUpdateTime) {
+            // We are in a new cycle
+            // Bring over the pending rewards, they have been earned
+            newRewards = newRewards.add(pools[_poolId].stakers[_user].monaRevenueRewardsEarned).sub(pools[_poolId].stakers[_user].monaRevenueRewardsReleased);
+            // New cycle, the pending rewards from before move over
+            newRewards = newRewards.add(staker.monaRevenueRewardsPending);
+
+            // TODO triple check this - What it does is calculates reward pt during this cycle up to block timestamp
+            uint256 monaPendingRewardsTotal = rewardsContract.MonaRevenueRewards(_poolId, startOfCurrentCycle,
+                block.timestamp).mul(1e18);
+
+            // TODO triple check this - amount of rewards pending now for user
+            pendingRewards = pools[_poolId].stakers[_user].balance.mul(monaPendingRewardsTotal);
+            pendingRewards = pendingRewards.div(pools[_poolId].stakedMonaTotalForPool);
+            // The pending rewards are now just what is in this cycle (calculation in case it overflows)
+            pendingRewards = pendingRewards.div(1e18);
+
+            claimableRewards = newRewards.sub(pendingRewards);
+        } else {
+            // We are in the same cycle, these new rewards calculated above are pending rewards. So no change to claimable rewards
+            claimableRewards = pools[_poolId].stakers[_user].monaRevenueRewardsEarned.sub(pools[_poolId].stakers[_user].monaRevenueRewardsReleased);
+            // The new rewards we calculated earlier are in the same cycle
+            pendingRewards = newRewards.add(pools[_poolId].stakers[_user].monaRevenueRewardsPending);
+        }
+    }
 
 
     /// @notice Lets a user with rewards owing to claim tokens
@@ -561,36 +577,20 @@ contract DigitalaxMonaStaking  {
         staker.monaRevenueRewardsReleased = staker.monaRevenueRewardsReleased.add(payableAmount);
 
         /// @dev accounts for dust 
-        uint256 rewardBal = rewardsToken.balanceOf(address(this));
+        uint256 rewardBal = IERC20(monaToken).balanceOf(address(this));
         if (payableAmount > rewardBal) {
             payableAmount = rewardBal;
         }
         
-        rewardsToken.transfer(_user, payableAmount);
+        IERC20(monaToken).transfer(_user, payableAmount);
         emit MonaRevenueRewardPaid(_user, payableAmount);
-
-
     }
 
-
-
     function getMonaTokenPerEthUnit(uint ethAmt) public view  returns (uint liquidity){
-//        (uint256 reserveWeth, uint256 reserveTokens) = getPairReserves();
-//        uint256 outTokens = UniswapV2Library.getAmountOut(ethAmt.div(2), reserveWeth, reserveTokens);
-//        uint _totalSupply =  IUniswapV2Pair(monaToken).totalSupply();
-//
-//        (address token0, ) = UniswapV2Library.sortTokens(address(WETH), address(rewardsToken));
-//        (uint256 amount0, uint256 amount1) = token0 == address(rewardsToken) ? (outTokens, ethAmt.div(2)) : (ethAmt.div(2), outTokens);
-//        (uint256 _reserve0, uint256 _reserve1) = token0 == address(rewardsToken) ? (reserveTokens, reserveWeth) : (reserveWeth, reserveTokens);
-//        liquidity = min(amount0.mul(_totalSupply) / _reserve0, amount1.mul(_totalSupply) / _reserve1);
-
-        // Todo convert mona to eth
-        return 1;
+        return rewardsContract.getMonaPerEth(1e18);
     }
 
     function min(uint256 a, uint256 b) internal pure returns (uint256 c) {
         c = a <= b ? a : b;
     }
-
-
 }

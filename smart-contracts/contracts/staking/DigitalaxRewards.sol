@@ -205,17 +205,17 @@ contract DigitalaxRewards {
             "DigitalaxRewards.setRewards: Sender must be admin"
         );
 
-//        require(
-//            _week > getCurrentWeek(),
-//            "DigitalaxRewards.depositRevenueSharingRewards: The rewards generated should be set for the future weeks"
-//        );
+        require(
+            _week > getCurrentWeek(),
+            "DigitalaxRewards.depositRevenueSharingRewards: The rewards generated should be set for the future weeks"
+        );
 
-        require(IERC20(monaToken).allowance(msg.sender, address(monaStaking)) >= _amount, "DigitalaxRewards.depositRevenueSharingRewards: Failed to supply ERC20 Allowance");
+        require(IERC20(monaToken).allowance(msg.sender, address(this)) >= _amount, "DigitalaxRewards.depositRevenueSharingRewards: Failed to supply ERC20 Allowance");
 
-        // Send this amount of MONA to the staking contract
+        // Deposit this amount of MONA here
         require(IERC20(monaToken).transferFrom(
             address(msg.sender),
-            address(monaStaking),
+            address(this),
             _amount
         ));
 
@@ -478,7 +478,7 @@ contract DigitalaxRewards {
     /* ========== Getters ========== */
 
     function getCurrentWeek()
-        external
+        public
         view
         returns(uint256)
     {
@@ -518,15 +518,17 @@ contract DigitalaxRewards {
         return rewardsInEth.mul(52560000).mul(1e18).div(stakedEth);
     } 
 
-    function getMonaPerEth()
+    // MONA amount for custom ETH amount
+    function getMonaPerEth(uint256 _ethAmt)
         public 
         view 
         returns (uint256)
     {
         (uint256 wethReserve, uint256 tokenReserve) = getPairReserves();
-        return UniswapV2Library.quote(1e18, wethReserve, tokenReserve);
+        return UniswapV2Library.quote(_ethAmt, wethReserve, tokenReserve);
     }
 
+    // ETH amount for 1 MONA
     function getEthPerMona()
         public
         view
