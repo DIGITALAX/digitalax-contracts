@@ -11,12 +11,13 @@ import "../uniswapv2/libraries/UniswapV2Library.sol";
 /**
  * @title Digitalax Rewards
  * @dev Calculates the rewards for staking on the Digitalax platform
- * @author Adrian Guerrera (deepyr)
  * @author DIGITALAX CORE TEAM
+ * @author Based on original staking contract by Adrian Guerrera (deepyr)
  */
 
 interface DigitalaxStaking {
     function stakedEthTotal() external view returns (uint256);
+    function stakedMonaInPool(uint256 _poolId) external view returns (uint256);
     function monaToken() external view returns (address);
     function WETH() external view returns (address);
 }
@@ -278,7 +279,7 @@ contract DigitalaxRewards {
 
     /// @notice Gets the total rewards outstanding from last reward time
     function totalRewards(uint256 _poolId) external view returns (uint256) {
-        uint256 lRewards = MonaRewards(_poolId, pools[_poolId].lastRewardsTime, block.timestamp);
+        uint256 lRewards = MonaRevenueRewards(_poolId, pools[_poolId].lastRewardsTime, block.timestamp);
         return lRewards;
     }
 
@@ -319,9 +320,9 @@ contract DigitalaxRewards {
         return rewardsPaidTotal;
     }
 
-    /// @notice Return mona rewards over the given _from to _to timestamp. --> TODO this is currently just the mona part of revenue sharing, need to expand for the other reward sources
+    /// @notice Return mona rewards over the given _from to _to timestamp. --> TODO need to expand for the other reward sources
     /// @dev A fraction of the start, multiples of the middle weeks, fraction of the end
-    function MonaRewards(uint256 _poolId, uint256 _from, uint256 _to) public view returns (uint256 rewards) {
+    function MonaRevenueRewards(uint256 _poolId, uint256 _from, uint256 _to) public view returns (uint256 rewards) {
         if (_to <= startTime) {
             return 0;
         }
@@ -367,7 +368,7 @@ contract DigitalaxRewards {
         internal
         returns(uint256 rewards)
     {
-        rewards = MonaRewards(_poolId, pools[_poolId].lastRewardsTime, block.timestamp);
+        rewards = MonaRevenueRewards(_poolId, pools[_poolId].lastRewardsTime, block.timestamp);
         if ( rewards > 0 ) {
             pools[_poolId].rewardsPaid = pools[_poolId].rewardsPaid.add(rewards);
             rewardsPaidTotal = rewardsPaidTotal.add(rewards);
@@ -470,7 +471,7 @@ contract DigitalaxRewards {
         if ( stakedEth == 0 ) {
             return 0;
         }
-        uint256 rewards = MonaRewards(_poolId, block.timestamp - 60, block.timestamp);
+        uint256 rewards = MonaRevenueRewards(_poolId, block.timestamp - 60, block.timestamp);
         uint256 rewardsInEth = rewards.mul(getEthPerMona()).div(1e18);
         /// @dev minutes per year x 100 = 52560000
         return rewardsInEth.mul(52560000).mul(1e18).div(stakedEth);
