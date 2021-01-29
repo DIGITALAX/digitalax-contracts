@@ -91,7 +91,6 @@ contract DigitalaxRewardsV2 {
         uint256 _startTime,
         uint256 _monaRewardsPaidTotal,
         uint256 _ethRewardsPaidTotal
-
     )
         public
     {
