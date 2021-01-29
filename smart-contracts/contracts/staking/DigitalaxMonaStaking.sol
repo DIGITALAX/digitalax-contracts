@@ -196,7 +196,7 @@ contract DigitalaxMonaStaking  {
         stakingPool.maximumStakeInMona = _maximumStakeInMona;
         stakingPool.maximumNumberOfStakersInPool = _maximumNumberOfStakersInPool;
         stakingPool.maximumNumberOfEarlyRewardsUsers = _maximumNumberOfEarlyRewardsUsers;
-        stakingPool.lastUpdateTime = block.timestamp;
+        stakingPool.lastUpdateTime = _getNow();
 
         // Emit event with this pools id index, and increment the number of staking pools that exist
         emit PoolInitialized(numberOfStakingPools);
@@ -327,7 +327,7 @@ contract DigitalaxMonaStaking  {
         );
 
         if(staker.balance == 0) {
-            staker.cycleStartTimestamp = block.timestamp;
+            staker.cycleStartTimestamp = _getNow();
             if (staker.lastRewardPoints == 0 ) {
               staker.lastRewardPoints = pools[_poolId].rewardsPerTokenPoints;
             }
@@ -422,7 +422,7 @@ contract DigitalaxMonaStaking  {
 
         // 2 Calculates the overall amount of mona revenue that has increased since the last time someone called this method
         uint256 monaRewards = rewardsContract.MonaRevenueRewards(_poolId, pools[_poolId].lastUpdateTime,
-                                                        block.timestamp);
+                                                        _getNow());
 
         // Continue if there is mona in this pool
         if (pools[_poolId].stakedMonaTotalForPool > 0) {
@@ -434,7 +434,7 @@ contract DigitalaxMonaStaking  {
         }
 
         // 4 Update the last update time for this pool, calculating overall rewards
-        pools[_poolId].lastUpdateTime = block.timestamp;
+        pools[_poolId].lastUpdateTime = _getNow();
 
         // 5 Calculate the rewards owing overall for this user
         uint256 rewards = rewardsOwing(_poolId, _user);
@@ -447,8 +447,8 @@ contract DigitalaxMonaStaking  {
         Staker storage staker = pools[_poolId].stakers[_user];
 
         uint256 secondsInCycle = pools[_poolId].daysInCycle.mul(SECONDS_IN_A_DAY);
-        uint256 timeElapsedSinceStakingFromZero = block.timestamp.sub(staker.cycleStartTimestamp);
-        uint256 startOfCurrentCycle = block.timestamp.sub(timeElapsedSinceStakingFromZero.mod(secondsInCycle));
+        uint256 timeElapsedSinceStakingFromZero = _getNow().sub(staker.cycleStartTimestamp);
+        uint256 startOfCurrentCycle = _getNow().sub(timeElapsedSinceStakingFromZero.mod(secondsInCycle));
 
 
         if (_user != address(0)) {
@@ -461,7 +461,7 @@ contract DigitalaxMonaStaking  {
                 // TODO triple check this - What it does is calculates reward pt during this cycle up to block timestamp
 
                 uint256 monaPendingRewardsTotal = rewardsContract.MonaRevenueRewards(_poolId, startOfCurrentCycle,
-                                                block.timestamp).mul(1e18);
+                                                _getNow()).mul(1e18);
 
                 // TODO triple check this - amount of rewards pending now for user
                 uint256 pendingRewardsThisCycle = pools[_poolId].stakers[_user].balance.mul(monaPendingRewardsTotal)
@@ -475,12 +475,12 @@ contract DigitalaxMonaStaking  {
                 // Set rewards (This includes old pending rewards and does not include new pending rewards)
                 staker.monaRevenueRewardsEarned = staker.monaRevenueRewardsEarned.add(rewards);
                 staker.lastRewardPoints = pools[_poolId].rewardsPerTokenPoints;
-                staker.lastRewardUpdateTime = block.timestamp;
+                staker.lastRewardUpdateTime = _getNow();
             } else {
                 // We are still in the same cycle as the last reward update
                 staker.monaRevenueRewardsPending = staker.monaRevenueRewardsPending.add(rewards);
                 staker.lastRewardPoints = pools[_poolId].rewardsPerTokenPoints;
-                staker.lastRewardUpdateTime = block.timestamp;
+                staker.lastRewardUpdateTime = _getNow();
             }
         }
     }
@@ -522,7 +522,7 @@ contract DigitalaxMonaStaking  {
         }
 
         uint256 monaRewards = rewardsContract.MonaRevenueRewards(_poolId, pools[_poolId].lastUpdateTime,
-                                                        block.timestamp);
+                                                        _getNow());
 
         uint256 newRewardPerToken = pools[_poolId].rewardsPerTokenPoints.add(monaRewards
                                                                 .mul(1e18)
@@ -537,8 +537,8 @@ contract DigitalaxMonaStaking  {
         // Figure out how much rewards are still pending
         Staker storage staker = pools[_poolId].stakers[_user];
         uint256 secondsInCycle = pools[_poolId].daysInCycle.mul(SECONDS_IN_A_DAY);
-        uint256 timeElapsedSinceStakingFromZero = block.timestamp.sub(staker.cycleStartTimestamp);
-        uint256 startOfCurrentCycle = block.timestamp.sub(timeElapsedSinceStakingFromZero.mod(secondsInCycle));
+        uint256 timeElapsedSinceStakingFromZero = _getNow().sub(staker.cycleStartTimestamp);
+        uint256 startOfCurrentCycle = _getNow().sub(timeElapsedSinceStakingFromZero.mod(secondsInCycle));
 
         if(startOfCurrentCycle > staker.lastRewardUpdateTime) {
             // We are in a new cycle
@@ -549,7 +549,7 @@ contract DigitalaxMonaStaking  {
 
             // TODO triple check this - What it does is calculates reward pt during this cycle up to block timestamp
             uint256 monaPendingRewardsTotal = rewardsContract.MonaRevenueRewards(_poolId, startOfCurrentCycle,
-                block.timestamp).mul(1e18);
+                _getNow()).mul(1e18);
 
             // TODO triple check this - amount of rewards pending now for user
             pendingRewards = pools[_poolId].stakers[_user].balance.mul(monaPendingRewardsTotal);
@@ -602,4 +602,9 @@ contract DigitalaxMonaStaking  {
     function min(uint256 a, uint256 b) internal pure returns (uint256 c) {
         c = a <= b ? a : b;
     }
+
+    function _getNow() internal virtual view returns (uint256) {
+        return block.timestamp;
+    }
+
 }

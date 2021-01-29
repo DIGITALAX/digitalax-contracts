@@ -255,13 +255,13 @@ contract DigitalaxRewardsV2 {
         external
         returns(bool)
     {
-        if (block.timestamp <= pools[_poolId].lastRewardsTime) {
+        if (_getNow() <= pools[_poolId].lastRewardsTime) {
             return false;
         }
 
         /// @dev check that the staking pools have contributions, and rewards have started
-        if (block.timestamp <= startTime) {
-            pools[_poolId].lastRewardsTime = block.timestamp;
+        if (_getNow() <= startTime) {
+            pools[_poolId].lastRewardsTime = _getNow();
             return false;
         }
 
@@ -273,7 +273,7 @@ contract DigitalaxRewardsV2 {
         // TODO mona minted + bonus mona minted + deposited eth rewards
 
         /// @dev update accumulated reward
-        pools[_poolId].lastRewardsTime = block.timestamp;
+        pools[_poolId].lastRewardsTime = _getNow();
         return true;
     }
 
@@ -282,7 +282,7 @@ contract DigitalaxRewardsV2 {
 
     /// @notice Gets the total rewards outstanding from last reward time
     function totalRewards(uint256 _poolId) external view returns (uint256) {
-        uint256 lRewards = MonaRevenueRewards(_poolId, pools[_poolId].lastRewardsTime, block.timestamp);
+        uint256 lRewards = MonaRevenueRewards(_poolId, pools[_poolId].lastRewardsTime, _getNow());
         return lRewards;
     }
 
@@ -312,7 +312,7 @@ contract DigitalaxRewardsV2 {
         view 
         returns(uint256)
     {
-        return diffDays(startTime, block.timestamp) / 7;
+        return diffDays(startTime, _getNow()) / 7;
     }
 
     function totalMonaRewardsPaid()
@@ -420,7 +420,7 @@ contract DigitalaxRewardsV2 {
         internal
         returns(uint256 rewards)
     {
-        rewards = MonaRevenueRewards(_poolId, pools[_poolId].lastRewardsTime, block.timestamp);
+        rewards = MonaRevenueRewards(_poolId, pools[_poolId].lastRewardsTime, _getNow());
         if ( rewards > 0 ) {
             pools[_poolId].monaRewardsPaid = pools[_poolId].monaRewardsPaid.add(rewards);
             monaRewardsPaidTotal = monaRewardsPaidTotal.add(rewards);
@@ -439,7 +439,7 @@ contract DigitalaxRewardsV2 {
         internal
         returns(uint256 rewards)
     {
-        rewards = ETHRevenueRewards(_poolId, pools[_poolId].lastRewardsTime, block.timestamp);
+        rewards = ETHRevenueRewards(_poolId, pools[_poolId].lastRewardsTime, _getNow());
         if ( rewards > 0 ) {
             pools[_poolId].ethRewardsPaid = pools[_poolId].ethRewardsPaid.add(rewards);
             ethRewardsPaidTotal = ethRewardsPaidTotal.add(rewards);
@@ -508,7 +508,7 @@ contract DigitalaxRewardsV2 {
         view
         returns(uint256)
     {
-        return diffDays(startTime, block.timestamp) / 7;
+        return diffDays(startTime, _getNow()) / 7;
     }
 
     function getCurrentMonaWeightPoints(uint256 _poolId)
@@ -516,7 +516,7 @@ contract DigitalaxRewardsV2 {
         view
         returns(uint256)
     {
-        uint256 currentWeek = diffDays(startTime, block.timestamp) / 7;
+        uint256 currentWeek = diffDays(startTime, _getNow()) / 7;
         return pools[_poolId].weeklyWeightPoints[currentWeek].weightPointsRevenueSharing;
     }
 
@@ -538,7 +538,7 @@ contract DigitalaxRewardsV2 {
         if ( stakedEth == 0 ) {
             return 0;
         }
-        uint256 rewards = MonaRevenueRewards(_poolId, block.timestamp - 60, block.timestamp);
+        uint256 rewards = MonaRevenueRewards(_poolId, _getNow() - 60, _getNow());
         uint256 rewardsInEth = rewards.mul(getEthPerMona()).div(1e18);
         /// @dev minutes per year x 100 = 52560000
         return rewardsInEth.mul(52560000).mul(1e18).div(stakedEth);
@@ -570,4 +570,7 @@ contract DigitalaxRewardsV2 {
         (wethReserves, tokenReserves) = token0 == address(monaToken) ? (reserve1, reserve0) : (reserve0, reserve1);
     }
 
+    function _getNow() internal virtual view returns (uint256) {
+        return block.timestamp;
+    }
 }
