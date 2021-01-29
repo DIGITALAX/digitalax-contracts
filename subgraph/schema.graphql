@@ -164,3 +164,8 @@ type DigitalaxMarketplacePurchaseHistory @entity {
   platformFee: BigInt!
   rarity: String!
 }
+
+type DigitalaxPodePortalMetadata @entity {
+  id: ID!
+  tokenUri: String!
+}
