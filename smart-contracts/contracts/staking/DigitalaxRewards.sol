@@ -269,7 +269,7 @@ contract DigitalaxRewards {
         /// @dev This sends rewards (Mona from revenue sharing)
         _updateMonaRewards(_poolId);
 
-        // TODO update for ETH from revenue sharing
+        _updateETHRewards(_poolId);
 
         // TODO mona minted + bonus mona minted + deposited eth rewards
 
@@ -433,6 +433,21 @@ contract DigitalaxRewards {
                 rewards
             );
            // require(monaToken.mint(address(monaStaking), rewards)); // TODO use mint to mint mona rewards per mona stake
+        }
+    }
+
+    function _updateETHRewards(uint256 _poolId)
+        internal
+        returns(uint256 rewards)
+    {
+        rewards = ETHRevenueRewards(_poolId, pools[_poolId].lastRewardsTime, block.timestamp);
+        if ( rewards > 0 ) {
+            pools[_poolId].ethRewardsPaid = pools[_poolId].ethRewardsPaid.add(rewards);
+            ethRewardsPaidTotal = ethRewardsPaidTotal.add(rewards);
+
+            // Send this amount of ETH to the staking contract
+
+            (bool transferEthSuccess,) = address(monaStaking).call{value : rewards}("");
         }
     }
 
