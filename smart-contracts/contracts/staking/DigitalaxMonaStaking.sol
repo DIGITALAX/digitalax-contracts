@@ -62,14 +62,6 @@ contract DigitalaxMonaStaking  {
         uint256 ethRevenueRewardsReleased; // TODO hookup
 
         bool isEarlyRewardsStaker; // TODO hookup
-        uint256 earlyRewardsEarned; // TODO hookup
-        uint256 earlyRewardsReleased; // TODO hookup
-
-        uint256 monaMintingRewardsEarned; // TODO hookup
-        uint256 monaMintingRewardsReleased; // TODO hookup
-
-        uint256 ethDepositRewardsEarned; // TODO hookup
-        uint256 ethDepositRewardsReleased; // TODO hookup
     }
 
     /**
