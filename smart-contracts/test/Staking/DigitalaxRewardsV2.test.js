@@ -194,6 +194,27 @@ contract('DigitalaxRewardsV2', (accounts) => {
     });
   })
 
+  describe('Set Mona Staking contract', () => {
+    describe('setMonaStaking()', () => {
+      it('fails when not admin', async () => {
+        await expectRevert(
+            this.digitalaxRewards.setMonaStaking(constants.ZERO_ADDRESS, {from: staker}),
+            'DigitalaxRewardsV2.setMonaStaking: Sender must be admin'
+        );
+      });
+
+      it('successfully updates mona staking', async () => {
+        const original = await this.digitalaxRewards.monaStaking();
+        expect(original).to.be.equal(this.monaStaking.address);
+
+        await this.digitalaxRewards.setMonaStaking(this.accessControls.address, {from: admin});
+
+        const updated = await this.digitalaxRewards.monaStaking();
+        expect(updated).to.be.equal(this.accessControls.address);
+      });
+    });
+  })
+
   describe('Admin functions', () => {
     beforeEach(async () => {
         this.weth.deposit({from: minter, value: TWENTY_TOKENS});
