@@ -173,6 +173,27 @@ contract('DigitalaxRewardsV2', (accounts) => {
     });
   })
 
+  describe('Set Start Time', () => {
+    describe('setStartTime()', () => {
+      it('fails when not admin', async () => {
+        await expectRevert(
+            this.digitalaxRewards.setStartTime(100, {from: staker}),
+            'DigitalaxRewardsV2.setStartTime: Sender must be admin'
+        );
+      });
+
+      it('successfully updates start time', async () => {
+        const original = await this.digitalaxRewards.startTime();
+        expect(original).to.be.bignumber.equal('0');
+
+        await this.digitalaxRewards.setStartTime(100, {from: admin});
+
+        const updated = await this.digitalaxRewards.startTime();
+        expect(updated).to.be.bignumber.equal('100');
+      });
+    });
+  })
+
   describe('Admin functions', () => {
     beforeEach(async () => {
         this.weth.deposit({from: minter, value: TWENTY_TOKENS});

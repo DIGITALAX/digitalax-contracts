@@ -82,7 +82,7 @@ contract DigitalaxRewardsV2 {
     );
     event RewardAdded(address indexed addr, uint256 reward);
     event RewardDistributed(address indexed addr, uint256 reward);
-    event Reclaimed(address indexed token, uint256 amount);
+    event ReclaimedERC20(address indexed token, uint256 amount);
 
     
     /* ========== Admin Functions ========== */
@@ -126,7 +126,7 @@ contract DigitalaxRewardsV2 {
     {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxRewards.setStartTime: Sender must be admin"
+            "DigitalaxRewardsV2.setStartTime: Sender must be admin"
         );
         startTime = _startTime;
     }
@@ -140,7 +140,7 @@ contract DigitalaxRewardsV2 {
     {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxRewards.setStartTime: Sender must be admin"
+            "DigitalaxRewardsV2.setStartTime: Sender must be admin"
         );
         for (uint256 i = 0; i < _poolIds.length; i++) {
             pools[_poolIds[i]].lastRewardsTime = _lastRewardsTimes[i];
@@ -154,7 +154,7 @@ contract DigitalaxRewardsV2 {
     {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxRewards.setmonaStaking: Sender must be admin"
+            "DigitalaxRewardsV2.setMonaStaking: Sender must be admin"
         );
         monaStaking = DigitalaxStaking(_addr);
     }
@@ -178,27 +178,27 @@ contract DigitalaxRewardsV2 {
     {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxRewards.setInitialPoints: Sender must be admin"
+            "DigitalaxRewardsV2.setInitialPoints: Sender must be admin"
         );
 
         require(
             _poolIds.length == _weightPointsRevenueSharing.length,
-            "DigitalaxRewards.setInitialPoints: Please check pool ids and weight point revenue lengths"
+            "DigitalaxRewardsV2.setInitialPoints: Please check pool ids and weight point revenue lengths"
         );
 
         require(
             _poolIds.length == _mintedMonaRewardPointsPerMona.length,
-            "DigitalaxRewards.setInitialPoints: Please check pool ids and minted mona reward pts lengths"
+            "DigitalaxRewardsV2.setInitialPoints: Please check pool ids and minted mona reward pts lengths"
         );
 
         require(
             _poolIds.length == _bonusMintedMonaRewardPointsPerMona.length,
-            "DigitalaxRewards.setInitialPoints: Please check pool ids and bonus mona reward pts lengths"
+            "DigitalaxRewardsV2.setInitialPoints: Please check pool ids and bonus mona reward pts lengths"
         );
 
         require(
             _poolIds.length == _depositedEthRewardPointsPerMona.length,
-            "DigitalaxRewards.setInitialPoints: Please check pool ids and deposited ETH reward pts lengths"
+            "DigitalaxRewardsV2.setInitialPoints: Please check pool ids and deposited ETH reward pts lengths"
         );
 
         for (uint256 i = 0; i < _poolIds.length; i++) {
@@ -221,15 +221,15 @@ contract DigitalaxRewardsV2 {
     {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxRewards.setRewards: Sender must be admin"
+            "DigitalaxRewardsV2.setRewards: Sender must be admin"
         );
 
         require(
             _week > getCurrentWeek(),
-            "DigitalaxRewards.depositRevenueSharingRewards: The rewards generated should be set for the future weeks"
+            "DigitalaxRewardsV2.depositRevenueSharingRewards: The rewards generated should be set for the future weeks"
         );
 
-        require(IERC20(monaToken).allowance(msg.sender, address(this)) >= _amount, "DigitalaxRewards.depositRevenueSharingRewards: Failed to supply ERC20 Allowance");
+        require(IERC20(monaToken).allowance(msg.sender, address(this)) >= _amount, "DigitalaxRewardsV2.depositRevenueSharingRewards: Failed to supply ERC20 Allowance");
 
         // Deposit this amount of MONA here
         require(IERC20(monaToken).transferFrom(
@@ -515,7 +515,7 @@ contract DigitalaxRewardsV2 {
 //            "Cannot withdraw the rewards token"
 //        );
         IERC20(_tokenAddress).transfer(msg.sender, _tokenAmount);
-        emit Reclaimed(_tokenAddress, _tokenAmount);
+        emit ReclaimedERC20(_tokenAddress, _tokenAmount);
     }
 
     /**
@@ -549,7 +549,6 @@ contract DigitalaxRewardsV2 {
         uint256 currentWeek = diffDays(startTime, _getNow()) / 7;
         return pools[_poolId].weeklyWeightPoints[currentWeek].weightPointsRevenueSharing;
     }
-
 
     function getMonaStakedEthTotal()
         public

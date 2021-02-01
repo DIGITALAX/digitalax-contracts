@@ -133,7 +133,7 @@ contract DigitalaxMonaStaking  {
     event MonaTokenUpdated(address indexed oldMonaToken, address newMonaToken );
     event RewardsTokenUpdated(address indexed oldRewardsToken, address newRewardsToken );
 
-    event Reclaimed(address indexed token, uint256 amount);
+    event ReclaimedERC20(address indexed token, uint256 amount);
 
     constructor(address _monaToken, DigitalaxAccessControls _accessControls, IWETH _WETH) public {
         monaToken = _monaToken;
@@ -651,7 +651,7 @@ contract DigitalaxMonaStaking  {
             "Cannot withdraw the rewards token"
         );
         IERC20(_tokenAddress).transfer(msg.sender, _tokenAmount);
-        emit Reclaimed(_tokenAddress, _tokenAmount);
+        emit ReclaimedERC20(_tokenAddress, _tokenAmount);
     }
 
     /**
