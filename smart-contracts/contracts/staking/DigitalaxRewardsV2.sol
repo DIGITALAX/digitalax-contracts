@@ -82,7 +82,7 @@ contract DigitalaxRewardsV2 {
     );
     event RewardAdded(address indexed addr, uint256 reward);
     event RewardDistributed(address indexed addr, uint256 reward);
-    event Recovered(address indexed token, uint256 amount);
+    event Reclaimed(address indexed token, uint256 amount);
 
     
     /* ========== Admin Functions ========== */
@@ -494,10 +494,10 @@ contract DigitalaxRewardsV2 {
     }
 
 
-    /* ========== Recover ERC20 ========== */
+    /* ========== Reclaim ERC20 ========== */
 
     /// @notice allows for the recovery of incorrect ERC20 tokens sent to contract
-    function recoverERC20(
+    function reclaimERC20(
         address tokenAddress,
         uint256 tokenAmount
     )
@@ -506,21 +506,21 @@ contract DigitalaxRewardsV2 {
         // Cannot recover the staking token or the rewards token
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxRewards.recoverERC20: Sender must be admin"
+            "DigitalaxRewards.reclaimERC20: Sender must be admin"
         );
-        require(
-            tokenAddress != address(monaToken),
-            "Cannot withdraw the rewards token"
-        );
+//        require(
+//            tokenAddress != address(monaToken),
+//            "Cannot withdraw the rewards token"
+//        );
         IERC20(tokenAddress).transfer(msg.sender, tokenAmount);
-        emit Recovered(tokenAddress, tokenAmount);
+        emit Reclaimed(tokenAddress, tokenAmount);
     }
 
     /**
     * @notice EMERGENCY Recovers ETH, drains all ETH sitting on the smart contract
     * @dev Only access controls admin can access
     */
-    function recoverETH() external {
+    function reclaimETH() external {
         require(
             accessControls.hasAdminRole(msg.sender),
             "DigitalaxMarketplace.reclaimETH: Sender must be admin"
