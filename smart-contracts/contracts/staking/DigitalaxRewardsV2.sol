@@ -385,7 +385,7 @@ contract DigitalaxRewardsV2 {
         return ethRewardsPaidTotal;
     }
 
-    /* @notice Return mona rewards over the given _from to _to timestamp. --> TODO need to expand for the other reward sources
+    /* @notice Return mona revenue rewards over the given _from to _to timestamp.
      * @dev A fraction of the start, multiples of the middle weeks, fraction of the end
      */
     function MonaRevenueRewards(uint256 _poolId, uint256 _from, uint256 _to) public view returns (uint256 rewards) {
@@ -402,32 +402,28 @@ contract DigitalaxRewardsV2 {
             return _rewardsFromPoints(weeklyMonaRevenueSharingPerSecond[fromWeek],
                                     _to.sub(_from),
                                     pools[_poolId].weeklyWeightPoints[fromWeek].weightPointsRevenueSharing);
-                        // .add(weeklyBonusPerSecond[address(monaStaking)][fromWeek].mul(_to.sub(_from)));
         }
-        /// @dev First count remainer of first week 
+        /// @dev First count remainder of first week
         uint256 initialRemander = startTime.add((fromWeek+1).mul(SECONDS_PER_WEEK)).sub(_from);
         rewards = _rewardsFromPoints(weeklyMonaRevenueSharingPerSecond[fromWeek],
                                     initialRemander,
                                     pools[_poolId].weeklyWeightPoints[fromWeek].weightPointsRevenueSharing);
-                       // .add(weeklyBonusPerSecond[address(monaStaking)][fromWeek].mul(initialRemander));
 
         /// @dev add multiples of the week
         for (uint256 i = fromWeek+1; i < toWeek; i++) {
             rewards = rewards.add(_rewardsFromPoints(weeklyMonaRevenueSharingPerSecond[i],
                                     SECONDS_PER_WEEK,
                                     pools[_poolId].weeklyWeightPoints[i].weightPointsRevenueSharing));
-                             // .add(weeklyBonusPerSecond[address(monaStaking)][i].mul(SECONDS_PER_WEEK));
         }
         /// @dev Adds any remaining time in the most recent week till _to
         uint256 finalRemander = _to.sub(toWeek.mul(SECONDS_PER_WEEK).add(startTime));
         rewards = rewards.add(_rewardsFromPoints(weeklyMonaRevenueSharingPerSecond[toWeek],
                                     finalRemander,
                                     pools[_poolId].weeklyWeightPoints[toWeek].weightPointsRevenueSharing));
-                       // .add(weeklyBonusPerSecond[address(monaStaking)][toWeek].mul(finalRemander));
         return rewards;
     }
 
-    /* @notice Return mona rewards over the given _from to _to timestamp. --> TODO need to expand for the other reward sources
+    /* @notice Return eth revenue rewards over the given _from to _to timestamp.
      * @dev A fraction of the start, multiples of the middle weeks, fraction of the end
      */
     function ETHRevenueRewards(uint256 _poolId, uint256 _from, uint256 _to) public view returns (uint256 rewards) {
@@ -444,28 +440,24 @@ contract DigitalaxRewardsV2 {
             return _rewardsFromPoints(weeklyETHRevenueSharingPerSecond[fromWeek],
                                     _to.sub(_from),
                                     pools[_poolId].weeklyWeightPoints[fromWeek].weightPointsRevenueSharing);
-                        // .add(weeklyBonusPerSecond[address(monaStaking)][fromWeek].mul(_to.sub(_from)));
         }
-        /// @dev First count remainer of first week
+        /// @dev First count remainder of first week
         uint256 initialRemander = startTime.add((fromWeek+1).mul(SECONDS_PER_WEEK)).sub(_from);
         rewards = _rewardsFromPoints(weeklyETHRevenueSharingPerSecond[fromWeek],
                                     initialRemander,
                                     pools[_poolId].weeklyWeightPoints[fromWeek].weightPointsRevenueSharing);
-                       // .add(weeklyBonusPerSecond[address(monaStaking)][fromWeek].mul(initialRemander));
 
         /// @dev add multiples of the week
         for (uint256 i = fromWeek+1; i < toWeek; i++) {
             rewards = rewards.add(_rewardsFromPoints(weeklyETHRevenueSharingPerSecond[i],
                                     SECONDS_PER_WEEK,
                                     pools[_poolId].weeklyWeightPoints[i].weightPointsRevenueSharing));
-                             // .add(weeklyBonusPerSecond[address(monaStaking)][i].mul(SECONDS_PER_WEEK));
         }
         /// @dev Adds any remaining time in the most recent week till _to
         uint256 finalRemander = _to.sub(toWeek.mul(SECONDS_PER_WEEK).add(startTime));
         rewards = rewards.add(_rewardsFromPoints(weeklyETHRevenueSharingPerSecond[toWeek],
                                     finalRemander,
                                     pools[_poolId].weeklyWeightPoints[toWeek].weightPointsRevenueSharing));
-                       // .add(weeklyBonusPerSecond[address(monaStaking)][toWeek].mul(finalRemander));
         return rewards;
     }
 
