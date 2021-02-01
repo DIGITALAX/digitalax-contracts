@@ -133,6 +133,8 @@ contract DigitalaxMonaStaking  {
     event MonaTokenUpdated(address indexed oldMonaToken, address newMonaToken );
     event RewardsTokenUpdated(address indexed oldRewardsToken, address newRewardsToken );
 
+    event Reclaimed(address indexed token, uint256 amount);
+
     constructor(address _monaToken, DigitalaxAccessControls _accessControls, IWETH _WETH) public {
         monaToken = _monaToken;
         accessControls = _accessControls;
@@ -624,4 +626,37 @@ contract DigitalaxMonaStaking  {
         return block.timestamp;
     }
 
+    /* ========== Recover ERC20 ========== */
+
+    /// @notice allows for the recovery of incorrect ERC20 tokens sent to contract
+    function reclaimERC20(
+        address tokenAddress,
+        uint256 tokenAmount
+    )
+    external
+    {
+        // Cannot recover the staking token or the rewards token
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "DigitalaxMonaStaking.reclaimERC20: Sender must be admin"
+        );
+        require(
+            tokenAddress != address(monaToken),
+            "Cannot withdraw the rewards token"
+        );
+        IERC20(tokenAddress).transfer(msg.sender, tokenAmount);
+        emit Reclaimed(tokenAddress, tokenAmount);
+    }
+
+    /**
+    * @notice EMERGENCY Recovers ETH, drains all ETH sitting on the smart contract
+    * @dev Only access controls admin can access
+    */
+    function reclaimETH() external {
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "DigitalaxMonaStaking.reclaimETH: Sender must be admin"
+        );
+        msg.sender.transfer(address(this).balance);
+    }
 }
