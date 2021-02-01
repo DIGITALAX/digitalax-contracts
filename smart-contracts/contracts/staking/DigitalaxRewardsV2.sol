@@ -150,9 +150,25 @@ contract DigitalaxRewardsV2 {
         emit UpdateAccessControls(address(_accessControls));
     }
 
-    /*
-     * @dev Setter functions for contract config custom last rewards time for a pool
-     */
+    /**
+     @notice Method for updating the address of the mona staking contract
+     @dev Only admin
+     @param _addr Address of the mona staking contract
+    */
+    function setMonaStaking(address _addr)
+        external
+        {
+            require(
+                accessControls.hasAdminRole(msg.sender),
+                "DigitalaxRewardsV2.setMonaStaking: Sender must be admin"
+            );
+            monaStaking = DigitalaxStaking(_addr);
+    }
+
+
+/*
+ * @dev Setter functions for contract config custom last rewards time for a pool
+ */
     function setLastRewardsTime(
         uint256[] memory _poolIds,
         uint256[] memory _lastRewardsTimes
@@ -166,18 +182,6 @@ contract DigitalaxRewardsV2 {
         for (uint256 i = 0; i < _poolIds.length; i++) {
             pools[_poolIds[i]].lastRewardsTime = _lastRewardsTimes[i];
         }
-    }
-
-    function setMonaStaking(
-        address _addr
-    )
-    external
-    {
-        require(
-            accessControls.hasAdminRole(msg.sender),
-            "DigitalaxRewardsV2.setMonaStaking: Sender must be admin"
-        );
-        monaStaking = DigitalaxStaking(_addr);
     }
 
     /*
