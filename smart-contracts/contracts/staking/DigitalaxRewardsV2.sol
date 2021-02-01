@@ -115,8 +115,10 @@ contract DigitalaxRewardsV2 {
         monaRewardsPaidTotal = _monaRewardsPaidTotal;
         ethRewardsPaidTotal = _ethRewardsPaidTotal;
     }
+    receive() external payable {
+    }
 
-    /// @dev Setter functions for contract config
+/// @dev Setter functions for contract config
     function setStartTime(
         uint256 _startTime
     )
@@ -498,34 +500,34 @@ contract DigitalaxRewardsV2 {
 
     /// @notice allows for the recovery of incorrect ERC20 tokens sent to contract
     function reclaimERC20(
-        address tokenAddress,
-        uint256 tokenAmount
+        address _tokenAddress,
+        uint256 _tokenAmount
     )
         external
     {
         // Cannot recover the staking token or the rewards token
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxRewards.reclaimERC20: Sender must be admin"
+            "DigitalaxRewardsV2.reclaimERC20: Sender must be admin"
         );
 //        require(
 //            tokenAddress != address(monaToken),
 //            "Cannot withdraw the rewards token"
 //        );
-        IERC20(tokenAddress).transfer(msg.sender, tokenAmount);
-        emit Reclaimed(tokenAddress, tokenAmount);
+        IERC20(_tokenAddress).transfer(msg.sender, _tokenAmount);
+        emit Reclaimed(_tokenAddress, _tokenAmount);
     }
 
     /**
-    * @notice EMERGENCY Recovers ETH, drains all ETH sitting on the smart contract
+    * @notice EMERGENCY Recovers ETH, drains amount of eth sitting on the smart contract
     * @dev Only access controls admin can access
     */
-    function reclaimETH() external {
+    function reclaimETH(uint256 _amount) external {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxMarketplace.reclaimETH: Sender must be admin"
+            "DigitalaxRewardsV2.reclaimETH: Sender must be admin"
         );
-        msg.sender.transfer(address(this).balance);
+        msg.sender.transfer(_amount);
     }
 
 
