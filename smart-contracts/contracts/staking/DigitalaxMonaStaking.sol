@@ -100,32 +100,46 @@ contract DigitalaxMonaStaking  {
         uint256 currentNumberOfEarlyRewardsUsers; // TODO hookup
     }
 
-    /// @notice mapping of Pool Id's to pools
+    /*
+     * @notice mapping of Pool Id's to pools
+     */
     mapping (uint256 => StakingPool) pools;
     uint256 numberOfStakingPools;
 
-    /// @notice the total mona staked over all pools
+    /*
+     * @notice the total mona staked over all pools
+     */
     uint256 public stakedMonaTotal;
 
     uint256 constant pointMultiplier = 10e32;
 
-    /// @notice sets the token to be claimable or not, cannot claim if it set to false
+    /*
+     * @notice sets the token to be claimable or not, cannot claim if it set to false
+     */
     bool public tokensClaimable;
 
     /* ========== Events ========== */
     event UpdateAccessControls(
         address indexed accessControls
     );
-    /// @notice event emitted when a pool is initialized
+    /*
+     * @notice event emitted when a pool is initialized
+     */
     event PoolInitialized(uint256 poolId);
 
-    /// @notice event emitted when a user has staked a token
+    /*
+     * @notice event emitted when a user has staked a token
+     */
     event Staked(address indexed owner, uint256 amount);
 
-    /// @notice event emitted when a user has unstaked a token
+    /*
+     * @notice event emitted when a user has unstaked a token
+     */
     event Unstaked(address indexed owner, uint256 amount);
 
-    /// @notice event emitted when a user claims reward
+    /*
+     * @notice event emitted when a user claims reward
+     */
     event MonaRevenueRewardPaid(address indexed user, uint256 reward);
     
     event ClaimableStatusUpdated(bool status);
@@ -147,7 +161,9 @@ contract DigitalaxMonaStaking  {
         );
     }
 
-    /// @notice Lets admin set the Rewards Token
+    /*
+     * @notice Lets admin set the Rewards Token
+     */
     function setRewardsContract(
         address _addr
     )
@@ -213,7 +229,9 @@ contract DigitalaxMonaStaking  {
         numberOfStakingPools = numberOfStakingPools.add(1);
     }
 
-    /// @notice Lets admin set the Mona Token
+    /*
+     * @notice Lets admin set the Mona Token
+     */
     function setMonaToken(
         address _addr
     )
@@ -229,7 +247,9 @@ contract DigitalaxMonaStaking  {
         emit MonaTokenUpdated(oldAddr, _addr);
     }
 
-    /// @notice Lets admin set when tokens are claimable
+    /*
+     * @notice Lets admin set when tokens are claimable
+     */
     function setTokensClaimable(
         bool _enabled
     )
@@ -258,8 +278,9 @@ contract DigitalaxMonaStaking  {
         emit UpdateAccessControls(address(_accessControls));
     }
 
-    /// @notice Getter functions for Staking contract
-    /// @dev Get the tokens staked by a user
+    /* @notice Getter functions for Staking contract
+     *  @dev Get the tokens staked by a user
+     */
     function getStakedBalance(
         uint256 _poolId,
         address _user
@@ -271,7 +292,9 @@ contract DigitalaxMonaStaking  {
         return pools[_poolId].stakers[_user].balance;
     }
 
-    /// @dev Get the total ETH staked (all pools)
+    /*
+     * @dev Get the total ETH staked (all pools)
+     */
     function stakedMonaInPool(uint256 _poolId)
         external
         view
@@ -280,7 +303,9 @@ contract DigitalaxMonaStaking  {
         return pools[_poolId].stakedMonaTotalForPool;
     }
 
-    /// @dev Get the total ETH staked (all pools)
+    /*
+     * @dev Get the total ETH staked (all pools)
+     */
     function stakedEthTotal()
         external
         view
@@ -291,7 +316,9 @@ contract DigitalaxMonaStaking  {
         return stakedMonaTotal.mul(1e18).div(monaPerEth);
     }
 
-    /// @dev Get the total ETH staked (all pools)
+    /*
+     * @dev Get the total ETH staked (all pools)
+     */
     function stakedEthTotalByPool(uint256 _poolId)
         external
         view
@@ -303,7 +330,9 @@ contract DigitalaxMonaStaking  {
     }
 
 
-    /// @notice Stake MONA Tokens and earn rewards.
+    /*
+     * @notice Stake MONA Tokens and earn rewards.
+     */
     function stake(
         uint256 _poolId,
         uint256 _amount
@@ -313,7 +342,9 @@ contract DigitalaxMonaStaking  {
         _stake(_poolId, msg.sender, _amount);
     }
 
-    /// @notice Stake All MONA Tokens in your wallet and earn rewards.
+    /*
+     * @notice Stake All MONA Tokens in your wallet and earn rewards.
+     */
     function stakeAll(uint256 _poolId)
         external
     {
@@ -373,7 +404,9 @@ contract DigitalaxMonaStaking  {
         emit Staked(_user, _amount);
     }
 
-    /// @notice Unstake MONA Tokens.
+    /*
+     * @notice Unstake MONA Tokens.
+     */
     function unstake(
         uint256 _poolId,
         uint256 _amount
@@ -420,7 +453,9 @@ contract DigitalaxMonaStaking  {
         emit Unstaked(_user, _amount);
     }
 
-    /// @notice Unstake without caring about rewards. EMERGENCY ONLY.
+    /*
+     * @notice Unstake without caring about rewards. EMERGENCY ONLY.
+     */
     function emergencyUnstake(uint256 _poolId)
         external
     {
@@ -433,7 +468,9 @@ contract DigitalaxMonaStaking  {
     }
 
 
-    /// @dev Updates the amount of rewards owed for each user before any tokens are moved
+    /*
+     * @dev Updates the amount of rewards owed for each user before any tokens are moved
+     */
     function updateReward(
         uint256 _poolId,
         address _user
@@ -510,8 +547,10 @@ contract DigitalaxMonaStaking  {
         }
     }
 
-    /// @dev The rewards are dynamic and normalised from the other pools
-    /// @dev This gets the rewards from each of the periods as one multiplier
+    /*
+     * @dev The rewards are dynamic and normalised from the other pools
+     * @dev This gets the rewards from each of the periods as one multiplier
+     */
     function rewardsOwing(
         uint256 _poolId,
         address _user
@@ -530,10 +569,12 @@ contract DigitalaxMonaStaking  {
     }
 
 
-     /// @notice Returns the about of rewards yet to be claimed (this currently includes pending and awarded together
-     /// @param _poolId the id of the pool we are interested in
-     /// @param _user the user we are interested in
-     /// @dev returns the claimable rewards and pending rewards
+     /*
+      * @notice Returns the about of rewards yet to be claimed (this currently includes pending and awarded together
+      * @param _poolId the id of the pool we are interested in
+      * @param _user the user we are interested in
+      * @dev returns the claimable rewards and pending rewards
+      */
     function unclaimedRewards(
         uint256 _poolId,
         address _user
@@ -592,7 +633,9 @@ contract DigitalaxMonaStaking  {
     }
 
 
-    /// @notice Lets a user with rewards owing to claim tokens
+    /*
+     * @notice Lets a user with rewards owing to claim tokens
+     */
     function claimReward(
         uint256 _poolId,
         address _user
@@ -634,7 +677,9 @@ contract DigitalaxMonaStaking  {
 
     /* ========== Recover ERC20 ========== */
 
-    /// @notice allows for the recovery of incorrect ERC20 tokens sent to contract
+    /*
+     * @notice allows for the recovery of incorrect ERC20 tokens sent to contract
+     */
     function reclaimERC20(
         address _tokenAddress,
         uint256 _tokenAmount

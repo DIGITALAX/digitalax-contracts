@@ -52,7 +52,8 @@ contract DigitalaxRewardsV2 {
     // / @notice mapping of a staker to its current properties
     //mapping (uint256 => uint256) public weeklyTotalWeightPoints;
 
-    /// @notice staking pool id to staking pool reward mapping
+    /* @notice staking pool id to staking pool reward mapping
+    */
     mapping (uint256 => StakingPoolRewards) public pools;
 
     /* ========== Structs ========== */
@@ -118,7 +119,10 @@ contract DigitalaxRewardsV2 {
     receive() external payable {
     }
 
-/// @dev Setter functions for contract config
+    /*
+     * @notice Set the start time
+     * @dev Setter functions for contract config
+    */
     function setStartTime(
         uint256 _startTime
     )
@@ -131,7 +135,24 @@ contract DigitalaxRewardsV2 {
         startTime = _startTime;
     }
 
-    /// @dev Setter functions for contract config custom last rewards time for a pool
+    /**
+     @notice Method for updating the access controls contract used by the NFT
+     @dev Only admin
+     @param _accessControls Address of the new access controls contract (Cannot be zero address)
+     */
+    function updateAccessControls(DigitalaxAccessControls _accessControls) external {
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "DigitalaxRewardsV2.updateAccessControls: Sender must be admin"
+        );
+        require(address(_accessControls) != address(0), "DigitalaxRewardsV2.updateAccessControls: Zero Address");
+        accessControls = _accessControls;
+        emit UpdateAccessControls(address(_accessControls));
+    }
+
+    /*
+     * @dev Setter functions for contract config custom last rewards time for a pool
+     */
     function setLastRewardsTime(
         uint256[] memory _poolIds,
         uint256[] memory _lastRewardsTimes
@@ -159,13 +180,15 @@ contract DigitalaxRewardsV2 {
         monaStaking = DigitalaxStaking(_addr);
     }
 
-    /// @dev Setter functions for contract config
-    /// @param _week the week to be changed
-    /// @param _poolIds the ids of the pools that are being modified
-    /// @param _weightPointsRevenueSharing the weights of the pools to be entered (must be calculated off chain)
-    /// @param _mintedMonaRewardPointsPerMona the reward points for the minted mona for the week
-    /// @param _bonusMintedMonaRewardPointsPerMona the bonus reward points for the minted mona for the week
-    /// @param _depositedEthRewardPointsPerMona the reward points for depositedEth for the week
+    /*
+     * @dev Setter functions for contract config
+     * @param _week the week to be changed
+     * @param _poolIds the ids of the pools that are being modified
+     * @param _weightPointsRevenueSharing the weights of the pools to be entered (must be calculated off chain)
+     * @param _mintedMonaRewardPointsPerMona the reward points for the minted mona for the week
+     * @param _bonusMintedMonaRewardPointsPerMona the bonus reward points for the minted mona for the week
+     * @param _depositedEthRewardPointsPerMona the reward points for depositedEth for the week
+     */
     function setInitialPools(
         uint256 _week,
         uint256[] calldata _poolIds,
@@ -210,8 +233,10 @@ contract DigitalaxRewardsV2 {
         }
     }
 
-    /// @notice Deposit revenue sharing rewards to be distributed during a certain week
-    /// @dev this number is the total rewards that week with 18 decimals
+    /*
+     * @notice Deposit revenue sharing rewards to be distributed during a certain week
+     * @dev this number is the total rewards that week with 18 decimals
+     */
     function depositRevenueSharingRewards(
         uint256 _poolId,
         uint256 _week,
@@ -255,8 +280,9 @@ contract DigitalaxRewardsV2 {
 
     }
 
-    // From BokkyPooBah's DateTime Library v1.01
-    // https://github.com/bokkypoobah/BokkyPooBahsDateTimeLibrary
+    /* From BokkyPooBah's DateTime Library v1.01
+     * https://github.com/bokkypoobah/BokkyPooBahsDateTimeLibrary
+     */
     function diffDays(uint fromTimestamp, uint toTimestamp) internal pure returns (uint _days) {
         require(fromTimestamp <= toTimestamp);
         _days = (toTimestamp - fromTimestamp) / SECONDS_PER_DAY;
@@ -265,8 +291,9 @@ contract DigitalaxRewardsV2 {
 
     /* ========== Mutative Functions ========== */
 
-    /// @notice Calculate and update rewards
-    /// @dev 
+    /* @notice Calculate and update rewards
+     * @dev
+     */
     function updateRewards(uint256 _poolId)
         external
         returns(bool)
@@ -293,32 +320,21 @@ contract DigitalaxRewardsV2 {
         return true;
     }
 
-    /**
-     @notice Method for updating the access controls contract used by the NFT
-     @dev Only admin
-     @param _accessControls Address of the new access controls contract (Cannot be zero address)
-     */
-    function updateAccessControls(DigitalaxAccessControls _accessControls) external {
-        require(
-            accessControls.hasAdminRole(msg.sender),
-            "DigitalaxRewardsV2.updateAccessControls: Sender must be admin"
-        );
-        require(address(_accessControls) != address(0), "DigitalaxRewardsV2.updateAccessControls: Zero Address");
-        accessControls = _accessControls;
-        emit UpdateAccessControls(address(_accessControls));
-    }
-
     /* ========== View Functions ========== */
 
-    /// @notice Gets the total rewards outstanding from last reward time
+    /*
+     * @notice Gets the total rewards outstanding from last reward time
+     */
     function totalRewards(uint256 _poolId) external view returns (uint256) {
         uint256 lRewards = MonaRevenueRewards(_poolId, pools[_poolId].lastRewardsTime, _getNow());
         return lRewards;
     }
 
 
-    /// @notice Get the last rewards time for a pool
-    /// @return last rewards time for a pool
+    /*
+     * @notice Get the last rewards time for a pool
+     * @return last rewards time for a pool
+     */
     function lastRewardsTime(uint256 _poolId)
         external
         view
@@ -327,7 +343,9 @@ contract DigitalaxRewardsV2 {
         return pools[_poolId].lastRewardsTime;
     }
 
-    /// @notice Gets the total contributions from the staked contracts
+    /*
+     * @notice Gets the total contributions from the staked contracts
+     */
     function getTotalContributions()
         external
         view
@@ -336,7 +354,9 @@ contract DigitalaxRewardsV2 {
         return monaStaking.stakedEthTotal();
     }
 
-    /// @dev Getter functions for Rewards contract
+    /*
+     * @dev Getter functions for Rewards contract
+     */
     function getCurrentRewardWeek()
         external 
         view 
@@ -361,8 +381,9 @@ contract DigitalaxRewardsV2 {
         return ethRewardsPaidTotal;
     }
 
-    /// @notice Return mona rewards over the given _from to _to timestamp. --> TODO need to expand for the other reward sources
-    /// @dev A fraction of the start, multiples of the middle weeks, fraction of the end
+    /* @notice Return mona rewards over the given _from to _to timestamp. --> TODO need to expand for the other reward sources
+     * @dev A fraction of the start, multiples of the middle weeks, fraction of the end
+     */
     function MonaRevenueRewards(uint256 _poolId, uint256 _from, uint256 _to) public view returns (uint256 rewards) {
         if (_to <= startTime) {
             return 0;
@@ -402,8 +423,9 @@ contract DigitalaxRewardsV2 {
         return rewards;
     }
 
-    /// @notice Return mona rewards over the given _from to _to timestamp. --> TODO need to expand for the other reward sources
-    /// @dev A fraction of the start, multiples of the middle weeks, fraction of the end
+    /* @notice Return mona rewards over the given _from to _to timestamp. --> TODO need to expand for the other reward sources
+     * @dev A fraction of the start, multiples of the middle weeks, fraction of the end
+     */
     function ETHRevenueRewards(uint256 _poolId, uint256 _from, uint256 _to) public view returns (uint256 rewards) {
         if (_to <= startTime) {
             return 0;
@@ -498,7 +520,9 @@ contract DigitalaxRewardsV2 {
 
     /* ========== Reclaim ERC20 ========== */
 
-    /// @notice allows for the recovery of incorrect ERC20 tokens sent to contract
+    /*
+     * @notice allows for the recovery of incorrect ERC20 tokens sent to contract
+     */
     function reclaimERC20(
         address _tokenAddress,
         uint256 _tokenAmount
