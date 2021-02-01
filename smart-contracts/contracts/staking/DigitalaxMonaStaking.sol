@@ -140,6 +140,12 @@ contract DigitalaxMonaStaking  {
         accessControls = _accessControls;
         WETH = _WETH;
     }
+    receive() external payable {
+        require(
+            msg.sender == address(rewardsContract),
+            "DigitalaxMonaStaking.receive: Sender must be rewards contract"
+        );
+    }
 
     /// @notice Lets admin set the Rewards Token
     function setRewardsContract(
@@ -630,8 +636,8 @@ contract DigitalaxMonaStaking  {
 
     /// @notice allows for the recovery of incorrect ERC20 tokens sent to contract
     function reclaimERC20(
-        address tokenAddress,
-        uint256 tokenAmount
+        address _tokenAddress,
+        uint256 _tokenAmount
     )
     external
     {
@@ -641,18 +647,18 @@ contract DigitalaxMonaStaking  {
             "DigitalaxMonaStaking.reclaimERC20: Sender must be admin"
         );
         require(
-            tokenAddress != address(monaToken),
+            _tokenAddress != address(monaToken),
             "Cannot withdraw the rewards token"
         );
-        IERC20(tokenAddress).transfer(msg.sender, tokenAmount);
-        emit Reclaimed(tokenAddress, tokenAmount);
+        IERC20(_tokenAddress).transfer(msg.sender, _tokenAmount);
+        emit Reclaimed(_tokenAddress, _tokenAmount);
     }
 
     /**
     * @notice EMERGENCY Recovers ETH, drains all ETH sitting on the smart contract
     * @dev Only access controls admin can access
     */
-    function reclaimETH() external {
+    function reclaimETH(uint256 _amount) external {
         require(
             accessControls.hasAdminRole(msg.sender),
             "DigitalaxMonaStaking.reclaimETH: Sender must be admin"
