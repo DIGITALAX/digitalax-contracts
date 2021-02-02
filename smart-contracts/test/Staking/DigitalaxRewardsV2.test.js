@@ -278,6 +278,69 @@ contract('DigitalaxRewardsV2', (accounts) => {
   });
 
 
+  describe('Initialize Pools', () => {
+    beforeEach(async () => {
+      await this.digitalaxRewards.setNowOverride('1');
+    });
+    describe('initializePools()', () => {
+      it('is currently week 0', async () => {
+        expect(await this.digitalaxRewards.getCurrentWeek()).to.be.bignumber.equal('0');
+      });
+
+      it('fails when not admin', async () => {
+        await expectRevert(
+            this.digitalaxRewards.initializePools(1, [1], [1], [1], [1], [1], {from: staker}),
+            'DigitalaxRewardsV2.initializePools: Sender must be admin'
+        );
+      });
+
+      it('fails when not admin', async () => {
+        await expectRevert(
+            this.digitalaxRewards.initializePools(1, [1], [1], [1], [1], [1], {from: staker}),
+            'DigitalaxRewardsV2.initializePools: Sender must be admin'
+        );
+      });
+
+      it('fails when arrays are not proper length', async () => {
+        await expectRevert(
+            this.digitalaxRewards.initializePools(1, [1], [1, 2], [1], [1], [1], {from: admin}),
+            'DigitalaxRewardsV2.initializePools: Please check pool ids and weight point revenue lengths'
+        );
+        await expectRevert(
+            this.digitalaxRewards.initializePools(1, [1], [1], [1, 2], [1], [1], {from: admin}),
+            'DigitalaxRewardsV2.initializePools: Please check pool ids and minted mona reward pts lengths'
+        );
+        await expectRevert(
+            this.digitalaxRewards.initializePools(1, [1], [1], [1], [1, 2], [1], {from: admin}),
+            'DigitalaxRewardsV2.initializePools: Please check pool ids and bonus mona reward pts lengths'
+        );
+        await expectRevert(
+            this.digitalaxRewards.initializePools(1, [1], [1], [1], [1], [1, 2], {from: admin}),
+            'DigitalaxRewardsV2.initializePools: Please check pool ids and deposited ETH reward pts lengths'
+        );
+      });
+      it('fails when it is empty array', async () => {
+        await expectRevert(
+            this.digitalaxRewards.initializePools(1, [], [], [], [], [], {from: admin}),
+            'DigitalaxRewardsV2.initializePools: Cannot initialize without a pool id'
+        );
+      });
+
+      it('successfully initializes pool', async () => {
+        await this.digitalaxRewards.initializePools(1, [1], [100], [10], [10], [10], {from: admin});
+
+        const _weightPointsRevenueSharing = await this.digitalaxRewards.getMonaWeightPoints(1, 1);
+        expect(_weightPointsRevenueSharing).to.be.bignumber.equal('100');
+
+        const weeklyRewardPoints = await this.digitalaxRewards.getWeeklyRewardPointsInfo(1, 1);
+        expect(weeklyRewardPoints[0]).to.be.bignumber.equal('10');
+        expect(weeklyRewardPoints[1]).to.be.bignumber.equal('10');
+        expect(weeklyRewardPoints[2]).to.be.bignumber.equal('10');
+      });
+    });
+  })
+
+
   async function getGasCosts(receipt) {
     const tx = await web3.eth.getTransaction(receipt.tx);
     const gasPrice = new BN(tx.gasPrice);

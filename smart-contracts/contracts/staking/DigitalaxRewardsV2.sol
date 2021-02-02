@@ -174,7 +174,7 @@ contract DigitalaxRewardsV2 {
      * @param _bonusMintedMonaRewardPointsPerMona the bonus reward points for the minted mona for the week
      * @param _depositedEthRewardPointsPerMona the reward points for depositedEth for the week
      */
-    function setInitialPools(
+    function initializePools(
         uint256 _week,
         uint256[] calldata _poolIds,
         uint256[] calldata _weightPointsRevenueSharing,
@@ -186,27 +186,32 @@ contract DigitalaxRewardsV2 {
     {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxRewardsV2.setInitialPoints: Sender must be admin"
+            "DigitalaxRewardsV2.initializePools: Sender must be admin"
+        );
+
+        require(
+            _poolIds.length >= 1,
+            "DigitalaxRewardsV2.initializePools: Cannot initialize without a pool id"
         );
 
         require(
             _poolIds.length == _weightPointsRevenueSharing.length,
-            "DigitalaxRewardsV2.setInitialPoints: Please check pool ids and weight point revenue lengths"
+            "DigitalaxRewardsV2.initializePools: Please check pool ids and weight point revenue lengths"
         );
 
         require(
             _poolIds.length == _mintedMonaRewardPointsPerMona.length,
-            "DigitalaxRewardsV2.setInitialPoints: Please check pool ids and minted mona reward pts lengths"
+            "DigitalaxRewardsV2.initializePools: Please check pool ids and minted mona reward pts lengths"
         );
 
         require(
             _poolIds.length == _bonusMintedMonaRewardPointsPerMona.length,
-            "DigitalaxRewardsV2.setInitialPoints: Please check pool ids and bonus mona reward pts lengths"
+            "DigitalaxRewardsV2.initializePools: Please check pool ids and bonus mona reward pts lengths"
         );
 
         require(
             _poolIds.length == _depositedEthRewardPointsPerMona.length,
-            "DigitalaxRewardsV2.setInitialPoints: Please check pool ids and deposited ETH reward pts lengths"
+            "DigitalaxRewardsV2.initializePools: Please check pool ids and deposited ETH reward pts lengths"
         );
 
         for (uint256 i = 0; i < _poolIds.length; i++) {
@@ -630,13 +635,25 @@ contract DigitalaxRewardsV2 {
         return diffDays(startTime, _getNow()) / 7;
     }
 
-    function getCurrentMonaWeightPoints(uint256 _poolId)
+    function getMonaWeightPoints(uint256 _poolId, uint256 _week)
         external
         view
         returns(uint256)
     {
-        uint256 currentWeek = diffDays(startTime, _getNow()) / 7;
-        return pools[_poolId].weeklyWeightPoints[currentWeek].weightPointsRevenueSharing;
+        return pools[_poolId].weeklyWeightPoints[_week].weightPointsRevenueSharing;
+    }
+
+    function getWeeklyRewardPointsInfo(uint256 _poolId, uint256 week)
+        external
+        view
+        returns(
+        uint256 _mintedMonaRewardPointsPerMona,
+        uint256 _bonusMintedMonaRewardPointsPerMona,
+        uint256 _depositedEthRewardPointsPerMona )
+    {
+        _mintedMonaRewardPointsPerMona = pools[_poolId].weeklyWeightPoints[week].mintedMonaRewardPointsPerMona;
+        _bonusMintedMonaRewardPointsPerMona = pools[_poolId].weeklyWeightPoints[week].bonusMintedMonaRewardPointsPerMona;
+        _depositedEthRewardPointsPerMona = pools[_poolId].weeklyWeightPoints[week].depositedEthRewardPointsPerMona;
     }
 
     function getMonaStakedEthTotal()
