@@ -244,9 +244,6 @@ contract('DigitalaxRewardsV2', (accounts) => {
 
             expect(await rewardsBalanceTracker.delta('ether')).to.be.bignumber.equal('-2');
             expect((await rewardsBalanceTracker.get('ether')).toString()).to.be.equal('0');
-
-            // Admin receives eth minus gas fees.
-            expect(await adminBalanceTracker.get('ether')).to.be.bignumber.greaterThan(adminBalanceBeforeReclaim);
           });
         });
       });
@@ -388,6 +385,29 @@ contract('DigitalaxRewardsV2', (accounts) => {
       });
     });
   })
+
+
+  describe('Set LastRewardsTime', () => {
+    describe('setLastRewardsTime()', () => {
+      it('fails when not admin', async () => {
+        await expectRevert(
+            this.digitalaxRewards.setLastRewardsTime([0], [1], {from: staker}),
+            'DigitalaxRewardsV2.setLastRewardsTime: Sender must be admin'
+        );
+      });
+
+      it('successfully updates last rewards time', async () => {
+        const original = await this.digitalaxRewards.lastRewardsTime(0);
+        expect(original).to.be.bignumber.equal(new BN('0'));
+
+        await this.digitalaxRewards.setLastRewardsTime([0], [10], {from: admin});
+
+        const updated = await this.digitalaxRewards.lastRewardsTime(0);
+        expect(updated).to.be.bignumber.equal(new BN('10'));
+      });
+    });
+  })
+
 
 
   async function getGasCosts(receipt) {
