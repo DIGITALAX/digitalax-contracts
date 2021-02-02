@@ -165,25 +165,6 @@ contract DigitalaxRewardsV2 {
             monaStaking = DigitalaxStaking(_addr);
     }
 
-
-/*
- * @dev Setter functions for contract config custom last rewards time for a pool
- */
-    function setLastRewardsTime(
-        uint256[] memory _poolIds,
-        uint256[] memory _lastRewardsTimes
-    )
-        external
-    {
-        require(
-            accessControls.hasAdminRole(msg.sender),
-            "DigitalaxRewardsV2.setStartTime: Sender must be admin"
-        );
-        for (uint256 i = 0; i < _poolIds.length; i++) {
-            pools[_poolIds[i]].lastRewardsTime = _lastRewardsTimes[i];
-        }
-    }
-
     /*
      * @dev Setter functions for contract config
      * @param _week the week to be changed
@@ -323,6 +304,24 @@ contract DigitalaxRewardsV2 {
         pools[_poolId].lastRewardsTime = _getNow();
         return true;
     }
+
+
+    /*
+     * @dev Setter functions for contract config custom last rewards time for a pool
+     */
+    function setLastRewardsTime(
+    uint256[] memory _poolIds,
+    uint256[] memory _lastRewardsTimes) external
+    {
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "DigitalaxRewardsV2.setStartTime: Sender must be admin"
+        );
+        for (uint256 i = 0; i < _poolIds.length; i++) {
+            pools[_poolIds[i]].lastRewardsTime = _lastRewardsTimes[i];
+        }
+    }
+
 
     /* ========== View Functions ========== */
 
