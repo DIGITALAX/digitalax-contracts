@@ -27,6 +27,7 @@ const ONE_THOUSAND_TOKENS = '1000000000000000000000';
 const TWO_HUNDRED_TOKENS = new BN('200000000000000000000');
 const TWENTY_TOKENS = new BN('20000000000000000000');
 const TWO_ETH = ether('2');
+const THREE_ETH = ether('3');
 
 contract('DigitalaxRewardsV2', (accounts) => {
   const [admin, smartContract, platformFeeAddress, minter, owner, designer, staker, newRecipient] = accounts;
@@ -40,7 +41,7 @@ contract('DigitalaxRewardsV2', (accounts) => {
         'MONA',
         'MONA',
         ONE_THOUSAND_TOKENS,
-        {from: staker}
+        {from: minter}
     );
 
     this.factory = await UniswapV2Factory.new(
@@ -57,7 +58,9 @@ contract('DigitalaxRewardsV2', (accounts) => {
     );
 
     await this.weth.transfer(this.monaWETH.address, TWENTY_TOKENS, { from: minter });
-    await this.monaToken.transfer(this.monaWETH.address, TWO_HUNDRED_TOKENS, { from: staker });
+    await this.monaToken.transfer(this.monaWETH.address, TWO_HUNDRED_TOKENS, { from: minter });
+    await this.monaToken.transfer(admin, TWO_HUNDRED_TOKENS, { from: minter });
+
     await this.monaWETH.mint(minter);
 
     this.router02 = await UniswapV2Router02.new(
@@ -85,7 +88,6 @@ contract('DigitalaxRewardsV2', (accounts) => {
         0,
         0
     );
-   // this.monaToken.approve(this.marketplace.address, ONE_THOUSAND_TOKENS);
   });
 
   describe('Contract deployment', () => {
@@ -277,7 +279,6 @@ contract('DigitalaxRewardsV2', (accounts) => {
     });
   });
 
-
   describe('Initialize Pools', () => {
     beforeEach(async () => {
       await this.digitalaxRewards.setNowOverride('1');
@@ -336,6 +337,54 @@ contract('DigitalaxRewardsV2', (accounts) => {
         expect(weeklyRewardPoints[0]).to.be.bignumber.equal('10');
         expect(weeklyRewardPoints[1]).to.be.bignumber.equal('10');
         expect(weeklyRewardPoints[2]).to.be.bignumber.equal('10');
+      });
+    });
+  })
+
+  describe('depositRevenueSharingRewards', () => {
+    describe('depositRevenueSharingRewards()', () => {
+    beforeEach(async () => {
+      await this.digitalaxRewards.initializePools(0, [1], [100], [10], [10], [10], {from: admin});
+      await this.monaToken.approve(this.digitalaxRewards.address, ONE_THOUSAND_TOKENS, {from: admin});
+    });
+      it('is currently week 0', async () => {
+        expect(await this.digitalaxRewards.getCurrentWeek()).to.be.bignumber.equal('0');
+      });
+
+      it('fails when not admin', async () => {
+        await expectRevert(
+            this.digitalaxRewards.depositRevenueSharingRewards(0, 1, TWO_ETH, {from: staker}),
+            'DigitalaxRewardsV2.setRewards: Sender must be admin'
+        );
+      });
+
+      it('fails when not a future week', async () => {
+        await expectRevert(
+            this.digitalaxRewards.depositRevenueSharingRewards(0, 0, TWENTY_TOKENS, {from: admin}),
+            'DigitalaxRewardsV2.depositRevenueSharingRewards: The rewards generated should be set for the future weeks'
+        );
+      });
+
+      it('fails if insufficient mona approval', async () => {
+        await this.monaToken.approve(this.digitalaxRewards.address, 0, {from: admin});
+        await expectRevert(
+            this.digitalaxRewards.depositRevenueSharingRewards(0, 1, TWENTY_TOKENS, {from: admin}),
+            'DigitalaxRewardsV2.depositRevenueSharingRewards: Failed to supply ERC20 Allowance'
+        );
+      });
+
+      it('successfully deposits revenue sharing rewards', async () => {
+        const {receipt} = await this.digitalaxRewards.depositRevenueSharingRewards(0, 1, TWENTY_TOKENS, {from: admin, value: THREE_ETH});
+
+        const monaRevenue = await this.digitalaxRewards.weeklyMonaRevenueSharingPerSecond(1);
+        expect(monaRevenue).to.be.bignumber.equal(TWENTY_TOKENS.div(new BN('604800')));
+        const ethRevenue = await this.digitalaxRewards.weeklyETHRevenueSharingPerSecond(1);
+        expect(ethRevenue).to.be.bignumber.equal(THREE_ETH.div(new BN('604800')));
+
+        await expectEvent(receipt, 'DepositRevenueSharing', {
+          weeklyMonaRevenueSharingPerSecond: TWENTY_TOKENS.div(new BN('604800')),
+          weeklyETHRevenueSharingPerSecond: THREE_ETH.div(new BN('604800'))
+        });
       });
     });
   })

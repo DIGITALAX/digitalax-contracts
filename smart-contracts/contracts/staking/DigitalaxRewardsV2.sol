@@ -85,6 +85,8 @@ contract DigitalaxRewardsV2 {
     event RewardDistributed(address indexed addr, uint256 reward);
     event ReclaimedERC20(address indexed token, uint256 amount);
 
+    event DepositRevenueSharing(uint256 weeklyMonaRevenueSharingPerSecond, uint256 weeklyETHRevenueSharingPerSecond);
+
     
     /* ========== Admin Functions ========== */
     constructor(
@@ -268,6 +270,7 @@ contract DigitalaxRewardsV2 {
         // Increase the revenue sharing per second for the week for deposited ETH
         weeklyETHRevenueSharingPerSecond[_week] = weeklyETHRevenueSharingPerSecond[_week].add(ethAmount);
 
+        emit DepositRevenueSharing(weeklyMonaRevenueSharingPerSecond[_week], weeklyETHRevenueSharingPerSecond[_week]);
     }
 
     /* From BokkyPooBah's DateTime Library v1.01
