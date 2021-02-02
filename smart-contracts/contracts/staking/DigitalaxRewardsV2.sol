@@ -306,7 +306,8 @@ contract DigitalaxRewardsV2 {
 
         _updateETHRewards(_poolId);
 
-        // TODO mona minted + bonus mona minted + deposited eth rewards
+        // calculateFixedRewardsMintAndTransfer(_poolId, pools[_poolId].lastRewardsTime, _getNow())
+
 
         /// @dev update accumulated reward
         pools[_poolId].lastRewardsTime = _getNow();
@@ -323,7 +324,7 @@ contract DigitalaxRewardsV2 {
     {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxRewardsV2.setStartTime: Sender must be admin"
+            "DigitalaxRewardsV2.setLastRewardsTime: Sender must be admin"
         );
         for (uint256 i = 0; i < _poolIds.length; i++) {
             pools[_poolIds[i]].lastRewardsTime = _lastRewardsTimes[i];
