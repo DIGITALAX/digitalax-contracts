@@ -637,6 +637,38 @@ contract('DigitalaxRewardsV2', (accounts) => {
       });
     });
   });
+  // TODO figure out if we need uniswap and eth conversions in this contract
+  // describe('Gets staked mona', () => {
+  //   beforeEach(async () => {
+  //     await this.digitalaxRewards.initializePools(0, [0], [ether('10000000000000000000')], [10], [10], [10], {from: admin});
+  //     await this.digitalaxRewards.initializePools(1, [0], [ether('10000000000000000000')], [10], [10], [10], {from: admin});
+  //     await this.digitalaxRewards.initializePools(2, [0], [ether('10000000000000000000')], [10], [10], [10], {from: admin});
+  //
+  //     await this.monaStaking.initMonaStakingPool(
+  //         1,
+  //         TWO_ETH,
+  //         THREE_ETH,
+  //         100,
+  //         10,
+  //         {from: admin}
+  //     );
+  //
+  //     await this.monaToken.transfer(staker, TWO_ETH, { from: minter });
+  //     await this.monaToken.approve(this.monaStaking.address, TEN_ETH, {from: staker});
+  //     await this.monaStaking.stake(0, TWO_ETH, {from: staker});
+  //     await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('5')), {from: admin});
+  //     await this.digitalaxRewards.depositRevenueSharingRewards(0, 1, TEN_ETH, {from: admin, value: THREE_ETH});
+  //     await this.digitalaxRewards.depositRevenueSharingRewards(0, 2, TEN_ETH, {from: admin, value: THREE_ETH});
+  //
+  //   });
+  //
+  //   describe('getMonaStakedEthTotal()', () => {
+  //     it('successfully queries getMonaStakedEthTotal', async () => {
+  //       const staked = await this.digitalaxRewards.getMonaStakedEthTotal({from: staker});
+  //       expect(staked).to.be.bignumber.equal(TWO_ETH);
+  //     });
+  //   });
+  // });
 
 
   async function getGasCosts(receipt) {
