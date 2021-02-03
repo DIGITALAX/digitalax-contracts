@@ -427,9 +427,14 @@ contract('DigitalaxRewardsV2', (accounts) => {
       it('successfully updates rewards', async () => {
 
         const originalRewardsMonaTokenBalance = await this.monaToken.balanceOf(this.digitalaxRewards.address);
-        const adminBalanceTracker = await balance.tracker(this.digitalaxRewards.address, 'ether');
+        const rewardsBalanceTracker = await balance.tracker(this.digitalaxRewards.address, 'ether');
+        const originalRewardsContractBalance = await rewardsBalanceTracker.get('wei');
 
-        const originalRewardsContractBalance = await adminBalanceTracker.get('wei');
+        const monaStakingBalanceTracker = await balance.tracker(this.monaStaking.address, 'ether');
+        const originalMonaStakingContractBalance = await monaStakingBalanceTracker.get('wei');
+
+
+        expect(originalMonaStakingContractBalance).to.be.bignumber.equal(new BN('0'));
 
         const originalLastRewardsTime = await this.digitalaxRewards.lastRewardsTime(0);
         expect(originalLastRewardsTime).to.be.bignumber.equal(new BN('0'));
@@ -441,7 +446,7 @@ contract('DigitalaxRewardsV2', (accounts) => {
         expect(originalETHRewardsPaidTotal).to.be.bignumber.equal(new BN('0'));
 
 
-        await this.digitalaxRewards.updateRewards(0, {from: staker});
+        const rewardResult = await this.digitalaxRewards.updateRewards(0, {from: staker});
 
         const updatedLastRewardsTime = await this.digitalaxRewards.lastRewardsTime(0);
         expect(updatedLastRewardsTime).to.be.bignumber.equal(new BN('1209600'));
@@ -456,8 +461,97 @@ contract('DigitalaxRewardsV2', (accounts) => {
         const updatedBalanceTracker = await balance.tracker(this.digitalaxRewards.address, 'wei');
         const updatedRewardsContractBalance = await updatedBalanceTracker.get('wei');
 
+        console.log('Current rewards contract eth balance');
+        console.log(updatedRewardsContractBalance.toString());
+        console.log('Current rewards contract mona balance');
+        console.log(updatedRewardsMonaTokenBalance.toString());
+        console.log('Current rewards contract eth paid total');
+        console.log(updatedETHRewardsPaidTotal.toString());
+        console.log('Current rewards contract mona paid total');
+        console.log(updatedMonaRewardsPaidTotal.toString());
+
         expect(originalRewardsMonaTokenBalance).to.be.bignumber.greaterThan(updatedRewardsMonaTokenBalance);
         expect(originalRewardsContractBalance).to.be.bignumber.greaterThan(updatedRewardsContractBalance);
+      });
+
+      it('successfully runs if the start time is in the future, but does not update rewards', async () => {
+
+        const originalRewardsMonaTokenBalance = await this.monaToken.balanceOf(this.digitalaxRewards.address);
+        const rewardsBalanceTracker = await balance.tracker(this.digitalaxRewards.address, 'ether');
+        const originalRewardsContractBalance = await rewardsBalanceTracker.get('wei');
+
+        const monaStakingBalanceTracker = await balance.tracker(this.monaStaking.address, 'ether');
+        const originalMonaStakingContractBalance = await monaStakingBalanceTracker.get('wei');
+
+        expect(originalMonaStakingContractBalance).to.be.bignumber.equal(new BN('0'));
+
+        const originalLastRewardsTime = await this.digitalaxRewards.lastRewardsTime(0);
+        expect(originalLastRewardsTime).to.be.bignumber.equal(new BN('0'));
+
+        const originalMonaRewardsPaidTotal = await this.digitalaxRewards.monaRewardsPaidTotal();
+        expect(originalMonaRewardsPaidTotal).to.be.bignumber.equal(new BN('0'));
+
+        const originalETHRewardsPaidTotal = await this.digitalaxRewards.ethRewardsPaidTotal();
+        expect(originalETHRewardsPaidTotal).to.be.bignumber.equal(new BN('0'));
+
+        await this.digitalaxRewards.setStartTime(12096000, {from: admin});
+        const rewardResult = await this.digitalaxRewards.updateRewards(0, {from: staker});
+
+        const updatedLastRewardsTime = await this.digitalaxRewards.lastRewardsTime(0);
+        expect(updatedLastRewardsTime).to.be.bignumber.equal(new BN('1209600'));
+
+        const updatedMonaRewardsPaidTotal = await this.digitalaxRewards.monaRewardsPaidTotal();
+        expect(updatedMonaRewardsPaidTotal).to.be.bignumber.equal(originalMonaRewardsPaidTotal);
+
+        const updatedETHRewardsPaidTotal = await this.digitalaxRewards.ethRewardsPaidTotal();
+        expect(updatedETHRewardsPaidTotal).to.be.bignumber.equal(originalETHRewardsPaidTotal);
+
+        const updatedRewardsMonaTokenBalance = await this.monaToken.balanceOf(this.digitalaxRewards.address);
+        const updatedBalanceTracker = await balance.tracker(this.digitalaxRewards.address, 'wei');
+        const updatedRewardsContractBalance = await updatedBalanceTracker.get('wei');
+
+        expect(originalRewardsMonaTokenBalance).to.be.bignumber.equal(updatedRewardsMonaTokenBalance);
+        expect(originalRewardsContractBalance).to.be.bignumber.equal(updatedRewardsContractBalance);
+      });
+
+      it('successfully runs if the last rewards time is in the future, but does not update rewards', async () => {
+
+        const originalRewardsMonaTokenBalance = await this.monaToken.balanceOf(this.digitalaxRewards.address);
+        const rewardsBalanceTracker = await balance.tracker(this.digitalaxRewards.address, 'ether');
+        const originalRewardsContractBalance = await rewardsBalanceTracker.get('wei');
+
+        const monaStakingBalanceTracker = await balance.tracker(this.monaStaking.address, 'ether');
+        const originalMonaStakingContractBalance = await monaStakingBalanceTracker.get('wei');
+
+        expect(originalMonaStakingContractBalance).to.be.bignumber.equal(new BN('0'));
+
+        const originalLastRewardsTime = await this.digitalaxRewards.lastRewardsTime(0);
+        expect(originalLastRewardsTime).to.be.bignumber.equal(new BN('0'));
+
+        const originalMonaRewardsPaidTotal = await this.digitalaxRewards.monaRewardsPaidTotal();
+        expect(originalMonaRewardsPaidTotal).to.be.bignumber.equal(new BN('0'));
+
+        const originalETHRewardsPaidTotal = await this.digitalaxRewards.ethRewardsPaidTotal();
+        expect(originalETHRewardsPaidTotal).to.be.bignumber.equal(new BN('0'));
+
+        await this.digitalaxRewards.setLastRewardsTime([0], [120960000], {from: admin});
+        const rewardResult = await this.digitalaxRewards.updateRewards(0, {from: staker});
+
+        const updatedLastRewardsTime = await this.digitalaxRewards.lastRewardsTime(0);
+        expect(updatedLastRewardsTime).to.be.bignumber.equal(new BN('120960000'));
+
+        const updatedMonaRewardsPaidTotal = await this.digitalaxRewards.monaRewardsPaidTotal();
+        expect(updatedMonaRewardsPaidTotal).to.be.bignumber.equal(originalMonaRewardsPaidTotal);
+
+        const updatedETHRewardsPaidTotal = await this.digitalaxRewards.ethRewardsPaidTotal();
+        expect(updatedETHRewardsPaidTotal).to.be.bignumber.equal(originalETHRewardsPaidTotal);
+
+        const updatedRewardsMonaTokenBalance = await this.monaToken.balanceOf(this.digitalaxRewards.address);
+        const updatedBalanceTracker = await balance.tracker(this.digitalaxRewards.address, 'wei');
+        const updatedRewardsContractBalance = await updatedBalanceTracker.get('wei');
+
+        expect(originalRewardsMonaTokenBalance).to.be.bignumber.equal(updatedRewardsMonaTokenBalance);
+        expect(originalRewardsContractBalance).to.be.bignumber.equal(updatedRewardsContractBalance);
       });
     });
   })
