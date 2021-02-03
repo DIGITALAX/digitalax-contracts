@@ -104,7 +104,7 @@ contract DigitalaxMonaStaking  {
      * @notice mapping of Pool Id's to pools
      */
     mapping (uint256 => StakingPool) pools;
-    uint256 numberOfStakingPools;
+    uint256 public numberOfStakingPools;
 
     /*
      * @notice the total mona staked over all pools
@@ -150,6 +150,9 @@ contract DigitalaxMonaStaking  {
     event ReclaimedERC20(address indexed token, uint256 amount);
 
     constructor(address _monaToken, DigitalaxAccessControls _accessControls, IWETH _WETH) public {
+        require(_monaToken != address(0), "DigitalaxMonaStaking: Invalid Mona Token");
+        require(address(_accessControls) != address(0), "DigitalaxMonaStaking: Invalid Access Controls");
+        require(address(_WETH) != address(0), "DigitalaxMonaStaking: Invalid WETH Token");
         monaToken = _monaToken;
         accessControls = _accessControls;
         WETH = _WETH;
@@ -171,7 +174,7 @@ contract DigitalaxMonaStaking  {
     {
         require(
             accessControls.hasAdminRole(msg.sender),
-            "DigitalaxLPStaking.setRewardsContract: Sender must be admin"
+            "DigitalaxMonaStaking.setRewardsContract: Sender must be admin"
         );
         require(_addr != address(0));
         address oldAddr = address(rewardsContract);
@@ -208,7 +211,7 @@ contract DigitalaxMonaStaking  {
 
         require(
             _minimumStakeInMona > 0,
-            "DigitalaxMonaStaking.initMonaStakingPool: The minimum stake in Mona must be greater then 0"
+            "DigitalaxMonaStaking.initMonaStakingPool: The minimum stake in Mona must be greater than zero"
         );
 
         require(
@@ -241,7 +244,7 @@ contract DigitalaxMonaStaking  {
             accessControls.hasAdminRole(msg.sender),
             "DigitalaxMonaStaking.setMonaToken: Sender must be admin"
         );
-        require(_addr != address(0));
+        require(_addr != address(0), "DigitalaxMonaStaking.setMonaToken: Invalid Mona Token");
         address oldAddr = monaToken;
         monaToken = _addr;
         emit MonaTokenUpdated(oldAddr, _addr);
@@ -693,7 +696,7 @@ contract DigitalaxMonaStaking  {
         );
         require(
             _tokenAddress != address(monaToken),
-            "Cannot withdraw the rewards token"
+            "DigitalaxMonaStaking.reclaimERC20: Cannot withdraw the rewards token"
         );
         IERC20(_tokenAddress).transfer(msg.sender, _tokenAmount);
         emit ReclaimedERC20(_tokenAddress, _tokenAmount);
