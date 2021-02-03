@@ -607,19 +607,36 @@ contract('DigitalaxRewardsV2', (accounts) => {
     describe('MonaRevenueRewards()', () => {
       it('successfully queries MonaRevenueRewards after first week', async () => {
         // There are no rewards in the first week deposited
-        await this.digitalaxRewards.setNowOverride('604801'); // first week
+        await this.digitalaxRewards.setNowOverride('604801'); // after first week
         const rewardResult = await this.digitalaxRewards.MonaRevenueRewards(0, 0, 604801, {from: staker});
         expect(rewardResult).to.be.bignumber.greaterThan(new BN('0'));
       });
     });
     describe('ETHRevenueRewards()', () => {
       it('successfully queries ETHRevenueRewards after first week', async () => {
-        await this.digitalaxRewards.setNowOverride('604801'); // first week
+        await this.digitalaxRewards.setNowOverride('604801'); // after first week
         const rewardResult = await this.digitalaxRewards.ETHRevenueRewards(0, 0, 604801, {from: staker});
         expect(rewardResult).to.be.bignumber.greaterThan(new BN('0'));
       });
     });
   })
+  describe('Gets current week', () => {
+    describe('getCurrentWeek()', () => {
+      it('successfully queries over time', async () => {
+        await this.digitalaxRewards.setNowOverride('0'); // first week
+        const currentWeek = await this.digitalaxRewards.getCurrentWeek({from: staker});
+        expect(currentWeek).to.be.bignumber.equal('0');
+
+        await this.digitalaxRewards.setNowOverride('604801'); // second week
+        const secondWeek = await this.digitalaxRewards.getCurrentWeek({from: staker});
+        expect(secondWeek).to.be.bignumber.equal('1');
+
+        await this.digitalaxRewards.setNowOverride('1209601'); // third week
+        const thirdWeek = await this.digitalaxRewards.getCurrentWeek({from: staker});
+        expect(thirdWeek).to.be.bignumber.equal('2');
+      });
+    });
+  });
 
 
   async function getGasCosts(receipt) {
