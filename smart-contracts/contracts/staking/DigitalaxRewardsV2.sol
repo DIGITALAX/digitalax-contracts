@@ -538,6 +538,7 @@ contract DigitalaxRewardsV2 {
         (monaRewards, ethRewards) = FixedRewards(_poolId, _from, _to, _balance, _isEarlyStaker);
         require(monaToken.mint(address(monaStaking), monaRewards)); // Mint all Mona and Bonus Mona, send it to the staking contract
         (bool transferEthSuccess,) = address(monaStaking).call{value : ethRewards}(""); // Send deposited eth to staking contract as per amount corresponding for that user
+        require(transferEthSuccess, "DigitalaxRewardsV2.calculateFixedRewardsMintAndTransfer: Failed sending eth to Mona staking contract"); // Mint all Mona and Bonus Mona, send it to the staking contract
     }
 
 
@@ -553,8 +554,7 @@ contract DigitalaxRewardsV2 {
             monaRewardsPaidTotal = monaRewardsPaidTotal.add(rewards);
 
             // Send this amount of MONA to the staking contract
-            IERC20(monaToken).transferFrom(
-                address(this),
+            IERC20(monaToken).transfer(
                 address(monaStaking),
                 rewards
             );
@@ -571,8 +571,8 @@ contract DigitalaxRewardsV2 {
             ethRewardsPaidTotal = ethRewardsPaidTotal.add(rewards);
 
             // Send this amount of ETH to the staking contract
-
             (bool transferEthSuccess,) = address(monaStaking).call{value : rewards}("");
+            require(transferEthSuccess, "DigitalaxRewardsV2.updateRewards: Unable to send ETH to mona staking");
         }
     }
 

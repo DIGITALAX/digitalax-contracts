@@ -28,6 +28,7 @@ const TWO_HUNDRED_TOKENS = new BN('200000000000000000000');
 const TWENTY_TOKENS = new BN('20000000000000000000');
 const TWO_ETH = ether('2');
 const THREE_ETH = ether('3');
+const TEN_ETH = ether('10');
 
 contract('DigitalaxRewardsV2', (accounts) => {
   const [admin, smartContract, platformFeeAddress, minter, owner, designer, staker, newRecipient] = accounts;
@@ -88,6 +89,9 @@ contract('DigitalaxRewardsV2', (accounts) => {
         0,
         0
     );
+
+    // Important
+    this.monaStaking.setRewardsContract(this.digitalaxRewards.address, {from: admin});
   });
 
   describe('Contract deployment', () => {
@@ -371,21 +375,20 @@ contract('DigitalaxRewardsV2', (accounts) => {
       });
 
       it('successfully deposits revenue sharing rewards', async () => {
-        const {receipt} = await this.digitalaxRewards.depositRevenueSharingRewards(0, 1, TWENTY_TOKENS, {from: admin, value: THREE_ETH});
+        const {receipt} = await this.digitalaxRewards.depositRevenueSharingRewards(0, 1, TEN_ETH, {from: admin, value: THREE_ETH});
 
         const monaRevenue = await this.digitalaxRewards.weeklyMonaRevenueSharingPerSecond(1);
-        expect(monaRevenue).to.be.bignumber.equal(TWENTY_TOKENS.div(new BN('604800')));
+        expect(monaRevenue).to.be.bignumber.equal(TEN_ETH.div(new BN('604800')));
         const ethRevenue = await this.digitalaxRewards.weeklyETHRevenueSharingPerSecond(1);
         expect(ethRevenue).to.be.bignumber.equal(THREE_ETH.div(new BN('604800')));
 
         await expectEvent(receipt, 'DepositRevenueSharing', {
-          weeklyMonaRevenueSharingPerSecond: TWENTY_TOKENS.div(new BN('604800')),
+          weeklyMonaRevenueSharingPerSecond: TEN_ETH.div(new BN('604800')),
           weeklyETHRevenueSharingPerSecond: THREE_ETH.div(new BN('604800'))
         });
       });
     });
   })
-
 
   describe('Set LastRewardsTime', () => {
     describe('setLastRewardsTime()', () => {
@@ -408,6 +411,56 @@ contract('DigitalaxRewardsV2', (accounts) => {
     });
   })
 
+  describe('Update Rewards', () => {
+    beforeEach(async () => {
+      await this.digitalaxRewards.initializePools(0, [0], [ether('10000000000000000000')], [10], [10], [10], {from: admin});
+      await this.digitalaxRewards.initializePools(1, [0], [ether('10000000000000000000')], [10], [10], [10], {from: admin});
+      await this.digitalaxRewards.initializePools(2, [0], [ether('10000000000000000000')], [10], [10], [10], {from: admin});
+      await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('5')), {from: admin});
+      await this.digitalaxRewards.depositRevenueSharingRewards(0, 1, TEN_ETH, {from: admin, value: THREE_ETH});
+      await this.digitalaxRewards.depositRevenueSharingRewards(0, 2, TEN_ETH, {from: admin, value: THREE_ETH});
+
+      await this.digitalaxRewards.setNowOverride('1209600'); // next week
+
+    });
+    describe('updateRewards()', () => {
+      it('successfully updates rewards', async () => {
+
+        const originalRewardsMonaTokenBalance = await this.monaToken.balanceOf(this.digitalaxRewards.address);
+        const adminBalanceTracker = await balance.tracker(this.digitalaxRewards.address, 'ether');
+
+        const originalRewardsContractBalance = await adminBalanceTracker.get('wei');
+
+        const originalLastRewardsTime = await this.digitalaxRewards.lastRewardsTime(0);
+        expect(originalLastRewardsTime).to.be.bignumber.equal(new BN('0'));
+
+        const originalMonaRewardsPaidTotal = await this.digitalaxRewards.monaRewardsPaidTotal();
+        expect(originalMonaRewardsPaidTotal).to.be.bignumber.equal(new BN('0'));
+
+        const originalETHRewardsPaidTotal = await this.digitalaxRewards.ethRewardsPaidTotal();
+        expect(originalETHRewardsPaidTotal).to.be.bignumber.equal(new BN('0'));
+
+
+        await this.digitalaxRewards.updateRewards(0, {from: staker});
+
+        const updatedLastRewardsTime = await this.digitalaxRewards.lastRewardsTime(0);
+        expect(updatedLastRewardsTime).to.be.bignumber.equal(new BN('1209600'));
+
+        const updatedMonaRewardsPaidTotal = await this.digitalaxRewards.monaRewardsPaidTotal();
+        expect(updatedMonaRewardsPaidTotal).to.be.bignumber.greaterThan(originalMonaRewardsPaidTotal);
+
+        const updatedETHRewardsPaidTotal = await this.digitalaxRewards.ethRewardsPaidTotal();
+        expect(updatedETHRewardsPaidTotal).to.be.bignumber.greaterThan(originalETHRewardsPaidTotal);
+
+        const updatedRewardsMonaTokenBalance = await this.monaToken.balanceOf(this.digitalaxRewards.address);
+        const updatedBalanceTracker = await balance.tracker(this.digitalaxRewards.address, 'wei');
+        const updatedRewardsContractBalance = await updatedBalanceTracker.get('wei');
+
+        expect(originalRewardsMonaTokenBalance).to.be.bignumber.greaterThan(updatedRewardsMonaTokenBalance);
+        expect(originalRewardsContractBalance).to.be.bignumber.greaterThan(updatedRewardsContractBalance);
+      });
+    });
+  })
 
 
   async function getGasCosts(receipt) {
