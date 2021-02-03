@@ -337,9 +337,17 @@ contract DigitalaxRewardsV2 {
     /*
      * @notice Gets the total rewards outstanding from last reward time
      */
-    function totalRewards(uint256 _poolId) external view returns (uint256) {
+    function totalNewMonaRewards(uint256 _poolId) external view returns (uint256) {
         uint256 lRewards = MonaRevenueRewards(_poolId, pools[_poolId].lastRewardsTime, _getNow());
         return lRewards;
+    }
+
+    /*
+     * @notice Gets the total rewards outstanding from last reward time
+     */
+    function totalNewETHRewards(uint256 _poolId) external view returns (uint256) {
+        uint256 eRewards = MonaRevenueRewards(_poolId, pools[_poolId].lastRewardsTime, _getNow());
+        return eRewards;
     }
 
 
