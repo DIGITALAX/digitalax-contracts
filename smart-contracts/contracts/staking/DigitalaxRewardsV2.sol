@@ -350,7 +350,6 @@ contract DigitalaxRewardsV2 {
         return eRewards;
     }
 
-
     /*
      * @notice Get the last rewards time for a pool
      * @return last rewards time for a pool
@@ -361,44 +360,6 @@ contract DigitalaxRewardsV2 {
         returns(uint256)
     {
         return pools[_poolId].lastRewardsTime;
-    }
-
-    /*
-     * @notice Gets the total contributions from the staked contracts
-     */
-    function getTotalContributions()
-        external
-        view
-        returns(uint256)
-    {
-        return monaStaking.stakedEthTotal();
-    }
-
-    /*
-     * @dev Getter functions for Rewards contract
-     */
-    function getCurrentRewardWeek()
-        external 
-        view 
-        returns(uint256)
-    {
-        return diffDays(startTime, _getNow()) / 7;
-    }
-
-    function totalMonaRewardsPaid()
-        external
-        view
-        returns(uint256)
-    {
-        return monaRewardsPaidTotal;
-    }
-
-    function totalETHRewardsPaid()
-        external
-        view
-        returns(uint256)
-    {
-        return ethRewardsPaidTotal;
     }
 
     /* @notice Return mona revenue rewards over the given _from to _to timestamp.
