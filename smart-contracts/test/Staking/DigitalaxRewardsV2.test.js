@@ -85,6 +85,7 @@ contract('DigitalaxRewardsV2', (accounts) => {
         this.monaToken.address,
         this.accessControls.address,
         this.monaStaking.address,
+        this.monaWETH.address,
         0,
         0,
         0
@@ -101,6 +102,7 @@ contract('DigitalaxRewardsV2', (accounts) => {
           this.monaToken.address,
           constants.ZERO_ADDRESS,
           this.monaStaking.address,
+          this.monaWETH.address,
           0,
           0,
           0,
@@ -115,6 +117,7 @@ contract('DigitalaxRewardsV2', (accounts) => {
           constants.ZERO_ADDRESS,
           this.accessControls.address,
           this.monaStaking.address,
+          this.monaWETH.address,
           0,
           0,
           0,
@@ -129,6 +132,7 @@ contract('DigitalaxRewardsV2', (accounts) => {
           this.monaToken.address,
           this.accessControls.address,
           constants.ZERO_ADDRESS,
+          this.monaWETH.address,
           0,
           0,
           0,
@@ -137,11 +141,27 @@ contract('DigitalaxRewardsV2', (accounts) => {
         "DigitalaxRewardsV2: Invalid Mona Staking"
       );
     });
-    it('Can reploy the real contract', async () => {
+    it('Reverts when mona lp is zero', async () => {
+      await expectRevert(
+        DigitalaxRewardsV2.new(
+          this.monaToken.address,
+          this.accessControls.address,
+          this.monaStaking.address,
+          constants.ZERO_ADDRESS,
+          0,
+          0,
+          0,
+          {from: admin}
+        ),
+        "DigitalaxRewardsV2: Invalid Mona LP"
+      );
+    });
+    it('Can redeploy the real contract', async () => {
       const rewardsReal = await DigitalaxRewardsV2Real.new(
           this.monaToken.address,
           this.accessControls.address,
           this.monaStaking.address,
+          this.monaWETH.address,
           0,
           0,
           0,
@@ -637,38 +657,67 @@ contract('DigitalaxRewardsV2', (accounts) => {
       });
     });
   });
-  // TODO figure out if we need uniswap and eth conversions in this contract
-  // describe('Gets staked mona', () => {
-  //   beforeEach(async () => {
-  //     await this.digitalaxRewards.initializePools(0, [0], [ether('10000000000000000000')], [10], [10], [10], {from: admin});
-  //     await this.digitalaxRewards.initializePools(1, [0], [ether('10000000000000000000')], [10], [10], [10], {from: admin});
-  //     await this.digitalaxRewards.initializePools(2, [0], [ether('10000000000000000000')], [10], [10], [10], {from: admin});
-  //
-  //     await this.monaStaking.initMonaStakingPool(
-  //         1,
-  //         TWO_ETH,
-  //         THREE_ETH,
-  //         100,
-  //         10,
-  //         {from: admin}
-  //     );
-  //
-  //     await this.monaToken.transfer(staker, TWO_ETH, { from: minter });
-  //     await this.monaToken.approve(this.monaStaking.address, TEN_ETH, {from: staker});
-  //     await this.monaStaking.stake(0, TWO_ETH, {from: staker});
-  //     await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('5')), {from: admin});
-  //     await this.digitalaxRewards.depositRevenueSharingRewards(0, 1, TEN_ETH, {from: admin, value: THREE_ETH});
-  //     await this.digitalaxRewards.depositRevenueSharingRewards(0, 2, TEN_ETH, {from: admin, value: THREE_ETH});
-  //
-  //   });
-  //
-  //   describe('getMonaStakedEthTotal()', () => {
-  //     it('successfully queries getMonaStakedEthTotal', async () => {
-  //       const staked = await this.digitalaxRewards.getMonaStakedEthTotal({from: staker});
-  //       expect(staked).to.be.bignumber.equal(TWO_ETH);
-  //     });
-  //   });
-  // });
+
+  describe('Gets staked mona', () => {
+    beforeEach(async () => {
+      await this.digitalaxRewards.initializePools(0, [0], [ether('10000000000000000000')], [10], [10], [10], {from: admin});
+      await this.digitalaxRewards.initializePools(1, [0], [ether('10000000000000000000')], [10], [10], [10], {from: admin});
+      await this.digitalaxRewards.initializePools(2, [0], [ether('10000000000000000000')], [10], [10], [10], {from: admin});
+
+      await this.monaStaking.initMonaStakingPool(
+          1,
+          TWO_ETH,
+          THREE_ETH,
+          100,
+          10,
+          {from: admin}
+      );
+
+      await this.monaToken.transfer(staker, TWO_ETH, { from: minter });
+      await this.monaToken.transfer(newRecipient, THREE_ETH, { from: minter });
+      await this.monaToken.approve(this.monaStaking.address, TEN_ETH, {from: staker});
+      await this.monaToken.approve(this.monaStaking.address, TEN_ETH, {from: newRecipient});
+      await this.monaStaking.stake(0, TWO_ETH, {from: staker});
+      await this.monaStaking.stake(0, THREE_ETH, {from: newRecipient});
+      await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('5')), {from: admin});
+      await this.digitalaxRewards.depositRevenueSharingRewards(0, 1, TEN_ETH, {from: admin, value: THREE_ETH});
+      await this.digitalaxRewards.depositRevenueSharingRewards(0, 2, TEN_ETH, {from: admin, value: THREE_ETH});
+
+    });
+
+    describe('getMonaPerEth()', () => {
+      it('successfully queries getMonaPerEth', async () => {
+        const staked = await this.digitalaxRewards.getMonaPerEth(ether('1'), {from: staker});
+        // 10 mona per eth
+        expect(staked).to.be.bignumber.equal(ether('10'));
+      });
+      it('successfully queries getEthPerMona', async () => {
+        const staked = await this.digitalaxRewards.getEthPerMona({from: staker});
+        // 10 mona per eth
+        expect(staked).to.be.bignumber.equal(ether('0.1'));
+      });
+    });
+    describe('getMonaStakedEthTotal()', () => {
+      it('successfully queries getMonaStakedEthTotal', async () => {
+        const staked = await this.digitalaxRewards.getMonaStakedEthTotal({from: staker});
+        // 10 mona per eth
+        expect(staked).to.be.bignumber.equal(ether('0.5'));
+      });
+    });
+    describe('getMonaDailyAPY()', () => {
+      it('successfully queries getMonaDailyAPY', async () => {
+        await this.digitalaxRewards.setNowOverride('1209600'); // third week start
+        const rewardResult = await this.digitalaxRewards.MonaRevenueRewards(0, 1209540, 1209600, {from: staker});
+        const ethPerMona = await this.digitalaxRewards.getEthPerMona({from: staker});
+        console.log('values');
+        console.log(rewardResult);
+        console.log(ethPerMona);
+        console.log(ethPerMona);
+        const apy = await this.digitalaxRewards.getMonaDailyAPY(0, {from: staker});
+        expect(apy).to.be.bignumber.equal(rewardResult.mul(ethPerMona.mul(new BN('52560000'))).div(TWO_ETH.add(THREE_ETH)).mul(new BN('10')));
+      });
+    });
+  });
 
 
   async function getGasCosts(receipt) {

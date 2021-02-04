@@ -32,6 +32,7 @@ contract DigitalaxRewardsV2 {
     /* ========== Variables ========== */
 
     MONA public monaToken;
+    IUniswapV2Pair public lpToken;
     DigitalaxAccessControls public accessControls;
     DigitalaxStaking public monaStaking;
 
@@ -93,6 +94,7 @@ contract DigitalaxRewardsV2 {
         MONA _monaToken,
         DigitalaxAccessControls _accessControls,
         DigitalaxStaking _monaStaking,
+        IUniswapV2Pair _lpToken,
         uint256 _startTime,
         uint256 _monaRewardsPaidTotal,
         uint256 _ethRewardsPaidTotal
@@ -111,9 +113,14 @@ contract DigitalaxRewardsV2 {
             address(_monaStaking) != address(0),
             "DigitalaxRewardsV2: Invalid Mona Staking"
         );
+        require(
+            address(_lpToken) != address(0),
+            "DigitalaxRewardsV2: Invalid Mona LP"
+        );
         monaToken = _monaToken;
         accessControls = _accessControls;
         monaStaking = _monaStaking;
+        lpToken = _lpToken;
         startTime = _startTime;
         monaRewardsPaidTotal = _monaRewardsPaidTotal;
         ethRewardsPaidTotal = _ethRewardsPaidTotal;
@@ -674,7 +681,7 @@ contract DigitalaxRewardsV2 {
 
     function getPairReserves() internal view returns (uint256 wethReserves, uint256 tokenReserves) {
         (address token0,) = UniswapV2Library.sortTokens(address(monaStaking.WETH()), address(monaToken));
-        (uint256 reserve0, uint reserve1,) = IUniswapV2Pair(monaStaking.monaToken()).getReserves();
+        (uint256 reserve0, uint reserve1,) = lpToken.getReserves();
         (wethReserves, tokenReserves) = token0 == address(monaToken) ? (reserve1, reserve0) : (reserve0, reserve1);
     }
 
