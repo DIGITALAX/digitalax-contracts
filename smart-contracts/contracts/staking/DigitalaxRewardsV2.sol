@@ -184,8 +184,8 @@ contract DigitalaxRewardsV2 {
      * @param _depositedEthRewardPointsPerMona the reward points for depositedEth for the week
      */
     function initializePools(
-        uint256 _week,
-        uint256[] calldata _poolIds,
+        uint256 _poolId,
+        uint256[] calldata _weeks,
         uint256[] calldata _weightPointsRevenueSharing,
         uint256[] calldata _mintedMonaRewardPointsPerMona,
         uint256[] calldata _bonusMintedMonaRewardPointsPerMona,
@@ -199,32 +199,32 @@ contract DigitalaxRewardsV2 {
         );
 
         require(
-            _poolIds.length >= 1,
+            _weeks.length >= 1,
             "DigitalaxRewardsV2.initializePools: Cannot initialize without a pool id"
         );
 
         require(
-            _poolIds.length == _weightPointsRevenueSharing.length,
-            "DigitalaxRewardsV2.initializePools: Please check pool ids and weight point revenue lengths"
+            _weeks.length == _weightPointsRevenueSharing.length,
+            "DigitalaxRewardsV2.initializePools: Please check weeks and weight point revenue lengths"
         );
 
         require(
-            _poolIds.length == _mintedMonaRewardPointsPerMona.length,
-            "DigitalaxRewardsV2.initializePools: Please check pool ids and minted mona reward pts lengths"
+            _weeks.length == _mintedMonaRewardPointsPerMona.length,
+            "DigitalaxRewardsV2.initializePools: Please check weeks and minted mona reward pts lengths"
         );
 
         require(
-            _poolIds.length == _bonusMintedMonaRewardPointsPerMona.length,
-            "DigitalaxRewardsV2.initializePools: Please check pool ids and bonus mona reward pts lengths"
+            _weeks.length == _bonusMintedMonaRewardPointsPerMona.length,
+            "DigitalaxRewardsV2.initializePools: Please check weeks and bonus mona reward pts lengths"
         );
 
         require(
-            _poolIds.length == _depositedEthRewardPointsPerMona.length,
-            "DigitalaxRewardsV2.initializePools: Please check pool ids and deposited ETH reward pts lengths"
+            _weeks.length == _depositedEthRewardPointsPerMona.length,
+            "DigitalaxRewardsV2.initializePools: Please check weeks and deposited ETH reward pts lengths"
         );
 
-        for (uint256 i = 0; i < _poolIds.length; i++) {
-            WeeklyRewards storage weeklyRewards = pools[_poolIds[i]].weeklyWeightPoints[_week];
+        for (uint256 i = 0; i < _weeks.length; i++) {
+            WeeklyRewards storage weeklyRewards = pools[_poolId].weeklyWeightPoints[_weeks[i]];
             weeklyRewards.weightPointsRevenueSharing = _weightPointsRevenueSharing[i]; // Revenue sharing has no fixed return, just weight of the marketplace rewards
             weeklyRewards.mintedMonaRewardPointsPerMona = _mintedMonaRewardPointsPerMona[i];
             weeklyRewards.bonusMintedMonaRewardPointsPerMona = _bonusMintedMonaRewardPointsPerMona[i];
@@ -483,26 +483,26 @@ contract DigitalaxRewardsV2 {
 
             /// @dev add multiples of the week
             for (uint256 i = fromWeek+1; i < toWeek; i++) {
-                uint256 weeklyMonaRewards = SECONDS_PER_WEEK.mul(pools[_poolId].weeklyWeightPoints[fromWeek].mintedMonaRewardPointsPerMona);
+                uint256 weeklyMonaRewards = SECONDS_PER_WEEK.mul(pools[_poolId].weeklyWeightPoints[i].mintedMonaRewardPointsPerMona);
                 monaRewards = monaRewards.add(weeklyMonaRewards);
                 if(_isEarlyStaker) {
-                    uint256 weeklyEarlyRewards = SECONDS_PER_WEEK.mul(pools[_poolId].weeklyWeightPoints[fromWeek].bonusMintedMonaRewardPointsPerMona);
+                    uint256 weeklyEarlyRewards = SECONDS_PER_WEEK.mul(pools[_poolId].weeklyWeightPoints[i].bonusMintedMonaRewardPointsPerMona);
                     monaRewards = monaRewards.add(weeklyEarlyRewards);
                 }
-                uint256 weeklyEthRewards = SECONDS_PER_WEEK.mul(pools[_poolId].weeklyWeightPoints[fromWeek].depositedEthRewardPointsPerMona);
-                ethRewards.add(weeklyEthRewards);
+                uint256 weeklyEthRewards = SECONDS_PER_WEEK.mul(pools[_poolId].weeklyWeightPoints[i].depositedEthRewardPointsPerMona);
+                ethRewards = ethRewards.add(weeklyEthRewards);
             }
 
             /// @dev Adds any remaining time in the most recent week till _to
             uint256 finalRemander = _to.sub(toWeek.mul(SECONDS_PER_WEEK).add(startTime));
-            uint256 finalMonaRewards = finalRemander.mul(pools[_poolId].weeklyWeightPoints[fromWeek].mintedMonaRewardPointsPerMona);
+            uint256 finalMonaRewards = finalRemander.mul(pools[_poolId].weeklyWeightPoints[toWeek].mintedMonaRewardPointsPerMona);
             monaRewards = monaRewards.add(finalMonaRewards);
             if(_isEarlyStaker) {
-                uint256 finalEarlyRewards = finalRemander.mul(pools[_poolId].weeklyWeightPoints[fromWeek].bonusMintedMonaRewardPointsPerMona);
+                uint256 finalEarlyRewards = finalRemander.mul(pools[_poolId].weeklyWeightPoints[toWeek].bonusMintedMonaRewardPointsPerMona);
                 monaRewards = monaRewards.add(finalEarlyRewards);
             }
-            uint256 finalEthRewards = finalRemander.mul(pools[_poolId].weeklyWeightPoints[fromWeek].depositedEthRewardPointsPerMona);
-            ethRewards.add(finalEthRewards);
+            uint256 finalEthRewards = finalRemander.mul(pools[_poolId].weeklyWeightPoints[toWeek].depositedEthRewardPointsPerMona);
+            ethRewards = ethRewards.add(finalEthRewards);
         }
         monaRewards = monaRewards.mul(_balance).div(1e18).div(pointMultiplier);
         ethRewards = ethRewards.mul(_balance).div(1e18).div(pointMultiplier);
