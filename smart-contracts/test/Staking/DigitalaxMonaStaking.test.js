@@ -84,6 +84,7 @@ const {
           this.monaToken.address,
           this.accessControls.address,
           this.monaStaking.address,
+          this.monaWETH.address,
           0,
           0,
           0
