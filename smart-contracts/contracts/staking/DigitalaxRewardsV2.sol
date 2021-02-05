@@ -655,6 +655,12 @@ contract DigitalaxRewardsV2 {
         }
         uint256 rewards = MonaRevenueRewards(_poolId, _getNow() - 60, _getNow());
         uint256 rewardsInEth = rewards.mul(getEthPerMona()).div(1e18);
+
+
+        uint256 ethRewards = ETHRevenueRewards(_poolId, _getNow() - 60, _getNow());
+
+        rewardsInEth = rewardsInEth.add(ethRewards);
+
         /// @dev minutes per year x 100 = 52560000
         return rewardsInEth.mul(52560000).mul(1e18).div(stakedEth);
     } 

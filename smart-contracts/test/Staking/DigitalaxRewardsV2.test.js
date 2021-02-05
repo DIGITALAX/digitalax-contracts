@@ -709,12 +709,14 @@ contract('DigitalaxRewardsV2', (accounts) => {
         await this.digitalaxRewards.setNowOverride('1209600'); // third week start
         const rewardResult = await this.digitalaxRewards.MonaRevenueRewards(0, 1209540, 1209600, {from: staker});
         const ethPerMona = await this.digitalaxRewards.getEthPerMona({from: staker});
-        console.log('values');
-        console.log(rewardResult);
-        console.log(ethPerMona);
-        console.log(ethPerMona);
+        const ethRewardResult = await this.digitalaxRewards.ETHRevenueRewards(0, 1209540, 1209600, {from: staker});
+        
         const apy = await this.digitalaxRewards.getMonaDailyAPY(0, {from: staker});
-        expect(apy).to.be.bignumber.equal(rewardResult.mul(ethPerMona.mul(new BN('52560000'))).div(TWO_ETH.add(THREE_ETH)).mul(new BN('10')));
+
+        const totalRewardsInEth = ((rewardResult.mul(ethPerMona).div(ether('1')))).add(ethRewardResult);
+
+        const totalStaked = (TWO_ETH.add(THREE_ETH)).mul(ethPerMona).div(ether('1'));
+        expect(apy).to.be.bignumber.equal((totalRewardsInEth.mul(new BN('52560000'))).mul(ether('1')).div(totalStaked)); // TODO double check
       });
     });
   });
