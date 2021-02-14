@@ -85,7 +85,7 @@ contract DigitalaxPodeMaterials is ERC1155Burnable {
       @dev Only callable with smart contact role
      */
     function mint(address _beneficiary) external {
-        require(_totalBalanceOf(_msgSender()) < maxLimit, "DigitalaxPodeMaterials.mint: Sender already minted");
+        require(totalBalanceOf(_msgSender()) < maxLimit, "DigitalaxPodeMaterials.mint: Sender already minted");
         require(podeNft.balanceOf(_msgSender()) > 0, "DigitalaxPodeMaterials.mint: Sender must have PODE NFT");
 
         uint256 _randomIndex = _rand();
@@ -123,7 +123,7 @@ contract DigitalaxPodeMaterials is ERC1155Burnable {
      @notice Method for getting balance of account
      @param account Account address
      */
-    function _totalBalanceOf(address account) private view returns (uint256) {
+    function totalBalanceOf(address account) public view returns (uint256) {
         require(account != address(0), "DigitalaxPodeMaterials: balance query for the zero address");
 
         uint256 totalBalance = 0;
