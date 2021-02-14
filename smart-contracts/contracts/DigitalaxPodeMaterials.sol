@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./ERC1155/ERC1155Burnable.sol";
@@ -83,12 +84,12 @@ contract DigitalaxPodeMaterials is ERC1155Burnable {
       parent contract as the recipient can be used to map the created children to a given parent token
       @dev Only callable with smart contact role
      */
-    function mint(address _beneficiary, bytes calldata _data) external {
+    function mint(address _beneficiary) external {
         require(_totalBalanceOf(_msgSender()) < maxLimit, "DigitalaxPodeMaterials.mint: Sender already minted");
         require(podeNft.balanceOf(_msgSender()) > 0, "DigitalaxPodeMaterials.mint: Sender must have PODE NFT");
 
         uint256 _randomIndex = _rand();
-        _mint(_beneficiary, _randomIndex, 1, _data);
+        _mint(_beneficiary, _randomIndex, 1, abi.encodePacked(""));
     }
 
     /**

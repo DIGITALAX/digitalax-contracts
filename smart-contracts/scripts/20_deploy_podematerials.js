@@ -43,7 +43,7 @@ async function main() {
   console.log('DigitalaxPodeMaterials deployed to:', contract.address);
   
   for (tokenUri of metadataList) {
-    const tx = await contract.addTokenURI(tokenUri);
+    const tx = await contract.addTokenUri(tokenUri);
     await tx.wait();
     console.log('---Metadata Added---');
   }
