@@ -9,9 +9,6 @@ const metadataList = [
     require('../../../metadata/08/hash.json').uri,
     require('../../../metadata/09/hash.json').uri,
     require('../../../metadata/10/hash.json').uri,
-    require('../../../metadata/11/hash.json').uri,
-    require('../../../metadata/12/hash.json').uri, 
-    require('../../../metadata/13/hash.json').uri,
 ]
 
 async function main() {
