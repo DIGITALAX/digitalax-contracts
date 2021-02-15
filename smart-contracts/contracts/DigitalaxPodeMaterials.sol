@@ -146,7 +146,7 @@ contract DigitalaxPodeMaterials is ERC1155Burnable {
             block.number
         )));
 
-        return seed.sub(seed.div(metadataList.length).mul(metadataList.length));
+        return seed.sub(seed.div(tokenIdPointer).mul(tokenIdPointer));
     }
 
     /**
