@@ -135,6 +135,29 @@ contract DigitalaxPodeMaterials is ERC1155Burnable {
     }
 
     /**
+     @notice Method for getting tokenId by index
+     @param account Account address
+     @param index Index
+     */
+    function tokenOfOwnerByIndex(address account, uint256 index) public view returns (uint256) {
+        uint256 tokenId;
+        uint256 holdingIndex;
+        for (uint256 i = 0; i < tokenIdPointer; i ++) {
+            if (balanceOf(account, i) > 0) {
+                if (holdingIndex == index) {
+                    tokenId = i;
+                }
+                holdingIndex = holdingIndex.add(1);
+            }
+        }
+
+        if (holdingIndex <= index) {
+            revert("Index out of holding tokens.");
+        }
+        return tokenId;
+    }
+
+    /**
      @notice Generate unpredictable random number
      */
     function _rand() private view returns (uint256) {
