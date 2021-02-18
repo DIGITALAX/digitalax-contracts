@@ -51,22 +51,28 @@ async function main() {
   //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/3_wrapped_in_darkness/hash.json`).uri, // 58 wrapped darkness common distant mark
   // ]);
   // Round 4 tester
+  // let tx = await factory.createNewChildren([
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_goodbye_sun_75/hash.json`).uri, // 150
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_seeing_sun_74/hash.json`).uri, // 151
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_peaches_73/hash.json`).uri, // 152
+  //
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_krkn_70/hash.json`).uri, // 153
+  //      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_kero_71/hash.json`).uri, // 154
+  //      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_vnkr_72/hash.json`).uri, // 155
+  //
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_green_bean_59/hash.json`).uri, // 156
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_blue_slide_60/hash.json`).uri, // 157
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_rainbow_wiggle_61/hash.json`).uri, // 158
+  //
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_deep_blue_67/hash.json`).uri, // 159
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_purple_cells_68/hash.json`).uri, // 160
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_walk_into_chaos_83/hash.json`).uri, // 161
+  // ]);
   let tx = await factory.createNewChildren([
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_goodbye_sun_75/hash.json`).uri, // 150
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_seeing_sun_74/hash.json`).uri, // 151
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_peaches_73/hash.json`).uri, // 152
-
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_krkn_70/hash.json`).uri, // 153
-       require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_kero_71/hash.json`).uri, // 154
-       require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_vnkr_72/hash.json`).uri, // 155
-
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_green_bean_59/hash.json`).uri, // 156
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_blue_slide_60/hash.json`).uri, // 157
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_rainbow_wiggle_61/hash.json`).uri, // 158
-
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_deep_blue_67/hash.json`).uri, // 159
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_purple_cells_68/hash.json`).uri, // 160
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/4_walk_into_chaos_83/hash.json`).uri, // 161
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/RTFKT1/hash.json`).uri, // 87
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/RTFKT2/hash.json`).uri, // 86
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/RTFKT3/hash.json`).uri, // 85
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/RTFKT4/hash.json`).uri, // 84
   ]);
 
   const createChildIds = await new Promise((resolve, reject) => {
