@@ -202,9 +202,9 @@ dataSources:
     name: DigitalaxMarketplace
     network: 'rinkeby'
     source:
-      address: '0xAcA4eaf530085B062dB530634DA637e266a823C9'
+      address: '0xaD9bCb60B36A50F30a1251b0b94E1685BF82527D'
       abi: DigitalaxMarketplace
-      startBlock: 7893813
+      startBlock: 8118992
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
