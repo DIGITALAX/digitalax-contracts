@@ -13,5 +13,7 @@
   "DigitalaxGarmentCollectionAddress": "0x569Ff451D7631917151b8C5b3F669156fdbeD251",
   "DigitalaxGarmentCollectionStartBlock": 11660023,
   "DigitalaxMarketplaceAddress": "0xCC48554581c17c2837C13B1685E0e784fADC1c3b",
-  "DigitalaxMarketplaceStartBlock": 11660955
+  "DigitalaxMarketplaceStartBlock": 11660955,
+  "DigitalaxPodePortalAddress": "0x87c3C6B9C917B1732f13d36d6938E4f8802f7c7E",
+  "DigitalaxPodePortalStartBlock": 11740618
 }

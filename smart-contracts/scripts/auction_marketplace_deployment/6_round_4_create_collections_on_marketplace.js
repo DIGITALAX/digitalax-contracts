@@ -53,52 +53,56 @@ async function main() {
 
   //// SETTINGS
   // fill in uris for the nfts
-  const tokenId_peacock = ['176']; // on mainnet 94 TODO double check
-  const tokenId_bang = ['177']; // on mainnet 95 TODO double check
+  const tokenId_peacock = ['94']; // on mainnet 94 TODO double check
+  const tokenId_bang = ['95']; // on mainnet 95 TODO double check
 
-  const tokenId_mono_2 = ['182']; // on mainnet 76 TODO double check
-  const tokenId_mono_1 = ['183']; // on mainnet 77 TODO double check
+  const tokenId_mono_2 = ['76']; // on mainnet 76 TODO double check
+  const tokenId_mono_1 = ['77']; // on mainnet 77 TODO double check
 
-  const tokenId_orange_sunshine = ['173']; // on mainnet 91 TODO double check
-  const tokenId_shape_wave = ['174']; // on mainnet 92 TODO double check
+  const tokenId_orange_sunshine = ['91']; // on mainnet 91 TODO double check
+  const tokenId_shape_wave = ['92']; // on mainnet 92 TODO double check
 
-  const tokenId_moon_flowers = ['179']; // on mainnet 97 TODO double check
-  const tokenId_white_rabbits = ['180']; // on mainnet 98 TODO double check
+  const tokenId_moon_flowers = ['97']; // on mainnet 97 TODO double check
+  const tokenId_white_rabbits = ['98']; // on mainnet 98 TODO double check
 
-  const tokenId_earth = ['170']; // on mainnet 88 TODO double check
-  const tokenId_mars = ['171']; // on mainnet 89 TODO double check
+  const tokenId_earth = ['88']; // on mainnet 88 TODO double check
+  const tokenId_mars = ['89']; // on mainnet 89 TODO double check
 
-  const tokenId_krkn_low_life =  ['153']; // on mainnet 70 TODO confirm for mainnet
-  const tokenId_kero_mercenary =  ['154']; // on mainnet 71 TODO confirm for mainnet
+  const tokenId_krkn_low_life =  ['70']; // on mainnet 70 TODO confirm for mainnet
+  const tokenId_kero_mercenary =  ['71']; // on mainnet 71 TODO confirm for mainnet
 
-  const tokenId_goodbye_sun_serenity =  ['150']; // on mainnet 75 TODO confirm for mainnet
-  const tokenId_seeing_sun_internal_treasure =  ['151']; // on mainnet 74 TODO confirm for mainnet
+  const tokenId_goodbye_sun_internal_treasure =  ['75']; // on mainnet 75 TODO confirm for mainnet
+  const tokenId_seeing_sun_serenity =  ['74']; // on mainnet 74 TODO confirm for mainnet
 
-  const tokenId_deep_blue_cybernetic =  ['159']; // on mainnet 67 TODO confirm for mainnet
-  const tokenId_purple_cells_master_dreams =  ['160']; // on mainnet 68 TODO confirm for mainnet
+  const tokenId_deep_blue_cybernetic =  ['67']; // on mainnet 67 TODO confirm for mainnet
+  const tokenId_purple_cells_master_dreams =  ['68']; // on mainnet 68 TODO confirm for mainnet
 
-  const tokenId_green_bean_caterpillar =  ['156']; // on mainnet 59 TODO confirm for mainnet
-  const tokenId_blue_slide_cocoon =  ['157']; // on mainnet 60 TODO confirm for mainnet
+  const tokenId_green_bean_caterpillar =  ['59']; // on mainnet 59 TODO confirm for mainnet
+  const tokenId_blue_slide_cocoon =  ['60']; // on mainnet 60 TODO confirm for mainnet
+
+  const tokenId_tshirt_child =  ['100']; // on mainnet 100 TODO confirm for mainnet
+  const tokenId_blazer_child =  ['101']; // on mainnet 101 TODO confirm for mainnet
 
   const tokenIdAmounts = ['1'];
 
-  const reservePrice_common = '150000000000000000';
-  const reservePrice2_semirare = '270000000000000000';
+  const reservePrice_common = '120000000000000000';
+  const reservePrice2_semirare = '230000000000000000';
 
  // const test_startTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th
 
-  const mainnet_startTime = '1614015185'; // Jan 19, 8pm
+  const mainnet_startTime = '1614135600'; // Jan 19, 8pm
 
   // Use the single auction id processed in the last script to build auction id specific collections in this script
-  const auctionId_burak_dahan = 417;
-  const auctionId_edward_harber = 418;
-  const auctionId_honorehl = 419;
-  const auctionId_maria_ruano = 420;
-  const auctionId_ava_designers = 421;
-  const auctionId_msistema = 422; // big shot TODO update from result of last script (important)
-  const auctionId_mar_guixa = 423; // golden spiral TODO update from result of last script (important)
-  const auctionId_vitaly = 424; // elimination TODO update from result of last script (important)
-  const auctionId_alyona = 425; //butterfly TODO update from result of last script (important)
+  const auctionId_burak_dahan = 94;
+  const auctionId_edward_harber = 95;
+  const auctionId_honorehl = 96;
+  const auctionId_maria_ruano = 97;
+  const auctionId_ava_designers = 98;
+  const auctionId_msistema = 99; // big shot TODO update from result of last script (important)
+  const auctionId_mar_guixa = 100; // golden spiral TODO update from result of last script (important)
+  const auctionId_vitaly = 101; // elimination TODO update from result of last script (important)
+  const auctionId_alyona = 102; //butterfly TODO update from result of last script (important)
+  const auctionId_dressx = 103;
 
   // Next step is mint collections and open buy offers, run 1 at a time in production in case something drops
   const collectionUris = [
@@ -159,7 +163,7 @@ async function main() {
     },
     {
       // Collection 6 Semi-Rare
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Serenity/hash.json').uri, // TODO Serenity
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Salvation/hash.json').uri, // TODO Serenity
       price: reservePrice2_semirare,
       collectionDesigner: ROUND_4_DESIGNERS.honorehl,
       amountToMintInCollection: 3,
@@ -236,24 +240,24 @@ async function main() {
     },
     {
       // Collection 13 Common
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Serenity/hash.json').uri, // TODO Serenity
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Internal Treasure/hash.json').uri, // TODO Internal Treasure
       price: reservePrice_common,
       collectionDesigner: ROUND_4_DESIGNERS.mar_guixa,
       amountToMintInCollection: 7,
       auctionIdToLink: auctionId_mar_guixa,
       rarity: 'Common',
-      tokendIds: tokenId_goodbye_sun_serenity,
+      tokendIds: tokenId_goodbye_sun_internal_treasure,
       tokenAmounts: tokenIdAmounts,
     },
     {
       // Collection 14 Semi-Rare
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Internal Treasure/hash.json').uri, // TODO Internal Treasure
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Serenity/hash.json').uri, // TODO Serenity
       price: reservePrice2_semirare,
       collectionDesigner: ROUND_4_DESIGNERS.mar_guixa,
       amountToMintInCollection: 3,
       auctionIdToLink: auctionId_mar_guixa,
       rarity: 'Semi-Rare',
-      tokendIds: tokenId_seeing_sun_internal_treasure,
+      tokendIds: tokenId_seeing_sun_serenity,
       tokenAmounts: tokenIdAmounts,
     },
     {
@@ -298,6 +302,28 @@ async function main() {
       auctionIdToLink: auctionId_alyona,
       rarity: 'Semi-Rare',
       tokendIds: tokenId_blue_slide_cocoon,
+      tokenAmounts: tokenIdAmounts,
+    },
+    {
+      // Collection 19 Common
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/T-shirt/hash.json').uri,
+      price: reservePrice_common,
+      collectionDesigner: ROUND_4_DESIGNERS.dressX,
+      amountToMintInCollection: 7,
+      auctionIdToLink: auctionId_dressx,
+      rarity: 'Common',
+      tokendIds: tokenId_tshirt_child,
+      tokenAmounts: tokenIdAmounts,
+    },
+    {
+      // Collection 20 Semi-Rare
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Blazer/hash.json').uri,
+      price: reservePrice2_semirare,
+      collectionDesigner: ROUND_4_DESIGNERS.dressX,
+      amountToMintInCollection: 3,
+      auctionIdToLink: auctionId_dressx,
+      rarity: 'Semi-Rare',
+      tokendIds: tokenId_blazer_child,
       tokenAmounts: tokenIdAmounts,
     }
   ]
