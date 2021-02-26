@@ -47,23 +47,24 @@ async function main() {
 
   //// SETTINGS
   // fill in uris for the nfts
-  const villain_garden = ['178']; // villain garden --> mainnet 96 TODO double check
-  const axon_cells = ['184']; // axon cells --> mainnet 82 TODO double check
-  const redemption_prima_flora = ['175']; // redemption prima flora --> mainnet 93 TODO double check
-  const vector_half_floors = ['181']; // vector half floors --> mainnet 99 TODO double check
-  const opnano_saturn = ['172']; // opnano saturn --> mainnet 90 TODO double check
-  const big_shot_vnkr =  ['155']; // big shot vnkr --> mainnet 72 TODO double check
-  const golden_spiral_peaches =  ['152']; // golden spiral peaches --> mainnet 73 TODO double check
-  const elimination_walk_in_chaos =  ['161']; // elimination walk in chaos --> mainnet 83 TODO double check
-  const butterfly_rainbow_wiggle =  ['158']; // butterfly rainbow wiggle --> mainnet 61 TODO double check
+  const villain_garden = ['96']; // villain garden --> mainnet 96 TODO double check
+  const axon_cells = ['82']; // axon cells --> mainnet 82 TODO double check
+  const redemption_prima_flora = ['93']; // redemption prima flora --> mainnet 93 TODO double check
+  const vector_half_floors = ['99']; // vector half floors --> mainnet 99 TODO double check
+  const opnano_saturn = ['90']; // opnano saturn --> mainnet 90 TODO double check
+  const big_shot_vnkr =  ['72']; // big shot vnkr --> mainnet 72 TODO double check
+  const golden_spiral_peaches =  ['73']; // golden spiral peaches --> mainnet 73 TODO double check
+  const elimination_walk_in_chaos =  ['83']; // elimination walk in chaos --> mainnet 83 TODO double check
+  const butterfly_rainbow_wiggle =  ['61']; // butterfly rainbow wiggle --> mainnet 61 TODO double check
+  const dress_child = ['102'];
 
   const tokenIdAmounts = ['1'];
 
   const reservePrice = '0';
 
  // const testStartTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th only test
-   const mainnet_startTime = '1614015185';   // Jan 19, 8pm utc TODO confirm
-   const mainnet_endTime = '1614533585'; // Jan 23, 8pm utc TODO confirm
+   const mainnet_startTime = '1614135600';   // Feb 24, 0am utc TODO confirm
+   const mainnet_endTime = '1614369600'; // Feb 26, 5pm utc TODO confirm
 
     // Run 1 at a time in production, in case something drops
   const uris = [
@@ -156,6 +157,16 @@ async function main() {
           auctionStartTime: mainnet_startTime,
           auctionEndTime: mainnet_endTime,
           designer: ROUND_4_DESIGNERS.alyona
+      },
+      {
+          // Auction 10 Exclusive
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Dress/hash.json').uri,
+          tokendIds: dress_child,
+          tokenAmounts: tokenIdAmounts,
+          price: reservePrice,
+          auctionStartTime: mainnet_startTime,
+          auctionEndTime: mainnet_endTime,
+          designer: ROUND_4_DESIGNERS.dressX
       }
   ]
 
