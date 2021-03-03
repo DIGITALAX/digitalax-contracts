@@ -15,13 +15,13 @@ contract DigitalaxIndex is Context {
     using Address for address;
 
     // DigitalaxIndex Events
-    event AuctionSetAdded(uint256 sid, uint256[] tokenIds);
-    event AuctionSetRemoved(uint256 sid);
-    event AuctionSetUpdated(uint256 sid, uint256[] tokenIds);
-    event DesignerSetAdded(uint256 sid, uint256[] tokenIds);
-    event DesignerSetRemoved(uint256 sid);
-    event DesignerSetUpdated(uint256 sid, uint256[] tokenIds);
-    event DesignerInfoUpdated(uint256 designerId, string uri);
+    event AuctionSetAdded(uint256 indexed sid, uint256[] tokenIds);
+    event AuctionSetRemoved(uint256 indexed sid);
+    event AuctionSetUpdated(uint256 indexed sid, uint256[] tokenIds);
+    event DesignerSetAdded(uint256 indexed sid, uint256[] tokenIds);
+    event DesignerSetRemoved(uint256 indexed sid);
+    event DesignerSetUpdated(uint256 indexed sid, uint256[] tokenIds);
+    event DesignerInfoUpdated(uint256 indexed designerId, string uri);
 
     // Structure for set of token ids
     struct TokenIdSet {
