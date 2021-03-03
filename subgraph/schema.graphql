@@ -169,3 +169,14 @@ type DigitalaxPodePortalMetadata @entity {
   id: ID!
   tokenUri: String!
 }
+
+type DigitalaxAuctionIndex @entity {
+  id: ID!
+  garments: [DigitalaxGarment!]!
+}
+
+type DigitalaxDesignerIndex @entity {
+  id: ID!
+  garments: [DigitalaxGarment!]!
+  infoUrl: String!
+}
