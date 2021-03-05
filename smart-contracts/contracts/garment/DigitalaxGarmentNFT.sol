@@ -8,12 +8,13 @@ import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "../ERC1155/ERC1155.sol";
 import "../DigitalaxAccessControls.sol";
 import "../ERC998/IERC998ERC1155TopDown.sol";
+import "../EIP712/NativeMetaTransaction.sol";
 
 /**
  * @title Digitalax Garment NFT a.k.a. parent NFTs
  * @dev Issues ERC-721 tokens as well as being able to hold child 1155 tokens
  */
-contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown {
+contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, NativeMetaTransaction, IERC998ERC1155TopDown {
 
     // @notice event emitted upon construction of this contract, used to bootstrap external indexers
     event DigitalaxGarmentNFTContractDeployed();
@@ -29,6 +30,12 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         uint256 indexed _tokenId,
         uint256 _salePrice
     );
+
+    event WithdrawnBatch(
+        address indexed user,
+        uint256[] tokenIds
+    );
+
 
     /// @dev Required to govern who can call certain functions
     DigitalaxAccessControls public accessControls;
@@ -56,6 +63,10 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
 
     /// @dev max children NFTs a single 721 can hold
     uint256 public maxChildrenPerToken = 10;
+
+    /// @dev limit batching of tokens due to gas limit restrictions
+    uint256 public constant BATCH_LIMIT = 20;
+
 
     /**
      @param _accessControls Address of the Digitalax access control contract
@@ -376,5 +387,63 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     function _assertMintingParamsValid(string calldata _tokenUri, address _designer) pure internal {
         require(bytes(_tokenUri).length > 0, "DigitalaxGarmentNFT._assertMintingParamsValid: Token URI is empty");
         require(_designer != address(0), "DigitalaxGarmentNFT._assertMintingParamsValid: Designer is zero address");
+    }
+
+
+    /**
+     * @notice called when token is deposited on root chain
+     * @dev Should be callable only by ChildChainManager
+     * Should handle deposit by minting the required tokenId for user
+     * Make sure minting is done only by this function
+     * @param user user address for whom deposit is being done
+     * @param depositData abi encoded tokenId
+     */
+    function deposit(address user, bytes calldata depositData) // How to set token uri..
+    external
+    {
+        require(
+            accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxGarmentNFT.deposit: Sender must be an authorised contract or admin"
+        );
+        // deposit single
+        if (depositData.length == 32) {
+            uint256 tokenId = abi.decode(depositData, (uint256));
+            _safeMint(user, tokenId);
+
+            // deposit batch
+        } else {
+            uint256[] memory tokenIds = abi.decode(depositData, (uint256[]));
+            uint256 length = tokenIds.length;
+            for (uint256 i; i < length; i++) {
+                _safeMint(user, tokenIds[i]);
+
+                // How?
+               // _setTokenURI(tokenId, _tokenUri);
+            }
+        }
+    }
+
+    /**
+     * @notice called when user wants to withdraw token back to root chain
+     * @dev Should burn user's token. This transaction will be verified when exiting on root chain
+     * @param tokenId tokenId to withdraw
+     */
+    function withdraw(uint256 tokenId) external {
+        _burn(tokenId);
+    }
+
+    /**
+     * @notice called when user wants to withdraw multiple tokens back to root chain
+     * @dev Should burn user's tokens. This transaction will be verified when exiting on root chain
+     * @param tokenIds tokenId list to withdraw
+     */
+    function withdrawBatch(uint256[] calldata tokenIds) external {
+        uint256 length = tokenIds.length;
+        require(length <= BATCH_LIMIT, "ChildERC721: EXCEEDS_BATCH_LIMIT");
+        for (uint256 i; i < length; i++) {
+            uint256 tokenId = tokenIds[i];
+            _burn(tokenId);
+        }
+        emit WithdrawnBatch(_msgSender(), tokenIds);
     }
 }
