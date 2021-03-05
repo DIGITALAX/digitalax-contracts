@@ -4,9 +4,10 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/GSN/Context.sol";
 import "../DigitalaxAccessControls.sol";
+import "../EIP712/NativeMetaTransaction.sol";
 
 // SPDX-License-Identifier: GPLv2
-contract MONA is Context, IERC20  {
+contract MONA is Context, IERC20, NativeMetaTransaction  {
     using SafeMath for uint;
 
     string _symbol;
@@ -23,15 +24,43 @@ contract MONA is Context, IERC20  {
 
     event CapUpdated(uint256 cap, bool freezeCap);
 
+    event Deposit(
+        address indexed token,
+        address indexed from,
+        uint256 amount,
+        uint256 input1,
+        uint256 output1
+    );
+
+    event Withdraw(
+        address indexed token,
+        address indexed from,
+        uint256 amount,
+        uint256 input1,
+        uint256 output1
+    );
+
+    address public childChain;
+
+    modifier onlyChildChain() {
+        require(
+            msg.sender == childChain,
+            "Child token: caller is not the child chain contract"
+        );
+        _;
+    }
+
+
     constructor(
         string memory symbol_,
         string memory name_,
         uint8 decimals_,
         DigitalaxAccessControls accessControls_,
         address tokenOwner,
-        uint256 initialSupply
-    )
-    public
+        uint256 initialSupply,
+        address childChain_
+    ) 
+        public 
     {
         _symbol = symbol_;
         _name = name_;
@@ -39,6 +68,7 @@ contract MONA is Context, IERC20  {
         accessControls = accessControls_;
         balances[tokenOwner] = initialSupply;
         _totalSupply = initialSupply;
+        childChain = childChain_;
         emit Transfer(address(0), tokenOwner, _totalSupply);
     }
 
@@ -54,7 +84,7 @@ contract MONA is Context, IERC20  {
     function totalSupply() override external view returns (uint) {
         return _totalSupply.sub(balances[address(0)]);
     }
-    function balanceOf(address tokenOwner) override external view returns (uint balance) {
+    function balanceOf(address tokenOwner) override public view returns (uint balance) {
         return balances[tokenOwner];
     }
     function transfer(address to, uint tokens) override external returns (bool success) {
@@ -100,7 +130,7 @@ contract MONA is Context, IERC20  {
         }
     }
 
-    function mint(address tokenOwner, uint tokens) external returns (bool success) {
+    function mint(address tokenOwner, uint tokens) public returns (bool success) {
         require(
             accessControls.hasMinterRole(_msgSender()),
             "MONA.mint: Sender must have permission to mint"
@@ -117,4 +147,56 @@ contract MONA is Context, IERC20  {
         emit Transfer(_msgSender(), address(0), tokens);
         return true;
     }
+
+    /**
+* Deposit tokens
+*
+* @param user address for address
+* @param amount token balance
+*/
+    function deposit(address user, uint256 amount) public onlyChildChain {
+        // check for amount and user
+        require(amount > 0 && user != address(0x0));
+
+        // input balance
+        uint256 input1 = balanceOf(user);
+
+        // increase balance
+        mint(user, amount);
+
+        // deposit events
+        emit Deposit(address(this), user, amount, input1, balanceOf(user));
+    }
+
+    /**
+   * Withdraw tokens
+   *
+   * @param amount tokens
+   */
+    function withdraw(uint256 amount) public payable {
+        _withdraw(msg.sender, amount);
+    }
+
+    // Do we need this?
+//    function onStateReceive(
+//        uint256, /* id */
+//        bytes calldata data
+//    ) external onlyStateSyncer {
+//        (address user, uint256 burnAmount) = abi.decode(data, (address, uint256));
+//        uint256 balance = balanceOf(user);
+//        if (balance < burnAmount) {
+//            burnAmount = balance;
+//        }
+//        _withdraw(user, burnAmount);
+//    }
+
+    function _withdraw(address user, uint256 amount) internal {
+        uint256 input = balanceOf(user);
+        // burn(user, amount);
+        balances[_msgSender()] = balances[_msgSender()].sub(amount);
+        _totalSupply = _totalSupply.sub(amount);
+        emit Transfer(_msgSender(), address(0), amount);
+        emit Withdraw(address(this), user, amount, input, balanceOf(user));
+    }
+
 }
