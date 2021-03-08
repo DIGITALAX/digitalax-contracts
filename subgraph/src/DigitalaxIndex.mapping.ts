@@ -26,7 +26,8 @@ export function handleAuctionSetAdded(event: AuctionSetAdded): void {
     let auctionIndex = new DigitalaxAuctionIndex(auctionId.toString());
     let auctionGarments = new Array<string>();
     for(let i = 0; i < event.params.tokenIds.length; i ++) {
-        let garmentToken = DigitalaxGarment.load(event.params.tokenIds[i].toString());
+        let tokenId = event.params.tokenIds.pop();
+        let garmentToken = DigitalaxGarment.load(tokenId.toString());
         auctionGarments.push(garmentToken.id);
     }
     auctionIndex.garments = auctionGarments;
@@ -45,7 +46,8 @@ export function handleAuctionSetUpdated(event: AuctionSetUpdated): void {
     let auctionIndex = DigitalaxAuctionIndex.load(auctionId.toString());
     let auctionGarments = new Array<string>();
     for(let i = 0; i < event.params.tokenIds.length; i ++) {
-        let garmentToken = DigitalaxGarment.load(event.params.tokenIds[i].toString());
+        let tokenId = event.params.tokenIds.pop();
+        let garmentToken = DigitalaxGarment.load(tokenId.toString());
         auctionGarments.push(garmentToken.id);
     }
     auctionIndex.garments = auctionGarments;
@@ -57,7 +59,8 @@ export function handleDesignerSetAdded(event: DesignerSetAdded): void {
     let designerIndex = new DigitalaxDesignerIndex(designerId.toString());
     let designerGarments = new Array<string>();
     for(let i = 0; i < event.params.tokenIds.length; i ++) {
-        let garmentToken = DigitalaxGarment.load(event.params.tokenIds[i].toString());
+        let tokenId = event.params.tokenIds.pop();
+        let garmentToken = DigitalaxGarment.load(tokenId.toString());
         designerGarments.push(garmentToken.id);
     }
     designerIndex.garments = designerGarments;
@@ -78,7 +81,8 @@ export function handleDesignerSetUpdated(event: DesignerSetUpdated): void {
     let designerIndex = DigitalaxDesignerIndex.load(designerId.toString());
     let designerGarments = new Array<string>();
     for(let i = 0; i < event.params.tokenIds.length; i ++) {
-        let garmentToken = DigitalaxGarment.load(event.params.tokenIds[i].toString());
+        let tokenId = event.params.tokenIds.pop();
+        let garmentToken = DigitalaxGarment.load(tokenId.toString());
         designerGarments.push(garmentToken.id);
     }
     designerIndex.garments = designerGarments;

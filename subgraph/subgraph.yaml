@@ -260,9 +260,9 @@ dataSources:
     name: DigitalaxIndex
     network: 'rinkeby'
     source:
-      address: '0xe69ad51F33Be2f216b74BaEfF1CEE84DB5E8E6D2'
+      address: '0x93401DB6e0E17078f785019878063ce5baBA9d46'
       abi: DigitalaxIndex
-      startBlock: 7963905
+      startBlock: 8177798
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
