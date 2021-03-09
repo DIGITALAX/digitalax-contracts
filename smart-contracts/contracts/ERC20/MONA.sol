@@ -2,12 +2,12 @@ pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/GSN/Context.sol";
 import "../DigitalaxAccessControls.sol";
 import "../EIP712/NativeMetaTransaction.sol";
+import "../common/ContextMixin.sol";
 
 // SPDX-License-Identifier: GPLv2
-contract MONA is Context, IERC20, NativeMetaTransaction  {
+contract MONA is Context, IERC20, NativeMetaTransaction, ContextMixin  {
     using SafeMath for uint;
 
     string _symbol;
@@ -28,7 +28,6 @@ contract MONA is Context, IERC20, NativeMetaTransaction  {
         address indexed token,
         address indexed from,
         uint256 amount,
-        uint256 input1,
         uint256 output1
     );
 
@@ -36,7 +35,6 @@ contract MONA is Context, IERC20, NativeMetaTransaction  {
         address indexed token,
         address indexed from,
         uint256 amount,
-        uint256 input1,
         uint256 output1
     );
 
@@ -49,7 +47,6 @@ contract MONA is Context, IERC20, NativeMetaTransaction  {
         );
         _;
     }
-
 
     constructor(
         string memory symbol_,
@@ -141,62 +138,50 @@ contract MONA is Context, IERC20, NativeMetaTransaction  {
         emit Transfer(address(0), tokenOwner, tokens);
         return true;
     }
-    function burn(uint tokens) external returns (bool success) {
+    function burn(uint tokens) public returns (bool success) {
         balances[_msgSender()] = balances[_msgSender()].sub(tokens);
         _totalSupply = _totalSupply.sub(tokens);
         emit Transfer(_msgSender(), address(0), tokens);
         return true;
     }
 
-    /**
-* Deposit tokens
-*
-* @param user address for address
-* @param amount token balance
-*/
-    function deposit(address user, uint256 amount) public onlyChildChain {
-        // check for amount and user
-        require(amount > 0 && user != address(0x0));
-
-        // input balance
-        uint256 input1 = balanceOf(user);
-
-        // increase balance
-        mint(user, amount);
-
-        // deposit events
-        emit Deposit(address(this), user, amount, input1, balanceOf(user));
+    // This is to support Native meta transactions
+    // never use msg.sender directly, use _msgSender() instead
+    function _msgSender()
+    internal
+    override
+    view
+    returns (address payable sender)
+    {
+        return ContextMixin.msgSender();
     }
 
     /**
+    * Deposit tokens
+    *
+    * ChildChainManagerProxy -
+    * Mumbai - 0xb5505a6d998549090530911180f38aC5130101c6
+    * MainNet - 0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa
+     * @notice called when token is deposited on root chain
+   * @dev Should be callable only by ChildChainManager
+   * Should handle deposit by minting the required amount for user
+   * Make sure minting is done only by this function
+   * @param user user address for whom deposit is being done
+   * @param depositData abi encoded amount
+    */
+    function deposit(address user, bytes calldata depositData) external onlyChildChain {
+        uint256 amount = abi.decode(depositData, (uint256));
+        mint(user, amount);
+        emit Deposit(address(this), user, amount, balanceOf(user));
+    }
+
+   /**
    * Withdraw tokens
    *
    * @param amount tokens
    */
     function withdraw(uint256 amount) public payable {
-        _withdraw(msg.sender, amount);
+         burn(amount);
+        emit Withdraw(address(this), _msgSender(), amount, balanceOf(_msgSender()));
     }
-
-    // Do we need this?
-//    function onStateReceive(
-//        uint256, /* id */
-//        bytes calldata data
-//    ) external onlyStateSyncer {
-//        (address user, uint256 burnAmount) = abi.decode(data, (address, uint256));
-//        uint256 balance = balanceOf(user);
-//        if (balance < burnAmount) {
-//            burnAmount = balance;
-//        }
-//        _withdraw(user, burnAmount);
-//    }
-
-    function _withdraw(address user, uint256 amount) internal {
-        uint256 input = balanceOf(user);
-        // burn(user, amount);
-        balances[_msgSender()] = balances[_msgSender()].sub(amount);
-        _totalSupply = _totalSupply.sub(amount);
-        emit Transfer(_msgSender(), address(0), amount);
-        emit Withdraw(address(this), user, amount, input, balanceOf(user));
-    }
-
 }
