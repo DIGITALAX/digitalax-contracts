@@ -6,15 +6,15 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "../ERC1155/ERC1155.sol";
-import "../DigitalaxAccessControls.sol";
 import "../ERC998/IERC998ERC1155TopDown.sol";
 import "../EIP712/NativeMetaTransaction.sol";
+import "../tunnel/BaseChildTunnel.sol";
 
 /**
  * @title Digitalax Garment NFT a.k.a. parent NFTs
  * @dev Issues ERC-721 tokens as well as being able to hold child 1155 tokens
  */
-contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, NativeMetaTransaction, IERC998ERC1155TopDown {
+contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, NativeMetaTransaction, IERC998ERC1155TopDown, BaseChildTunnel {
 
     // @notice event emitted upon construction of this contract, used to bootstrap external indexers
     event DigitalaxGarmentNFTContractDeployed();
@@ -35,10 +35,6 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         address indexed user,
         uint256[] tokenIds
     );
-
-
-    /// @dev Required to govern who can call certain functions
-    DigitalaxAccessControls public accessControls;
 
     /// @dev Child ERC1155 contract address
     ERC1155 public childContract;
@@ -72,7 +68,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
      @param _accessControls Address of the Digitalax access control contract
      @param _childContract ERC1155 the Digitalax child NFT contract
      */
-    constructor(DigitalaxAccessControls _accessControls, ERC1155 _childContract) public {
+    constructor(DigitalaxAccessControls _accessControls, ERC1155 _childContract) BaseChildTunnel(_accessControls) public {
         accessControls = _accessControls;
         childContract = _childContract;
         emit DigitalaxGarmentNFTContractDeployed();
@@ -416,9 +412,6 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
             uint256 length = tokenIds.length;
             for (uint256 i; i < length; i++) {
                 _safeMint(user, tokenIds[i]);
-
-                // How?
-               // _setTokenURI(tokenId, _tokenUri);
             }
         }
     }
@@ -445,5 +438,36 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
             _burn(tokenId);
         }
         emit WithdrawnBatch(_msgSender(), tokenIds);
+    }
+
+    function _processMessageFromRoot(bytes memory message) internal override {
+        // Sample with rlp reader, experiment
+       // RLPReader.RLPItem memory rlp = RLPReader.toRlpItem(message);
+       // RLPReader.RLPItem[] memory rlpList = RLPReader.toList(rlp);
+       // RLPReader.RLPItem memory tokenId = rlpList[0];
+       // RLPReader.RLPItem memory primarySalePrice = rlpList[1];
+       // RLPReader.RLPItem memory garmentDesigner = rlpList[2];
+      //  RLPReader.RLPItem memory tokenUri = rlpList[3];
+       // RLPReader.RLPItem memory childrenList = rlpList[4];
+
+        uint256 _tokenId;
+        uint256 _primarySalePrice;
+        address _garmentDesigner;
+        string memory _tokenUri;
+        uint256[] memory _children;
+        (_tokenId, _primarySalePrice, _garmentDesigner, _tokenUri, _children) = abi.decode(message, (uint256, uint256, address, string, uint256[]));
+
+        // With the information above, rebuild the 721 token in matic!
+        primarySalePrice[_tokenId] = _primarySalePrice;
+        garmentDesigners[_tokenId] = _garmentDesigner;
+        _setTokenURI(_tokenId, _tokenUri);
+        for (uint256 i = 0; i< _children.length; i++) {
+            parentToChildMapping[_tokenId].add(_children[i]);
+        }
+    }
+
+    // Send the max token pointer as example info
+    function sendBalanceToRoot() external {
+        _sendMessageToRoot(abi.encode(tokenIdPointer));
     }
 }
