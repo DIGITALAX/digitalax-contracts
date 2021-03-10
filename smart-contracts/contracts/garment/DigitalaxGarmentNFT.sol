@@ -10,13 +10,12 @@ import "../ERC1155/ERC1155.sol";
 import "../ERC998/IERC998ERC1155TopDown.sol";
 import "../EIP712/NativeMetaTransaction.sol";
 import "../tunnel/BaseChildTunnel.sol";
-import "../common/ContextMixin.sol";
 
 /**
  * @title Digitalax Garment NFT a.k.a. parent NFTs
  * @dev Issues ERC-721 tokens as well as being able to hold child 1155 tokens
  */
-contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, NativeMetaTransaction, IERC998ERC1155TopDown, BaseChildTunnel, ContextMixin {
+contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, NativeMetaTransaction, IERC998ERC1155TopDown, BaseChildTunnel {
 
     // @notice event emitted upon construction of this contract, used to bootstrap external indexers
     event DigitalaxGarmentNFTContractDeployed();
@@ -65,14 +64,30 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     /// @dev limit batching of tokens due to gas limit restrictions
     uint256 public constant BATCH_LIMIT = 20;
 
+    mapping (uint256 => bool) public withdrawnTokens;
+
+    address public childChain;
+
+    modifier onlyChildChain() {
+        require(
+            _msgSender() == childChain,
+            "Child token: caller is not the child chain contract"
+        );
+        _;
+    }
+    /// Required to govern who can call certain functions
+    DigitalaxAccessControls public accessControls;
 
     /**
      @param _accessControls Address of the Digitalax access control contract
      @param _childContract ERC1155 the Digitalax child NFT contract
+     0xb5505a6d998549090530911180f38aC5130101c6
      */
-    constructor(DigitalaxAccessControls _accessControls, ERC1155 _childContract) BaseChildTunnel(_accessControls) public {
+    constructor(DigitalaxAccessControls _accessControls, ERC1155 _childContract, address _childChain) public {
         accessControls = _accessControls;
         childContract = _childContract;
+        childChain = _childChain;
+        _initializeEIP712(name());
         emit DigitalaxGarmentNFTContractDeployed();
     }
 
@@ -106,6 +121,9 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
 
         tokenIdPointer = tokenIdPointer.add(1);
         uint256 tokenId = tokenIdPointer;
+
+        // MATIC guard, to catch tokens minted on chain
+        require(!withdrawnTokens[tokenId], "ChildMintableERC721: TOKEN_EXISTS_ON_ROOT_CHAIN");
 
         // Mint token and set token URI
         _safeMint(_beneficiary, tokenId);
@@ -417,6 +435,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         // deposit single
         if (depositData.length == 32) {
             uint256 tokenId = abi.decode(depositData, (uint256));
+            withdrawnTokens[tokenId] = false;
             _safeMint(user, tokenId);
 
             // deposit batch
@@ -424,6 +443,8 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
             uint256[] memory tokenIds = abi.decode(depositData, (uint256[]));
             uint256 length = tokenIds.length;
             for (uint256 i; i < length; i++) {
+
+                withdrawnTokens[tokenIds[i]] = false;
                 _safeMint(user, tokenIds[i]);
             }
         }
@@ -435,6 +456,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
      * @param tokenId tokenId to withdraw
      */
     function withdraw(uint256 tokenId) external {
+        withdrawnTokens[tokenId] = true;
         burn(tokenId);
     }
 
@@ -448,6 +470,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         require(length <= BATCH_LIMIT, "ChildERC721: EXCEEDS_BATCH_LIMIT");
         for (uint256 i; i < length; i++) {
             uint256 tokenId = tokenIds[i];
+            withdrawnTokens[tokenIds[i]] = true;
             burn(tokenId);
         }
         emit WithdrawnBatch(_msgSender(), tokenIds);

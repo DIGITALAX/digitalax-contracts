@@ -1,33 +1,29 @@
 pragma solidity 0.6.12;
 import "../DigitalaxAccessControls.sol";
+import "../common/ContextMixin.sol";
 
 /**
 * @notice Mock child tunnel contract to receive and send message from L2
 */
-abstract contract BaseChildTunnel {
-    /// Required to govern who can call certain functions
-    DigitalaxAccessControls public accessControls;
+abstract contract BaseChildTunnel is ContextMixin {
+
+    modifier onlyStateSyncer() {
+        require(
+            msg.sender == 0x0000000000000000000000000000000000001001,
+            "Child tunnel: caller is not the state syncer"
+        );
+        _;
+    }
 
     // MessageTunnel on L1 will get data from this event
     event MessageSent(bytes message);
-
-    constructor(DigitalaxAccessControls _accessControls) public {
-       //  _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-       //  _setupRole(STATE_SYNCER_ROLE, 0x0000000000000000000000000000000000001001);
-       //  _setupContractId("ChildTunnel");
-       accessControls = _accessControls;
-    }
 
     /**
      * @notice Receive state sync from matic contracts
      * @dev This method will be called by Matic chain internally.
      * This is executed without transaction using a system call.
      */
-    function onStateReceive(uint256, bytes memory message) public {
-        require(
-            accessControls.hasSmartContractRole(msg.sender) || accessControls.hasAdminRole(msg.sender),
-            "BaseChildTunnel.onStateReceive: Sender must have the admin or contract role"
-        );
+    function onStateReceive(uint256, bytes memory message) public onlyStateSyncer{
         _processMessageFromRoot(message);
     }
 

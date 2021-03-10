@@ -66,6 +66,7 @@ contract MONA is Context, IERC20, NativeMetaTransaction, ContextMixin  {
         balances[tokenOwner] = initialSupply;
         _totalSupply = initialSupply;
         childChain = childChain_;
+        _initializeEIP712(name_);
         emit Transfer(address(0), tokenOwner, _totalSupply);
     }
 
