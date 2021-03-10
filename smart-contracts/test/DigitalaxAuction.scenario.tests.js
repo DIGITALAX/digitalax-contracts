@@ -32,6 +32,7 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
       'DigitalaxMaterials',
       'DXM',
       this.accessControls.address,
+        '0xb5505a6d998549090530911180f38aC5130101c6',
       {from: owner}
     );
 
@@ -39,6 +40,7 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
     this.token = await DigitalaxGarmentNFT.new(
       this.accessControls.address,
       this.digitalaxMaterials.address,
+        '0xb5505a6d998549090530911180f38aC5130101c6',
       {from: admin}
     );
 
