@@ -24,6 +24,7 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, minter, to
       name,
       symbol,
       this.accessControls.address,
+        '0xb5505a6d998549090530911180f38aC5130101c6',
       {from: admin}
     );
   });
