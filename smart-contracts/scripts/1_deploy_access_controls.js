@@ -19,6 +19,7 @@ async function main() {
   // Super Admin account
   await accessControls.addAdminRole(SUPER_ADMIN);
   await accessControls.addMinterRole(SUPER_ADMIN);
+  await accessControls.addMinterRole('0xb5505a6d998549090530911180f38aC5130101c6'); // MATIC mumbai
   console.log(`DigitalaxAccessControls added an admin and minter: ${SUPER_ADMIN}`);
 
   // Other multisig
