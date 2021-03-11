@@ -118,27 +118,16 @@ contract MONA is Context, IERC20, NativeMetaTransaction, ContextMixin  {
         emit CapUpdated(cap, freezeCap);
     }
 
-    function availableToMint() external view returns (uint tokens) {
-        if (accessControls.hasMinterRole(_msgSender())) {
-            if (cap > 0) {
-                tokens = cap.sub(_totalSupply.sub(balances[address(0)]));
-            } else {
-                tokens = uint(-1);
-            }
-        }
-    }
 
-    function mint(address tokenOwner, uint tokens) public returns (bool success) {
-        require(
-            accessControls.hasMinterRole(_msgSender()),
-            "MONA.mint: Sender must have permission to mint"
-        );
+    function _mint(address tokenOwner, uint tokens) internal virtual returns (bool success) {
+        require(tokenOwner != address(0), "ERC20: mint to the zero address");
         require(cap == 0 || _totalSupply + tokens <= cap, "Cap exceeded");
         balances[tokenOwner] = balances[tokenOwner].add(tokens);
         _totalSupply = _totalSupply.add(tokens);
         emit Transfer(address(0), tokenOwner, tokens);
         return true;
     }
+
     function burn(uint tokens) public returns (bool success) {
         balances[_msgSender()] = balances[_msgSender()].sub(tokens);
         _totalSupply = _totalSupply.sub(tokens);
@@ -172,7 +161,7 @@ contract MONA is Context, IERC20, NativeMetaTransaction, ContextMixin  {
     */
     function deposit(address user, bytes calldata depositData) external onlyChildChain {
         uint256 amount = abi.decode(depositData, (uint256));
-        mint(user, amount);
+        _mint(user, amount);
         emit Deposit(address(this), user, amount, balanceOf(user));
     }
 
