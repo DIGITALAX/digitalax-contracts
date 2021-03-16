@@ -8,14 +8,13 @@ import "@openzeppelin/contracts/GSN/Context.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "../ERC1155/ERC1155.sol";
 import "../ERC998/IERC998ERC1155TopDown.sol";
-import "../EIP712/NativeMetaTransaction.sol";
 import "../tunnel/BaseChildTunnel.sol";
 
 /**
  * @title Digitalax Garment NFT a.k.a. parent NFTs
  * @dev Issues ERC-721 tokens as well as being able to hold child 1155 tokens
  */
-contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, NativeMetaTransaction, IERC998ERC1155TopDown, BaseChildTunnel {
+contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown, BaseChildTunnel {
 
     // @notice event emitted upon construction of this contract, used to bootstrap external indexers
     event DigitalaxGarmentNFTContractDeployed();
@@ -87,19 +86,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         accessControls = _accessControls;
         childContract = _childContract;
         childChain = _childChain;
-        _initializeEIP712(name());
         emit DigitalaxGarmentNFTContractDeployed();
-    }
-
-    // This is to support Native meta transactions
-    // never use msg.sender directly, use _msgSender() instead
-    function _msgSender()
-    internal
-    override
-    view
-    returns (address payable sender)
-    {
-        return ContextMixin.msgSender();
     }
 
     /**

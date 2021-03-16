@@ -3,11 +3,10 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../DigitalaxAccessControls.sol";
-import "../EIP712/NativeMetaTransaction.sol";
-import "../common/ContextMixin.sol";
+import "../EIP2771/BaseRelayRecipient.sol";
 
 // SPDX-License-Identifier: GPLv2
-contract MONA is Context, IERC20, NativeMetaTransaction, ContextMixin  {
+contract MONA is IERC20, BaseRelayRecipient{
     using SafeMath for uint;
 
     string _symbol;
@@ -55,7 +54,8 @@ contract MONA is Context, IERC20, NativeMetaTransaction, ContextMixin  {
         DigitalaxAccessControls accessControls_,
         address tokenOwner,
         uint256 initialSupply,
-        address childChain_
+        address childChain_,
+        address trustedForwarder_
     ) 
         public 
     {
@@ -66,8 +66,17 @@ contract MONA is Context, IERC20, NativeMetaTransaction, ContextMixin  {
         balances[tokenOwner] = initialSupply;
         _totalSupply = initialSupply;
         childChain = childChain_;
-        _initializeEIP712(name_);
+        trustedForwarder = trustedForwarder_;
         emit Transfer(address(0), tokenOwner, _totalSupply);
+    }
+
+    /**
+  * Override this function.
+  * This version is to keep track of BaseRelayRecipient you are using
+  * in your contract.
+  */
+    function versionRecipient() external view override returns (string memory) {
+        return "1";
     }
 
     function symbol() external view returns (string memory) {
@@ -107,6 +116,14 @@ contract MONA is Context, IERC20, NativeMetaTransaction, ContextMixin  {
         return allowed[tokenOwner][spender];
     }
 
+    function setTrustedForwarder(address _trustedForwarder) external  {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "MONA.setTrustedForwarder: Sender must be admin"
+        );
+        trustedForwarder = _trustedForwarder;
+    }
+
     function setCap(uint _cap, bool _freezeCap) external  {
         require(
             accessControls.hasAdminRole(_msgSender()),
@@ -133,17 +150,6 @@ contract MONA is Context, IERC20, NativeMetaTransaction, ContextMixin  {
         _totalSupply = _totalSupply.sub(tokens);
         emit Transfer(_msgSender(), address(0), tokens);
         return true;
-    }
-
-    // This is to support Native meta transactions
-    // never use msg.sender directly, use _msgSender() instead
-    function _msgSender()
-    internal
-    override
-    view
-    returns (address payable sender)
-    {
-        return ContextMixin.msgSender();
     }
 
     /**
