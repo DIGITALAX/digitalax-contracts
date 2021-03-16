@@ -223,15 +223,15 @@ dataSources:
       eventHandlers:
         - event: DigitalaxMarketplaceContractDeployed()
           handler: handleMarketplaceDeployed
-        - event: UpdateMarketplacePlatformFee(uint256)
+        - event: UpdateMarketplacePlatformFee(indexed uint256,uint256)
           handler: handleUpdateMarketplacePlatformFee
-        - event: UpdateMarketplaceDiscountToPayInErc20(uint256)
+        - event: UpdateMarketplaceDiscountToPayInErc20(indexed uint256,uint256)
           handler: handleUpdateMarketplaceDiscountToPayInErc20
         - event: OfferCreated(indexed uint256)
           handler: handleOfferCreated
         - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
           handler: handleOfferPrimarySalePriceUpdated
-        - event: OfferPurchased(indexed uint256,indexed uint256,indexed address,uint256,bool,uint256)
+        - event: OfferPurchased(indexed uint256,indexed uint256,indexed address,uint256,bool,uint256,uint256,uint256)
           handler: handleOfferPurchased
         - event: OfferCancelled(indexed uint256)
           handler: handleOfferCancelled
