@@ -1,5 +1,4 @@
 pragma solidity 0.6.12;
-import "../DigitalaxAccessControls.sol";
 
 /**
 * @notice Mock child tunnel contract to receive and send message from L2

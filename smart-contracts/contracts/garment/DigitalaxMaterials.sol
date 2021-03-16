@@ -5,12 +5,13 @@ pragma experimental ABIEncoderV2;
 
 import "../ERC1155/ERC1155Burnable.sol";
 import "../DigitalaxAccessControls.sol";
+import "../EIP2771/BaseRelayRecipient.sol";
 
 /**
  * @title Digitalax Materials NFT a.k.a. child NFTs
  * @dev Issues ERC-1155 tokens which can be held by the parent ERC-721 contract
  */
-contract DigitalaxMaterials is ERC1155Burnable {
+contract DigitalaxMaterials is ERC1155Burnable, BaseRelayRecipient {
 
     // @notice event emitted on contract creation
     event DigitalaxMaterialsDeployed();
@@ -48,12 +49,42 @@ contract DigitalaxMaterials is ERC1155Burnable {
         string memory _name,
         string memory _symbol,
         DigitalaxAccessControls _accessControls,
-        address _childChain
+        address _childChain,
+        address _trustedForwarder
     ) public {
         name = _name;
         symbol = _symbol;
         accessControls = _accessControls;
+        trustedForwarder = _trustedForwarder;
         emit DigitalaxMaterialsDeployed();
+    }
+
+    /**
+     * Override this function.
+     * This version is to keep track of BaseRelayRecipient you are using
+     * in your contract.
+     */
+    function versionRecipient() external view override returns (string memory) {
+        return "1";
+    }
+
+    function setTrustedForwarder(address _trustedForwarder) external  {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxMaterials.setTrustedForwarder: Sender must be admin"
+        );
+        trustedForwarder = _trustedForwarder;
+    }
+
+    // This is to support Native meta transactions
+    // never use msg.sender directly, use _msgSender() instead
+    function _msgSender()
+    internal
+    override
+    view
+    returns (address payable sender)
+    {
+        return BaseRelayRecipient.msgSender();
     }
 
     ///////////////////////////
