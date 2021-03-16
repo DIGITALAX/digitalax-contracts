@@ -1,11 +1,10 @@
 pragma solidity 0.6.12;
 import "../DigitalaxAccessControls.sol";
-import "../common/ContextMixin.sol";
 
 /**
 * @notice Mock child tunnel contract to receive and send message from L2
 */
-abstract contract BaseChildTunnel is ContextMixin {
+abstract contract BaseChildTunnel {
 
     modifier onlyStateSyncer() {
         require(

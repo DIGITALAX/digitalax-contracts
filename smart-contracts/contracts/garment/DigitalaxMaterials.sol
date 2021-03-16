@@ -5,14 +5,12 @@ pragma experimental ABIEncoderV2;
 
 import "../ERC1155/ERC1155Burnable.sol";
 import "../DigitalaxAccessControls.sol";
-import "../common/ContextMixin.sol";
-import "../EIP712/NativeMetaTransaction.sol";
 
 /**
  * @title Digitalax Materials NFT a.k.a. child NFTs
  * @dev Issues ERC-1155 tokens which can be held by the parent ERC-721 contract
  */
-contract DigitalaxMaterials is ERC1155Burnable, NativeMetaTransaction, ContextMixin {
+contract DigitalaxMaterials is ERC1155Burnable {
 
     // @notice event emitted on contract creation
     event DigitalaxMaterialsDeployed();
@@ -55,19 +53,7 @@ contract DigitalaxMaterials is ERC1155Burnable, NativeMetaTransaction, ContextMi
         name = _name;
         symbol = _symbol;
         accessControls = _accessControls;
-        _initializeEIP712(_name);
         emit DigitalaxMaterialsDeployed();
-    }
-
-    // This is to support Native meta transactions
-    // never use msg.sender directly, use _msgSender() instead
-    function _msgSender()
-    internal
-    override
-    view
-    returns (address payable sender)
-    {
-        return ContextMixin.msgSender();
     }
 
     ///////////////////////////
