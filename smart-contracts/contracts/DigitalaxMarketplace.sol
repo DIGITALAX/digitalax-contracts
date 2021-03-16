@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./DigitalaxAccessControls.sol";
 import "./garment/IDigitalaxGarmentNFT.sol";
 import "./garment/DigitalaxGarmentCollection.sol";
-import "./Oracle/UniswapPairOracle_MONA_WETH.sol";
+import "./oracle/UniswapPairOracle_MONA_WETH.sol";
 //console
 import "@nomiclabs/buidler/console.sol";
 /**
