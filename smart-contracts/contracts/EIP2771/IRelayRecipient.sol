@@ -21,7 +21,7 @@ abstract contract IRelayRecipient {
      * otherwise, return `msg.sender`
      * should be used in the contract anywhere instead of msg.sender
      */
-    function _msgSender() internal virtual view returns (address payable);
+    function msgSender() internal virtual view returns (address payable);
 
     function versionRecipient() external virtual view returns (string memory);
 }

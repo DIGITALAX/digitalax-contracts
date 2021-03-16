@@ -71,10 +71,10 @@ contract MONA is IERC20, BaseRelayRecipient{
     }
 
     /**
-  * Override this function.
-  * This version is to keep track of BaseRelayRecipient you are using
-  * in your contract.
-  */
+    * Override this function.
+    * This version is to keep track of BaseRelayRecipient you are using
+     * in your contract.
+    */
     function versionRecipient() external view override returns (string memory) {
         return "1";
     }
@@ -122,6 +122,16 @@ contract MONA is IERC20, BaseRelayRecipient{
             "MONA.setTrustedForwarder: Sender must be admin"
         );
         trustedForwarder = _trustedForwarder;
+    }
+
+    // This is to support Native meta transactions
+    // never use msg.sender directly, use _msgSender() instead
+    function _msgSender()
+    internal
+    view
+    returns (address payable sender)
+    {
+        return BaseRelayRecipient.msgSender();
     }
 
     function setCap(uint _cap, bool _freezeCap) external  {
