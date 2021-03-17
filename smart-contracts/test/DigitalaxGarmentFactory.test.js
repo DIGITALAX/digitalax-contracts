@@ -32,6 +32,7 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
       symbol,
       this.accessControls.address,
         '0xb5505a6d998549090530911180f38aC5130101c6',
+        constants.ZERO_ADDRESS,
       {from: admin}
     );
 
@@ -39,6 +40,7 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
       this.accessControls.address,
       this.digitalaxMaterials.address,
         '0xb5505a6d998549090530911180f38aC5130101c6',
+        constants.ZERO_ADDRESS,
       {from: admin}
     );
 

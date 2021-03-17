@@ -31,6 +31,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
           'DXM',
           this.accessControls.address,
             '0xb5505a6d998549090530911180f38aC5130101c6',
+            constants.ZERO_ADDRESS,
           {from: owner}
         );
 
@@ -38,6 +39,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
           this.accessControls.address,
           this.digitalaxMaterials.address,
             '0xb5505a6d998549090530911180f38aC5130101c6',
+            constants.ZERO_ADDRESS,
           {from: admin}
         );
 
