@@ -10,12 +10,13 @@ import "./DigitalaxAccessControls.sol";
 import "./garment/IDigitalaxGarmentNFT.sol";
 import "./garment/DigitalaxGarmentCollection.sol";
 import "./oracle/UniswapPairOracle_MONA_WETH.sol";
+import "./EIP2771/BaseRelayRecipient.sol";
 //console
 import "@nomiclabs/buidler/console.sol";
 /**
  * @notice Marketplace contract for Digitalax NFTs
  */
-contract DigitalaxMarketplace is Context, ReentrancyGuard {
+contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
     using SafeMath for uint256;
     using Address for address payable;
     /// @notice Event emitted only on construction. To be used by indexers
@@ -110,7 +111,8 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         UniswapPairOracle_MONA_WETH _oracle,
         address payable _platformFeeRecipient,
         address _monaErc20Token,
-        address _weth
+        address _weth,
+        address _trustedForwarder
     ) public {
         require(address(_accessControls) != address(0), "DigitalaxMarketplace: Invalid Access Controls");
         require(address(_garmentNft) != address(0), "DigitalaxMarketplace: Invalid NFT");
@@ -126,9 +128,39 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         platformFeeRecipient = _platformFeeRecipient;
         monaErc20Token = _monaErc20Token;
         weth = _weth;
+        trustedForwarder = _trustedForwarder;
 
         emit DigitalaxMarketplaceContractDeployed();
     }
+
+
+    /**
+     * Override this function.
+     * This version is to keep track of BaseRelayRecipient you are using
+     * in your contract.
+     */
+    function versionRecipient() external view override returns (string memory) {
+        return "1";
+    }
+
+    function setTrustedForwarder(address _trustedForwarder) external  {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxMaterials.setTrustedForwarder: Sender must be admin"
+        );
+        trustedForwarder = _trustedForwarder;
+    }
+
+    // This is to support Native meta transactions
+    // never use msg.sender directly, use _msgSender() instead
+    function _msgSender()
+    internal
+    view
+    returns (address payable sender)
+    {
+        return BaseRelayRecipient.msgSender();
+    }
+
     /**
      @notice Creates a new offer for a given garment
      @dev Only the owner of a garment can create an offer and must have ALREADY approved the contract
@@ -212,10 +244,10 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
             amountOfMonaToTransfer = amountOfMonaToTransferToDesigner.add(amountOfMonaToTransferAsFees);
 
             // Check that there is enough ERC20 to cover the rest of the value (minus the discount already taken)
-            require(IERC20(monaErc20Token).allowance(msg.sender, address(this)) >= amountOfMonaToTransfer, "DigitalaxMarketplace.buyOffer: Failed to supply ERC20 Allowance");
+            require(IERC20(monaErc20Token).allowance(_msgSender(), address(this)) >= amountOfMonaToTransfer, "DigitalaxMarketplace.buyOffer: Failed to supply ERC20 Allowance");
             // Transfer ERC20 token from user to contract(this) escrow
-            IERC20(monaErc20Token).transferFrom(msg.sender, garmentNft.garmentDesigners(garmentTokenId), amountOfMonaToTransferToDesigner);
-            IERC20(monaErc20Token).transferFrom(msg.sender, platformFeeRecipient, amountOfMonaToTransferAsFees);
+            IERC20(monaErc20Token).transferFrom(_msgSender(), garmentNft.garmentDesigners(garmentTokenId), amountOfMonaToTransferToDesigner);
+            IERC20(monaErc20Token).transferFrom(_msgSender(), platformFeeRecipient, amountOfMonaToTransferAsFees);
 
         } else {
             require(!freezeETHPayment, "DigitalaxMarketplace.buyOffer: eth payments currently frozen");
@@ -234,7 +266,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         // Record the primary sale price for the garment
         garmentNft.setPrimarySalePrice(garmentTokenId, offer.primarySalePrice);
         // Transfer the token to the purchaser
-        garmentNft.safeTransferFrom(garmentNft.ownerOf(garmentTokenId), msg.sender, garmentTokenId);
+        garmentNft.safeTransferFrom(garmentNft.ownerOf(garmentTokenId), _msgSender(), garmentTokenId);
         emit OfferPurchased(garmentTokenId, _garmentCollectionId, _msgSender(), offer.primarySalePrice, _payWithMona, amountOfMonaToTransfer, offer.platformFee, offer.discountToPayERC20);
     }
     /**
@@ -466,7 +498,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         require(_tokenContract != address(0), "Invalid address");
         IERC20 token = IERC20(_tokenContract);
         uint256 balance = token.balanceOf(address(this));
-        require(token.transfer(msg.sender, balance), "Transfer failed");
+        require(token.transfer(_msgSender(), balance), "Transfer failed");
     }
 
     /**
@@ -479,6 +511,6 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
             accessControls.hasAdminRole(_msgSender()),
             "DigitalaxMarketplace.reclaimETH: Sender must be admin"
         );
-        msg.sender.transfer(address(this).balance);
+        _msgSender().transfer(address(this).balance);
     }
 }
