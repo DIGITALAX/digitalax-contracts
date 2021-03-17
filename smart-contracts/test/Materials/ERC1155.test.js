@@ -29,6 +29,7 @@ contract('DigitalaxMaterials 1155 behaviour tests', function ([admin, operator, 
       symbol,
       this.accessControls.address,
         '0xb5505a6d998549090530911180f38aC5130101c6',
+        constants.ZERO_ADDRESS,
       {from: admin}
     );
 

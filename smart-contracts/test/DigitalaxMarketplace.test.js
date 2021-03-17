@@ -64,6 +64,7 @@ contract('DigitalaxMarketplace', (accounts) => {
       'DXM',
       this.accessControls.address,
         '0xb5505a6d998549090530911180f38aC5130101c6',
+        constants.ZERO_ADDRESS,
       {from: owner}
     );
 
@@ -71,6 +72,7 @@ contract('DigitalaxMarketplace', (accounts) => {
       this.accessControls.address,
       this.digitalaxMaterials.address,
         '0xb5505a6d998549090530911180f38aC5130101c6',
+        constants.ZERO_ADDRESS,
       {from: admin}
     );
 
@@ -124,6 +126,7 @@ contract('DigitalaxMarketplace', (accounts) => {
       platformFeeAddress,
       this.monaToken.address,
       this.weth.address,
+        constants.ZERO_ADDRESS,
       {from: admin}
     );
 
@@ -147,6 +150,7 @@ contract('DigitalaxMarketplace', (accounts) => {
           platformFeeAddress,
           this.monaToken.address,
           this.weth.address,
+            constants.ZERO_ADDRESS,
           {from: admin}
         ),
         "DigitalaxMarketplace: Invalid Access Controls"
@@ -163,6 +167,7 @@ contract('DigitalaxMarketplace', (accounts) => {
           platformFeeAddress,
           this.monaToken.address,
           this.weth.address,
+            constants.ZERO_ADDRESS,
           {from: admin}
         ),
         "DigitalaxMarketplace: Invalid NFT"
@@ -179,6 +184,7 @@ contract('DigitalaxMarketplace', (accounts) => {
           platformFeeAddress,
           this.monaToken.address,
           this.weth.address,
+            constants.ZERO_ADDRESS,
           {from: admin}
         ),
         "DigitalaxMarketplace: Invalid Collection"
@@ -195,6 +201,7 @@ contract('DigitalaxMarketplace', (accounts) => {
           constants.ZERO_ADDRESS,
           this.monaToken.address,
           this.weth.address,
+            constants.ZERO_ADDRESS,
           {from: admin}
         ),
         "DigitalaxMarketplace: Invalid Platform Fee Recipient"
@@ -211,6 +218,7 @@ contract('DigitalaxMarketplace', (accounts) => {
           platformFeeAddress,
           constants.ZERO_ADDRESS,
           this.weth.address,
+            constants.ZERO_ADDRESS,
           {from: admin}
         ),
         "DigitalaxMarketplace: Invalid ERC20 Token"
@@ -427,6 +435,7 @@ contract('DigitalaxMarketplace', (accounts) => {
           platformFeeAddress,
           this.monaToken.address,
           this.weth.address,
+            constants.ZERO_ADDRESS,
           {from: admin}
         );
 

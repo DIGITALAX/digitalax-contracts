@@ -42,6 +42,7 @@ contract('DigitalaxAuction', (accounts) => {
       'DXM',
       this.accessControls.address,
         '0xb5505a6d998549090530911180f38aC5130101c6',
+        constants.ZERO_ADDRESS,
       {from: owner}
     );
 
@@ -49,6 +50,7 @@ contract('DigitalaxAuction', (accounts) => {
       this.accessControls.address,
       this.digitalaxMaterials.address,
         '0xb5505a6d998549090530911180f38aC5130101c6',
+        constants.ZERO_ADDRESS,
       {from: admin}
     );
 
@@ -77,6 +79,7 @@ contract('DigitalaxAuction', (accounts) => {
       this.oracle.address,
       this.monaToken.address,
       platformFeeAddress,
+      constants.ZERO_ADDRESS,
       {from: admin}
     );
 
@@ -94,6 +97,7 @@ contract('DigitalaxAuction', (accounts) => {
           this.oracle.address,
           this.monaToken.address,
           platformFeeAddress,
+          constants.ZERO_ADDRESS,
           {from: admin}
         ),
         "DigitalaxAuction: Invalid Access Controls"
@@ -108,6 +112,7 @@ contract('DigitalaxAuction', (accounts) => {
           this.oracle.address,
           this.monaToken.address,
           platformFeeAddress,
+          constants.ZERO_ADDRESS,
           {from: admin}
         ),
         "DigitalaxAuction: Invalid NFT"
@@ -121,6 +126,7 @@ contract('DigitalaxAuction', (accounts) => {
           this.token.address,
           this.oracle.address,
           this.monaToken.address,
+          constants.ZERO_ADDRESS,
           constants.ZERO_ADDRESS,
           {from: admin}
         ),
@@ -484,6 +490,7 @@ contract('DigitalaxAuction', (accounts) => {
           platformFeeAddress,
           this.oracle.address,
           this.monaToken.address,
+          constants.ZERO_ADDRESS,
           {from: admin}
         );
 
