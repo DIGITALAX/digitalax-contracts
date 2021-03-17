@@ -2,7 +2,6 @@
 
 pragma solidity 0.6.12;
 
-import "@openzeppelin/contracts/GSN/Context.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -11,11 +10,12 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./DigitalaxAccessControls.sol";
 import "./garment/IDigitalaxGarmentNFT.sol";
 import "./oracle/IDigitalaxMonaOracle.sol";
+import "./EIP2771/BaseRelayRecipient.sol";
 
 /**
  * @notice Primary sale auction contract for Digitalax NFTs
  */
-contract DigitalaxAuction is Context, ReentrancyGuard {
+contract DigitalaxAuction is ReentrancyGuard, BaseRelayRecipient {
     using SafeMath for uint256;
     using Address for address payable;
     using SafeERC20 for IERC20;
@@ -156,7 +156,8 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         IDigitalaxGarmentNFT _garmentNft,
         IDigitalaxMonaOracle _oracle,
         IERC20 _monaToken,
-        address payable _platformFeeRecipient
+        address payable _platformFeeRecipient,
+        address _trustedForwarder
     ) public {
         require(address(_accessControls) != address(0), "DigitalaxAuction: Invalid Access Controls");
         require(address(_garmentNft) != address(0), "DigitalaxAuction: Invalid NFT");
@@ -169,8 +170,36 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         platformFeeRecipient = _platformFeeRecipient;
         oracle = _oracle;
         monaToken = _monaToken;
+        trustedForwarder = _trustedForwarder;
 
         emit DigitalaxAuctionContractDeployed();
+    }
+
+    /**
+     * Override this function.
+     * This version is to keep track of BaseRelayRecipient you are using
+     * in your contract.
+     */
+    function versionRecipient() external view override returns (string memory) {
+        return "1";
+    }
+
+    function setTrustedForwarder(address _trustedForwarder) external  {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxMaterials.setTrustedForwarder: Sender must be admin"
+        );
+        trustedForwarder = _trustedForwarder;
+    }
+
+    // This is to support Native meta transactions
+    // never use msg.sender directly, use _msgSender() instead
+    function _msgSender()
+    internal
+    view
+    returns (address payable sender)
+    {
+        return BaseRelayRecipient.msgSender();
     }
 
     /**
@@ -742,7 +771,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         require(_tokenContract != address(0), "Invalid address");
         IERC20 token = IERC20(_tokenContract);
         uint256 balance = token.balanceOf(address(this));
-        require(token.transfer(msg.sender, balance), "Transfer failed");
+        require(token.transfer(_msgSender(), balance), "Transfer failed");
     }
 
     /**
@@ -759,6 +788,6 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
             accessControls.hasAdminRole(_msgSender()),
             "DigitalaxAuction.reclaimETH: Sender must be admin"
         );
-        msg.sender.transfer(address(this).balance);
+        _msgSender().transfer(address(this).balance);
     }
 }
