@@ -10,10 +10,13 @@ const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
 const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
 const DigitalaxAuction = artifacts.require('DigitalaxAuctionMock');
 const DigitalaxGarmentFactory = artifacts.require('DigitalaxGarmentFactory');
+const DigitalaxMonaOracle = artifacts.require('DigitalaxMonaOracle');
+const MockERC20 = artifacts.require('MockERC20');
 
 contract('Digitalax Garment Sale', (accounts) => {
-  const [admin, minter, platformFeeAddress, owner, designer, bidder, bidder2] = accounts;
+  const [admin, minter, platformFeeAddress, owner, designer, bidder, bidder2, provider] = accounts;
 
+  const ZERO = new BN('0');
   const TOKEN_ONE_ID = new BN('1');
 
   const STRAND_ONE_ID = new BN('1');
@@ -21,6 +24,9 @@ contract('Digitalax Garment Sale', (accounts) => {
   const STRAND_THREE_ID = new BN('3');
   const STRAND_FOUR_ID = new BN('4');
   const STRAND_FIVE_ID = new BN('5');
+  const ONE_THOUSAND_TOKENS = new BN('1000000000000000000000');
+  const EXCHANGE_RATE = new BN('500000000000000000');
+
 
   const randomStrandURI = 'randStrand';
   const randomTokenURI = 'rand';
@@ -41,10 +47,27 @@ contract('Digitalax Garment Sale', (accounts) => {
       this.digitalaxMaterials.address,
       {from: admin}
     );
+    
+    this.monaToken = await MockERC20.new(
+      'MONA',
+      'MONA',
+      ONE_THOUSAND_TOKENS,
+      {from: admin}
+    );
+
+    this.oracle = await DigitalaxMonaOracle.new(
+      '86400',
+      '120',
+      '1',
+      this.accessControls.address,
+      {from: admin}
+    );
 
     this.auction = await DigitalaxAuction.new(
       this.accessControls.address,
       this.token.address,
+      this.oracle.address,
+      this.monaToken.address,
       platformFeeAddress,
       {from: admin}
     );
@@ -52,6 +75,8 @@ contract('Digitalax Garment Sale', (accounts) => {
     await this.auction.setNowOverride('2');
 
     await this.accessControls.addSmartContractRole(this.auction.address, {from: admin});
+    await this.oracle.addProvider(provider, {from: admin});
+    await this.oracle.pushReport(EXCHANGE_RATE, {from: provider});
 
     this.factory = await DigitalaxGarmentFactory.new(
       this.token.address,
@@ -109,6 +134,7 @@ contract('Digitalax Garment Sale', (accounts) => {
       '0',
       '2',
       '10',
+      false,
       {from: minter}
     );
 

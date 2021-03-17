@@ -13,13 +13,33 @@ const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
 const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
 const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
 const DigitalaxAuction = artifacts.require('DigitalaxAuctionMock');
+const DigitalaxMonaOracle = artifacts.require('DigitalaxMonaOracle');
+const MockERC20 = artifacts.require('MockERC20');
 
 const ERC1155Mock = artifacts.require('ERC1155Mock');
 
 contract('DigitalaxAuction scenario tests', (accounts) => {
-  const [admin, minter, owner, smartContract, platformFeeAddress, tokenHolder, designer, bidder, ...otherAccounts] = accounts;
+  const [admin, minter, owner, smartContract, platformFeeAddress, tokenHolder, designer, bidder, provider, ...otherAccounts] = accounts;
 
   const EMPTY_BYTES = web3.utils.encodePacked('');
+
+  const ZERO = new BN('0');
+
+  const TOKEN_ONE_ID = new BN('1');
+
+  const CHILD_ONE_ID = new BN('1');
+  const CHILD_TWO_ID = new BN('2');
+  const CHILD_THREE_ID = new BN('3');
+  const CHILD_FOUR_ID = new BN('4');
+  const ONE_THOUSAND_TOKENS = new BN('1000000000000000000000');
+  const EXCHANGE_RATE = new BN('500000000000000000');
+
+  const child1 = 'child1';
+  const child2 = 'child2';
+  const child3 = 'child3';
+  const child4 = 'child4';
+
+  const randomGarmentURI = 'randomGarmentURI';
 
   beforeEach(async () => {
     // Setup access controls and enabled admin
@@ -42,14 +62,33 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
       {from: admin}
     );
 
+    this.monaToken = await MockERC20.new(
+      'MONA',
+      'MONA',
+      ONE_THOUSAND_TOKENS,
+      {from: admin}
+    );
+
+    this.oracle = await DigitalaxMonaOracle.new(
+      '86400',
+      '120',
+      '1',
+      this.accessControls.address,
+      {from: admin}
+    );
+
     // Setup auction
     this.auction = await DigitalaxAuction.new(
       this.accessControls.address,
       this.token.address,
+      this.oracle.address,
+      this.monaToken.address,
       platformFeeAddress,
       {from: admin}
     );
     await this.accessControls.addSmartContractRole(this.auction.address, {from: admin});
+    await this.oracle.addProvider(provider, {from: admin});
+    await this.oracle.pushReport(EXCHANGE_RATE, {from: provider});
 
     // Setup factory
     this.factory = await DigitalaxGarmentFactory.new(
@@ -61,19 +100,6 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
     await this.accessControls.addSmartContractRole(this.factory.address, {from: admin});
   });
 
-  const TOKEN_ONE_ID = new BN('1');
-
-  const CHILD_ONE_ID = new BN('1');
-  const CHILD_TWO_ID = new BN('2');
-  const CHILD_THREE_ID = new BN('3');
-  const CHILD_FOUR_ID = new BN('4');
-
-  const child1 = 'child1';
-  const child2 = 'child2';
-  const child3 = 'child3';
-  const child4 = 'child4';
-
-  const randomGarmentURI = 'randomGarmentURI';
 
   beforeEach(async () => {
     // Create children - creates 1155 token IDs: [1], [2], [3], [4]
@@ -120,11 +146,12 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
           '1',
           '0',
           '10',
+          false,
           {from: tokenHolder}
         );
 
         // Place bid
-        await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.2')});
+        await this.auction.placeBid(TOKEN_ONE_ID, ZERO, {from: bidder, value: ether('0.2')});
         await this.auction.setNowOverride('12');
 
         // Result it
@@ -203,11 +230,12 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
           '1',
           '0',
           '10',
+          false,
           {from: tokenHolder}
         );
 
         // Place bid
-        await this.auction.placeBid(TOKEN_ONE_ID, {from: bidder, value: ether('0.2')});
+        await this.auction.placeBid(TOKEN_ONE_ID, ZERO, {from: bidder, value: ether('0.2')});
         await this.auction.setNowOverride('12');
 
         // Result it

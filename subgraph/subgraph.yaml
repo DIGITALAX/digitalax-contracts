@@ -256,3 +256,41 @@ dataSources:
         - event: DigitalaxPodePortalMetadataAdded(uint256,string)
           handler: handleMetadataAdded
       file: ./src/DigitalaxPodePortal.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxIndex
+    network: 'mainnet'
+    source:
+      address: '0x93401DB6e0E17078f785019878063ce5baBA9d46'
+      abi: DigitalaxIndex
+      startBlock: 8177798
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - AuctionSetAdded
+        - AuctionSetRemoved
+        - AuctionSetUpdated
+        - DesignerSetAdded
+        - DesignerSetRemoved
+        - DesignerSetUpdated
+        - DesignerInfoUpdated
+      abis:
+        - name: DigitalaxIndex
+          file: ./abis/DigitalaxIndex.json
+      eventHandlers:
+        - event: AuctionSetAdded(indexed uint256,uint256[])
+          handler: handleAuctionSetAdded
+        - event: AuctionSetRemoved(indexed uint256)
+          handler: handleAuctionSetRemoved
+        - event: AuctionSetUpdated(indexed uint256,uint256[])
+          handler: handleAuctionSetUpdated
+        - event: DesignerSetAdded(indexed uint256,uint256[])
+          handler: handleDesignerSetAdded
+        - event: DesignerSetRemoved(indexed uint256)
+          handler: handleDesignerSetRemoved
+        - event: DesignerSetUpdated(indexed uint256,uint256[])
+          handler: handleDesignerSetUpdated
+        - event: DesignerInfoUpdated(indexed uint256,string)
+          handler: handleDesignerInfoUpdated
+      file: ./src/DigitalaxIndex.mapping.ts

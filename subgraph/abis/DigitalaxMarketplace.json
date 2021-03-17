@@ -136,6 +136,18 @@
         "internalType": "uint256",
         "name": "monaTransferredAmount",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "platformFee",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "discountToPayInERC20",
+        "type": "uint256"
       }
     ],
     "name": "OfferPurchased",
@@ -171,6 +183,12 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "garmentCollectionId",
+        "type": "uint256"
+      },
+      {
         "indexed": false,
         "internalType": "uint256",
         "name": "discount",
@@ -183,6 +201,12 @@
   {
     "anonymous": false,
     "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "garmentCollectionId",
+        "type": "uint256"
+      },
       {
         "indexed": false,
         "internalType": "uint256",
@@ -280,24 +304,26 @@
         "internalType": "uint256",
         "name": "_primarySalePrice",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_startTimestamp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_platformFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_discountToPayERC20",
+        "type": "uint256"
       }
     ],
     "name": "createOffer",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "discountToPayERC20",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -395,6 +421,16 @@
         "internalType": "uint256",
         "name": "_availableAmount",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_platformFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_discountToPayERC20",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -469,6 +505,16 @@
         "internalType": "uint256",
         "name": "availableIndex",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "platformFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "discountToPayERC20",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -489,19 +535,6 @@
   },
   {
     "inputs": [],
-    "name": "platformFee",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "platformFeeRecipient",
     "outputs": [
       {
@@ -511,6 +544,26 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_tokenContract",
+        "type": "address"
+      }
+    ],
+    "name": "reclaimERC20",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "reclaimETH",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -551,6 +604,11 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_garmentCollectionId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "_marketplaceDiscount",
         "type": "uint256"
       }
@@ -562,6 +620,11 @@
   },
   {
     "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_garmentCollectionId",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "_platformFee",
