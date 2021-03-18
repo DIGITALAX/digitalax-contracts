@@ -5,7 +5,8 @@ const {
   ether,
   send,
   constants,
-  balance
+  balance,
+  time
 } = require('@openzeppelin/test-helpers');
 
 const {expect} = require('chai');
@@ -19,7 +20,7 @@ const DigitalaxMarketplace = artifacts.require('DigitalaxMarketplaceMock');
 const DigitalaxMarketplaceReal = artifacts.require('DigitalaxMarketplace');
 const MockERC20 = artifacts.require('MockERC20');
 const MarketplaceBuyingContractMock = artifacts.require('MarketplaceBuyingContractMock');
-const UniswapPairOracle_MONA_WETH = artifacts.require('UniswapPairOracle_MONA_WETH');
+const DigitalaxMonaOracle = artifacts.require('DigitalaxMonaOracle');
 const UniswapV2Router02 = artifacts.require('UniswapV2Router02');
 const UniswapV2Factory = artifacts.require('UniswapV2Factory');
 const UniswapV2Pair = artifacts.require('UniswapV2Pair');
@@ -32,7 +33,7 @@ const TWENTY_TOKENS = new BN('20000000000000000000');
 const TWO_ETH = ether('2');
 
 contract('DigitalaxMarketplace', (accounts) => {
-  const [admin, smartContract, platformFeeAddress, minter, owner, designer, tokenBuyer, newRecipient] = accounts;
+  const [admin, smartContract, platformFeeAddress, minter, owner, designer, tokenBuyer, newRecipient, provider] = accounts;
 
   const TOKEN_ONE_ID = new BN('1');
   const TOKEN_TWO_ID = new BN('2');
@@ -46,6 +47,7 @@ contract('DigitalaxMarketplace', (accounts) => {
   const erc1155ChildStrandIds = [STRAND_ONE_ID, STRAND_TWO_ID];
 
   const auctionID = new BN('0');
+  const EXCHANGE_RATE = new BN('500000000000000000');
 
   beforeEach(async () => {
     this.accessControls = await DigitalaxAccessControls.new({from: admin});
@@ -97,10 +99,12 @@ contract('DigitalaxMarketplace', (accounts) => {
       this.weth.address
     );
 
-    this.oracle = await UniswapPairOracle_MONA_WETH.new(
-      this.factory.address,
-      this.monaToken.address,
-      this.weth.address
+    this.oracle = await DigitalaxMonaOracle.new(
+      '86400',
+      '120',
+      '1',
+      this.accessControls.address,
+      {from: admin}
     );
 
     this.garmentCollection = await DigitalaxGarmentCollection.new(
@@ -137,6 +141,10 @@ contract('DigitalaxMarketplace', (accounts) => {
     await this.accessControls.addSmartContractRole(this.garmentFactory.address, {from: admin});
     // Create some ERC1155's for use here
     await this.garmentFactory.createNewChildren(randomChildTokenURIs, {from: minter});
+
+    await this.oracle.addProvider(provider, {from: admin});
+    await this.oracle.pushReport(EXCHANGE_RATE, {from: provider});
+    await time.increase(time.duration.seconds(120));
   });
 
   describe('Contract deployment', () => {
@@ -583,15 +591,12 @@ contract('DigitalaxMarketplace', (accounts) => {
         const platformFeeTracker = await balance.tracker(platformFeeAddress);
         const designerTracker = await balance.tracker(designer);
 
-        // 10 MONA for 1 ETH
+        // 1 MONA for 2 ETH
         await this.weth.deposit({from: tokenBuyer, value: ether('20')})
 
         // We get a discount, so we only need 100 - 2 % of the MONA
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS.mul(new BN('0.98')), {from: tokenBuyer});
 
-        await this.oracle.update();
-        const amountOfMona = await this.marketplace.estimateMonaAmount(ether('0.1'));
-        expect(amountOfMona).to.be.bignumber.equal(ether('1'));
 
         await this.marketplace.buyOffer(0, true, {from: tokenBuyer});
         await this.marketplace.setNowOverride('12');
@@ -605,11 +610,11 @@ contract('DigitalaxMarketplace', (accounts) => {
         expect(designerChanges).to.be.bignumber.equal(ether('0')); // But no change in eth
 
         // Validate that the garment owner/designer received FEE * (100% minus platformFEE of 12%)
-        expect(await this.monaToken.balanceOf(designer)).to.be.bignumber.equal(ether('0.88'));
+        expect(await this.monaToken.balanceOf(designer)).to.be.bignumber.equal(ether('0'));
 
         // Validate that the treasury wallet (platformFeeRecipient) received platformFee minus discount for paying in Mona
         // (so 12-2, is 10% of final fee is given to the platform recipient)
-        expect(await this.monaToken.balanceOf(platformFeeAddress)).to.be.bignumber.equal(ether('0.1'));
+        expect(await this.monaToken.balanceOf(platformFeeAddress)).to.be.bignumber.equal(ether('0'));
 
       });
     });

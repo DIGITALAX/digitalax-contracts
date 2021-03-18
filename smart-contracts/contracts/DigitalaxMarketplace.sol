@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./DigitalaxAccessControls.sol";
 import "./garment/IDigitalaxGarmentNFT.sol";
 import "./garment/DigitalaxGarmentCollection.sol";
-import "./oracle/UniswapPairOracle_MONA_WETH.sol";
+import "./oracle/IDigitalaxMonaOracle.sol";
 import "./EIP2771/BaseRelayRecipient.sol";
 //console
 import "@nomiclabs/buidler/console.sol";
@@ -84,7 +84,7 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
     /// @notice responsible for enforcing admin access
     DigitalaxAccessControls public accessControls;
     /// @notice Mona to Ether Oracle
-    UniswapPairOracle_MONA_WETH public oracle;
+    IDigitalaxMonaOracle public oracle;
     /// @notice where to send platform fee funds to
     address payable public platformFeeRecipient;
     /// @notice the erc20 token
@@ -108,7 +108,7 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
         DigitalaxAccessControls _accessControls,
         IDigitalaxGarmentNFT _garmentNft,
         DigitalaxGarmentCollection _garmentCollection,
-        UniswapPairOracle_MONA_WETH _oracle,
+        IDigitalaxMonaOracle _oracle,
         address payable _platformFeeRecipient,
         address _monaErc20Token,
         address _weth,
@@ -228,8 +228,6 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
         // Work out platform fee on sale amount
         if(_payWithMona) {
             require(!freezeMonaERC20Payment, "DigitalaxMarketplace.buyOffer: mona erc20 payments currently frozen");
-
-            oracle.update();
 
             // Designer receives (Primary Sale Price minus Protocol Fee)
             uint256 amountOfETHDesignerReceives = offer.primarySalePrice.sub(feeInETH);
@@ -414,7 +412,7 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
     /**
      @notice Method for getting estimation of Mona amount
      */
-    function estimateMonaAmount(uint256 _priceInETH) external view returns (uint256) {
+    function estimateMonaAmount(uint256 _priceInETH) external returns (uint256) {
         return _estimateMonaAmount(_priceInETH);
     }
 
@@ -449,10 +447,12 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
      @notice Private method to estimate MONA for paying
      @param _amountInETH ETH amount in wei
      */
-    function _estimateMonaAmount(uint256 _amountInETH) internal virtual view returns (uint256) {
-        uint256 amountOfMonaToTransfer = oracle.consult(address(weth), _amountInETH);
+    function _estimateMonaAmount(uint256 _amountInETH) internal virtual returns (uint256) {
+        (uint256 exchangeRate, bool rateValid) = oracle.getData();
+        require(rateValid, "DigitalaxMarketplace.estimateMonaAmount: Oracle data is invalid");
+        uint256 amountInMona = _amountInETH.div(1e18).mul(1e18);
 
-        return amountOfMonaToTransfer;
+        return amountInMona;
     }
 
     /**

@@ -11,7 +11,7 @@ contract DigitalaxMarketplaceMock is DigitalaxMarketplace {
         DigitalaxAccessControls _accessControls,
         IDigitalaxGarmentNFT _garmentNft,
         DigitalaxGarmentCollection _garmentCollection,
-        UniswapPairOracle_MONA_WETH _oracle,
+        IDigitalaxMonaOracle _oracle,
         address payable _platformReserveAddress,
         address _monaErc20Token,
         address _weth,
