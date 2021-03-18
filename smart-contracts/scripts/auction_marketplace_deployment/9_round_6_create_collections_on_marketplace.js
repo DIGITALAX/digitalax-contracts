@@ -48,24 +48,31 @@ async function main() {
   );
 
   //Optional TODO decide if needed
-//  await accessControls.addSmartContractRole(MARKETPLACE_ADDRESS);
+  const acr = await accessControls.addSmartContractRole(MARKETPLACE_ADDRESS);
+  await acr.wait();
+
+  const scr =  await accessControls.addSmartContractRole(GARMENT_COLLECTION_ADDRESS);
+  await scr.wait();
+
+  const acr2 = await accessControls.addMinterRole(GARMENT_COLLECTION_ADDRESS);
+  await acr2.wait();
 
 
   //// SETTINGS
 
-  const reservePrice_common = '120000000000000000';
-  const reservePrice2_semirare = '230000000000000000';
+  const reservePrice_common = '12000000000000000'; // Reduced 10x
+  const reservePrice2_semirare = '23000000000000000'; // Reduced 10x
 
  // const test_startTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th
 
-  const mainnet_startTime = '1615510800'; //  TODO confirm
+  const mainnet_startTime = '1616035085'; //  TODO confirm
 
   // Use the single auction id processed in the last script to build auction id specific collections in this script
 
-   const auctionId_lockdown = 753; // TODO update from result of last script (important)
-   const auctionId_pluto = 754; // TODO update from result of last script (important)
-   const auctionId_prima = 755; // TODO update from result of last script (important)
-   const auctionId_witchdoctor = 756; // TODO update from result of last script (important)
+   const auctionId_lockdown = 3; // TODO update from result of last script (important)
+   const auctionId_pluto = 4; // TODO update from result of last script (important)
+   const auctionId_prima = 5; // TODO update from result of last script (important)
+   const auctionId_witchdoctor = 6; // TODO update from result of last script (important)
 
   // Next step is mint collections and open buy offers, run 1 at a time in production in case something drops
   const collectionUris = [
@@ -208,6 +215,8 @@ async function main() {
         createCollectionId, // Collection id
         collectionForMarketplace.price, // reservePrice for all collection items
         mainnet_startTime, // Marketplace buy offer available after start time
+        0,
+        0
     );
 
     await createOfferTx.wait();

@@ -40,7 +40,15 @@ async function main() {
     );
 
     // OPTIONAL TODO use if needed
-   // await accessControls.addSmartContractRole(AUCTION_ADDRESS);
+   const scr =  await accessControls.addSmartContractRole(AUCTION_ADDRESS);
+   await scr.wait();
+
+    const acr = await accessControls.addMinterRole(factory.address);
+    await acr.wait();
+
+    const acr2 = await accessControls.addMinterRole(deployerAddress);
+    await acr2.wait();
+
    // OPTIONAL TODO use if needed
     const updateFee = await auction.updatePlatformFee('1000');
     await updateFee.wait();
@@ -50,8 +58,8 @@ async function main() {
   const reservePrice = '0';
 
  // const testStartTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th only test
-   const mainnet_startTime = '1615510800';   //  TODO confirm
-   const mainnet_endTime = '1615856400'; //  TODO confirm
+   const mainnet_startTime = '1616035085';   //  TODO confirm
+   const mainnet_endTime = '1616477885'; //  TODO confirm
 
     // Run 1 at a time in production, in case something drops
   const uris = [
@@ -137,7 +145,8 @@ async function main() {
           createParentId, // garmentTokenId
           auctionGarmentInfo.price, // reservePrice
           auctionGarmentInfo.auctionStartTime, // startTimestamp
-          auctionGarmentInfo.auctionEndTime // endTimestamp
+          auctionGarmentInfo.auctionEndTime, // endTimestamp
+          true // Mona payment
       );
 
       await auctionTx.wait();
