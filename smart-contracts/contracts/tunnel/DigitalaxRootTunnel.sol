@@ -19,23 +19,21 @@ contract DigitalaxRootTunnel is BaseRootTunnel {
         childContract = _child;
     }
 
-    // Right now this just processes the max pointer of token id on child chain.
     function _processMessageFromChild(bytes memory message) internal override {
         uint256 _tokenId;
+        address _owner;
         uint256 _primarySalePrice;
         address _garmentDesigner;
         string memory _tokenUri;
         uint256[] memory _children;
         uint256[] memory _childrenBalances;
-        (_tokenId, _primarySalePrice, _garmentDesigner, _tokenUri, _children, _childrenBalances) = abi.decode(message, (uint256, uint256, address, string, uint256[], uint256[]));
+        (_tokenId, _owner, _primarySalePrice, _garmentDesigner, _tokenUri, _children, _childrenBalances) = abi.decode(message, (uint256, address, uint256, address, string, uint256[], uint256[]));
 
-        // TODO With the information above, rebuild the 721 token from matic in mainnet!
-      //  primarySalePrice[_tokenId] = _primarySalePrice;
-      //  garmentDesigners[_tokenId] = _garmentDesigner;
-      //  _setTokenURI(_tokenId, _tokenUri);
-       // for (uint256 i = 0; i< _children.length; i++) {
-       //     _receiveChild(_tokenId, _msgSender(), _children[i], _childrenBalances[i]);
-      //  }
+        // Try to rebuild what is on matic into mainnet
+        if(!nft.exists(_tokenId)){
+            uint256 newId = nft.mint(_owner, _tokenUri, _garmentDesigner);
+            nft.setPrimarySalePrice(newId, _primarySalePrice);
+        }
     }
 
     // For children nfts, these should be setup on the matic network before the 721 if there are any

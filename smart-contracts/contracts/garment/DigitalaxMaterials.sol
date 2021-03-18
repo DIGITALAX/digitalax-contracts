@@ -56,6 +56,7 @@ contract DigitalaxMaterials is ERC1155Burnable, BaseRelayRecipient {
         symbol = _symbol;
         accessControls = _accessControls;
         trustedForwarder = _trustedForwarder;
+        childChain = _childChain;
         emit DigitalaxMaterialsDeployed();
     }
 
