@@ -523,6 +523,6 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
             childBalances[i] = childBalance(tokenId, address(childContract), _children[i]);
         }
 
-        _sendMessageToRoot(abi.encode(tokenId, _primarySalePrice, _garmentDesigner, _tokenUri, _children, childBalances));
+        _sendMessageToRoot(abi.encode(tokenId, ownerOf(tokenId), _primarySalePrice, _garmentDesigner, _tokenUri, _children, childBalances));
     }
 }
