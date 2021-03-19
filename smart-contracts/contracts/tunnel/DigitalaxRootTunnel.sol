@@ -14,7 +14,7 @@ contract DigitalaxRootTunnel is BaseRootTunnel {
     /**
     @param _accessControls Address of the Digitalax access control contract
     */
-    constructor(DigitalaxAccessControls _accessControls, ERC1155 _child, DigitalaxGarmentNFT _nft) BaseRootTunnel(_accessControls) public {
+    constructor(DigitalaxAccessControls _accessControls, ERC1155 _child, DigitalaxGarmentNFT _nft, address _stateSender) BaseRootTunnel(_accessControls, _stateSender) public {
         nft = _nft;
         childContract = _child;
     }

@@ -199,6 +199,22 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
             _discountToPayERC20
         );
     }
+
+    /**
+     @notice Method for updating oracle
+     @dev Only admin
+     @param _oracle new oracle
+     */
+    function updateOracle(IDigitalaxMonaOracle _oracle) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxAuction.updateOracle: Sender must be admin"
+        );
+
+        oracle = _oracle;
+        emit UpdateOracle(address(_oracle));
+    }
+
     /**
      @notice Buys an open offer with eth or erc20
      @dev Only callable when the offer is open

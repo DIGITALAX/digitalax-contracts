@@ -442,13 +442,10 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
      * @param user user address for whom deposit is being done
      * @param depositData abi encoded tokenId
      */
-    function deposit(address user, bytes calldata depositData) // How to set token uri..
+    function deposit(address user, bytes calldata depositData)
     external
+    onlyChildChain
     {
-        require(
-            accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxGarmentNFT.deposit: Sender must be an authorised contract or admin"
-        );
         // deposit single
         if (depositData.length == 32) {
             uint256 tokenId = abi.decode(depositData, (uint256));

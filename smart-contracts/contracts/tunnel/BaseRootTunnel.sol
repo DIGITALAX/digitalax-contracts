@@ -28,10 +28,11 @@ abstract contract BaseRootTunnel {
     // storage to avoid duplicate exits
     mapping(bytes32 => bool) public processedExits;
 
-    constructor(DigitalaxAccessControls _accessControls) public {
+    constructor(DigitalaxAccessControls _accessControls, address _stateSender) public {
         // _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         // _setupContractId("RootTunnel");
         accessControls = _accessControls;
+        stateSender = IStateSender(_stateSender);
     }
 
     /**
