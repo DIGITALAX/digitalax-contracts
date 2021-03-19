@@ -51,6 +51,9 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
     event UpdatePlatformFeeRecipient(
         address payable platformFeeRecipient
     );
+    event UpdateOracle(
+        address indexed oracle
+    );
     event OfferPurchased(
         uint256 indexed garmentTokenId,
         uint256 indexed garmentCollectionId,

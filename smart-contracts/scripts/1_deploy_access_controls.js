@@ -17,20 +17,32 @@ async function main() {
   console.log('DigitalaxAccessControls added treasury multisig as admin:', FUND_MULTISIG_ADDRESS); //0x10C0B0DA2A682C12bD36516A95CB8474C02d83De
 
 
-  // Other multisig
-  await accessControls.addMinterRole(OTHER_MULTISIG); //0xd4a3A8188aAA583057dB1A68224deA8EC1e582e3
-  console.log(`DigitalaxAccessControls added minter: ${OTHER_MULTISIG}`); //0xd4a3A8188aAA583057dB1A68224deA8EC1e582e3
+  // 0x7482BcF17dE6Af1dD82EeF1e3b56529D764e6e45
+  await accessControls.addMinterRole('0x7482BcF17dE6Af1dD82EeF1e3b56529D764e6e45');
+  console.log(`DigitalaxAccessControls added minter: 0x7482BcF17dE6Af1dD82EeF1e3b56529D764e6e45`);
 
-  await accessControls.addVerifiedMinterRole('0x1e8E749b2B578E181Ca01962e9448006772b24a2');
-  await accessControls.addVerifiedMinterRole('0xF91569595BCDAF780c3f1662f204E157949af8b2');
-  await accessControls.addVerifiedMinterRole('0x3d7e3FCA7123e687601dA8631fE0922a1999A3A7');
-  await accessControls.addVerifiedMinterRole('0xcf9741bBcE8Ba8EC2b0dC8F23399a0BcF5C019D5');
-  await accessControls.addVerifiedMinterRole('0x11142E97271D26FEBef714A117Fea7d279f77378');
-  await accessControls.addVerifiedMinterRole('0x2e307Ceab1b4c5F4cAc508E3B13C3dBfe86a3c81');
-  await accessControls.addVerifiedMinterRole('0x9E1F34E66aE2171b7ccb8E6bc05fd05149E2c938');
-  await accessControls.addVerifiedMinterRole('0xfcad2eb79692c2aa0bcbaf3d3e29615dda94fe6d');
-  await accessControls.addVerifiedMinterRole('0x65a36FF9a9F4b736Cd8a2aB2C614642af73434B0');
-  await accessControls.addVerifiedMinterRole('0xe4F091560461b441ae8dc1c2dE961E002fAcD59c');
+  await accessControls.addAdminRole('0x7482BcF17dE6Af1dD82EeF1e3b56529D764e6e45');
+  console.log('DigitalaxAccessControls added admin: 0x7482BcF17dE6Af1dD82EeF1e3b56529D764e6e45');
+
+
+  // 0xEa41Cd3F972dB6237FfA2918dF9199B547172420
+  await accessControls.addMinterRole('0xEa41Cd3F972dB6237FfA2918dF9199B547172420');
+  console.log(`DigitalaxAccessControls added minter: 0xEa41Cd3F972dB6237FfA2918dF9199B547172420`);
+
+  await accessControls.addAdminRole('0xEa41Cd3F972dB6237FfA2918dF9199B547172420');
+  console.log('DigitalaxAccessControls added admin: 0xEa41Cd3F972dB6237FfA2918dF9199B547172420');
+
+
+  // await accessControls.addVerifiedMinterRole('0x1e8E749b2B578E181Ca01962e9448006772b24a2');
+  // await accessControls.addVerifiedMinterRole('0xF91569595BCDAF780c3f1662f204E157949af8b2');
+  // await accessControls.addVerifiedMinterRole('0x3d7e3FCA7123e687601dA8631fE0922a1999A3A7');
+  // await accessControls.addVerifiedMinterRole('0xcf9741bBcE8Ba8EC2b0dC8F23399a0BcF5C019D5');
+  // await accessControls.addVerifiedMinterRole('0x11142E97271D26FEBef714A117Fea7d279f77378');
+  // await accessControls.addVerifiedMinterRole('0x2e307Ceab1b4c5F4cAc508E3B13C3dBfe86a3c81');
+  // await accessControls.addVerifiedMinterRole('0x9E1F34E66aE2171b7ccb8E6bc05fd05149E2c938');
+  // await accessControls.addVerifiedMinterRole('0xfcad2eb79692c2aa0bcbaf3d3e29615dda94fe6d');
+  // await accessControls.addVerifiedMinterRole('0x65a36FF9a9F4b736Cd8a2aB2C614642af73434B0');
+  // await accessControls.addVerifiedMinterRole('0xe4F091560461b441ae8dc1c2dE961E002fAcD59c');
 
   // Optional smart contract allowlisting
   /*
