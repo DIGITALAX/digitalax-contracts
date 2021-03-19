@@ -13,20 +13,14 @@ async function main() {
   console.log('DigitalaxAccessControls deployed to:', accessControls.address);
 
   // Fund treasury multi sig
-  await accessControls.addAdminRole(FUND_MULTISIG_ADDRESS);
-  console.log('DigitalaxAccessControls added treasury multisig as admin:', FUND_MULTISIG_ADDRESS);
+  await accessControls.addAdminRole(FUND_MULTISIG_ADDRESS); //0x10C0B0DA2A682C12bD36516A95CB8474C02d83De
+  console.log('DigitalaxAccessControls added treasury multisig as admin:', FUND_MULTISIG_ADDRESS); //0x10C0B0DA2A682C12bD36516A95CB8474C02d83De
 
-  // Super Admin account
-  await accessControls.addAdminRole(SUPER_ADMIN);
-  await accessControls.addMinterRole(SUPER_ADMIN);
-  await accessControls.addMinterRole('0xb5505a6d998549090530911180f38aC5130101c6'); // MATIC mumbai
-  console.log(`DigitalaxAccessControls added an admin and minter: ${SUPER_ADMIN}`);
 
   // Other multisig
-  await accessControls.addMinterRole(OTHER_MULTISIG);
-  console.log(`DigitalaxAccessControls added minter: ${OTHER_MULTISIG}`);
+  await accessControls.addMinterRole(OTHER_MULTISIG); //0xd4a3A8188aAA583057dB1A68224deA8EC1e582e3
+  console.log(`DigitalaxAccessControls added minter: ${OTHER_MULTISIG}`); //0xd4a3A8188aAA583057dB1A68224deA8EC1e582e3
 
-  await accessControls.addVerifiedMinterRole(SUPER_ADMIN);
   await accessControls.addVerifiedMinterRole('0x1e8E749b2B578E181Ca01962e9448006772b24a2');
   await accessControls.addVerifiedMinterRole('0xF91569595BCDAF780c3f1662f204E157949af8b2');
   await accessControls.addVerifiedMinterRole('0x3d7e3FCA7123e687601dA8631fE0922a1999A3A7');
