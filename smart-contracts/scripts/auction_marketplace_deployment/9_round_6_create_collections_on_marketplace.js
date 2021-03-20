@@ -72,21 +72,11 @@ async function main() {
    const auctionId_lockdown = 3; // TODO update from result of last script (important)
    const auctionId_pluto = 4; // TODO update from result of last script (important)
    const auctionId_prima = 5; // TODO update from result of last script (important)
-   const auctionId_witchdoctor = 6; // TODO update from result of last script (important)
+   const auctionId_witchdoctor = 108; // TODO update from result of last script (important)
 
   // Next step is mint collections and open buy offers, run 1 at a time in production in case something drops
   const collectionUris = [
-    {
-      // Collection 1 Common
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Common/CC Aciddrop Skin/hash.json').uri,
-      price: reservePrice_common,
-      collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 7,
-      auctionIdToLink: auctionId_lockdown,
-      rarity: 'Common',
-      tokendIds: [],
-      tokenAmounts: [],
-    },
+      /*
     {
       // Collection 2 Semi-Rare
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Semi-Rare/CC Glastonbury Skin/hash.json').uri,
@@ -95,17 +85,6 @@ async function main() {
       amountToMintInCollection: 3,
       auctionIdToLink: auctionId_lockdown,
       rarity: 'Semi-Rare',
-      tokendIds: [],
-      tokenAmounts: [],
-    },
-    {
-      // Collection 3 Common
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Common/CC Ranger Skin/hash.json').uri,
-      price: reservePrice_common,
-      collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 7,
-      auctionIdToLink: auctionId_pluto,
-      rarity: 'Common',
       tokendIds: [],
       tokenAmounts: [],
     },
@@ -121,17 +100,6 @@ async function main() {
       tokenAmounts: [],
     },
     {
-      // Collection 5 Common
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Common/CC Stealth Skin/hash.json').uri,
-      price: reservePrice_common,
-      collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 7,
-      auctionIdToLink: auctionId_prima,
-      rarity: 'Common',
-      tokendIds: [],
-      tokenAmounts: [],
-    },
-    {
       // Collection 6 Semi-Rare
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Semi-Rare/CC Renegade Skin/hash.json').uri,
       price: reservePrice2_semirare,
@@ -139,6 +107,50 @@ async function main() {
       amountToMintInCollection: 3,
       auctionIdToLink: auctionId_prima,
       rarity: 'Semi-Rare',
+      tokendIds: [],
+      tokenAmounts: [],
+    },
+    {
+      // Collection 8 Semi-Rare
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Semi-Rare/CC Undercover Skin/hash.json').uri,
+      price: reservePrice2_semirare,
+      collectionDesigner: FUND_MULTISIG_ADDRESS,
+      amountToMintInCollection: 3,
+      auctionIdToLink: auctionId_witchdoctor,
+      rarity: 'Semi-Rare',
+      tokendIds: [],
+      tokenAmounts: [],
+    },
+    {
+      // Collection 1 Common
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Common/CC Aciddrop Skin/hash.json').uri,
+      price: reservePrice_common,
+      collectionDesigner: FUND_MULTISIG_ADDRESS,
+      amountToMintInCollection: 7,
+      auctionIdToLink: auctionId_lockdown,
+      rarity: 'Common',
+      tokendIds: [],
+      tokenAmounts: [],
+    },
+    {
+      // Collection 3 Common
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Common/CC Ranger Skin/hash.json').uri,
+      price: reservePrice_common,
+      collectionDesigner: FUND_MULTISIG_ADDRESS,
+      amountToMintInCollection: 7,
+      auctionIdToLink: auctionId_pluto,
+      rarity: 'Common',
+      tokendIds: [],
+      tokenAmounts: [],
+    },
+    {
+      // Collection 5 Common
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Common/CC Stealth Skin/hash.json').uri,
+      price: reservePrice_common,
+      collectionDesigner: FUND_MULTISIG_ADDRESS,
+      amountToMintInCollection: 7,
+      auctionIdToLink: auctionId_prima,
+      rarity: 'Common',
       tokendIds: [],
       tokenAmounts: [],
     },
@@ -153,12 +165,13 @@ async function main() {
       tokendIds: [],
       tokenAmounts: [],
     },
+*/
     {
-      // Collection 8 Semi-Rare
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Semi-Rare/CC Undercover Skin/hash.json').uri,
+      // Collection 9 Semi-Rare PAC
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Semi-Rare/PAC/hash.json').uri,
       price: reservePrice2_semirare,
       collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 3,
+      amountToMintInCollection: 20,
       auctionIdToLink: auctionId_witchdoctor,
       rarity: 'Semi-Rare',
       tokendIds: [],

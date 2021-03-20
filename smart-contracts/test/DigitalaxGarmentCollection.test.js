@@ -157,6 +157,43 @@ contract('DigitalaxGarmentCollection', (accounts) => {
     });
   });
 
+  describe('mintMoreNftsOnCollection()', async () => {
+    describe('validation', async () => {
+      it('can successfully mint more to collection with Child nfts that have been created previously', async () => {
+        await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common',erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+
+        await this.garmentCollection.mintMoreNftsOnCollection(0, COLLECTION_SIZE,erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+
+        const collection = await this.garmentCollection.getCollection(0);
+        expect(collection[0].length).to.equal(20);
+        expect(collection[1]).to.equal === COLLECTION_SIZE.mul(new BN('2'));
+
+        const owner = await this.token.ownerOf(TOKEN_ONE_ID);
+        expect(owner).to.be.equal(minter);
+      });
+
+      it('reverts if sender not admin or minter ', async () => {
+        await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common',erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+
+        await expectRevert(
+            this.garmentCollection.mintMoreNftsOnCollection(0, COLLECTION_SIZE,erc1155ChildStrandIds, amountsOfChildToken, {from: designer}
+            ),
+            "DigitalaxGarmentCollection.mintMoreNftsOnCollection: Sender must have the minter or contract role"
+          );
+      });
+      it('reverts if collection size is greater then the max garment per collection ', async () => {
+        await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common',erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+
+        const maxGarments = await this.garmentCollection.maxGarmentsPerCollection();
+        await expectRevert(
+            this.garmentCollection.mintMoreNftsOnCollection(0, (maxGarments + 1), erc1155ChildStrandIds, amountsOfChildToken, {from: minter}
+            ),
+            "DigitalaxGarmentCollection.mintMoreNftsOnCollection: Amount cannot exceed maxGarmentsPerCollection"
+          );
+      });
+    });
+  });
+
   describe('burnCollection()', async () => {
     beforeEach(async () => {
       await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common',erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
