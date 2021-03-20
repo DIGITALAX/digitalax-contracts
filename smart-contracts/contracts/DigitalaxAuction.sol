@@ -132,7 +132,7 @@ contract DigitalaxAuction is ReentrancyGuard, BaseRelayRecipient {
     DigitalaxAccessControls public accessControls;
 
     /// @notice globally and across all auctions, the amount by which a bid has to increase
-    uint256 public minBidIncrement = 0.1 ether;
+    uint256 public minBidIncrement = 0.05 ether;
 
     /// @notice global bid withdrawal lock time
     uint256 public bidWithdrawalLockTime = 20 minutes;
