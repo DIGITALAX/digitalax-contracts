@@ -126,8 +126,8 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
         garmentNft = _garmentNft;
         garmentCollection = _garmentCollection;
         oracle = _oracle;
-        platformFeeRecipient = _platformFeeRecipient;
         monaErc20Token = _monaErc20Token;
+        platformFeeRecipient = _platformFeeRecipient;
         trustedForwarder = _trustedForwarder;
 
         emit DigitalaxMarketplaceContractDeployed();
