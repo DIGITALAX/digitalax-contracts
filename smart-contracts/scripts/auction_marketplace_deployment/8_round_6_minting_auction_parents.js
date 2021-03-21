@@ -59,7 +59,11 @@ async function main() {
 
  // const testStartTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th only test
    const mainnet_startTime = '1616035085';   //  TODO confirm
-   const mainnet_endTime = '1616477885'; //  TODO confirm
+   const mainnet_endTime = '1616281276'; //  TODO confirm
+
+    // Approve for all
+    const approveToken = await garment.setApprovalForAll(AUCTION_ADDRESS, true);
+    await approveToken.wait();
 
     // Run 1 at a time in production, in case something drops
   const uris = [
@@ -131,14 +135,14 @@ async function main() {
 
       console.log(`-`);
 
-      // Approve the token for the auction contract
-      console.log(`Approving ${createParentId} for the auction contract...`)
-
-      const tx10 = await garment.approve(AUCTION_ADDRESS, createParentId);
-      await tx10.wait();
-
-      // Start an auction with that garment
-      console.log(`ApprovalConfirmed. Creating the auction for.. [${createParentId}]`)
+      // // Approve the token for the auction contract
+      // console.log(`Approving ${createParentId} for the auction contract...`)
+      //
+      // const tx10 = await garment.approve(AUCTION_ADDRESS, createParentId);
+      // await tx10.wait();
+      //
+      // // Start an auction with that garment
+      // console.log(`ApprovalConfirmed. Creating the auction for.. [${createParentId}]`)
 
       // Create an auction for this exclusiveparent nft
       const auctionTx = await auction.createAuction(

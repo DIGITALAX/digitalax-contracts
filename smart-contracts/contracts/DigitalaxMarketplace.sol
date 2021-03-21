@@ -92,14 +92,14 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
     address payable public platformFeeRecipient;
     /// @notice the erc20 token
     address public monaErc20Token;
-    /// @notice the WETH
-    address public weth;
     /// @notice for pausing marketplace functionalities
     bool public isPaused;
     /// @notice for freezing mona payment option
     bool public freezeMonaERC20Payment;
     /// @notice for freezing eth payment option
     bool public freezeETHPayment;
+    /// @notice for storing information from oracle
+    uint256 public lastOracleQuote = 1;
 
     modifier whenNotPaused() {
         require(!isPaused, "Function is currently paused");
@@ -114,7 +114,6 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
         IDigitalaxMonaOracle _oracle,
         address payable _platformFeeRecipient,
         address _monaErc20Token,
-        address _weth,
         address _trustedForwarder
     ) public {
         require(address(_accessControls) != address(0), "DigitalaxMarketplace: Invalid Access Controls");
@@ -123,14 +122,12 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
         require(address(_oracle) != address(0), "DigitalaxMarketplace: Invalid Oracle");
         require(_platformFeeRecipient != address(0), "DigitalaxMarketplace: Invalid Platform Fee Recipient");
         require(_monaErc20Token != address(0), "DigitalaxMarketplace: Invalid ERC20 Token");
-        require(_weth != address(0), "DigitalaxMarketplace: Invalid WETH Token");
         accessControls = _accessControls;
         garmentNft = _garmentNft;
         garmentCollection = _garmentCollection;
         oracle = _oracle;
         platformFeeRecipient = _platformFeeRecipient;
         monaErc20Token = _monaErc20Token;
-        weth = _weth;
         trustedForwarder = _trustedForwarder;
 
         emit DigitalaxMarketplaceContractDeployed();
@@ -469,9 +466,8 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
     function _estimateMonaAmount(uint256 _amountInETH) internal virtual returns (uint256) {
         (uint256 exchangeRate, bool rateValid) = oracle.getData();
         require(rateValid, "DigitalaxMarketplace.estimateMonaAmount: Oracle data is invalid");
-        uint256 amountInMona = _amountInETH.div(1e18).mul(1e18);
-
-        return amountInMona;
+        lastOracleQuote = exchangeRate;
+        return _amountInETH.mul(exchangeRate).div(1e18);
     }
 
     /**
