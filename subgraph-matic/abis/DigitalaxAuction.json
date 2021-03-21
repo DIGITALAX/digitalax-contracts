@@ -12,6 +12,16 @@
         "type": "address"
       },
       {
+        "internalType": "contract IDigitalaxMonaOracle",
+        "name": "_oracle",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IERC20",
+        "name": "_monaToken",
+        "type": "address"
+      },
+      {
         "internalType": "address payable",
         "name": "_platformFeeRecipient",
         "type": "address"
@@ -259,6 +269,19 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "address",
+        "name": "oracle",
+        "type": "address"
+      }
+    ],
+    "name": "UpdateOracle",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": false,
         "internalType": "uint256",
         "name": "platformFee",
@@ -323,6 +346,11 @@
         "internalType": "bool",
         "name": "resulted",
         "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "isMonaPayment",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -375,6 +403,11 @@
         "internalType": "uint256",
         "name": "_endTimestamp",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isMonaPayment",
+        "type": "bool"
       }
     ],
     "name": "createAuction",
@@ -403,6 +436,11 @@
         "internalType": "uint256",
         "name": "_endTimestamp",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isMonaPayment",
+        "type": "bool"
       }
     ],
     "name": "createAuctionOnBehalfOfOwner",
@@ -451,6 +489,11 @@
       {
         "internalType": "bool",
         "name": "_resulted",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isMonaPayment",
         "type": "bool"
       }
     ],
@@ -542,10 +585,41 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "monaToken",
+    "outputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "oracle",
+    "outputs": [
+      {
+        "internalType": "contract IDigitalaxMonaOracle",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
         "name": "_garmentTokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_monaAmount",
         "type": "uint256"
       }
     ],
@@ -578,6 +652,26 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_tokenContract",
+        "type": "address"
+      }
+    ],
+    "name": "reclaimERC20",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "reclaimETH",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -689,6 +783,19 @@
       }
     ],
     "name": "updateMinBidIncrement",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IDigitalaxMonaOracle",
+        "name": "_oracle",
+        "type": "address"
+      }
+    ],
+    "name": "updateOracle",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

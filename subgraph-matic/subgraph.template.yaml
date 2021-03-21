@@ -6,14 +6,14 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DigitalaxGenesisNFT
-    network: 'mumbai'
+    network: '{{network}}'
     source:
-      address: '0x89505d2a27b7e8ac56252081d721ecd525e4241e'
+      address: '{{DigitalaxGenesisNFTAddress}}'
       abi: DigitalaxGenesisNFT
-      startBlock: 11157574
+      startBlock: {{DigitalaxGenesisNFTStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.3
       language: wasm/assemblyscript
       entities:
         - GenesisPurchased
@@ -32,14 +32,14 @@ dataSources:
       file: ./src/DigitalaxGenesisNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentNFT
-    network: 'mumbai'
+    network: '{{network}}'
     source:
-      address: '0x4CB61C672ff26c187394a9aA59360FbB6F23e83f'
+      address: '{{DigitalaxGarmentNFTAddress}}'
       abi: DigitalaxGarmentNFT
-      startBlock: 11680196
+      startBlock: {{DigitalaxGarmentNFTStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.3
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -58,14 +58,14 @@ dataSources:
       file: ./src/DigitalaxGarmentNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterials
-    network: 'mumbai'
+    network: '{{network}}'
     source:
-      address: '0xACe5A62D509aA947ffFfF55043b317bFc8316bc2'
+      address: '{{DigitalaxMaterialsAddress}}'
       abi: DigitalaxMaterials
-      startBlock: 11675933
+      startBlock: {{DigitalaxMaterialsStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.3
       language: wasm/assemblyscript
       entities:
         - ChildCreated
@@ -87,14 +87,14 @@ dataSources:
       file: ./src/DigitalaxMaterials.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuction
-    network: 'mumbai'
+    network: '{{network}}'
     source:
-      address: '0x5890F309265870D508556E654FDf5903e51c3f37'
+      address: '{{DigitalaxAuctionAddress}}'
       abi: DigitalaxAuction
-      startBlock: 11686431
+      startBlock: {{DigitalaxAuctionStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.3
       language: wasm/assemblyscript
       entities:
         - AuctionCreated
@@ -136,14 +136,14 @@ dataSources:
       file: ./src/DigitalaxAuction.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAccessControls
-    network: 'mumbai'
+    network: '{{network}}'
     source:
-      address: '0xf7580d46080E1ce832aC44cF7224b906D44110B4'
+      address: '{{DigitalaxAccessControlsAddress}}'
       abi: DigitalaxAccessControls
-      startBlock: 11673871
+      startBlock: {{DigitalaxAccessControlsStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.3
       language: wasm/assemblyscript
       entities:
         - AdminRoleGranted
@@ -177,14 +177,14 @@ dataSources:
       file: ./src/DigitalaxAccessControls.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentCollection
-    network: 'mumbai'
+    network: '{{network}}'
     source:
-      address: '0xdee46de42941a72e44ae31310ffea6e2bc055872'
+      address: '{{DigitalaxGarmentCollectionAddress}}'
       abi: DigitalaxGarmentCollection
-      startBlock: 11686899
+      startBlock: {{DigitalaxGarmentCollectionStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.3
       language: wasm/assemblyscript
       entities:
         - MintGarmentCollection
@@ -200,14 +200,14 @@ dataSources:
       file: ./src/DigitalaxGarmentCollection.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMarketplace
-    network: 'mumbai'
+    network: '{{network}}'
     source:
-      address: '0xed76606F33fbea13B70ba0b34f3317ef40C60467'
+      address: '{{DigitalaxMarketplaceAddress}}'
       abi: DigitalaxMarketplace
-      startBlock: 11709635
+      startBlock: {{DigitalaxMarketplaceStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.3
       language: wasm/assemblyscript
       entities:
         - DigitalaxMarketplaceContractDeployed
@@ -238,14 +238,14 @@ dataSources:
       file: ./src/DigitalaxMarketplace.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxPodePortal
-    network: 'mumbai'
+    network: '{{network}}'
     source:
-      address: '0x87c3C6B9C917B1732f13d36d6938E4f8802f7c7E'
+      address: '{{DigitalaxPodePortalAddress}}'
       abi: DigitalaxPodePortal
-      startBlock: 11740618
+      startBlock: {{DigitalaxPodePortalStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.3
       language: wasm/assemblyscript
       entities:
         - DigitalaxPodePortalMetadataAdded
@@ -258,14 +258,14 @@ dataSources:
       file: ./src/DigitalaxPodePortal.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxIndex
-    network: 'mumbai'
+    network: '{{network}}'
     source:
-      address: '0x93401DB6e0E17078f785019878063ce5baBA9d46'
+      address: '{{DigitalaxIndexAddress}}'
       abi: DigitalaxIndex
-      startBlock: 11709635
+      startBlock: {{DigitalaxIndexStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.3
       language: wasm/assemblyscript
       entities:
         - AuctionSetAdded
