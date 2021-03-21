@@ -129,7 +129,6 @@ contract('DigitalaxMarketplace', (accounts) => {
       this.oracle.address,
       platformFeeAddress,
       this.monaToken.address,
-      this.weth.address,
         constants.ZERO_ADDRESS,
       {from: admin}
     );
@@ -157,7 +156,6 @@ contract('DigitalaxMarketplace', (accounts) => {
           this.oracle.address,
           platformFeeAddress,
           this.monaToken.address,
-          this.weth.address,
             constants.ZERO_ADDRESS,
           {from: admin}
         ),
@@ -174,7 +172,6 @@ contract('DigitalaxMarketplace', (accounts) => {
           this.oracle.address,
           platformFeeAddress,
           this.monaToken.address,
-          this.weth.address,
             constants.ZERO_ADDRESS,
           {from: admin}
         ),
@@ -191,7 +188,6 @@ contract('DigitalaxMarketplace', (accounts) => {
           this.oracle.address,
           platformFeeAddress,
           this.monaToken.address,
-          this.weth.address,
             constants.ZERO_ADDRESS,
           {from: admin}
         ),
@@ -208,7 +204,6 @@ contract('DigitalaxMarketplace', (accounts) => {
           this.oracle.address,
           constants.ZERO_ADDRESS,
           this.monaToken.address,
-          this.weth.address,
             constants.ZERO_ADDRESS,
           {from: admin}
         ),
@@ -225,7 +220,6 @@ contract('DigitalaxMarketplace', (accounts) => {
           this.oracle.address,
           platformFeeAddress,
           constants.ZERO_ADDRESS,
-          this.weth.address,
             constants.ZERO_ADDRESS,
           {from: admin}
         ),
@@ -442,7 +436,6 @@ contract('DigitalaxMarketplace', (accounts) => {
           this.oracle.address,
           platformFeeAddress,
           this.monaToken.address,
-          this.weth.address,
             constants.ZERO_ADDRESS,
           {from: admin}
         );
@@ -528,6 +521,9 @@ contract('DigitalaxMarketplace', (accounts) => {
         expect(_availableAmount).to.be.bignumber.equal('9');
         expect(_platformFee).to.be.bignumber.equal('120');
         expect(_discountToPayERC20).to.be.bignumber.equal('20');
+
+
+        await this.marketplace.buyOffer(0, false, {from: tokenBuyer, value: ether('0.1')});
       });
 
       it('will fail if eth payments are frozen', async () => {
@@ -610,11 +606,11 @@ contract('DigitalaxMarketplace', (accounts) => {
         expect(designerChanges).to.be.bignumber.equal(ether('0')); // But no change in eth
 
         // Validate that the garment owner/designer received FEE * (100% minus platformFEE of 12%)
-        expect(await this.monaToken.balanceOf(designer)).to.be.bignumber.equal(ether('0'));
+        expect(await this.monaToken.balanceOf(designer)).to.be.bignumber.equal(ether('0.044'));
 
         // Validate that the treasury wallet (platformFeeRecipient) received platformFee minus discount for paying in Mona
         // (so 12-2, is 10% of final fee is given to the platform recipient)
-        expect(await this.monaToken.balanceOf(platformFeeAddress)).to.be.bignumber.equal(ether('0'));
+        expect(await this.monaToken.balanceOf(platformFeeAddress)).to.be.bignumber.equal(ether('0.005'));
 
       });
     });

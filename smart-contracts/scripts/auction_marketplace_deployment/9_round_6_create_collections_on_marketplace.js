@@ -13,6 +13,8 @@ async function main() {
       deployerAddress
   );
 
+  MAX_NFT_SINGLE_TX = 20;
+
   const {ERC721_GARMENT_ADDRESS, GARMENT_COLLECTION_ADDRESS, MARKETPLACE_ADDRESS, ACCESS_CONTROLS_ADDRESS} = process.env;
   console.log(`ERC721_GARMENT_ADDRESS found [${ERC721_GARMENT_ADDRESS}]`);
 
@@ -60,8 +62,8 @@ async function main() {
 
   //// SETTINGS
 
-  const reservePrice_common = '12000000000000000'; // Reduced 10x
-  const reservePrice2_semirare = '23000000000000000'; // Reduced 10x
+  const reservePrice_common = '10000000000000000'; // Reduced 10x
+  const reservePrice2_semirare = '20000000000000000'; // Reduced 10x
 
  // const test_startTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th
 
@@ -76,24 +78,23 @@ async function main() {
 
   // Next step is mint collections and open buy offers, run 1 at a time in production in case something drops
   const collectionUris = [
-      /*
-    {
-      // Collection 2 Semi-Rare
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Semi-Rare/CC Glastonbury Skin/hash.json').uri,
-      price: reservePrice2_semirare,
-      collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 3,
-      auctionIdToLink: auctionId_lockdown,
-      rarity: 'Semi-Rare',
-      tokendIds: [],
-      tokenAmounts: [],
-    },
+   {
+     // Collection 2 Semi-Rare
+     uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Semi-Rare/CC Glastonbury Skin/hash.json').uri,
+     price: reservePrice2_semirare,
+     collectionDesigner: FUND_MULTISIG_ADDRESS,
+     amountToMintInCollection: 64,
+     auctionIdToLink: auctionId_lockdown,
+     rarity: 'Semi-Rare',
+     tokendIds: [],
+     tokenAmounts: [],
+   },
     {
       // Collection 4 Semi-Rare
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Semi-Rare/CC Powder Skin/hash.json').uri,
       price: reservePrice2_semirare,
       collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 3,
+      amountToMintInCollection: 64,
       auctionIdToLink: auctionId_pluto,
       rarity: 'Semi-Rare',
       tokendIds: [],
@@ -104,7 +105,7 @@ async function main() {
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Semi-Rare/CC Renegade Skin/hash.json').uri,
       price: reservePrice2_semirare,
       collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 3,
+      amountToMintInCollection: 64,
       auctionIdToLink: auctionId_prima,
       rarity: 'Semi-Rare',
       tokendIds: [],
@@ -115,7 +116,7 @@ async function main() {
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Semi-Rare/CC Undercover Skin/hash.json').uri,
       price: reservePrice2_semirare,
       collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 3,
+      amountToMintInCollection: 64,
       auctionIdToLink: auctionId_witchdoctor,
       rarity: 'Semi-Rare',
       tokendIds: [],
@@ -126,7 +127,7 @@ async function main() {
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Common/CC Aciddrop Skin/hash.json').uri,
       price: reservePrice_common,
       collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 7,
+      amountToMintInCollection: 128,
       auctionIdToLink: auctionId_lockdown,
       rarity: 'Common',
       tokendIds: [],
@@ -137,7 +138,7 @@ async function main() {
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Common/CC Ranger Skin/hash.json').uri,
       price: reservePrice_common,
       collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 7,
+      amountToMintInCollection: 128,
       auctionIdToLink: auctionId_pluto,
       rarity: 'Common',
       tokendIds: [],
@@ -148,7 +149,7 @@ async function main() {
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Common/CC Stealth Skin/hash.json').uri,
       price: reservePrice_common,
       collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 7,
+      amountToMintInCollection: 128,
       auctionIdToLink: auctionId_prima,
       rarity: 'Common',
       tokendIds: [],
@@ -159,13 +160,12 @@ async function main() {
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Common/CC Utility Skin/hash.json').uri,
       price: reservePrice_common,
       collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 7,
+      amountToMintInCollection: 128,
       auctionIdToLink: auctionId_witchdoctor,
       rarity: 'Common',
       tokendIds: [],
       tokenAmounts: [],
     },
-*/
     {
       // Collection 9 Semi-Rare PAC
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Semi-Rare/PAC/hash.json').uri,
@@ -178,6 +178,12 @@ async function main() {
       tokenAmounts: [],
     },
   ]
+    // Approve for all
+    const approveToken = await garment.setApprovalForAll(MARKETPLACE_ADDRESS, true);
+    await approveToken.wait();
+
+  // Start a marketplace with that collection
+  console.log(`Approvals Confirmed. Creating the marketplace offers`)
 
   var arrayOfCollectionIdsDeployedForExclusiveNFT = [];
   for (let [index, collectionForMarketplace] of collectionUris.entries()) {
@@ -186,11 +192,18 @@ async function main() {
     and with child token ids of 0`);
     console.log(`For the exclusive auction garment with id: ${collectionForMarketplace.auctionIdToLink}`);
 
+    let amountToMintInitially = collectionForMarketplace.amountToMintInCollection;
+    let numberOfLoops = 0;
+    if(amountToMintInitially > MAX_NFT_SINGLE_TX){
+      amountToMintInitially = collectionForMarketplace.amountToMintInCollection % MAX_NFT_SINGLE_TX;
+      numberOfLoops = Math.floor(collectionForMarketplace.amountToMintInCollection / MAX_NFT_SINGLE_TX);
+    }
+
     // Mint collection
      const tx = await garmentCollection.mintCollection(
         collectionForMarketplace.uri,
         collectionForMarketplace.collectionDesigner,
-        collectionForMarketplace.amountToMintInCollection,
+         amountToMintInitially,
         collectionForMarketplace.auctionIdToLink,
         collectionForMarketplace.rarity,
         collectionForMarketplace.tokendIds, // childTokenIds
@@ -212,16 +225,23 @@ async function main() {
 
     console.log(`-Collection created-`);
 
+    // Mint more
+    if(numberOfLoops > 0){
+      while(numberOfLoops--){
+        const tx2 = await garmentCollection.mintMoreNftsOnCollection(
+            createCollectionId,
+            MAX_NFT_SINGLE_TX,
+            collectionForMarketplace.tokendIds, // childTokenIds
+            collectionForMarketplace.tokenAmounts, // childTokenAmounts
+        );
+        await tx2.wait();
+      }
+    }
+
     // Approve the token for the marketplace contract
     console.log(`Approving Collection ${createCollectionId} for the marketplace contract...`)
     const allTokenIdsCreated = await garmentCollection.getCollection(createCollectionId);
     console.log(allTokenIdsCreated[0]);
-    for (let [index, singleToken] of allTokenIdsCreated[0].entries()) {
-      const approveSingleToken = await garment.approve(MARKETPLACE_ADDRESS, singleToken);
-      await approveSingleToken.wait();
-    }
-    // Start a marketplace with that collection
-    console.log(`Approvals Confirmed. Creating the marketplace for.. [${createCollectionId}]`)
 
     // Create a marketplace offer for this exclusive parent nft
     const createOfferTx = await marketplace.createOffer(
