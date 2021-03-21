@@ -6,14 +6,16 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "../ERC1155/ERC1155.sol";
-import "../DigitalaxAccessControls.sol";
 import "../ERC998/IERC998ERC1155TopDown.sol";
+import "../tunnel/BaseChildTunnel.sol";
+import "../EIP2771/BaseRelayRecipient.sol";
+import "../DigitalaxAccessControls.sol";
 
 /**
  * @title Digitalax Garment NFT a.k.a. parent NFTs
  * @dev Issues ERC-721 tokens as well as being able to hold child 1155 tokens
  */
-contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown {
+contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown, BaseChildTunnel, BaseRelayRecipient {
 
     // @notice event emitted upon construction of this contract, used to bootstrap external indexers
     event DigitalaxGarmentNFTContractDeployed();
@@ -30,8 +32,10 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         uint256 _salePrice
     );
 
-    /// @dev Required to govern who can call certain functions
-    DigitalaxAccessControls public accessControls;
+    event WithdrawnBatch(
+        address indexed user,
+        uint256[] tokenIds
+    );
 
     /// @dev Child ERC1155 contract address
     ERC1155 public childContract;
@@ -57,14 +61,62 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     /// @dev max children NFTs a single 721 can hold
     uint256 public maxChildrenPerToken = 10;
 
+    /// @dev limit batching of tokens due to gas limit restrictions
+    uint256 public constant BATCH_LIMIT = 20;
+
+    mapping (uint256 => bool) public withdrawnTokens;
+
+    address public childChain;
+
+    modifier onlyChildChain() {
+        require(
+            _msgSender() == childChain,
+            "Child token: caller is not the child chain contract"
+        );
+        _;
+    }
+    /// Required to govern who can call certain functions
+    DigitalaxAccessControls public accessControls;
+
     /**
      @param _accessControls Address of the Digitalax access control contract
      @param _childContract ERC1155 the Digitalax child NFT contract
+     0xb5505a6d998549090530911180f38aC5130101c6
      */
-    constructor(DigitalaxAccessControls _accessControls, ERC1155 _childContract) public {
+    constructor(DigitalaxAccessControls _accessControls, ERC1155 _childContract, address _childChain, address _trustedForwarder) public {
         accessControls = _accessControls;
         childContract = _childContract;
+        childChain = _childChain;
+        trustedForwarder = _trustedForwarder;
         emit DigitalaxGarmentNFTContractDeployed();
+    }
+
+    /**
+     * Override this function.
+     * This version is to keep track of BaseRelayRecipient you are using
+     * in your contract.
+     */
+    function versionRecipient() external view override returns (string memory) {
+        return "1";
+    }
+
+    function setTrustedForwarder(address _trustedForwarder) external  {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxGarmentNFT.setTrustedForwarder: Sender must be admin"
+        );
+        trustedForwarder = _trustedForwarder;
+    }
+
+    // This is to support Native meta transactions
+    // never use msg.sender directly, use _msgSender() instead
+    function _msgSender()
+    internal
+    override
+    view
+    returns (address payable sender)
+    {
+        return BaseRelayRecipient.msgSender();
     }
 
     /**
@@ -87,6 +139,9 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
         tokenIdPointer = tokenIdPointer.add(1);
         uint256 tokenId = tokenIdPointer;
 
+        // MATIC guard, to catch tokens minted on chain
+        require(!withdrawnTokens[tokenId], "ChildMintableERC721: TOKEN_EXISTS_ON_ROOT_CHAIN");
+
         // Mint token and set token URI
         _safeMint(_beneficiary, tokenId);
         _setTokenURI(tokenId, _tokenUri);
@@ -102,7 +157,7 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
      @dev Only the owner or an approved sender can call this method
      @param _tokenId the token ID to burn
      */
-    function burn(uint256 _tokenId) external {
+    function burn(uint256 _tokenId) public {
         address operator = _msgSender();
         require(
             ownerOf(_tokenId) == operator || isApproved(_tokenId, operator),
@@ -376,5 +431,95 @@ contract DigitalaxGarmentNFT is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, 
     function _assertMintingParamsValid(string calldata _tokenUri, address _designer) pure internal {
         require(bytes(_tokenUri).length > 0, "DigitalaxGarmentNFT._assertMintingParamsValid: Token URI is empty");
         require(_designer != address(0), "DigitalaxGarmentNFT._assertMintingParamsValid: Designer is zero address");
+    }
+
+
+    /**
+     * @notice called when token is deposited on root chain
+     * @dev Should be callable only by ChildChainManager
+     * Should handle deposit by minting the required tokenId for user
+     * Make sure minting is done only by this function
+     * @param user user address for whom deposit is being done
+     * @param depositData abi encoded tokenId
+     */
+    function deposit(address user, bytes calldata depositData)
+    external
+    onlyChildChain
+    {
+        // deposit single
+        if (depositData.length == 32) {
+            uint256 tokenId = abi.decode(depositData, (uint256));
+            withdrawnTokens[tokenId] = false;
+            _safeMint(user, tokenId);
+
+            // deposit batch
+        } else {
+            uint256[] memory tokenIds = abi.decode(depositData, (uint256[]));
+            uint256 length = tokenIds.length;
+            for (uint256 i; i < length; i++) {
+
+                withdrawnTokens[tokenIds[i]] = false;
+                _safeMint(user, tokenIds[i]);
+            }
+        }
+    }
+
+    /**
+     * @notice called when user wants to withdraw token back to root chain
+     * @dev Should burn user's token. This transaction will be verified when exiting on root chain
+     * @param tokenId tokenId to withdraw
+     */
+    function withdraw(uint256 tokenId) external {
+        withdrawnTokens[tokenId] = true;
+        burn(tokenId);
+    }
+
+    /**
+     * @notice called when user wants to withdraw multiple tokens back to root chain
+     * @dev Should burn user's tokens. This transaction will be verified when exiting on root chain
+     * @param tokenIds tokenId list to withdraw
+     */
+    function withdrawBatch(uint256[] calldata tokenIds) external {
+        uint256 length = tokenIds.length;
+        require(length <= BATCH_LIMIT, "ChildERC721: EXCEEDS_BATCH_LIMIT");
+        for (uint256 i; i < length; i++) {
+            uint256 tokenId = tokenIds[i];
+            withdrawnTokens[tokenIds[i]] = true;
+            burn(tokenId);
+        }
+        emit WithdrawnBatch(_msgSender(), tokenIds);
+    }
+
+    function _processMessageFromRoot(bytes memory message) internal override {
+        uint256 _tokenId;
+        uint256 _primarySalePrice;
+        address _garmentDesigner;
+        string memory _tokenUri;
+        uint256[] memory _children;
+        uint256[] memory _childrenBalances;
+        (_tokenId, _primarySalePrice, _garmentDesigner, _tokenUri, _children, _childrenBalances) = abi.decode(message, (uint256, uint256, address, string, uint256[], uint256[]));
+
+        // With the information above, rebuild the 721 token in matic!
+        primarySalePrice[_tokenId] = _primarySalePrice;
+        garmentDesigners[_tokenId] = _garmentDesigner;
+        _setTokenURI(_tokenId, _tokenUri);
+        for (uint256 i = 0; i< _children.length; i++) {
+            _receiveChild(_tokenId, _msgSender(), _children[i], _childrenBalances[i]);
+        }
+    }
+
+    // Send the nft to root - if it does not exist then we can handle it on that side
+    function sendNFTToRoot(uint256 tokenId) external {
+        uint256 _primarySalePrice = primarySalePrice[tokenId];
+        address _garmentDesigner= garmentDesigners[tokenId];
+        string memory _tokenUri = tokenURI(tokenId);
+        uint256[] memory _children = childIdsForOn(tokenId, address(childContract));
+        uint256 len = _children.length;
+        uint256[] memory childBalances = new uint256[](len);
+        for( uint256 i; i< _children.length; i++){
+            childBalances[i] = childBalance(tokenId, address(childContract), _children[i]);
+        }
+
+        _sendMessageToRoot(abi.encode(tokenId, ownerOf(tokenId), _primarySalePrice, _garmentDesigner, _tokenUri, _children, childBalances));
     }
 }

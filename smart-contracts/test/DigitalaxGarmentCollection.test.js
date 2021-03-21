@@ -36,6 +36,8 @@ contract('DigitalaxGarmentCollection', (accounts) => {
       'DigitalaxMaterials',
       'DXM',
       this.accessControls.address,
+        '0xb5505a6d998549090530911180f38aC5130101c6',
+        constants.ZERO_ADDRESS,
       {from: owner}
     );
 
@@ -43,12 +45,16 @@ contract('DigitalaxGarmentCollection', (accounts) => {
         'DigitalaxMaterials',
         'DXM',
         this.accessControls.address,
+        '0xb5505a6d998549090530911180f38aC5130101c6',
+        constants.ZERO_ADDRESS,
         {from: owner}
     );
 
     this.token = await DigitalaxGarmentNFT.new(
         this.accessControls.address,
         this.digitalaxMaterials.address,
+        '0xb5505a6d998549090530911180f38aC5130101c6',
+        constants.ZERO_ADDRESS,
         {from: admin}
     );
 
@@ -151,6 +157,43 @@ contract('DigitalaxGarmentCollection', (accounts) => {
     });
   });
 
+  describe('mintMoreNftsOnCollection()', async () => {
+    describe('validation', async () => {
+      it('can successfully mint more to collection with Child nfts that have been created previously', async () => {
+        await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common',erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+
+        await this.garmentCollection.mintMoreNftsOnCollection(0, COLLECTION_SIZE,erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+
+        const collection = await this.garmentCollection.getCollection(0);
+        expect(collection[0].length).to.equal(20);
+        expect(collection[1]).to.equal === COLLECTION_SIZE.mul(new BN('2'));
+
+        const owner = await this.token.ownerOf(TOKEN_ONE_ID);
+        expect(owner).to.be.equal(minter);
+      });
+
+      it('reverts if sender not admin or minter ', async () => {
+        await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common',erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+
+        await expectRevert(
+            this.garmentCollection.mintMoreNftsOnCollection(0, COLLECTION_SIZE,erc1155ChildStrandIds, amountsOfChildToken, {from: designer}
+            ),
+            "DigitalaxGarmentCollection.mintMoreNftsOnCollection: Sender must have the minter or contract role"
+          );
+      });
+      it('reverts if collection size is greater then the max garment per collection ', async () => {
+        await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common',erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
+
+        const maxGarments = await this.garmentCollection.maxGarmentsPerCollection();
+        await expectRevert(
+            this.garmentCollection.mintMoreNftsOnCollection(0, (maxGarments + 1), erc1155ChildStrandIds, amountsOfChildToken, {from: minter}
+            ),
+            "DigitalaxGarmentCollection.mintMoreNftsOnCollection: Amount cannot exceed maxGarmentsPerCollection"
+          );
+      });
+    });
+  });
+
   describe('burnCollection()', async () => {
     beforeEach(async () => {
       await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, auctionID, 'Common',erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
@@ -185,20 +228,20 @@ contract('DigitalaxGarmentCollection', (accounts) => {
 
     describe('validation', async () => {
       it('Can update max garments per collection as admin', async () => {
-        expect(await this.garmentCollection.maxGarmentsPerCollection()).to.be.bignumber.equal("10");
-        await this.garmentCollection.updateMaxGarmentsPerCollection("20", {from: admin});
-        expect(await this.garmentCollection.maxGarmentsPerCollection()).to.be.bignumber.equal("20");
+        expect(await this.garmentCollection.maxGarmentsPerCollection()).to.be.bignumber.equal("25");
+        await this.garmentCollection.updateMaxGarmentsPerCollection("30", {from: admin});
+        expect(await this.garmentCollection.maxGarmentsPerCollection()).to.be.bignumber.equal("30");
       });
 
       it('Reverts when sender is not admin', async () => {
         await expectRevert(
-            this.garmentCollection.updateMaxGarmentsPerCollection("20", {from: designer}),
+            this.garmentCollection.updateMaxGarmentsPerCollection("25", {from: designer}),
             "DigitalaxGarmentCollection.updateMaxGarmentsPerCollection: Sender must be admin"
         );
       });
 
       it('can successfully update max garments per collection and mint up to 20 tokens', async () => {
-        await this.garmentCollection.updateMaxGarmentsPerCollection("20", {from: admin});
+        // await this.garmentCollection.updateMaxGarmentsPerCollection("20", {from: admin});
         const {receipt} = await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE.mul(new BN('2')), auctionID, 'Common', erc1155ChildStrandIds, amountsOfChildToken, {from: minter});
         await expectEvent(receipt, 'MintGarmentCollection', {
           collectionId: (new BN('1')),
