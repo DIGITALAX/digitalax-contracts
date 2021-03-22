@@ -106,17 +106,6 @@ async function main() {
           auctionStartTime: mainnet_startTime,
           auctionEndTime: mainnet_endTime,
           designer: FUND_MULTISIG_ADDRESS
-      },
-
-      {
-          // Auction 4 Exclusive - copy
-          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Exclusive/CC Witch Doctor Skin/hash.json').uri,
-          tokendIds: [],
-          tokenAmounts: [],
-          price: reservePrice,
-          auctionStartTime: mainnet_startTime,
-          auctionEndTime: mainnet_endTime,
-          designer: FUND_MULTISIG_ADDRESS
       }
   ]
 
