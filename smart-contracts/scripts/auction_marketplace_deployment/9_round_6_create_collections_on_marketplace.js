@@ -71,10 +71,10 @@ async function main() {
 
   // Use the single auction id processed in the last script to build auction id specific collections in this script
 
-   const auctionId_lockdown = 3; // TODO update from result of last script (important)
-   const auctionId_pluto = 4; // TODO update from result of last script (important)
-   const auctionId_prima = 5; // TODO update from result of last script (important)
-   const auctionId_witchdoctor = 108; // TODO update from result of last script (important)
+   const auctionId_lockdown = 1; // TODO update from result of last script (important)
+   const auctionId_pluto = 2; // TODO update from result of last script (important)
+   const auctionId_prima = 3; // TODO update from result of last script (important)
+   const auctionId_witchdoctor = 4; // TODO update from result of last script (important)
 
   // Next step is mint collections and open buy offers, run 1 at a time in production in case something drops
   const collectionUris = [
