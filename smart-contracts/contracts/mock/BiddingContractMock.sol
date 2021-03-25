@@ -11,7 +11,7 @@ contract BiddingContractMock {
         auctionContract = _auctionContract;
     }
 
-    function bid(uint256 _garmentTokenId) external payable {
-        auctionContract.placeBid{value: msg.value}(_garmentTokenId);
+    function bid(uint256 _garmentTokenId, uint256 _monaAmount) external payable {
+        auctionContract.placeBid{value: msg.value}(_garmentTokenId, _monaAmount);
     }
 }

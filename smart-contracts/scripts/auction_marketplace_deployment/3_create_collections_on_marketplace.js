@@ -80,7 +80,7 @@ async function main() {
 
   // Next step is mint collections and open buy offers, run 1 at a time in production in case something drops
   const collectionUris = [
-    /*{
+    {
       // Collection 1 Semirare
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Chrysalis/hash.json').uri,
       price: reservePrice_semirare,
@@ -156,7 +156,7 @@ async function main() {
       rarity: 'Semi-Rare',
       tokendIds: tokenId_balancebliss_hagamonos,
       tokenAmounts: tokenIdAmounts,
-    },*/
+    },
     {
       // Collection 8 Common
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Distant Mark/hash.json').uri,
