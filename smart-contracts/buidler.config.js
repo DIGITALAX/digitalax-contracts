@@ -48,6 +48,10 @@ module.exports = {
       url: `https://rpc-mumbai.matic.today`,
       accounts: [`0x${PRIVATE_KEY}`]
     },
+    matic: {
+      url: `https://rpc-mainnet.maticvigil.com`,
+      accounts: [`0x${PRIVATE_KEY}`]
+    },
     coverage: {
       url: 'http://localhost:8555',
     }

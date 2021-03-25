@@ -62,23 +62,23 @@ async function main() {
 
   //// SETTINGS
 
-  const reservePrice_common = '10000000000000000'; // Reduced 10x
-  const reservePrice2_semirare = '20000000000000000'; // Reduced 10x
+  const reservePrice_common = '6200000000000000'; // Reduced 10x
+  const reservePrice2_semirare = '57000000000000000'; // Reduced 10x
 
  // const test_startTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th
 
-  const mainnet_startTime = '1616035085'; //  TODO confirm
+  const mainnet_startTime = '1616439400'; //  TODO confirm
 
   // Use the single auction id processed in the last script to build auction id specific collections in this script
 
-   const auctionId_lockdown = 3; // TODO update from result of last script (important)
-   const auctionId_pluto = 4; // TODO update from result of last script (important)
-   const auctionId_prima = 5; // TODO update from result of last script (important)
-   const auctionId_witchdoctor = 108; // TODO update from result of last script (important)
+   const auctionId_lockdown = 1; // TODO update from result of last script (important)
+   const auctionId_pluto = 2; // TODO update from result of last script (important)
+   const auctionId_prima = 3; // TODO update from result of last script (important)
+   const auctionId_witchdoctor = 4; // TODO update from result of last script (important)
 
   // Next step is mint collections and open buy offers, run 1 at a time in production in case something drops
   const collectionUris = [
-   {
+      {
      // Collection 2 Semi-Rare
      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Semi-Rare/CC Glastonbury Skin/hash.json').uri,
      price: reservePrice2_semirare,
@@ -111,6 +111,7 @@ async function main() {
       tokendIds: [],
       tokenAmounts: [],
     },
+
     {
       // Collection 8 Semi-Rare
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Semi-Rare/CC Undercover Skin/hash.json').uri,
@@ -166,17 +167,19 @@ async function main() {
       tokendIds: [],
       tokenAmounts: [],
     },
+
     {
       // Collection 9 Semi-Rare PAC
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Semi-Rare/PAC/hash.json').uri,
-      price: reservePrice2_semirare,
+      price: '2000000000000000000',
       collectionDesigner: FUND_MULTISIG_ADDRESS,
       amountToMintInCollection: 20,
       auctionIdToLink: auctionId_witchdoctor,
       rarity: 'Semi-Rare',
       tokendIds: [],
       tokenAmounts: [],
-    },
+    }
+
   ]
     // Approve for all
     const approveToken = await garment.setApprovalForAll(MARKETPLACE_ADDRESS, true);

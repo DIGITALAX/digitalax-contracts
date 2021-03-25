@@ -50,7 +50,7 @@ async function main() {
     await acr2.wait();
 
    // OPTIONAL TODO use if needed
-    const updateFee = await auction.updatePlatformFee('1000');
+    const updateFee = await auction.updatePlatformFee('0');
     await updateFee.wait();
 
   //// SETTINGS
@@ -58,8 +58,8 @@ async function main() {
   const reservePrice = '0';
 
  // const testStartTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th only test
-   const mainnet_startTime = '1616035085';   //  TODO confirm
-   const mainnet_endTime = '1616281276'; //  TODO confirm
+   const mainnet_startTime = '1616439400';   //  TODO confirm
+   const mainnet_endTime = '1616727600'; //  TODO confirm
 
     // Approve for all
     const approveToken = await garment.setApprovalForAll(AUCTION_ADDRESS, true);

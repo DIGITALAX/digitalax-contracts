@@ -47,7 +47,7 @@ contract('DigitalaxMarketplace', (accounts) => {
   const erc1155ChildStrandIds = [STRAND_ONE_ID, STRAND_TWO_ID];
 
   const auctionID = new BN('0');
-  const EXCHANGE_RATE = new BN('500000000000000000');
+  const EXCHANGE_RATE = new BN('1200000000000000000');
 
   beforeEach(async () => {
     this.accessControls = await DigitalaxAccessControls.new({from: admin});
@@ -606,11 +606,11 @@ contract('DigitalaxMarketplace', (accounts) => {
         expect(designerChanges).to.be.bignumber.equal(ether('0')); // But no change in eth
 
         // Validate that the garment owner/designer received FEE * (100% minus platformFEE of 12%)
-        expect(await this.monaToken.balanceOf(designer)).to.be.bignumber.equal(ether('0.044'));
+        expect(await this.monaToken.balanceOf(designer)).to.be.bignumber.equal(new BN('73333333333333333'));
 
         // Validate that the treasury wallet (platformFeeRecipient) received platformFee minus discount for paying in Mona
         // (so 12-2, is 10% of final fee is given to the platform recipient)
-        expect(await this.monaToken.balanceOf(platformFeeAddress)).to.be.bignumber.equal(ether('0.005'));
+        expect(await this.monaToken.balanceOf(platformFeeAddress)).to.be.bignumber.equal(new BN('8333333333333333'));
 
       });
     });
