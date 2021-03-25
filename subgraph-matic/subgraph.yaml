@@ -6,11 +6,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DigitalaxGenesisNFT
-    network: 'mumbai'
+    network: 'matic'
     source:
       address: '0x89505d2a27b7e8ac56252081d721ecd525e4241e'
       abi: DigitalaxGenesisNFT
-      startBlock: 11157574
+      startBlock: 12000000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -32,11 +32,11 @@ dataSources:
       file: ./src/DigitalaxGenesisNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentNFT
-    network: 'mumbai'
+    network: 'matic'
     source:
-      address: '0x4CB61C672ff26c187394a9aA59360FbB6F23e83f'
+      address: '0x728Af879c3212cEf7a51D7fC296b5e9b7c14dbf6'
       abi: DigitalaxGarmentNFT
-      startBlock: 11680196
+      startBlock: 12226596
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -58,11 +58,11 @@ dataSources:
       file: ./src/DigitalaxGarmentNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterials
-    network: 'mumbai'
+    network: 'matic'
     source:
-      address: '0xACe5A62D509aA947ffFfF55043b317bFc8316bc2'
+      address: '0x9f0A468AeA1e0F080fB7C9f3E1F9774D1bFAf821'
       abi: DigitalaxMaterials
-      startBlock: 11675933
+      startBlock: 12187339
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -87,11 +87,11 @@ dataSources:
       file: ./src/DigitalaxMaterials.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuction
-    network: 'mumbai'
+    network: 'matic'
     source:
-      address: '0x5890F309265870D508556E654FDf5903e51c3f37'
+      address: '0x196Fd570D49dE7cF8AaB245F63330D6957A9223a'
       abi: DigitalaxAuction
-      startBlock: 11686431
+      startBlock: 12296647
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -136,11 +136,11 @@ dataSources:
       file: ./src/DigitalaxAuction.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAccessControls
-    network: 'mumbai'
+    network: 'matic'
     source:
-      address: '0xf7580d46080E1ce832aC44cF7224b906D44110B4'
+      address: '0xBe5C84E6B036cB41a7a6b5008B9427A5F4f1C9f5'
       abi: DigitalaxAccessControls
-      startBlock: 11673871
+      startBlock: 12186276
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -177,11 +177,11 @@ dataSources:
       file: ./src/DigitalaxAccessControls.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentCollection
-    network: 'mumbai'
+    network: 'matic'
     source:
-      address: '0xdee46de42941a72e44ae31310ffea6e2bc055872'
+      address: '0x73D0995D5603C76119db0a801B9e2c1A78e04aDF'
       abi: DigitalaxGarmentCollection
-      startBlock: 11686899
+      startBlock: 12297721
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -200,11 +200,11 @@ dataSources:
       file: ./src/DigitalaxGarmentCollection.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMarketplace
-    network: 'mumbai'
+    network: 'matic'
     source:
-      address: '0xed76606F33fbea13B70ba0b34f3317ef40C60467'
+      address: '0xB0b0859117512410Ec1a6Da6E012Ff35E65543D7'
       abi: DigitalaxMarketplace
-      startBlock: 11709635
+      startBlock: 12297984
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -238,11 +238,11 @@ dataSources:
       file: ./src/DigitalaxMarketplace.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxPodePortal
-    network: 'mumbai'
+    network: 'matic'
     source:
       address: '0x87c3C6B9C917B1732f13d36d6938E4f8802f7c7E'
       abi: DigitalaxPodePortal
-      startBlock: 11740618
+      startBlock: 12000000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -258,11 +258,11 @@ dataSources:
       file: ./src/DigitalaxPodePortal.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxIndex
-    network: 'mumbai'
+    network: 'matic'
     source:
       address: '0x93401DB6e0E17078f785019878063ce5baBA9d46'
       abi: DigitalaxIndex
-      startBlock: 11709635
+      startBlock: 12000000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
