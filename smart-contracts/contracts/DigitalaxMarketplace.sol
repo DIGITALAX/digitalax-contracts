@@ -126,8 +126,8 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
         garmentNft = _garmentNft;
         garmentCollection = _garmentCollection;
         oracle = _oracle;
-        platformFeeRecipient = _platformFeeRecipient;
         monaErc20Token = _monaErc20Token;
+        platformFeeRecipient = _platformFeeRecipient;
         trustedForwarder = _trustedForwarder;
 
         emit DigitalaxMarketplaceContractDeployed();
@@ -467,7 +467,7 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
         (uint256 exchangeRate, bool rateValid) = oracle.getData();
         require(rateValid, "DigitalaxMarketplace.estimateMonaAmount: Oracle data is invalid");
         lastOracleQuote = exchangeRate;
-        return _amountInETH.mul(exchangeRate).div(1e18);
+        return _amountInETH.mul(1e18).div(exchangeRate);
     }
 
     /**

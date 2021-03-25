@@ -134,7 +134,7 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard, IERC721Receiver
             "DigitalaxGarmentCollection.mintMoreNftsOnCollection: Amount cannot exceed maxGarmentsPerCollection"
         );
 
-        Collection memory _collection = garmentCollections[_collectionId];
+        Collection storage _collection = garmentCollections[_collectionId];
 
         for (uint i = 0; i < _amount; i ++) {
             uint256 _mintedTokenId = garmentNft.mint(_msgSender(), _collection.metadata, _collection.designer);
@@ -146,7 +146,7 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard, IERC721Receiver
             garmentCollections[_collectionId].garmentTokenIds.push(_mintedTokenId);
         }
 
-        _collection.garmentAmount = _collection.garmentAmount + _amount;
+        _collection.garmentAmount = _collection.garmentAmount.add(_amount);
 
         emit MintGarmentCollection(_collectionId, _collection.auctionTokenId, _collection.rarity);
         return _collectionId;
