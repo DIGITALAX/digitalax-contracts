@@ -50,7 +50,7 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard, IERC721Receiver
 
     /// @dev max ERC721 Garments a Collection can hold
     /// @dev if admin configuring this value, should test previously how many parents x children can do in one call due to gas
-    uint256 public maxGarmentsPerCollection = 10;
+    uint256 public maxGarmentsPerCollection = 25;
 
     /**
      @param _accessControls Address of the Digitalax access control contract
@@ -111,6 +111,44 @@ contract DigitalaxGarmentCollection is Context, ReentrancyGuard, IERC721Receiver
         }
 
         emit MintGarmentCollection(_collectionId, _auctionId, _rarity);
+        return _collectionId;
+    }
+
+    /**
+     @notice Method for mint more nfts on an existing collection
+     @param _amount NFTs amount of the collection
+     */
+    function mintMoreNftsOnCollection(
+        uint256 _collectionId,
+        uint256 _amount,
+        uint256[] calldata _childTokenIds,
+        uint256[] calldata _childTokenAmounts
+    ) external returns (uint256) {
+        require(
+            accessControls.hasAdminRole(_msgSender()) || accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasMinterRole(_msgSender()),
+            "DigitalaxGarmentCollection.mintMoreNftsOnCollection: Sender must have the minter or contract role"
+        );
+
+        require(
+            _amount <= maxGarmentsPerCollection,
+            "DigitalaxGarmentCollection.mintMoreNftsOnCollection: Amount cannot exceed maxGarmentsPerCollection"
+        );
+
+        Collection storage _collection = garmentCollections[_collectionId];
+
+        for (uint i = 0; i < _amount; i ++) {
+            uint256 _mintedTokenId = garmentNft.mint(_msgSender(), _collection.metadata, _collection.designer);
+
+            // Batch mint child tokens and assign to generated 721 token ID
+            if(_childTokenIds.length > 0){
+                materials.batchMintChildren(_childTokenIds, _childTokenAmounts, address(garmentNft), abi.encodePacked(_mintedTokenId));
+            }
+            garmentCollections[_collectionId].garmentTokenIds.push(_mintedTokenId);
+        }
+
+        _collection.garmentAmount = _collection.garmentAmount.add(_amount);
+
+        emit MintGarmentCollection(_collectionId, _collection.auctionTokenId, _collection.rarity);
         return _collectionId;
     }
 

@@ -40,9 +40,17 @@ async function main() {
     );
 
     // OPTIONAL TODO use if needed
-   // await accessControls.addSmartContractRole(AUCTION_ADDRESS);
+   const scr =  await accessControls.addSmartContractRole(AUCTION_ADDRESS);
+   await scr.wait();
+
+    const acr = await accessControls.addMinterRole(factory.address);
+    await acr.wait();
+
+    const acr2 = await accessControls.addMinterRole(deployerAddress);
+    await acr2.wait();
+
    // OPTIONAL TODO use if needed
-    const updateFee = await auction.updatePlatformFee('1000');
+    const updateFee = await auction.updatePlatformFee('0');
     await updateFee.wait();
 
   //// SETTINGS
@@ -50,8 +58,12 @@ async function main() {
   const reservePrice = '0';
 
  // const testStartTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th only test
-   const mainnet_startTime = '1615510800';   //  TODO confirm
-   const mainnet_endTime = '1615856400'; //  TODO confirm
+   const mainnet_startTime = '1616439400';   //  TODO confirm
+   const mainnet_endTime = '1616727600'; //  TODO confirm
+
+    // Approve for all
+    const approveToken = await garment.setApprovalForAll(AUCTION_ADDRESS, true);
+    await approveToken.wait();
 
     // Run 1 at a time in production, in case something drops
   const uris = [
@@ -123,21 +135,22 @@ async function main() {
 
       console.log(`-`);
 
-      // Approve the token for the auction contract
-      console.log(`Approving ${createParentId} for the auction contract...`)
-
-      const tx10 = await garment.approve(AUCTION_ADDRESS, createParentId);
-      await tx10.wait();
-
-      // Start an auction with that garment
-      console.log(`ApprovalConfirmed. Creating the auction for.. [${createParentId}]`)
+      // // Approve the token for the auction contract
+      // console.log(`Approving ${createParentId} for the auction contract...`)
+      //
+      // const tx10 = await garment.approve(AUCTION_ADDRESS, createParentId);
+      // await tx10.wait();
+      //
+      // // Start an auction with that garment
+      // console.log(`ApprovalConfirmed. Creating the auction for.. [${createParentId}]`)
 
       // Create an auction for this exclusiveparent nft
       const auctionTx = await auction.createAuction(
           createParentId, // garmentTokenId
           auctionGarmentInfo.price, // reservePrice
           auctionGarmentInfo.auctionStartTime, // startTimestamp
-          auctionGarmentInfo.auctionEndTime // endTimestamp
+          auctionGarmentInfo.auctionEndTime, // endTimestamp
+          true // Mona payment
       );
 
       await auctionTx.wait();
