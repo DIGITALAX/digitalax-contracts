@@ -2,20 +2,23 @@
 
 pragma solidity 0.6.12;
 
-import "@openzeppelin/contracts/GSN/Context.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./DigitalaxAccessControls.sol";
 import "./garment/IDigitalaxGarmentNFT.sol";
+import "./oracle/IDigitalaxMonaOracle.sol";
+import "./EIP2771/BaseRelayRecipient.sol";
 
 /**
  * @notice Primary sale auction contract for Digitalax NFTs
  */
-contract DigitalaxAuction is Context, ReentrancyGuard {
+contract DigitalaxAuction is ReentrancyGuard, BaseRelayRecipient {
     using SafeMath for uint256;
     using Address for address payable;
+    using SafeERC20 for IERC20;
 
     /// @notice Event emitted only on construction. To be used by indexers
     event DigitalaxAuctionContractDeployed();
@@ -45,6 +48,10 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
 
     event UpdateAccessControls(
         address indexed accessControls
+    );
+
+    event UpdateOracle(
+        address indexed oracle
     );
 
     event UpdatePlatformFee(
@@ -96,6 +103,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         uint256 startTime;
         uint256 endTime;
         bool resulted;
+        bool isMonaPayment;
     }
 
     /// @notice Information about the sender that placed a bit on an auction
@@ -114,11 +122,17 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     /// @notice Garment ERC721 NFT - the only NFT that can be auctioned in this contract
     IDigitalaxGarmentNFT public garmentNft;
 
-    // @notice responsible for enforcing admin access
+    /// @notice oracle for MONA/ETH exchange rate
+    IDigitalaxMonaOracle public oracle;
+
+    /// @notice MONA erc20 token
+    IERC20 public monaToken;
+
+    /// @notice responsible for enforcing admin access
     DigitalaxAccessControls public accessControls;
 
     /// @notice globally and across all auctions, the amount by which a bid has to increase
-    uint256 public minBidIncrement = 0.1 ether;
+    uint256 public minBidIncrement = 0.05 ether;
 
     /// @notice global bid withdrawal lock time
     uint256 public bidWithdrawalLockTime = 20 minutes;
@@ -140,17 +154,52 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     constructor(
         DigitalaxAccessControls _accessControls,
         IDigitalaxGarmentNFT _garmentNft,
-        address payable _platformFeeRecipient
+        IDigitalaxMonaOracle _oracle,
+        IERC20 _monaToken,
+        address payable _platformFeeRecipient,
+        address _trustedForwarder
     ) public {
         require(address(_accessControls) != address(0), "DigitalaxAuction: Invalid Access Controls");
         require(address(_garmentNft) != address(0), "DigitalaxAuction: Invalid NFT");
+        require(address(_oracle) != address(0), "DigitalaxAuction: Invalid Oracle");
+        require(address(_monaToken) != address(0), "DigitalaxAuction: Invalid Token");
         require(_platformFeeRecipient != address(0), "DigitalaxAuction: Invalid Platform Fee Recipient");
 
         accessControls = _accessControls;
         garmentNft = _garmentNft;
         platformFeeRecipient = _platformFeeRecipient;
+        oracle = _oracle;
+        monaToken = _monaToken;
+        trustedForwarder = _trustedForwarder;
 
         emit DigitalaxAuctionContractDeployed();
+    }
+
+    /**
+     * Override this function.
+     * This version is to keep track of BaseRelayRecipient you are using
+     * in your contract.
+     */
+    function versionRecipient() external view override returns (string memory) {
+        return "1";
+    }
+
+    function setTrustedForwarder(address _trustedForwarder) external  {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxMaterials.setTrustedForwarder: Sender must be admin"
+        );
+        trustedForwarder = _trustedForwarder;
+    }
+
+    // This is to support Native meta transactions
+    // never use msg.sender directly, use _msgSender() instead
+    function _msgSender()
+    internal
+    view
+    returns (address payable sender)
+    {
+        return BaseRelayRecipient.msgSender();
     }
 
     /**
@@ -167,7 +216,8 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         uint256 _garmentTokenId,
         uint256 _reservePrice,
         uint256 _startTimestamp,
-        uint256 _endTimestamp
+        uint256 _endTimestamp,
+        bool _isMonaPayment
     ) external whenNotPaused {
         // Ensure caller has privileges
         require(
@@ -185,7 +235,8 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
             _garmentTokenId,
             _reservePrice,
             _startTimestamp,
-            _endTimestamp
+            _endTimestamp,
+            _isMonaPayment
         );
     }
 
@@ -203,7 +254,8 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         uint256 _garmentTokenId,
         uint256 _reservePrice,
         uint256 _startTimestamp,
-        uint256 _endTimestamp
+        uint256 _endTimestamp,
+        bool _isMonaPayment
     ) external {
         // Ensure caller has privileges
         require(
@@ -220,7 +272,8 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
             _garmentTokenId,
             _reservePrice,
             _startTimestamp,
-            _endTimestamp
+            _endTimestamp,
+            _isMonaPayment
         );
     }
 
@@ -229,8 +282,9 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
      @dev Only callable when the auction is open
      @dev Bids from smart contracts are prohibited to prevent griefing with always reverting receiver
      @param _garmentTokenId Token ID of the garment being auctioned
+     @param _monaAmount Bid mona amount in the case of Mona only auction, if not it might be zero
      */
-    function placeBid(uint256 _garmentTokenId) external payable nonReentrant whenNotPaused {
+    function placeBid(uint256 _garmentTokenId, uint256 _monaAmount) external payable nonReentrant whenNotPaused {
         require(_msgSender().isContract() == false, "DigitalaxAuction.placeBid: No contracts permitted");
 
         // Check the auction to see if this is a valid bid
@@ -242,16 +296,26 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
             "DigitalaxAuction.placeBid: Bidding outside of the auction window"
         );
 
-        uint256 bidAmount = msg.value;
+        uint256 bidAmount;
+        if (auction.isMonaPayment) {
+            bidAmount = _monaAmount;
+        } else {
+            bidAmount = msg.value;
+        }
 
         // Ensure bid adheres to outbid increment and threshold
         HighestBid storage highestBid = highestBids[_garmentTokenId];
         uint256 minBidRequired = highestBid.bid.add(minBidIncrement);
         require(bidAmount >= minBidRequired, "DigitalaxAuction.placeBid: Failed to outbid highest bidder");
 
+        // Transfer MONA if the auction is only MONA auction
+        if (auction.isMonaPayment) {
+            monaToken.safeTransferFrom(_msgSender(), address(this), _monaAmount);
+        }
+
         // Refund existing top bidder if found
         if (highestBid.bidder != address(0)) {
-            _refundHighestBidder(highestBid.bidder, highestBid.bid);
+            _refundHighestBidder(highestBid.bidder, highestBid.bid, auction.isMonaPayment);
         }
 
         // assign top bidder and bid time
@@ -287,7 +351,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         delete highestBids[_garmentTokenId];
 
         // Refund the top bidder
-        _refundHighestBidder(_msgSender(), previousBid);
+        _refundHighestBidder(_msgSender(), previousBid, auctions[_garmentTokenId].isMonaPayment);
 
         emit BidWithdrawn(_garmentTokenId, _msgSender(), previousBid);
     }
@@ -342,7 +406,16 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         delete highestBids[_garmentTokenId];
 
         // Record the primary sale price for the garment
-        garmentNft.setPrimarySalePrice(_garmentTokenId, winningBid);
+        uint256 primarySalePrice = winningBid;
+        if (auction.isMonaPayment) {
+            uint256 exchangeRate;
+            bool rateValid;
+            (exchangeRate, rateValid) = IDigitalaxMonaOracle(oracle).getData();
+            require(rateValid, "DigitalaxAuction.resultAuction: Oracle data is not valid");
+
+            primarySalePrice = winningBid.mul(exchangeRate).div(1e18);
+        }
+        garmentNft.setPrimarySalePrice(_garmentTokenId, primarySalePrice);
 
         if (winningBid > auction.reservePrice) {
             // Work out total above the reserve
@@ -351,17 +424,29 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
             // Work out platform fee from above reserve amount
             uint256 platformFeeAboveReserve = aboveReservePrice.mul(platformFee).div(1000);
 
-            // Send platform fee
-            (bool platformTransferSuccess,) = platformFeeRecipient.call{value : platformFeeAboveReserve}("");
-            require(platformTransferSuccess, "DigitalaxAuction.resultAuction: Failed to send platform fee");
+            if (auction.isMonaPayment) {
+                // Send platform fee
+                monaToken.safeTransfer(platformFeeRecipient, platformFeeAboveReserve);
+                
+                // Send remaining to designer
+                monaToken.safeTransfer(garmentNft.garmentDesigners(_garmentTokenId), winningBid.sub(platformFeeAboveReserve));
+            } else {
+                // Send platform fee
+                (bool platformTransferSuccess,) = platformFeeRecipient.call{value : platformFeeAboveReserve}("");
+                require(platformTransferSuccess, "DigitalaxAuction.resultAuction: Failed to send platform fee");
 
-            // Send remaining to designer
-            (bool designerTransferSuccess,) = garmentNft.garmentDesigners(_garmentTokenId).call{value : winningBid.sub(platformFeeAboveReserve)}("");
-            require(designerTransferSuccess, "DigitalaxAuction.resultAuction: Failed to send the designer their royalties");
+                // Send remaining to designer
+                (bool designerTransferSuccess,) = garmentNft.garmentDesigners(_garmentTokenId).call{value : winningBid.sub(platformFeeAboveReserve)}("");
+                require(designerTransferSuccess, "DigitalaxAuction.resultAuction: Failed to send the designer their royalties");
+            }
         } else {
             // Send all to the designer
-            (bool designerTransferSuccess,) = garmentNft.garmentDesigners(_garmentTokenId).call{value : winningBid}("");
-            require(designerTransferSuccess, "DigitalaxAuction.resultAuction: Failed to send the designer their royalties");
+            if (auction.isMonaPayment) {
+                monaToken.safeTransfer(garmentNft.garmentDesigners(_garmentTokenId), winningBid);
+            } else {
+                (bool designerTransferSuccess,) = garmentNft.garmentDesigners(_garmentTokenId).call{value : winningBid}("");
+                require(designerTransferSuccess, "DigitalaxAuction.resultAuction: Failed to send the designer their royalties");
+            }
         }
 
         // Transfer the token to the winner
@@ -394,7 +479,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         // refund existing top bidder if found
         HighestBid storage highestBid = highestBids[_garmentTokenId];
         if (highestBid.bidder != address(0)) {
-            _refundHighestBidder(highestBid.bidder, highestBid.bid);
+            _refundHighestBidder(highestBid.bidder, highestBid.bid, auction.isMonaPayment);
 
             // Clear up highest bid
             delete highestBids[_garmentTokenId];
@@ -529,6 +614,21 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     }
 
     /**
+     @notice Method for updating oracle
+     @dev Only admin
+     @param _oracle new oracle
+     */
+    function updateOracle(IDigitalaxMonaOracle _oracle) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxAuction.updateOracle: Sender must be admin"
+        );
+        
+        oracle = _oracle;
+        emit UpdateOracle(address(_oracle));
+    }
+
+    /**
      @notice Method for updating platform fee
      @dev Only admin
      @param _platformFee uint256 the platform fee to set
@@ -571,13 +671,14 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     function getAuction(uint256 _garmentTokenId)
     external
     view
-    returns (uint256 _reservePrice, uint256 _startTime, uint256 _endTime, bool _resulted) {
+    returns (uint256 _reservePrice, uint256 _startTime, uint256 _endTime, bool _resulted, bool _isMonaPayment) {
         Auction storage auction = auctions[_garmentTokenId];
         return (
-        auction.reservePrice,
-        auction.startTime,
-        auction.endTime,
-        auction.resulted
+            auction.reservePrice,
+            auction.startTime,
+            auction.endTime,
+            auction.resulted,
+            auction.isMonaPayment
         );
     }
 
@@ -612,12 +713,14 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
      @param _reservePrice Garment cannot be sold for less than this or minBidIncrement, whichever is higher
      @param _startTimestamp Unix epoch in seconds for the auction start time
      @param _endTimestamp Unix epoch in seconds for the auction end time.
+     @param _isMonaPayment Boolean if auction is MONA only or ETH.
      */
     function _createAuction(
         uint256 _garmentTokenId,
         uint256 _reservePrice,
         uint256 _startTimestamp,
-        uint256 _endTimestamp
+        uint256 _endTimestamp,
+        bool _isMonaPayment
     ) private {
         // Ensure a token cannot be re-listed if previously successfully sold
         require(auctions[_garmentTokenId].endTime == 0, "DigitalaxAuction.createAuction: Cannot relist");
@@ -631,7 +734,8 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         reservePrice : _reservePrice,
         startTime : _startTimestamp,
         endTime : _endTimestamp,
-        resulted : false
+        resulted : false,
+        isMonaPayment: _isMonaPayment
         });
 
         emit AuctionCreated(_garmentTokenId);
@@ -640,12 +744,17 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
     /**
      @notice Used for sending back escrowed funds from a previous bid
      @param _currentHighestBidder Address of the last highest bidder
-     @param _currentHighestBid Ether amount in WEI that the bidder sent when placing their bid
+     @param _currentHighestBid Ether or Mona amount in WEI that the bidder sent when placing their bid
+     @param _isMonaPayment if Refund payment option is Ether or Mona
      */
-    function _refundHighestBidder(address payable _currentHighestBidder, uint256 _currentHighestBid) private {
-        // refund previous best (if bid exists)
-        (bool successRefund,) = _currentHighestBidder.call{value : _currentHighestBid}("");
-        require(successRefund, "DigitalaxAuction._refundHighestBidder: failed to refund previous bidder");
+    function _refundHighestBidder(address payable _currentHighestBidder, uint256 _currentHighestBid, bool _isMonaPayment) private {
+        if (_isMonaPayment) {
+            monaToken.safeTransfer(_currentHighestBidder, _currentHighestBid);
+        } else {
+            // refund previous best (if bid exists)
+            (bool successRefund,) = _currentHighestBidder.call{value : _currentHighestBid}("");
+            require(successRefund, "DigitalaxAuction._refundHighestBidder: failed to refund previous bidder");
+        }
         emit BidRefunded(_currentHighestBidder, _currentHighestBid);
     }
 
@@ -662,7 +771,7 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
         require(_tokenContract != address(0), "Invalid address");
         IERC20 token = IERC20(_tokenContract);
         uint256 balance = token.balanceOf(address(this));
-        require(token.transfer(msg.sender, balance), "Transfer failed");
+        require(token.transfer(_msgSender(), balance), "Transfer failed");
     }
 
     /**
@@ -679,6 +788,6 @@ contract DigitalaxAuction is Context, ReentrancyGuard {
             accessControls.hasAdminRole(_msgSender()),
             "DigitalaxAuction.reclaimETH: Sender must be admin"
         );
-        msg.sender.transfer(address(this).balance);
+        _msgSender().transfer(address(this).balance);
     }
 }

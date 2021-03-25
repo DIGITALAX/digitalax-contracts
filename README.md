@@ -23,3 +23,4 @@
 
 * Responsible for indexing events/data from the Digitalax contracts
 * Hosted subgraph details can be found [here](https://hackmd.io/RzmT0y91ReyRmrh084ShNA)
+

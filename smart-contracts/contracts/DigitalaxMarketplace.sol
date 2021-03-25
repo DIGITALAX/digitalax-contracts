@@ -9,13 +9,14 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./DigitalaxAccessControls.sol";
 import "./garment/IDigitalaxGarmentNFT.sol";
 import "./garment/DigitalaxGarmentCollection.sol";
-import "./Oracle/UniswapPairOracle_MONA_WETH.sol";
+import "./oracle/IDigitalaxMonaOracle.sol";
+import "./EIP2771/BaseRelayRecipient.sol";
 //console
 import "@nomiclabs/buidler/console.sol";
 /**
  * @notice Marketplace contract for Digitalax NFTs
  */
-contract DigitalaxMarketplace is Context, ReentrancyGuard {
+contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
     using SafeMath for uint256;
     using Address for address payable;
     /// @notice Event emitted only on construction. To be used by indexers
@@ -36,9 +37,11 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         address indexed accessControls
     );
     event UpdateMarketplacePlatformFee(
+        uint256 indexed garmentCollectionId,
         uint256 platformFee
     );
     event UpdateMarketplaceDiscountToPayInErc20(
+        uint256 indexed garmentCollectionId,
         uint256 discount
     );
     event UpdateOfferPrimarySalePrice(
@@ -48,13 +51,18 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     event UpdatePlatformFeeRecipient(
         address payable platformFeeRecipient
     );
+    event UpdateOracle(
+        address indexed oracle
+    );
     event OfferPurchased(
         uint256 indexed garmentTokenId,
         uint256 indexed garmentCollectionId,
         address indexed buyer,
         uint256 primarySalePrice,
         bool paidInErc20,
-        uint256 monaTransferredAmount
+        uint256 monaTransferredAmount,
+        uint256 platformFee,
+        uint256 discountToPayInERC20
     );
     event OfferCancelled(
         uint256 indexed garmentTokenId
@@ -64,8 +72,11 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         uint256 primarySalePrice;
         uint256 startTime;
         uint256 availableIndex;
+        uint256 platformFee;
+        uint256 discountToPayERC20;
     }
-    /// @notice Garment ERC721 Token ID -> Offer Parameters
+
+    /// @notice Garment ERC721 Collection ID -> Offer Parameters
     mapping(uint256 => Offer) public offers;
     /// @notice KYC Garment Designers -> Number of times they have sold in this marketplace (To set fee accordingly)
     mapping(address => uint256) public numberOfTimesSold;
@@ -76,23 +87,19 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     /// @notice responsible for enforcing admin access
     DigitalaxAccessControls public accessControls;
     /// @notice Mona to Ether Oracle
-    UniswapPairOracle_MONA_WETH public oracle;
-    /// @notice platform fee that will be sent to the platformFeeRecipient, assumed to always be to 1 decimal place i.e. 120 = 12.0%
-    uint256 public platformFee = 120;
-    /// @notice discount to pay fully in erc20 token (Mona), assumed to always be to 1 decimal place i.e. 20 = 2.0%
-    uint256 public discountToPayERC20 = 20;
+    IDigitalaxMonaOracle public oracle;
     /// @notice where to send platform fee funds to
     address payable public platformFeeRecipient;
     /// @notice the erc20 token
     address public monaErc20Token;
-    /// @notice the WETH
-    address public weth;
     /// @notice for pausing marketplace functionalities
     bool public isPaused;
     /// @notice for freezing mona payment option
     bool public freezeMonaERC20Payment;
     /// @notice for freezing eth payment option
     bool public freezeETHPayment;
+    /// @notice for storing information from oracle
+    uint256 public lastOracleQuote = 1;
 
     modifier whenNotPaused() {
         require(!isPaused, "Function is currently paused");
@@ -104,10 +111,10 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         DigitalaxAccessControls _accessControls,
         IDigitalaxGarmentNFT _garmentNft,
         DigitalaxGarmentCollection _garmentCollection,
-        UniswapPairOracle_MONA_WETH _oracle,
+        IDigitalaxMonaOracle _oracle,
         address payable _platformFeeRecipient,
         address _monaErc20Token,
-        address _weth
+        address _trustedForwarder
     ) public {
         require(address(_accessControls) != address(0), "DigitalaxMarketplace: Invalid Access Controls");
         require(address(_garmentNft) != address(0), "DigitalaxMarketplace: Invalid NFT");
@@ -115,17 +122,45 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         require(address(_oracle) != address(0), "DigitalaxMarketplace: Invalid Oracle");
         require(_platformFeeRecipient != address(0), "DigitalaxMarketplace: Invalid Platform Fee Recipient");
         require(_monaErc20Token != address(0), "DigitalaxMarketplace: Invalid ERC20 Token");
-        require(_weth != address(0), "DigitalaxMarketplace: Invalid WETH Token");
         accessControls = _accessControls;
         garmentNft = _garmentNft;
         garmentCollection = _garmentCollection;
         oracle = _oracle;
-        platformFeeRecipient = _platformFeeRecipient;
         monaErc20Token = _monaErc20Token;
-        weth = _weth;
+        platformFeeRecipient = _platformFeeRecipient;
+        trustedForwarder = _trustedForwarder;
 
         emit DigitalaxMarketplaceContractDeployed();
     }
+
+
+    /**
+     * Override this function.
+     * This version is to keep track of BaseRelayRecipient you are using
+     * in your contract.
+     */
+    function versionRecipient() external view override returns (string memory) {
+        return "1";
+    }
+
+    function setTrustedForwarder(address _trustedForwarder) external  {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxMaterials.setTrustedForwarder: Sender must be admin"
+        );
+        trustedForwarder = _trustedForwarder;
+    }
+
+    // This is to support Native meta transactions
+    // never use msg.sender directly, use _msgSender() instead
+    function _msgSender()
+    internal
+    view
+    returns (address payable sender)
+    {
+        return BaseRelayRecipient.msgSender();
+    }
+
     /**
      @notice Creates a new offer for a given garment
      @dev Only the owner of a garment can create an offer and must have ALREADY approved the contract
@@ -134,11 +169,15 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
      @dev There cannot be a duplicate offer created
      @param _garmentCollectionId Collection ID of the garment being offered to marketplace
      @param _primarySalePrice Garment cannot be sold for less than this
+     @param _platformFee Percentage to pay out to the platformFeeRecipient, 1 decimal place (i.e. 40% is 400)
+     @param _discountToPayERC20 Percentage to discount from overall purchase price if Mona (ERC20) used, 1 decimal place (i.e. 5% is 50)
      */
     function createOffer(
         uint256 _garmentCollectionId,
         uint256 _primarySalePrice,
-        uint256 _startTimestamp
+        uint256 _startTimestamp,
+        uint256 _platformFee,
+        uint256 _discountToPayERC20
     ) external whenNotPaused {
         // Ensure caller has privileges
         require(
@@ -155,9 +194,27 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         _createOffer(
             _garmentCollectionId,
             _primarySalePrice,
-            _startTimestamp
+            _startTimestamp,
+            _platformFee,
+            _discountToPayERC20
         );
     }
+
+    /**
+     @notice Method for updating oracle
+     @dev Only admin
+     @param _oracle new oracle
+     */
+    function updateOracle(IDigitalaxMonaOracle _oracle) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxAuction.updateOracle: Sender must be admin"
+        );
+
+        oracle = _oracle;
+        emit UpdateOracle(address(_oracle));
+    }
+
     /**
      @notice Buys an open offer with eth or erc20
      @dev Only callable when the offer is open
@@ -181,21 +238,19 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         require(garmentNft.isApproved(garmentTokenId, address(this)), "DigitalaxMarketplace.buyOffer: offer not approved");
         require(_getNow() >= offer.startTime, "DigitalaxMarketplace.buyOffer: Purchase outside of the offer window");
 
-        uint256 feeInETH = offer.primarySalePrice.mul(platformFee).div(maxShare);
+        uint256 feeInETH = offer.primarySalePrice.mul(offer.platformFee).div(maxShare);
         uint256 amountOfMonaToTransfer = 0;
 
         // Work out platform fee on sale amount
         if(_payWithMona) {
             require(!freezeMonaERC20Payment, "DigitalaxMarketplace.buyOffer: mona erc20 payments currently frozen");
 
-            oracle.update();
-
             // Designer receives (Primary Sale Price minus Protocol Fee)
             uint256 amountOfETHDesignerReceives = offer.primarySalePrice.sub(feeInETH);
             uint256 amountOfMonaToTransferToDesigner = _estimateMonaAmount(amountOfETHDesignerReceives);
 
             // There is a discount on Fees paying in Mona
-            uint256 amountOfDiscountOnETHPrice = offer.primarySalePrice.mul(discountToPayERC20).div(maxShare);
+            uint256 amountOfDiscountOnETHPrice = offer.primarySalePrice.mul(offer.discountToPayERC20).div(maxShare);
             uint256 amountOfETHToBePaidInFees = feeInETH.sub(amountOfDiscountOnETHPrice);
             uint256 amountOfMonaToTransferAsFees = _estimateMonaAmount(amountOfETHToBePaidInFees);
 
@@ -203,10 +258,10 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
             amountOfMonaToTransfer = amountOfMonaToTransferToDesigner.add(amountOfMonaToTransferAsFees);
 
             // Check that there is enough ERC20 to cover the rest of the value (minus the discount already taken)
-            require(IERC20(monaErc20Token).allowance(msg.sender, address(this)) >= amountOfMonaToTransfer, "DigitalaxMarketplace.buyOffer: Failed to supply ERC20 Allowance");
+            require(IERC20(monaErc20Token).allowance(_msgSender(), address(this)) >= amountOfMonaToTransfer, "DigitalaxMarketplace.buyOffer: Failed to supply ERC20 Allowance");
             // Transfer ERC20 token from user to contract(this) escrow
-            IERC20(monaErc20Token).transferFrom(msg.sender, garmentNft.garmentDesigners(garmentTokenId), amountOfMonaToTransferToDesigner);
-            IERC20(monaErc20Token).transferFrom(msg.sender, platformFeeRecipient, amountOfMonaToTransferAsFees);
+            IERC20(monaErc20Token).transferFrom(_msgSender(), garmentNft.garmentDesigners(garmentTokenId), amountOfMonaToTransferToDesigner);
+            IERC20(monaErc20Token).transferFrom(_msgSender(), platformFeeRecipient, amountOfMonaToTransferAsFees);
 
         } else {
             require(!freezeETHPayment, "DigitalaxMarketplace.buyOffer: eth payments currently frozen");
@@ -225,8 +280,8 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         // Record the primary sale price for the garment
         garmentNft.setPrimarySalePrice(garmentTokenId, offer.primarySalePrice);
         // Transfer the token to the purchaser
-        garmentNft.safeTransferFrom(garmentNft.ownerOf(garmentTokenId), msg.sender, garmentTokenId);
-        emit OfferPurchased(garmentTokenId, _garmentCollectionId, _msgSender(), offer.primarySalePrice, _payWithMona, amountOfMonaToTransfer);
+        garmentNft.safeTransferFrom(garmentNft.ownerOf(garmentTokenId), _msgSender(), garmentTokenId);
+        emit OfferPurchased(garmentTokenId, _garmentCollectionId, _msgSender(), offer.primarySalePrice, _payWithMona, amountOfMonaToTransfer, offer.platformFee, offer.discountToPayERC20);
     }
     /**
      @notice Cancels an inflight and un-resulted offer
@@ -281,26 +336,28 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
      @notice Update the marketplace discount
      @dev Only admin
      @dev This discount is taken away from the received fees, so the discount cannot exceed the platform fee
+     @param _garmentCollectionId Collection ID of the garment being offered
      @param _marketplaceDiscount New marketplace discount
      */
-    function updateMarketplaceDiscountToPayInErc20(uint256 _marketplaceDiscount) external {
+    function updateMarketplaceDiscountToPayInErc20(uint256 _garmentCollectionId, uint256 _marketplaceDiscount) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.updateMarketplaceDiscountToPayInErc20: Sender must be admin");
-        require(_marketplaceDiscount <= platformFee, "DigitalaxMarketplace.updateMarketplaceDiscountToPayInErc20: Discount cannot be greater then fee");
-        discountToPayERC20 = _marketplaceDiscount;
-        emit UpdateMarketplaceDiscountToPayInErc20(_marketplaceDiscount);
+        require(_marketplaceDiscount <= offers[_garmentCollectionId].platformFee, "DigitalaxMarketplace.updateMarketplaceDiscountToPayInErc20: Discount cannot be greater then fee");
+        offers[_garmentCollectionId].discountToPayERC20 = _marketplaceDiscount;
+        emit UpdateMarketplaceDiscountToPayInErc20(_garmentCollectionId, _marketplaceDiscount);
     }
 
     /**
      @notice Update the marketplace fee
      @dev Only admin
      @dev There is a discount that can be taken away from received fees, so that discount cannot exceed the platform fee
+     @param _garmentCollectionId Collection ID of the garment being offered
      @param _platformFee New marketplace fee
      */
-    function updateMarketplacePlatformFee(uint256 _platformFee) external {
+    function updateMarketplacePlatformFee(uint256 _garmentCollectionId, uint256 _platformFee) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.updateMarketplacePlatformFee: Sender must be admin");
-        require(_platformFee >= discountToPayERC20, "DigitalaxMarketplace.updateMarketplacePlatformFee: Discount cannot be greater then fee");
-        platformFee = _platformFee;
-        emit UpdateMarketplacePlatformFee(_platformFee);
+        require(_platformFee >= offers[_garmentCollectionId].discountToPayERC20, "DigitalaxMarketplace.updateMarketplacePlatformFee: Discount cannot be greater then fee");
+        offers[_garmentCollectionId].platformFee = _platformFee;
+        emit UpdateMarketplacePlatformFee(_garmentCollectionId, _platformFee);
     }
 
     /**
@@ -356,20 +413,22 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
     function getOffer(uint256 _garmentCollectionId)
     external
     view
-    returns (uint256 _primarySalePrice, uint256 _startTime, uint256 _availableAmount) {
+    returns (uint256 _primarySalePrice, uint256 _startTime, uint256 _availableAmount, uint _platformFee, uint256 _discountToPayERC20) {
         Offer storage offer = offers[_garmentCollectionId];
         uint256 availableAmount = garmentCollection.getSupply(_garmentCollectionId).sub(offer.availableIndex);
         return (
             offer.primarySalePrice,
             offer.startTime,
-            availableAmount
+            availableAmount,
+            offer.platformFee,
+            offer.discountToPayERC20
         );
     }
 
     /**
      @notice Method for getting estimation of Mona amount
      */
-    function estimateMonaAmount(uint256 _priceInETH) external view returns (uint256) {
+    function estimateMonaAmount(uint256 _priceInETH) external returns (uint256) {
         return _estimateMonaAmount(_priceInETH);
     }
 
@@ -404,10 +463,11 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
      @notice Private method to estimate MONA for paying
      @param _amountInETH ETH amount in wei
      */
-    function _estimateMonaAmount(uint256 _amountInETH) internal virtual view returns (uint256) {
-        uint256 amountOfMonaToTransfer = oracle.consult(address(weth), _amountInETH);
-
-        return amountOfMonaToTransfer;
+    function _estimateMonaAmount(uint256 _amountInETH) internal virtual returns (uint256) {
+        (uint256 exchangeRate, bool rateValid) = oracle.getData();
+        require(rateValid, "DigitalaxMarketplace.estimateMonaAmount: Oracle data is invalid");
+        lastOracleQuote = exchangeRate;
+        return _amountInETH.mul(1e18).div(exchangeRate);
     }
 
     /**
@@ -415,19 +475,27 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
      @param _garmentCollectionId Collection ID of the garment being offered
      @param _primarySalePrice Garment cannot be sold for less than this
      @param _startTimestamp Unix epoch in seconds for the offer start time
+     @param _platformFee Percentage to pay out to the platformFeeRecipient, 1 decimal place (i.e. 40% is 400)
+     @param _discountToPayERC20 Percentage to discount from overall purchase price if Mona (ERC20) used, 1 decimal place (i.e. 5% is 50)
      */
     function _createOffer(
         uint256 _garmentCollectionId,
         uint256 _primarySalePrice,
-        uint256 _startTimestamp
+        uint256 _startTimestamp,
+        uint256 _platformFee,
+        uint256 _discountToPayERC20
     ) private {
+        //  The discount cannot be greater than the platform fee
+        require(_platformFee >= _discountToPayERC20 , "DigitalaxMarketplace.createOffer: The discount is taken out of platform fee, discount cannot be greater");
         // Ensure a token cannot be re-listed if previously successfully sold
         require(offers[_garmentCollectionId].startTime == 0, "DigitalaxMarketplace.createOffer: Cannot duplicate current offer");
         // Setup the new offer
         offers[_garmentCollectionId] = Offer({
             primarySalePrice : _primarySalePrice,
             startTime : _startTimestamp,
-            availableIndex : 0
+            availableIndex : 0,
+            platformFee: _platformFee,
+            discountToPayERC20: _discountToPayERC20
         });
         emit OfferCreated(_garmentCollectionId);
     }
@@ -445,7 +513,7 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
         require(_tokenContract != address(0), "Invalid address");
         IERC20 token = IERC20(_tokenContract);
         uint256 balance = token.balanceOf(address(this));
-        require(token.transfer(msg.sender, balance), "Transfer failed");
+        require(token.transfer(_msgSender(), balance), "Transfer failed");
     }
 
     /**
@@ -458,6 +526,6 @@ contract DigitalaxMarketplace is Context, ReentrancyGuard {
             accessControls.hasAdminRole(_msgSender()),
             "DigitalaxMarketplace.reclaimETH: Sender must be admin"
         );
-        msg.sender.transfer(address(this).balance);
+        _msgSender().transfer(address(this).balance);
     }
 }

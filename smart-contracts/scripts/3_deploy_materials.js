@@ -13,7 +13,8 @@ async function main() {
   const materials = await DigitalaxMaterials.deploy(
     'DigitalaxMaterials',
     'DXM',
-    ACCESS_CONTROLS_ADDRESS
+    ACCESS_CONTROLS_ADDRESS,
+    '0xb5505a6d998549090530911180f38aC5130101c6' // Mumbai child chain manager address
   );
 
   await materials.deployed();

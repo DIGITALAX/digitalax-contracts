@@ -1,0 +1,21 @@
+{
+    "network": "mumbai",
+    "DigitalaxGenesisNFTAddress": "0x89505d2a27b7e8ac56252081d721ecd525e4241e",
+    "DigitalaxGenesisNFTStartBlock": 11157574,
+    "DigitalaxGarmentNFTAddress": "0x4CB61C672ff26c187394a9aA59360FbB6F23e83f",
+    "DigitalaxGarmentNFTStartBlock": 11680196,
+    "DigitalaxMaterialsAddress": "0xACe5A62D509aA947ffFfF55043b317bFc8316bc2",
+    "DigitalaxMaterialsStartBlock": 11675933,
+    "DigitalaxAuctionAddress": "0x5890F309265870D508556E654FDf5903e51c3f37",
+    "DigitalaxAuctionStartBlock": 11686431,
+    "DigitalaxAccessControlsAddress": "0xf7580d46080E1ce832aC44cF7224b906D44110B4",
+    "DigitalaxAccessControlsStartBlock": 11673871,
+    "DigitalaxGarmentCollectionAddress": "0x1A785E4F4c7561Fb9495734B418D4f001266ec6b",
+    "DigitalaxGarmentCollectionStartBlock": 11829825,
+    "DigitalaxMarketplaceAddress": "0x1c6976911FdcBF6BaAEa17c80051525c41681Dae",
+    "DigitalaxMarketplaceStartBlock": 11709635,
+    "DigitalaxPodePortalAddress": "0x87c3C6B9C917B1732f13d36d6938E4f8802f7c7E",
+    "DigitalaxPodePortalStartBlock": 11740618,
+    "DigitalaxIndexAddress": "0x93401DB6e0E17078f785019878063ce5baBA9d46",
+    "DigitalaxIndexStartBlock": 11709635
+}
