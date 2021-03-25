@@ -27,12 +27,16 @@ contract('MockVault tests', function ([admin, minter, tokenHolder, ...otherAccou
       'Materials',
       'DXM',
       this.accessControls.address,
+        '0xb5505a6d998549090530911180f38aC5130101c6',
+        constants.ZERO_ADDRESS,
       {from: admin}
     );
 
     this.garment = await DigitalaxGarmentNFT.new(
       this.accessControls.address,
-      this.materials.address
+      this.materials.address,
+        '0xb5505a6d998549090530911180f38aC5130101c6',
+        constants.ZERO_ADDRESS,
     );
 
     this.token = await MockERC20.new(

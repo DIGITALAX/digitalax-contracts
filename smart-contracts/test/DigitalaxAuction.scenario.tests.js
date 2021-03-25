@@ -3,6 +3,7 @@ const {
   expectEvent,
   BN,
   ether,
+  constants
 } = require('@openzeppelin/test-helpers');
 
 const _ = require('lodash');
@@ -52,6 +53,8 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
       'DigitalaxMaterials',
       'DXM',
       this.accessControls.address,
+        '0xb5505a6d998549090530911180f38aC5130101c6',
+        constants.ZERO_ADDRESS,
       {from: owner}
     );
 
@@ -59,6 +62,8 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
     this.token = await DigitalaxGarmentNFT.new(
       this.accessControls.address,
       this.digitalaxMaterials.address,
+        '0xb5505a6d998549090530911180f38aC5130101c6',
+        constants.ZERO_ADDRESS,
       {from: admin}
     );
 
@@ -84,6 +89,7 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
       this.oracle.address,
       this.monaToken.address,
       platformFeeAddress,
+      constants.ZERO_ADDRESS,
       {from: admin}
     );
     await this.accessControls.addSmartContractRole(this.auction.address, {from: admin});
