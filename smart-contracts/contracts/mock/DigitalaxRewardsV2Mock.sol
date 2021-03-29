@@ -13,10 +13,9 @@ contract DigitalaxRewardsV2Mock is DigitalaxRewardsV2 {
         DigitalaxStaking _monaStaking,
         IUniswapV2Pair _lpToken,
         uint256 _startTime,
-        uint256 _monaRewardsPaidTotal,
-        uint256 _ethRewardsPaidTotal
+        uint256 _monaRewardsPaidTotal
     )
-    DigitalaxRewardsV2(_monaToken, _accessControls, _monaStaking, _lpToken, _startTime, _monaRewardsPaidTotal, _ethRewardsPaidTotal)
+    DigitalaxRewardsV2(_monaToken, _accessControls, _monaStaking, _lpToken, _startTime, _monaRewardsPaidTotal)
     public {}
 
     function setNowOverride(uint256 _now) external {

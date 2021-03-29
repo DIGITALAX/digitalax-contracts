@@ -57,10 +57,6 @@ contract DigitalaxMonaStaking  {
         uint256 monaRevenueRewardsEarned;
         uint256 monaRevenueRewardsReleased;
 
-        uint256 ethRevenueRewardsPending;  // TODO hookup
-        uint256 ethRevenueRewardsEarned; // TODO hookup
-        uint256 ethRevenueRewardsReleased; // TODO hookup
-
         bool isEarlyRewardsStaker; // TODO hookup
     }
 
@@ -71,7 +67,6 @@ contract DigitalaxMonaStaking  {
     @dev rewardsPerTokenPoints amount of rewards overall for that pool (revenue sharing)
     @dev totalUnclaimedRewards amount of rewards from revenue sharing still unclaimed
     @dev monaInflationUnclaimedRewards the unclaimed rewards of mona minted
-    @dev ethRewardsUnclaimed the unclaimed rewards of eth
     @dev daysInCycle the number of minimum days to stake, the length of a cycle (e.g. 30, 90, 180 days)
     @dev minimumStakeInMona the minimum stake to be in the pool
     @dev maximumStakeInMona the maximum stake to be in the pool
@@ -88,7 +83,6 @@ contract DigitalaxMonaStaking  {
         uint256 totalUnclaimedRewards;
 
         uint256 monaMintedUnclaimedRewards;
-        uint256 ethRewardsUnclaimed;
 
         uint256 daysInCycle;
         uint256 minimumStakeInMona;

@@ -20,7 +20,6 @@ const {
   const DigitalaxRewardsV2 = artifacts.require('DigitalaxRewardsV2Mock');
   const DigitalaxRewardsV2Real = artifacts.require('DigitalaxRewardsV2');
   const DigitalaxMonaStaking = artifacts.require('DigitalaxMonaStakingMock');
-  // const DigitalaxMonaStakingReal = artifacts.require('DigitalaxMonaStaking');
   
   // 1,000 * 10 ** 18
   const ONE_THOUSAND_TOKENS = '1000000000000000000000';
@@ -31,7 +30,7 @@ const {
   const TWO_ETH = ether('2');
   const MAX_NUMBER_OF_POOLS = new BN('20');
   
-  contract('DigitalaxRewardsV2', (accounts) => {
+  contract('DigitalaxMonaStaking', (accounts) => {
     const [admin, smartContract, platformFeeAddress, minter, owner, designer, staker, newRecipient] = accounts;
   
     beforeEach(async () => {
@@ -85,7 +84,6 @@ const {
           this.accessControls.address,
           this.monaStaking.address,
           this.monaWETH.address,
-          0,
           0,
           0
       );
