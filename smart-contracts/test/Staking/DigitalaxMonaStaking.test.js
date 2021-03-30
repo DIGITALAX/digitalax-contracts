@@ -12,14 +12,11 @@ const {
   
   const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
   const MockERC20 = artifacts.require('MockERC20');
-  const UniswapPairOracle_MONA_WETH = artifacts.require('UniswapPairOracle_MONA_WETH');
-  const UniswapV2Router02 = artifacts.require('UniswapV2Router02');
-  const UniswapV2Factory = artifacts.require('UniswapV2Factory');
-  const UniswapV2Pair = artifacts.require('UniswapV2Pair');
   const WethToken = artifacts.require('WethToken');
   const DigitalaxRewardsV2 = artifacts.require('DigitalaxRewardsV2Mock');
   const DigitalaxRewardsV2Real = artifacts.require('DigitalaxRewardsV2');
   const DigitalaxMonaStaking = artifacts.require('DigitalaxMonaStakingMock');
+  const DigitalaxMonaOracle = artifacts.require('DigitalaxMonaOracle');
   
   // 1,000 * 10 ** 18
   const ONE_THOUSAND_TOKENS = '1000000000000000000000';
@@ -44,46 +41,34 @@ const {
           ONE_THOUSAND_TOKENS,
           {from: staker}
       );
-  
-      this.factory = await UniswapV2Factory.new(
-        owner, 
-        { from: owner }
-      );
+
   
       this.weth = await WethToken.new(
         { from: minter }
       );
-  
-      this.monaWETH = await UniswapV2Pair.at(
-          (await this.factory.createPair(this.monaToken.address, this.weth.address)).logs[0].args.pair
+
+
+      this.oracle = await DigitalaxMonaOracle.new(
+          '86400',
+          '120',
+          '1',
+          this.accessControls.address,
+          {from: admin}
       );
-  
-      await this.weth.transfer(this.monaWETH.address, TWENTY_TOKENS, { from: minter });
-      await this.monaToken.transfer(this.monaWETH.address, TWO_HUNDRED_TOKENS, { from: staker });
-      await this.monaWETH.mint(minter);
-  
-      this.router02 = await UniswapV2Router02.new(
-        this.factory.address,
-        this.weth.address
-      );
-  
-      this.oracle = await UniswapPairOracle_MONA_WETH.new(
-        this.factory.address,
-        this.monaToken.address,
-        this.weth.address
-      );
+
   
       this.monaStaking = await DigitalaxMonaStaking.new(
           this.monaToken.address,
           this.accessControls.address,
-          this.weth.address
+          constants.ZERO_ADDRESS,
       );
   
       this.digitalaxRewards = await DigitalaxRewardsV2.new(
           this.monaToken.address,
           this.accessControls.address,
           this.monaStaking.address,
-          this.monaWETH.address,
+          this.oracle.address,
+          constants.ZERO_ADDRESS,
           0,
           0,
           0
@@ -97,7 +82,7 @@ const {
             DigitalaxMonaStaking.new(
                 constants.ZERO_ADDRESS,
                 this.accessControls.address,
-                this.weth.address,
+                constants.ZERO_ADDRESS,
                 {from: admin}
             ),
             'DigitalaxMonaStaking: Invalid Mona Token'
@@ -108,21 +93,10 @@ const {
             DigitalaxMonaStaking.new(
                 this.monaToken.address,
                 constants.ZERO_ADDRESS,
-                this.weth.address,
-                {from: admin}
-            ),
-            'DigitalaxMonaStaking: Invalid Access Controls'
-        );
-      });
-      it('Reverts when weth token is zero', async () => {
-        await expectRevert(
-            DigitalaxMonaStaking.new(
-                this.monaToken.address,
-                this.accessControls.address,
                 constants.ZERO_ADDRESS,
                 {from: admin}
             ),
-            'DigitalaxMonaStaking: Invalid WETH Token'
+            'DigitalaxMonaStaking: Invalid Access Controls'
         );
       });
     });
@@ -223,7 +197,7 @@ const {
           this.monaStakingV2 = await DigitalaxMonaStaking.new(
             this.monaToken.address,
             this.accessControls.address,
-            this.weth.address
+            constants.ZERO_ADDRESS,
           );
 
           for (let i = 0; i < MAX_NUMBER_OF_POOLS; i ++) {

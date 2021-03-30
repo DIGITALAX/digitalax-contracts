@@ -12,14 +12,11 @@ const {expect} = require('chai');
 
 const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
 const MockERC20 = artifacts.require('MockERC20');
-const UniswapPairOracle_MONA_WETH = artifacts.require('UniswapPairOracle_MONA_WETH');
-const UniswapV2Router02 = artifacts.require('UniswapV2Router02');
-const UniswapV2Factory = artifacts.require('UniswapV2Factory');
-const UniswapV2Pair = artifacts.require('UniswapV2Pair');
 const WethToken = artifacts.require('WethToken');
 const DigitalaxRewardsV2 = artifacts.require('DigitalaxRewardsV2Mock');
 const DigitalaxRewardsV2Real = artifacts.require('DigitalaxRewardsV2');
 const DigitalaxMonaStaking = artifacts.require('DigitalaxMonaStakingMock');
+const DigitalaxMonaOracle = artifacts.require('DigitalaxMonaOracle');
 // const DigitalaxMonaStakingReal = artifacts.require('DigitalaxMonaStaking');
 
 // 1,000 * 10 ** 18
@@ -45,17 +42,8 @@ contract('DigitalaxRewardsV2', (accounts) => {
         {from: minter}
     );
 
-    this.factory = await UniswapV2Factory.new(
-      owner, 
-      { from: owner }
-    );
-
     this.weth = await WethToken.new(
       { from: minter }
-    );
-
-    this.monaWETH = await UniswapV2Pair.at(
-        (await this.factory.createPair(this.monaToken.address, this.weth.address)).logs[0].args.pair
     );
 
     await this.weth.transfer(this.monaWETH.address, TWENTY_TOKENS, { from: minter });
@@ -64,28 +52,30 @@ contract('DigitalaxRewardsV2', (accounts) => {
 
     await this.monaWETH.mint(minter);
 
-    this.router02 = await UniswapV2Router02.new(
-      this.factory.address,
-      this.weth.address
+    this.oracle = await DigitalaxMonaOracle.new(
+        '86400',
+        '120',
+        '1',
+        this.accessControls.address,
+        {from: admin}
     );
 
-    this.oracle = await UniswapPairOracle_MONA_WETH.new(
-      this.factory.address,
-      this.monaToken.address,
-      this.weth.address
-    );
+    await this.oracle.addProvider(provider, {from: admin});
+    await this.oracle.pushReport(EXCHANGE_RATE, {from: provider});
+    await time.increase(time.duration.seconds(120));
 
     this.monaStaking = await DigitalaxMonaStaking.new(
         this.monaToken.address,
         this.accessControls.address,
-        this.weth.address
+        constants.ZERO_ADDRESS
     );
 
     this.digitalaxRewards = await DigitalaxRewardsV2.new(
         this.monaToken.address,
         this.accessControls.address,
         this.monaStaking.address,
-        this.monaWETH.address,
+        this.oracle.address,
+        constants.ZERO_ADDRESS,
         0,
         0,
         0
@@ -102,7 +92,8 @@ contract('DigitalaxRewardsV2', (accounts) => {
           this.monaToken.address,
           constants.ZERO_ADDRESS,
           this.monaStaking.address,
-          this.monaWETH.address,
+          this.oracle.address,
+          constants.ZERO_ADDRESS,
           0,
           0,
           0,
@@ -117,7 +108,8 @@ contract('DigitalaxRewardsV2', (accounts) => {
           constants.ZERO_ADDRESS,
           this.accessControls.address,
           this.monaStaking.address,
-          this.monaWETH.address,
+          this.oracle.address,
+          constants.ZERO_ADDRESS,
           0,
           0,
           0,
@@ -132,7 +124,8 @@ contract('DigitalaxRewardsV2', (accounts) => {
           this.monaToken.address,
           this.accessControls.address,
           constants.ZERO_ADDRESS,
-          this.monaWETH.address,
+          this.oracle.address,
+          constants.ZERO_ADDRESS,
           0,
           0,
           0,
@@ -141,19 +134,20 @@ contract('DigitalaxRewardsV2', (accounts) => {
         "DigitalaxRewardsV2: Invalid Mona Staking"
       );
     });
-    it('Reverts when mona lp is zero', async () => {
+    it('Reverts when mona oracle is zero', async () => {
       await expectRevert(
         DigitalaxRewardsV2.new(
           this.monaToken.address,
           this.accessControls.address,
           this.monaStaking.address,
           constants.ZERO_ADDRESS,
+          constants.ZERO_ADDRESS,
           0,
           0,
           0,
           {from: admin}
         ),
-        "DigitalaxRewardsV2: Invalid Mona LP"
+        "DigitalaxRewardsV2: Invalid Mona Oracle"
       );
     });
     it('Can redeploy the real contract', async () => {
@@ -162,6 +156,7 @@ contract('DigitalaxRewardsV2', (accounts) => {
           this.accessControls.address,
           this.monaStaking.address,
           this.monaWETH.address,
+          constants.ZERO_ADDRESS,
           0,
           0,
           0,

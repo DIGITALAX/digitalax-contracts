@@ -5,8 +5,9 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../DigitalaxAccessControls.sol";
 import "./interfaces/IERC20.sol";
-import "../uniswapv2/interfaces/IUniswapV2Pair.sol";
-import "../uniswapv2/libraries/UniswapV2Library.sol";
+import "../Oracle/IDigitalaxMonaOracle.sol";
+import "../EIP2771/BaseRelayRecipient.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title Digitalax Rewards
@@ -28,13 +29,14 @@ interface MONA is IERC20 {
     function mint(address tokenOwner, uint tokens) external returns (bool);
 }
 
-contract DigitalaxRewardsV2 {
+contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
     using SafeMath for uint256;
 
     /* ========== Variables ========== */
 
     MONA public monaToken;
-    IUniswapV2Pair public lpToken;
+    /// @notice Mona to Ether Oracle
+    IDigitalaxMonaOracle public oracle;
     DigitalaxAccessControls public accessControls;
     DigitalaxStaking public monaStaking;
 
@@ -49,6 +51,9 @@ contract DigitalaxRewardsV2 {
     uint256 public startTime;
     uint256 public monaRewardsPaidTotal;
     uint256 public bonusMonaRewardsPaidTotal;
+
+    /// @notice for storing information from oracle
+    uint256 public lastOracleQuote = 1e18;
 
     // We must trust admin to pass correct weighted values, if not we could use something like
     // / @notice mapping of a staker to its current properties
@@ -84,6 +89,8 @@ contract DigitalaxRewardsV2 {
     event RewardDistributed(address indexed addr, uint256 reward);
     event ReclaimedERC20(address indexed token, uint256 amount);
 
+    event UpdateOracle(address indexed oracle);
+
     event DepositRevenueSharing(uint256 weeklyMonaRevenueSharingPerSecond, uint256 bonusWeeklyMonaRevenueSharingPerSecond);
 
     
@@ -92,7 +99,8 @@ contract DigitalaxRewardsV2 {
         MONA _monaToken,
         DigitalaxAccessControls _accessControls,
         DigitalaxStaking _monaStaking,
-        IUniswapV2Pair _lpToken,
+        IDigitalaxMonaOracle _oracle,
+        address _trustedForwarder,
         uint256 _startTime,
         uint256 _monaRewardsPaidTotal,
         uint256 _bonusMonaRewardsPaidTotal
@@ -112,35 +120,80 @@ contract DigitalaxRewardsV2 {
             "DigitalaxRewardsV2: Invalid Mona Staking"
         );
         require(
-            address(_lpToken) != address(0),
-            "DigitalaxRewardsV2: Invalid Mona LP"
+            address(_oracle) != address(0),
+            "DigitalaxRewardsV2: Invalid Mona Oracle"
         );
         monaToken = _monaToken;
         accessControls = _accessControls;
         monaStaking = _monaStaking;
-        lpToken = _lpToken;
+        oracle = _oracle;
         startTime = _startTime;
         monaRewardsPaidTotal = _monaRewardsPaidTotal;
         bonusMonaRewardsPaidTotal = _bonusMonaRewardsPaidTotal;
+        trustedForwarder = _trustedForwarder;
     }
     receive() external payable {
     }
 
-    /*
-     * @notice Set the start time
-     * @dev Setter functions for contract config
-    */
+
+    function setTrustedForwarder(address _trustedForwarder) external  {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxRewardsV2.setTrustedForwarder: Sender must be admin"
+            );
+            trustedForwarder = _trustedForwarder;
+    }
+
+    // This is to support Native meta transactions
+    // never use msg.sender directly, use _msgSender() instead
+    function _msgSender()
+    internal
+    view
+    returns (address payable sender)
+    {
+        return BaseRelayRecipient.msgSender();
+    }
+    /**
+       * Override this function.
+       * This version is to keep track of BaseRelayRecipient you are using
+       * in your contract.
+       */
+    function versionRecipient() external view override returns (string memory) {
+        return "1";
+    }
+
+
+/*
+ * @notice Set the start time
+ * @dev Setter functions for contract config
+*/
     function setStartTime(
         uint256 _startTime
     )
         external
     {
         require(
-            accessControls.hasAdminRole(msg.sender),
+            accessControls.hasAdminRole(_msgSender()),
             "DigitalaxRewardsV2.setStartTime: Sender must be admin"
         );
         startTime = _startTime;
     }
+
+    /**
+     @notice Method for updating oracle
+     @dev Only admin
+     @param _oracle new oracle
+     */
+    function updateOracle(IDigitalaxMonaOracle _oracle) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxRewardsV2.updateOracle: Sender must be admin"
+        );
+
+        oracle = _oracle;
+        emit UpdateOracle(address(_oracle));
+    }
+
 
     /**
      @notice Method for updating the access controls contract used by the NFT
@@ -149,7 +202,7 @@ contract DigitalaxRewardsV2 {
      */
     function updateAccessControls(DigitalaxAccessControls _accessControls) external {
         require(
-            accessControls.hasAdminRole(msg.sender),
+            accessControls.hasAdminRole(_msgSender()),
             "DigitalaxRewardsV2.updateAccessControls: Sender must be admin"
         );
         require(address(_accessControls) != address(0), "DigitalaxRewardsV2.updateAccessControls: Zero Address");
@@ -166,7 +219,7 @@ contract DigitalaxRewardsV2 {
         external
         {
             require(
-                accessControls.hasAdminRole(msg.sender),
+                accessControls.hasAdminRole(_msgSender()),
                 "DigitalaxRewardsV2.setMonaStaking: Sender must be admin"
             );
             monaStaking = DigitalaxStaking(_addr);
@@ -188,7 +241,7 @@ contract DigitalaxRewardsV2 {
         external
     {
         require(
-            accessControls.hasAdminRole(msg.sender),
+            accessControls.hasAdminRole(_msgSender()),
             "DigitalaxRewardsV2.initializePools: Sender must be admin"
         );
 
@@ -228,7 +281,7 @@ contract DigitalaxRewardsV2 {
         external payable
     {
         require(
-            accessControls.hasAdminRole(msg.sender),
+            accessControls.hasAdminRole(_msgSender()),
             "DigitalaxRewardsV2.setRewards: Sender must be admin"
         );
 
@@ -237,11 +290,11 @@ contract DigitalaxRewardsV2 {
             "DigitalaxRewardsV2.depositRevenueSharingRewards: The rewards generated should be set for the future weeks"
         );
 
-        require(IERC20(monaToken).allowance(msg.sender, address(this)) >= _amount.add(_bonusAmount), "DigitalaxRewardsV2.depositRevenueSharingRewards: Failed to supply ERC20 Allowance");
+        require(IERC20(monaToken).allowance(_msgSender(), address(this)) >= _amount.add(_bonusAmount), "DigitalaxRewardsV2.depositRevenueSharingRewards: Failed to supply ERC20 Allowance");
 
         // Deposit this amount of MONA here
         require(IERC20(monaToken).transferFrom(
-            address(msg.sender),
+            address(_msgSender()),
             address(this),
             _amount.add(_bonusAmount)
         ));
@@ -292,6 +345,11 @@ contract DigitalaxRewardsV2 {
             return false;
         }
 
+        // @dev Update the oracle
+        (uint256 exchangeRate, bool rateValid) = oracle.getData();
+        require(rateValid, "DigitalaxMarketplace.estimateMonaAmount: Oracle data is invalid");
+        lastOracleQuote = exchangeRate;
+
         /// @dev This sends rewards (Mona from revenue sharing)
         _updateMonaRewards(_poolId);
 
@@ -312,7 +370,7 @@ contract DigitalaxRewardsV2 {
     uint256[] memory _lastRewardsTimes) external
     {
         require(
-            accessControls.hasAdminRole(msg.sender),
+            accessControls.hasAdminRole(_msgSender()),
             "DigitalaxRewardsV2.setLastRewardsTime: Sender must be admin"
         );
         for (uint256 i = 0; i < _poolIds.length; i++) {
@@ -485,14 +543,14 @@ contract DigitalaxRewardsV2 {
     {
         // Cannot recover the staking token or the rewards token
         require(
-            accessControls.hasAdminRole(msg.sender),
+            accessControls.hasAdminRole(_msgSender()),
             "DigitalaxRewardsV2.reclaimERC20: Sender must be admin"
         );
 //        require(
 //            tokenAddress != address(monaToken),
 //            "Cannot withdraw the rewards token"
 //        );
-        IERC20(_tokenAddress).transfer(msg.sender, _tokenAmount);
+        IERC20(_tokenAddress).transfer(_msgSender(), _tokenAmount);
         emit ReclaimedERC20(_tokenAddress, _tokenAmount);
     }
 
@@ -502,10 +560,10 @@ contract DigitalaxRewardsV2 {
     */
     function reclaimETH(uint256 _amount) external {
         require(
-            accessControls.hasAdminRole(msg.sender),
+            accessControls.hasAdminRole(_msgSender()),
             "DigitalaxRewardsV2.reclaimETH: Sender must be admin"
         );
-        msg.sender.transfer(_amount);
+        _msgSender().transfer(_amount);
     }
 
 
@@ -581,8 +639,7 @@ contract DigitalaxRewardsV2 {
         view 
         returns (uint256)
     {
-        (uint256 wethReserve, uint256 tokenReserve) = getPairReserves();
-        return UniswapV2Library.quote(_ethAmt, wethReserve, tokenReserve);
+        return _ethAmt.mul(1e18).div(lastOracleQuote);
     }
 
     // ETH amount for 1 MONA
@@ -591,14 +648,7 @@ contract DigitalaxRewardsV2 {
         view
         returns (uint256)
     {
-        (uint256 wethReserve, uint256 tokenReserve) = getPairReserves();
-        return UniswapV2Library.quote(1e18, tokenReserve, wethReserve);
-    }
-
-    function getPairReserves() internal view returns (uint256 wethReserves, uint256 tokenReserves) {
-        (address token0,) = UniswapV2Library.sortTokens(address(monaStaking.WETH()), address(monaToken));
-        (uint256 reserve0, uint reserve1,) = lpToken.getReserves();
-        (wethReserves, tokenReserves) = token0 == address(monaToken) ? (reserve1, reserve0) : (reserve0, reserve1);
+        return lastOracleQuote.div(1e18);
     }
 
     function _getNow() internal virtual view returns (uint256) {
