@@ -26,7 +26,7 @@ contract DigitalaxMonaStaking  {
     address public monaToken; // MONA ERC20s
     IWETH public WETH;
 
-    uint256 constant MAX_NUMBER_OF_POOLS = 20;
+    uint256 public MAX_NUMBER_OF_POOLS = 20;
     uint256 constant SECONDS_IN_A_DAY = 86400;
     DigitalaxAccessControls public accessControls;
     IDigitalaxRewards public rewardsContract;
@@ -49,15 +49,19 @@ contract DigitalaxMonaStaking  {
     struct Staker {
         uint256 balance;
         uint256 lastRewardPoints;
+        uint256 lastBonusRewardPoints;
+
         uint256 lastRewardUpdateTime;
 
         uint256 cycleStartTimestamp;
 
         uint256 monaRevenueRewardsPending;
+        uint256 bonusMonaRevenueRewardsPending;
+
         uint256 monaRevenueRewardsEarned;
         uint256 monaRevenueRewardsReleased;
 
-        bool isEarlyRewardsStaker; // TODO hookup
+        bool isEarlyRewardsStaker;
     }
 
     /**
@@ -65,8 +69,6 @@ contract DigitalaxMonaStaking  {
     @dev stakers is a mapping of existing stakers in the pool
     @dev lastUpdateTime last time the pool was updated with rewards per token points
     @dev rewardsPerTokenPoints amount of rewards overall for that pool (revenue sharing)
-    @dev totalUnclaimedRewards amount of rewards from revenue sharing still unclaimed
-    @dev monaInflationUnclaimedRewards the unclaimed rewards of mona minted
     @dev daysInCycle the number of minimum days to stake, the length of a cycle (e.g. 30, 90, 180 days)
     @dev minimumStakeInMona the minimum stake to be in the pool
     @dev maximumStakeInMona the maximum stake to be in the pool
@@ -77,20 +79,19 @@ contract DigitalaxMonaStaking  {
     struct StakingPool {
         mapping (address => Staker) stakers;
         uint256 stakedMonaTotalForPool;
+        uint256 earlyStakedMonaTotalForPool;
 
         uint256 lastUpdateTime;
         uint256 rewardsPerTokenPoints;
-        uint256 totalUnclaimedRewards;
-
-        uint256 monaMintedUnclaimedRewards;
+        uint256 bonusRewardsPerTokenPoints;
 
         uint256 daysInCycle;
         uint256 minimumStakeInMona;
         uint256 maximumStakeInMona;
         uint256 currentNumberOfStakersInPool; // TODO hookup
-        uint256 maximumNumberOfStakersInPool; // TODO hookup
+        uint256 maximumNumberOfStakersInPool;
 
-        uint256 maximumNumberOfEarlyRewardsUsers; // TODO hookup
+        uint256 maximumNumberOfEarlyRewardsUsers;
         uint256 currentNumberOfEarlyRewardsUsers; // TODO hookup
     }
 
@@ -98,12 +99,13 @@ contract DigitalaxMonaStaking  {
      * @notice mapping of Pool Id's to pools
      */
     mapping (uint256 => StakingPool) pools;
-    uint256 public numberOfStakingPools;
+    uint256 public numberOfStakingPools = 0;
 
     /*
      * @notice the total mona staked over all pools
      */
     uint256 public stakedMonaTotal;
+    uint256 public earlyStakedMonaTotal;
 
     uint256 constant pointMultiplier = 10e32;
 
@@ -176,6 +178,22 @@ contract DigitalaxMonaStaking  {
         emit RewardsTokenUpdated(oldAddr, _addr);
     }
 
+    /*
+     * @notice Lets admin set the max number of staking pools
+     */
+    function setMaxNumberOfPools(
+        uint256 _max
+    )
+    external
+    {
+        require(
+            accessControls.hasAdminRole(msg.sender),
+            "DigitalaxMonaStaking.setMaxNumberOfPools: Sender must be admin"
+        );
+        require(_max >= numberOfStakingPools);
+        MAX_NUMBER_OF_POOLS = _max;
+    }
+
      /**
      * @dev Single gateway to intialize the staking contract pools after deploying
      * @dev Sets the contract with the MONA token
@@ -217,6 +235,9 @@ contract DigitalaxMonaStaking  {
         stakingPool.daysInCycle = _daysInCycle;
         stakingPool.minimumStakeInMona = _minimumStakeInMona;
         stakingPool.maximumStakeInMona = _maximumStakeInMona;
+        stakingPool.currentNumberOfStakersInPool = 0;
+        stakingPool.maximumNumberOfStakersInPool = _maximumNumberOfStakersInPool;
+        stakingPool.currentNumberOfEarlyRewardsUsers = 0;
         stakingPool.maximumNumberOfStakersInPool = _maximumNumberOfStakersInPool;
         stakingPool.maximumNumberOfEarlyRewardsUsers = _maximumNumberOfEarlyRewardsUsers;
         stakingPool.lastUpdateTime = _getNow();
@@ -301,6 +322,17 @@ contract DigitalaxMonaStaking  {
     }
 
     /*
+     * @dev Get the total ETH staked (all pools early stakers)
+     */
+    function earlyStakedMonaInPool(uint256 _poolId)
+        external
+        view
+        returns (uint256)
+    {
+        return pools[_poolId].earlyStakedMonaTotalForPool;
+    }
+
+    /*
      * @dev Get the total ETH staked (all pools)
      */
     function stakedEthTotal()
@@ -314,6 +346,19 @@ contract DigitalaxMonaStaking  {
     }
 
     /*
+     * @dev Get the total early ETH staked (all pools)
+     */
+    function earlyStakedEthTotal()
+        external
+        view
+        returns (uint256)
+    {
+
+        uint256 monaPerEth = getMonaTokenPerEthUnit(1e18);
+        return earlyStakedMonaTotal.mul(1e18).div(monaPerEth);
+    }
+
+    /*
      * @dev Get the total ETH staked (all pools)
      */
     function stakedEthTotalByPool(uint256 _poolId)
@@ -324,6 +369,19 @@ contract DigitalaxMonaStaking  {
 
         uint256 monaPerEth = getMonaTokenPerEthUnit(1e18);
         return pools[_poolId].stakedMonaTotalForPool.mul(1e18).div(monaPerEth);
+    }
+
+    /*
+     * @dev Get the total ETH staked (all pools)
+     */
+    function earlyStakedEthTotalByPool(uint256 _poolId)
+        external
+        view
+        returns (uint256)
+    {
+
+        uint256 monaPerEth = getMonaTokenPerEthUnit(1e18);
+        return pools[_poolId].earlyStakedMonaTotalForPool.mul(1e18).div(monaPerEth);
     }
 
 
@@ -366,23 +424,43 @@ contract DigitalaxMonaStaking  {
             "DigitalaxMonaStaking._stake: Staked amount must be greater than 0"
         );
 
-
-        Staker storage staker = pools[_poolId].stakers[_user];
+        StakingPool storage stakingPool = pools[_poolId];
+        Staker storage staker = stakingPool.stakers[_user];
 
         require(
-            staker.balance.add(_amount) >= pools[_poolId].minimumStakeInMona,
+            staker.balance.add(_amount) >= stakingPool.minimumStakeInMona,
             "DigitalaxMonaStaking._stake: Staked amount must be greater than or equal to minimum stake"
         );
 
         require(
-            staker.balance.add(_amount) <= pools[_poolId].maximumStakeInMona,
+            staker.balance.add(_amount) <= stakingPool.maximumStakeInMona,
             "DigitalaxMonaStaking._stake: Staked amount must be less than or equal to maximum stake"
         );
+
+        // Check if a new user
+        if(staker.lastRewardUpdateTime == 0) {
+            require(
+                stakingPool.currentNumberOfStakersInPool < stakingPool.maximumNumberOfStakersInPool,
+                "DigitalaxMonaStaking._stake: This pool is already full"
+            );
+            stakingPool.currentNumberOfEarlyRewardsUsers = stakingPool.currentNumberOfEarlyRewardsUsers.add(1);
+
+            // Check if an early staker
+            if(stakingPool.currentNumberOfEarlyRewardsUsers < stakingPool.maximumNumberOfEarlyRewardsUsers){
+                stakingPool.currentNumberOfEarlyRewardsUsers = stakingPool.currentNumberOfEarlyRewardsUsers.add(1);
+                staker.isEarlyRewardsStaker = true;
+            } else {
+                staker.isEarlyRewardsStaker = false;
+            }
+        }
 
         if(staker.balance == 0) {
             staker.cycleStartTimestamp = _getNow();
             if (staker.lastRewardPoints == 0 ) {
-              staker.lastRewardPoints = pools[_poolId].rewardsPerTokenPoints;
+              staker.lastRewardPoints = stakingPool.rewardsPerTokenPoints;
+            }
+            if(staker.isEarlyRewardsStaker && (staker.lastBonusRewardPoints == 0)){
+              staker.lastBonusRewardPoints = stakingPool.bonusRewardsPerTokenPoints;
             }
         }
 
@@ -390,9 +468,14 @@ contract DigitalaxMonaStaking  {
 
         staker.balance = staker.balance.add(_amount);
 
-
         stakedMonaTotal = stakedMonaTotal.add(_amount);
-        pools[_poolId].stakedMonaTotalForPool = pools[_poolId].stakedMonaTotalForPool.add(_amount);
+        stakingPool.stakedMonaTotalForPool = stakingPool.stakedMonaTotalForPool.add(_amount);
+
+        if(staker.isEarlyRewardsStaker){
+            earlyStakedMonaTotal = earlyStakedMonaTotal.add(_amount);
+            stakingPool.earlyStakedMonaTotalForPool = stakingPool.earlyStakedMonaTotalForPool.add(_amount);
+        }
+
         IERC20(monaToken).safeTransferFrom(
             address(_user),
             address(this),
@@ -437,8 +520,13 @@ contract DigitalaxMonaStaking  {
         stakedMonaTotal = stakedMonaTotal.sub(_amount);
         pools[_poolId].stakedMonaTotalForPool = pools[_poolId].stakedMonaTotalForPool.sub(_amount);
 
+        if(staker.isEarlyRewardsStaker){
+            earlyStakedMonaTotal = earlyStakedMonaTotal.sub(_amount);
+            pools[_poolId].earlyStakedMonaTotalForPool = pools[_poolId].earlyStakedMonaTotalForPool.sub(_amount);
+        }
+
         if (staker.balance == 0) {
-            delete pools[_poolId].stakers[_user];
+            delete pools[_poolId].stakers[_user]; // TODO figure out if this is still valid
         }
 
         uint256 tokenBal = IERC20(monaToken).balanceOf(address(this));
@@ -474,26 +562,41 @@ contract DigitalaxMonaStaking  {
     )
         public
     {
-        require(pools[_poolId].daysInCycle > 0, "DigitalaxMonaStaking.updateRewards: This pool has not been instantiated");
+        StakingPool storage stakingPool = pools[_poolId];
+        require(stakingPool.daysInCycle > 0, "DigitalaxMonaStaking.updateRewards: This pool has not been instantiated");
 
         // 1 Updates the amount of rewards, transfer MONA to this contract so there is some balance
         rewardsContract.updateRewards(_poolId);
 
         // 2 Calculates the overall amount of mona revenue that has increased since the last time someone called this method
-        uint256 monaRewards = rewardsContract.MonaRevenueRewards(_poolId, pools[_poolId].lastUpdateTime,
+        uint256 monaRewards = rewardsContract.MonaRevenueRewards(_poolId, stakingPool.lastUpdateTime,
                                                         _getNow());
 
         // Continue if there is mona in this pool
-        if (pools[_poolId].stakedMonaTotalForPool > 0) {
+        if (stakingPool.stakedMonaTotalForPool > 0) {
             // 3 Update the overall rewards per token points with the new mona rewards
-            pools[_poolId].rewardsPerTokenPoints = pools[_poolId].rewardsPerTokenPoints.add(monaRewards
+            stakingPool.rewardsPerTokenPoints = stakingPool.rewardsPerTokenPoints.add(monaRewards
                                                         .mul(1e18)
                                                         .mul(pointMultiplier)
-                                                        .div(pools[_poolId].stakedMonaTotalForPool));
+                                                        .div(stakingPool.stakedMonaTotalForPool));
+        }
+
+
+        // 2 Calculates the bonus overall amount of mona revenue that has increased since the last time someone called this method
+        uint256 bonusMonaRewards = rewardsContract.BonusMonaRevenueRewards(_poolId, stakingPool.lastUpdateTime, _getNow());
+
+
+        // Continue if there is mona in this pool
+        if (stakingPool.earlyStakedMonaTotalForPool > 0) {
+            // 3 Update the overall rewards per token points with the new mona rewards
+            stakingPool.bonusRewardsPerTokenPoints = stakingPool.bonusRewardsPerTokenPoints.add(bonusMonaRewards
+                                                        .mul(1e18)
+                                                        .mul(pointMultiplier)
+                                                        .div(stakingPool.earlyStakedMonaTotalForPool));
         }
 
         // 4 Update the last update time for this pool, calculating overall rewards
-        pools[_poolId].lastUpdateTime = _getNow();
+        stakingPool.lastUpdateTime = _getNow();
 
         // 5 Calculate the rewards owing overall for this user
         uint256 rewards = rewardsOwing(_poolId, _user);
@@ -503,9 +606,16 @@ contract DigitalaxMonaStaking  {
         // 2. If we are in a new cycle, all pending rewards get added to monaRevenueRewardsEarned
         // If we are in a new cycle, we will add subtract from the last cycle start until now
         // to see what is new pending rewards and what is monaRevenueRewardsEarned
-        Staker storage staker = pools[_poolId].stakers[_user];
+        Staker storage staker = stakingPool.stakers[_user];
 
-        uint256 secondsInCycle = pools[_poolId].daysInCycle.mul(SECONDS_IN_A_DAY);
+
+        uint256 bonusRewards = 0;
+        if(staker.isEarlyRewardsStaker){
+            bonusRewards = bonusRewardsOwing(_poolId, _user);
+        }
+
+
+        uint256 secondsInCycle = stakingPool.daysInCycle.mul(SECONDS_IN_A_DAY);
         uint256 timeElapsedSinceStakingFromZero = _getNow().sub(staker.cycleStartTimestamp);
         uint256 startOfCurrentCycle = _getNow().sub(timeElapsedSinceStakingFromZero.mod(secondsInCycle));
 
@@ -516,29 +626,46 @@ contract DigitalaxMonaStaking  {
                 // We are in a new cycle
                 // Bring over the pending rewards, they have been earned
                 rewards = rewards.add(staker.monaRevenueRewardsPending);
-
-                // TODO triple check this - What it does is calculates reward pt during this cycle up to block timestamp
+                bonusRewards = bonusRewards.add(staker.bonusMonaRevenueRewardsPending);
 
                 uint256 monaPendingRewardsTotal = rewardsContract.MonaRevenueRewards(_poolId, startOfCurrentCycle,
-                                                _getNow()).mul(1e18);
+                                                    _getNow()).mul(1e18);
 
-                // TODO triple check this - amount of rewards pending now for user
-                uint256 pendingRewardsThisCycle = pools[_poolId].stakers[_user].balance.mul(monaPendingRewardsTotal)
-                                                        .div(pools[_poolId].stakedMonaTotalForPool);
+                uint256 pendingRewardsThisCycle = staker.balance.mul(monaPendingRewardsTotal);
+                pendingRewardsThisCycle = pendingRewardsThisCycle.div(stakingPool.stakedMonaTotalForPool);
+
                 // In case it overflows
                 pendingRewardsThisCycle = pendingRewardsThisCycle.div(1e18);
-
-                rewards = rewards.sub(pendingRewardsThisCycle);
                 staker.monaRevenueRewardsPending = pendingRewardsThisCycle;
-
+                rewards = rewards.sub(pendingRewardsThisCycle);
                 // Set rewards (This includes old pending rewards and does not include new pending rewards)
                 staker.monaRevenueRewardsEarned = staker.monaRevenueRewardsEarned.add(rewards);
-                staker.lastRewardPoints = pools[_poolId].rewardsPerTokenPoints;
+
+                // Early staker
+                if(staker.isEarlyRewardsStaker){
+                    uint256 bonusMonaPendingRewardsTotal = rewardsContract.BonusMonaRevenueRewards(_poolId, startOfCurrentCycle,
+                                                _getNow());
+                    bonusMonaPendingRewardsTotal = bonusMonaPendingRewardsTotal.mul(1e18);
+
+                    uint256 bonusPendingRewardsThisCycle = staker.balance.mul(bonusMonaPendingRewardsTotal);
+                    bonusPendingRewardsThisCycle = bonusPendingRewardsThisCycle.div(stakingPool.earlyStakedMonaTotalForPool);
+
+                    bonusPendingRewardsThisCycle = bonusPendingRewardsThisCycle.div(1e18);
+                    staker.bonusMonaRevenueRewardsPending = bonusPendingRewardsThisCycle;
+                    bonusRewards = bonusRewards.sub(bonusPendingRewardsThisCycle);
+                    staker.monaRevenueRewardsEarned = staker.monaRevenueRewardsEarned.add(bonusRewards);
+                }
+
+                staker.lastRewardPoints = stakingPool.rewardsPerTokenPoints;
                 staker.lastRewardUpdateTime = _getNow();
             } else {
-                // We are still in the same cycle as the last reward update
+                // We are still in the same cycle as the last reward update, add rewards then bonus rewards
                 staker.monaRevenueRewardsPending = staker.monaRevenueRewardsPending.add(rewards);
-                staker.lastRewardPoints = pools[_poolId].rewardsPerTokenPoints;
+                if(staker.isEarlyRewardsStaker){
+                    staker.bonusMonaRevenueRewardsPending = staker.monaRevenueRewardsPending.add(bonusRewards);
+                    staker.lastBonusRewardPoints = stakingPool.bonusRewardsPerTokenPoints;
+                }
+                staker.lastRewardPoints = stakingPool.rewardsPerTokenPoints;
                 staker.lastRewardUpdateTime = _getNow();
             }
         }
@@ -565,6 +692,27 @@ contract DigitalaxMonaStaking  {
         return rewards;
     }
 
+    /*
+     * @dev The bonus rewards are dynamic and normalised from the other pools
+     * @dev This gets the rewards from each of the periods as one multiplier
+     */
+    function bonusRewardsOwing(
+        uint256 _poolId,
+        address _user
+    )
+        public
+        view
+        returns(uint256)
+    {
+        uint256 newRewardPerToken = pools[_poolId].bonusRewardsPerTokenPoints.sub(pools[_poolId].stakers[_user].lastBonusRewardPoints);
+        uint256 bonusRewards = pools[_poolId].stakers[_user].balance.mul(newRewardPerToken)
+                                                .div(1e18)
+                                                .div(pointMultiplier);
+
+
+        return bonusRewards;
+    }
+
 
      /*
       * @notice Returns the about of rewards yet to be claimed (this currently includes pending and awarded together
@@ -572,62 +720,100 @@ contract DigitalaxMonaStaking  {
       * @param _user the user we are interested in
       * @dev returns the claimable rewards and pending rewards
       */
-    function unclaimedRewards(
-        uint256 _poolId,
-        address _user
-    )
-        public
-        view
-        returns(uint256 claimableRewards, uint256 pendingRewards)
-    {
-        if (pools[_poolId].stakedMonaTotalForPool == 0) {
-            return (0,0);
-        }
-
-        uint256 monaRewards = rewardsContract.MonaRevenueRewards(_poolId, pools[_poolId].lastUpdateTime,
-                                                        _getNow());
-
-        uint256 newRewardPerToken = pools[_poolId].rewardsPerTokenPoints.add(monaRewards
-                                                                .mul(1e18)
-                                                                .mul(pointMultiplier)
-                                                                .div(pools[_poolId].stakedMonaTotalForPool))
-                                                         .sub(pools[_poolId].stakers[_user].lastRewardPoints);
-
-        uint256 newRewards = pools[_poolId].stakers[_user].balance.mul(newRewardPerToken)
-                                                .div(1e18)
-                                                .div(pointMultiplier);
-
-        // Figure out how much rewards are still pending
-        Staker storage staker = pools[_poolId].stakers[_user];
-        uint256 secondsInCycle = pools[_poolId].daysInCycle.mul(SECONDS_IN_A_DAY);
-        uint256 timeElapsedSinceStakingFromZero = _getNow().sub(staker.cycleStartTimestamp);
-        uint256 startOfCurrentCycle = _getNow().sub(timeElapsedSinceStakingFromZero.mod(secondsInCycle));
-
-        if(startOfCurrentCycle > staker.lastRewardUpdateTime) {
-            // We are in a new cycle
-            // Bring over the pending rewards, they have been earned
-            newRewards = newRewards.add(pools[_poolId].stakers[_user].monaRevenueRewardsEarned).sub(pools[_poolId].stakers[_user].monaRevenueRewardsReleased);
-            // New cycle, the pending rewards from before move over
-            newRewards = newRewards.add(staker.monaRevenueRewardsPending);
-
-            // TODO triple check this - What it does is calculates reward pt during this cycle up to block timestamp
-            uint256 monaPendingRewardsTotal = rewardsContract.MonaRevenueRewards(_poolId, startOfCurrentCycle,
-                _getNow()).mul(1e18);
-
-            // TODO triple check this - amount of rewards pending now for user
-            pendingRewards = pools[_poolId].stakers[_user].balance.mul(monaPendingRewardsTotal);
-            pendingRewards = pendingRewards.div(pools[_poolId].stakedMonaTotalForPool);
-            // The pending rewards are now just what is in this cycle (calculation in case it overflows)
-            pendingRewards = pendingRewards.div(1e18);
-
-            claimableRewards = newRewards.sub(pendingRewards);
-        } else {
-            // We are in the same cycle, these new rewards calculated above are pending rewards. So no change to claimable rewards
-            claimableRewards = pools[_poolId].stakers[_user].monaRevenueRewardsEarned.sub(pools[_poolId].stakers[_user].monaRevenueRewardsReleased);
-            // The new rewards we calculated earlier are in the same cycle
-            pendingRewards = newRewards.add(pools[_poolId].stakers[_user].monaRevenueRewardsPending);
-        }
-    }
+     // TODO stack too deep
+//    function unclaimedRewards(
+//        uint256 _poolId,
+//        address _user
+//    )
+//        public
+//        view
+//        returns(uint256 claimableRewards, uint256 pendingRewards)
+//    {
+//        StakingPool storage stakingPool = pools[_poolId];
+//        if (stakingPool.stakedMonaTotalForPool == 0) {
+//            return (0,0);
+//        }
+//
+//        Staker storage staker = stakingPool.stakers[_user];
+//
+//        uint256 monaRewards = rewardsContract.MonaRevenueRewards(_poolId, stakingPool.lastUpdateTime,
+//                                                        _getNow());
+//
+//        uint256 newRewardPerToken = stakingPool.rewardsPerTokenPoints.add(monaRewards
+//                                                                .mul(1e18)
+//                                                                .mul(pointMultiplier)
+//                                                                .div(stakingPool.stakedMonaTotalForPool))
+//                                                         .sub(staker.lastRewardPoints);
+//
+//        uint256 newRewards = staker.balance.mul(newRewardPerToken)
+//                                                .div(1e18)
+//                                                .div(pointMultiplier);
+//
+//        uint256 newBonusRewards = 0;
+//        if(staker.isEarlyRewardsStaker){
+//            uint256 monaBonusRewards = rewardsContract.BonusMonaRevenueRewards(_poolId, stakingPool.lastUpdateTime, _getNow());
+//
+//            uint256 newBonusRewardPerToken = stakingPool.bonusRewardsPerTokenPoints;
+//            newBonusRewardPerToken = newBonusRewardPerToken.add(monaBonusRewards.mul(1e18).mul(pointMultiplier).div(stakingPool.earlyStakedMonaTotalForPool));
+//            newBonusRewardPerToken = newBonusRewardPerToken.sub(staker.lastBonusRewardPoints);
+//
+//            newBonusRewards = staker.balance.mul(newBonusRewardPerToken);
+//            newBonusRewards = newBonusRewards.div(1e18);
+//            newBonusRewards = newBonusRewards.div(pointMultiplier);
+//        }
+//
+//        // Figure out how much rewards are still pending
+//        uint256 secondsInCycle = stakingPool.daysInCycle.mul(SECONDS_IN_A_DAY);
+//        uint256 timeElapsedSinceStakingFromZero = _getNow().sub(staker.cycleStartTimestamp);
+//        uint256 startOfCurrentCycle = _getNow().sub(timeElapsedSinceStakingFromZero.mod(secondsInCycle));
+//
+//        if(startOfCurrentCycle > staker.lastRewardUpdateTime) {
+//            // We are in a new cycle
+//            // Bring over the pending rewards, they have been earned
+//            newRewards = newRewards.add(staker.monaRevenueRewardsEarned);
+//            newRewards = newRewards.sub(staker.monaRevenueRewardsReleased);
+//            // New cycle, the pending rewards from before move over
+//            newRewards = newRewards.add(staker.monaRevenueRewardsPending);
+//            newBonusRewards = newBonusRewards.add(staker.bonusMonaRevenueRewardsPending);
+//
+//
+//            uint256 monaPendingRewardsTotal = rewardsContract.MonaRevenueRewards(_poolId, startOfCurrentCycle,
+//                                                                    _getNow());
+//
+//            monaPendingRewardsTotal = monaPendingRewardsTotal.mul(1e18);
+//
+//            pendingRewards = staker.balance.mul(monaPendingRewardsTotal);
+//            pendingRewards = pendingRewards.div(stakingPool.stakedMonaTotalForPool);
+//            // The pending rewards are now just what is in this cycle (calculation in case it overflows)
+//            pendingRewards = pendingRewards.div(1e18);
+//
+//            claimableRewards = newRewards.sub(pendingRewards);
+//
+//            if(staker.isEarlyRewardsStaker){
+//                uint256 bonusMonaPendingRewardsTotal = 0;
+//                {
+//                bonusMonaPendingRewardsTotal = rewardsContract.BonusMonaRevenueRewards(_poolId, startOfCurrentCycle, _getNow());
+//                }
+//                bonusMonaPendingRewardsTotal = bonusMonaPendingRewardsTotal.mul(1e18);
+//
+//                uint256 bonusPendingRewards = staker.balance.mul(bonusMonaPendingRewardsTotal);
+//                bonusPendingRewards = pendingRewards.div(stakingPool.earlyStakedMonaTotalForPool);
+//                // The pending rewards are now just what is in this cycle (calculation in case it overflows)
+//                bonusPendingRewards = bonusPendingRewards.div(1e18);
+//                uint256 bonusClaimable = newBonusRewards.sub(bonusPendingRewards);
+//
+//                pendingRewards = pendingRewards.add(bonusPendingRewards);
+//                claimableRewards = claimableRewards.add(bonusClaimable);
+//            }
+//        } else {
+//            // We are in the same cycle, these new rewards calculated above are pending rewards. So no change to claimable rewards
+//            claimableRewards = staker.monaRevenueRewardsEarned.sub(staker.monaRevenueRewardsReleased);
+//            // The new rewards we calculated earlier are in the same cycle
+//            pendingRewards = newRewards.add(staker.monaRevenueRewardsPending);
+//            // Add the bonus
+//            pendingRewards = pendingRewards.add(newBonusRewards);
+//        }
+//    }
 
 
     /*
