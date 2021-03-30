@@ -273,7 +273,6 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
      * @dev this number is the total rewards that week with 18 decimals
      */
     function depositRevenueSharingRewards(
-        uint256 _poolId,
         uint256 _week,
         uint256 _amount,
         uint256 _bonusAmount
