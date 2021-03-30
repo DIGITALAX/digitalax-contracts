@@ -38,6 +38,7 @@ contract('DigitalaxMarketplace', (accounts) => {
   const TOKEN_ONE_ID = new BN('1');
   const TOKEN_TWO_ID = new BN('2');
   const COLLECTION_SIZE = new BN('10');
+  const MAX_SIZE = new BN('5');
 
   const randomTokenURI = 'rand';
   const randomChildTokenURIs = ['randChild1', "randChild2"];
@@ -241,9 +242,10 @@ contract('DigitalaxMarketplace', (accounts) => {
       await this.marketplace.createOffer(
         0,
         ether('0.1'),  // Price of 1 eth
-          '1',
-          '120',
-          '20',
+        '1',
+        '120',
+        '20',
+        MAX_SIZE,
         {from: minter}
       );
     });
@@ -377,10 +379,10 @@ contract('DigitalaxMarketplace', (accounts) => {
 
       it('fails if token already has marketplace in play', async () => {
         await this.marketplace.setNowOverride('2');
-        await this.marketplace.createOffer(0,  ether('0.1'), '1', '120', '20', {from: minter});
+        await this.marketplace.createOffer(0,  ether('0.1'), '1', '120', '20', MAX_SIZE, {from: minter});
 
         await expectRevert(
-          this.marketplace.createOffer(0,  ether('0.1'), '1', '120', '20', {from: minter}),
+          this.marketplace.createOffer(0,  ether('0.1'), '1', '120', '20', MAX_SIZE, {from: minter}),
           'DigitalaxMarketplace.createOffer: Cannot duplicate current offer'
         );
       });
@@ -389,7 +391,7 @@ contract('DigitalaxMarketplace', (accounts) => {
         await this.marketplace.setNowOverride('2');
 
         await expectRevert(
-          this.marketplace.createOffer(0,  ether('0.1'), '1', '120', '121', {from: minter}),
+          this.marketplace.createOffer(0,  ether('0.1'), '1', '120', '121', MAX_SIZE, {from: minter}),
             'DigitalaxMarketplace.createOffer: The discount is taken out of platform fee, discount cannot be greater'
         );
       });
@@ -398,7 +400,7 @@ contract('DigitalaxMarketplace', (accounts) => {
         await this.marketplace.setNowOverride('2');
         await this.marketplace.toggleIsPaused({from: admin});
         await expectRevert(
-           this.marketplace.createOffer('99', ether('0.1'), '1', '120', '20', {from: minter}),
+           this.marketplace.createOffer('99', ether('0.1'), '1', '120', '20', MAX_SIZE, {from: minter}),
           "Function is currently paused"
         );
       });
@@ -406,7 +408,7 @@ contract('DigitalaxMarketplace', (accounts) => {
       it('fails if you try to create an offer with a non minter address', async () => {
         await this.marketplace.setNowOverride('2');
         await expectRevert(
-           this.marketplace.createOffer('98', ether('0.05'), '1', '120', '20', {from: tokenBuyer}),
+           this.marketplace.createOffer('98', ether('0.05'), '1', '120', '20', MAX_SIZE, {from: tokenBuyer}),
           "DigitalaxMarketplace.createOffer: Sender must have the minter or admin role"
         );
       });
@@ -420,7 +422,7 @@ contract('DigitalaxMarketplace', (accounts) => {
         for (let i = 0; i < garmentIds.length; i ++) {
           await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
         }
-        await this.marketplace.createOffer(0, ether('0.1'), '1', '120', '20', {from: minter});
+        await this.marketplace.createOffer(0, ether('0.1'), '1', '120', '20', MAX_SIZE, {from: minter});
 
         const owner = await this.token.ownerOf(TOKEN_ONE_ID);
         expect(owner).to.be.equal(minter);
@@ -445,7 +447,7 @@ contract('DigitalaxMarketplace', (accounts) => {
         for (let i = 0; i < garmentIds.length; i ++) {
           await this.token.approve(marketplace.address, garmentIds[i], {from: minter});
         }
-        await marketplace.createOffer(0, ether('0.1'), '1', '120', '20', {from: minter});
+        await marketplace.createOffer(0, ether('0.1'), '1', '120', '20', MAX_SIZE, {from: minter});
 
         const owner = await this.token.ownerOf(TOKEN_ONE_ID);
         expect(owner).to.be.equal(minter);
@@ -468,9 +470,10 @@ contract('DigitalaxMarketplace', (accounts) => {
         await this.marketplace.createOffer(
           0, // ID
           ether('0.1'),
-            '1',
-            '120',
-            '20',
+          '1',
+          '120',
+          '20',
+          MAX_SIZE,
           {from: minter}
         );
       });
@@ -505,9 +508,10 @@ contract('DigitalaxMarketplace', (accounts) => {
         await this.marketplace.createOffer(
           0, // ID
           ether('0.1'),
-            '1',
-            '120',
-            '20',
+          '1',
+          '120',
+          '20',
+          MAX_SIZE,
           {from: minter}
         );
       });
@@ -521,10 +525,16 @@ contract('DigitalaxMarketplace', (accounts) => {
         expect(_availableAmount).to.be.bignumber.equal('9');
         expect(_platformFee).to.be.bignumber.equal('120');
         expect(_discountToPayERC20).to.be.bignumber.equal('20');
-
-
-        await this.marketplace.buyOffer(0, false, {from: tokenBuyer, value: ether('0.1')});
       });
+
+      it('will fail when cooldown not reached', async () => {
+        await this.marketplace.setNowOverride('2');
+        await this.marketplace.buyOffer(0, false, {from: tokenBuyer, value: ether('0.1')});
+        await expectRevert(
+            this.marketplace.buyOffer(0, false, {from: tokenBuyer, value: ether('0.1')}),
+            "DigitalaxMarketplace.buyOffer: Cooldown not reached"
+        );
+      })
 
       it('will fail if eth payments are frozen', async () => {
         await this.marketplace.setNowOverride('2');
@@ -628,9 +638,10 @@ contract('DigitalaxMarketplace', (accounts) => {
       await this.marketplace.createOffer(
         0,
         ether('0.1'),
-          '1',
-          '120',
-          '20',
+        '1',
+        '120',
+        '20',
+        MAX_SIZE,
         {from: minter},
       );
     });
@@ -727,9 +738,10 @@ contract('DigitalaxMarketplace', (accounts) => {
       await this.marketplace.createOffer(
         0,
         ether('0.1'),
-          '1',
-          '120',
-          '20',
+        '1',
+        '120',
+        '20',
+        MAX_SIZE,
         {from: minter}
       );
     });
@@ -767,6 +779,7 @@ contract('DigitalaxMarketplace', (accounts) => {
           '1',
           '120',
           '20',
+          MAX_SIZE,
           {from: minter}
       );
     });
@@ -809,6 +822,7 @@ contract('DigitalaxMarketplace', (accounts) => {
           '1',
           '120',
           '20',
+          MAX_SIZE,
           {from: minter}
       );
     });
