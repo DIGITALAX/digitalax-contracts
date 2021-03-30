@@ -46,11 +46,8 @@ contract('DigitalaxRewardsV2', (accounts) => {
       { from: minter }
     );
 
-    await this.weth.transfer(this.monaWETH.address, TWENTY_TOKENS, { from: minter });
-    await this.monaToken.transfer(this.monaWETH.address, TWO_HUNDRED_TOKENS, { from: minter });
-    await this.monaToken.transfer(admin, TWO_HUNDRED_TOKENS, { from: minter });
 
-    await this.monaWETH.mint(minter);
+    await this.monaToken.transfer(admin, TWO_HUNDRED_TOKENS, { from: minter });
 
     this.oracle = await DigitalaxMonaOracle.new(
         '86400',
@@ -351,7 +348,7 @@ contract('DigitalaxRewardsV2', (accounts) => {
   describe('depositRevenueSharingRewards', () => {
     describe('depositRevenueSharingRewards()', () => {
     beforeEach(async () => {
-      await this.digitalaxRewards.initializePools(1, [0], [100], [10], {from: admin});
+      await this.digitalaxRewards.initializePools([0], [100], [10], {from: admin});
       await this.monaToken.approve(this.digitalaxRewards.address, ONE_THOUSAND_TOKENS, {from: admin});
     });
       it('is currently week 0', async () => {
@@ -360,14 +357,14 @@ contract('DigitalaxRewardsV2', (accounts) => {
 
       it('fails when not admin', async () => {
         await expectRevert(
-            this.digitalaxRewards.depositRevenueSharingRewards(0, 1, TWO_ETH, TWO_ETH, {from: staker}),
+            this.digitalaxRewards.depositRevenueSharingRewards( 1, TWO_ETH, TWO_ETH, {from: staker}),
             'DigitalaxRewardsV2.setRewards: Sender must be admin'
         );
       });
 
       it('fails when not a future week', async () => {
         await expectRevert(
-            this.digitalaxRewards.depositRevenueSharingRewards(0, 0, TWENTY_TOKENS, TWENTY_TOKENS, {from: admin}),
+            this.digitalaxRewards.depositRevenueSharingRewards( 0, TWENTY_TOKENS, TWENTY_TOKENS, {from: admin}),
             'DigitalaxRewardsV2.depositRevenueSharingRewards: The rewards generated should be set for the future weeks'
         );
       });
@@ -375,13 +372,13 @@ contract('DigitalaxRewardsV2', (accounts) => {
       it('fails if insufficient mona approval', async () => {
         await this.monaToken.approve(this.digitalaxRewards.address, 0, {from: admin});
         await expectRevert(
-            this.digitalaxRewards.depositRevenueSharingRewards(0, 1, TWENTY_TOKENS, TWENTY_TOKENS, {from: admin}),
+            this.digitalaxRewards.depositRevenueSharingRewards(1, TWENTY_TOKENS, TWENTY_TOKENS, {from: admin}),
             'DigitalaxRewardsV2.depositRevenueSharingRewards: Failed to supply ERC20 Allowance'
         );
       });
 
       it('successfully deposits revenue sharing rewards', async () => {
-        const {receipt} = await this.digitalaxRewards.depositRevenueSharingRewards(0, 1, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
+        const {receipt} = await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
 
         const monaRevenue = await this.digitalaxRewards.weeklyMonaRevenueSharingPerSecond(1);
         expect(monaRevenue).to.be.bignumber.equal(TEN_ETH.div(new BN('604800')));
@@ -424,8 +421,8 @@ contract('DigitalaxRewardsV2', (accounts) => {
       await this.digitalaxRewards.initializePools(0, [1], [ether('10000000000000000000')], [10], {from: admin});
       await this.digitalaxRewards.initializePools(0, [2], [ether('10000000000000000000')], [10], {from: admin});
       await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('5')), {from: admin});
-      await this.digitalaxRewards.depositRevenueSharingRewards(0, 1, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
-      await this.digitalaxRewards.depositRevenueSharingRewards(0, 2, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
+      await this.digitalaxRewards.depositRevenueSharingRewards(TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
+      await this.digitalaxRewards.depositRevenueSharingRewards(TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
 
       await this.digitalaxRewards.setNowOverride('1209600'); // next week
 
@@ -543,8 +540,8 @@ contract('DigitalaxRewardsV2', (accounts) => {
       await this.digitalaxRewards.initializePools(0, [1], [ether('10000000000000000000')], [10], {from: admin});
       await this.digitalaxRewards.initializePools(0, [2], [ether('10000000000000000000')], [10], {from: admin});
       await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('5')), {from: admin});
-      await this.digitalaxRewards.depositRevenueSharingRewards(0, 1, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
-      await this.digitalaxRewards.depositRevenueSharingRewards(0, 2, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
+      await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
+      await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
 
       await this.digitalaxRewards.setNowOverride('1209601'); // next week
     });
@@ -599,8 +596,8 @@ contract('DigitalaxRewardsV2', (accounts) => {
       await this.monaStaking.stake(0, TWO_ETH, {from: staker});
       await this.monaStaking.stake(0, THREE_ETH, {from: newRecipient});
       await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('5')), {from: admin});
-      await this.digitalaxRewards.depositRevenueSharingRewards(0, 1, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
-      await this.digitalaxRewards.depositRevenueSharingRewards(0, 2, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
+      await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
+      await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
 
     });
 
