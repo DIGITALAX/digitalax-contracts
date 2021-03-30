@@ -527,6 +527,14 @@ contract DigitalaxRewardsV2 {
         return pools[_poolId].weeklyWeightPoints[_week].weightPointsRevenueSharing;
     }
 
+    function getBonusMonaWeightPoints(uint256 _poolId, uint256 _week)
+        external
+        view
+        returns(uint256)
+    {
+        return pools[_poolId].weeklyWeightPoints[_week].bonusWeightPointsRevenueSharing;
+    }
+
     function getMonaStakedEthTotal()
         public
         view
