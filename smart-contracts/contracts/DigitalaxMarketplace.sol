@@ -51,6 +51,9 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
     event UpdatePlatformFeeRecipient(
         address payable platformFeeRecipient
     );
+    event UpdateCoolDownDuration(
+        uint256 cooldown
+    );
     event UpdateOracle(
         address indexed oracle
     );
@@ -74,12 +77,15 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
         uint256 availableIndex;
         uint256 platformFee;
         uint256 discountToPayERC20;
+        uint256 maxAmount;
     }
 
     /// @notice Garment ERC721 Collection ID -> Offer Parameters
     mapping(uint256 => Offer) public offers;
     /// @notice KYC Garment Designers -> Number of times they have sold in this marketplace (To set fee accordingly)
     mapping(address => uint256) public numberOfTimesSold;
+    /// @notice Garment Collection ID -> Buyer -> Last purhcased time
+    mapping(uint256 => mapping(address => uint256)) public lastPurchasedTime;
     /// @notice Garment ERC721 NFT - the only NFT that can be offered in this contract
     IDigitalaxGarmentNFT public garmentNft;
     /// @notice Garment NFT Collection
@@ -99,7 +105,9 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
     /// @notice for freezing eth payment option
     bool public freezeETHPayment;
     /// @notice for storing information from oracle
-    uint256 public lastOracleQuote = 1;
+    uint256 public lastOracleQuote = 1e18;
+    /// @notice Cool down period
+    uint256 public cooldown = 60;
 
     modifier whenNotPaused() {
         require(!isPaused, "Function is currently paused");
@@ -177,7 +185,8 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
         uint256 _primarySalePrice,
         uint256 _startTimestamp,
         uint256 _platformFee,
-        uint256 _discountToPayERC20
+        uint256 _discountToPayERC20,
+        uint256 _maxAmount
     ) external whenNotPaused {
         // Ensure caller has privileges
         require(
@@ -191,12 +200,16 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
             garmentCollection.hasOwnedOf(_garmentCollectionId, _msgSender()) && _isCollectionApproved(_garmentCollectionId, address(this)),
             "DigitalaxMarketplace.createOffer: Not owner and or contract not approved"
         );
+        // Ensure the maximum purchaseable amount is less than collection supply
+        require(_maxAmount <= garmentCollection.getSupply(_garmentCollectionId), "DigitalaxMarketplace.createOffer: Invalid Maximum amount");
+
         _createOffer(
             _garmentCollectionId,
             _primarySalePrice,
             _startTimestamp,
             _platformFee,
-            _discountToPayERC20
+            _discountToPayERC20,
+            _maxAmount
         );
     }
 
@@ -228,8 +241,13 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
         // Check the offers to see if this is a valid
         require(_msgSender().isContract() == false, "DigitalaxMarketplace.buyOffer: No contracts permitted");
         require(_isFinished(_garmentCollectionId) == false, "DigitalaxMarketplace.buyOffer: Sale has been finished");
+        require(lastPurchasedTime[_garmentCollectionId][_msgSender()] <= block.timestamp.div(cooldown), "DigitalaxMarketplace.buyOffer: Cooldown not reached");
 
         Offer storage offer = offers[_garmentCollectionId];
+        require(
+            garmentCollection.balanceOfAddress(_garmentCollectionId, _msgSender()) < offer.maxAmount,
+            "DigitalaxMarketplace.buyOffer: Can't purchase over maximum amount"
+        );
         uint256[] memory garmentTokenIds = garmentCollection.getTokenIds(_garmentCollectionId);
         uint256 garmentTokenId = garmentTokenIds[offer.availableIndex];
         uint256 maxShare = 1000;
@@ -281,6 +299,8 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
         garmentNft.setPrimarySalePrice(garmentTokenId, offer.primarySalePrice);
         // Transfer the token to the purchaser
         garmentNft.safeTransferFrom(garmentNft.ownerOf(garmentTokenId), _msgSender(), garmentTokenId);
+        lastPurchasedTime[_garmentCollectionId][_msgSender()] = block.timestamp;
+
         emit OfferPurchased(garmentTokenId, _garmentCollectionId, _msgSender(), offer.primarySalePrice, _payWithMona, amountOfMonaToTransfer, offer.platformFee, offer.discountToPayERC20);
     }
     /**
@@ -371,6 +391,18 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
         
         offers[_garmentCollectionId].primarySalePrice = _primarySalePrice;
         emit UpdateOfferPrimarySalePrice(_garmentCollectionId, _primarySalePrice);
+    }
+
+    /**
+     @notice Update cool down duration
+     @dev Only admin
+     @param _cooldown New cool down duration
+     */
+    function updateCoolDownDuration(uint256 _cooldown) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.updateCoolDownDuration: Sender must be admin");
+
+        cooldown = _cooldown;
+        emit UpdateCoolDownDuration(_cooldown);
     }
 
     /**
@@ -483,9 +515,10 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
         uint256 _primarySalePrice,
         uint256 _startTimestamp,
         uint256 _platformFee,
-        uint256 _discountToPayERC20
+        uint256 _discountToPayERC20,
+        uint256 _maxAmount
     ) private {
-        //  The discount cannot be greater than the platform fee
+        // The discount cannot be greater than the platform fee
         require(_platformFee >= _discountToPayERC20 , "DigitalaxMarketplace.createOffer: The discount is taken out of platform fee, discount cannot be greater");
         // Ensure a token cannot be re-listed if previously successfully sold
         require(offers[_garmentCollectionId].startTime == 0, "DigitalaxMarketplace.createOffer: Cannot duplicate current offer");
@@ -495,7 +528,8 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
             startTime : _startTimestamp,
             availableIndex : 0,
             platformFee: _platformFee,
-            discountToPayERC20: _discountToPayERC20
+            discountToPayERC20: _discountToPayERC20,
+            maxAmount: _maxAmount
         });
         emit OfferCreated(_garmentCollectionId);
     }
