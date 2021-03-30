@@ -721,99 +721,134 @@ contract DigitalaxMonaStaking  {
       * @dev returns the claimable rewards and pending rewards
       */
      // TODO stack too deep
-//    function unclaimedRewards(
-//        uint256 _poolId,
-//        address _user
-//    )
-//        public
-//        view
-//        returns(uint256 claimableRewards, uint256 pendingRewards)
-//    {
-//        StakingPool storage stakingPool = pools[_poolId];
-//        if (stakingPool.stakedMonaTotalForPool == 0) {
-//            return (0,0);
-//        }
-//
-//        Staker storage staker = stakingPool.stakers[_user];
-//
-//        uint256 monaRewards = rewardsContract.MonaRevenueRewards(_poolId, stakingPool.lastUpdateTime,
-//                                                        _getNow());
-//
-//        uint256 newRewardPerToken = stakingPool.rewardsPerTokenPoints.add(monaRewards
-//                                                                .mul(1e18)
-//                                                                .mul(pointMultiplier)
-//                                                                .div(stakingPool.stakedMonaTotalForPool))
-//                                                         .sub(staker.lastRewardPoints);
-//
-//        uint256 newRewards = staker.balance.mul(newRewardPerToken)
-//                                                .div(1e18)
-//                                                .div(pointMultiplier);
-//
-//        uint256 newBonusRewards = 0;
-//        if(staker.isEarlyRewardsStaker){
-//            uint256 monaBonusRewards = rewardsContract.BonusMonaRevenueRewards(_poolId, stakingPool.lastUpdateTime, _getNow());
-//
-//            uint256 newBonusRewardPerToken = stakingPool.bonusRewardsPerTokenPoints;
-//            newBonusRewardPerToken = newBonusRewardPerToken.add(monaBonusRewards.mul(1e18).mul(pointMultiplier).div(stakingPool.earlyStakedMonaTotalForPool));
-//            newBonusRewardPerToken = newBonusRewardPerToken.sub(staker.lastBonusRewardPoints);
-//
-//            newBonusRewards = staker.balance.mul(newBonusRewardPerToken);
-//            newBonusRewards = newBonusRewards.div(1e18);
-//            newBonusRewards = newBonusRewards.div(pointMultiplier);
-//        }
-//
-//        // Figure out how much rewards are still pending
-//        uint256 secondsInCycle = stakingPool.daysInCycle.mul(SECONDS_IN_A_DAY);
-//        uint256 timeElapsedSinceStakingFromZero = _getNow().sub(staker.cycleStartTimestamp);
-//        uint256 startOfCurrentCycle = _getNow().sub(timeElapsedSinceStakingFromZero.mod(secondsInCycle));
-//
-//        if(startOfCurrentCycle > staker.lastRewardUpdateTime) {
-//            // We are in a new cycle
-//            // Bring over the pending rewards, they have been earned
-//            newRewards = newRewards.add(staker.monaRevenueRewardsEarned);
-//            newRewards = newRewards.sub(staker.monaRevenueRewardsReleased);
-//            // New cycle, the pending rewards from before move over
-//            newRewards = newRewards.add(staker.monaRevenueRewardsPending);
-//            newBonusRewards = newBonusRewards.add(staker.bonusMonaRevenueRewardsPending);
-//
-//
-//            uint256 monaPendingRewardsTotal = rewardsContract.MonaRevenueRewards(_poolId, startOfCurrentCycle,
-//                                                                    _getNow());
-//
-//            monaPendingRewardsTotal = monaPendingRewardsTotal.mul(1e18);
-//
-//            pendingRewards = staker.balance.mul(monaPendingRewardsTotal);
-//            pendingRewards = pendingRewards.div(stakingPool.stakedMonaTotalForPool);
-//            // The pending rewards are now just what is in this cycle (calculation in case it overflows)
-//            pendingRewards = pendingRewards.div(1e18);
-//
-//            claimableRewards = newRewards.sub(pendingRewards);
-//
-//            if(staker.isEarlyRewardsStaker){
-//                uint256 bonusMonaPendingRewardsTotal = 0;
-//                {
-//                bonusMonaPendingRewardsTotal = rewardsContract.BonusMonaRevenueRewards(_poolId, startOfCurrentCycle, _getNow());
-//                }
-//                bonusMonaPendingRewardsTotal = bonusMonaPendingRewardsTotal.mul(1e18);
-//
-//                uint256 bonusPendingRewards = staker.balance.mul(bonusMonaPendingRewardsTotal);
-//                bonusPendingRewards = pendingRewards.div(stakingPool.earlyStakedMonaTotalForPool);
-//                // The pending rewards are now just what is in this cycle (calculation in case it overflows)
-//                bonusPendingRewards = bonusPendingRewards.div(1e18);
-//                uint256 bonusClaimable = newBonusRewards.sub(bonusPendingRewards);
-//
-//                pendingRewards = pendingRewards.add(bonusPendingRewards);
-//                claimableRewards = claimableRewards.add(bonusClaimable);
-//            }
-//        } else {
-//            // We are in the same cycle, these new rewards calculated above are pending rewards. So no change to claimable rewards
-//            claimableRewards = staker.monaRevenueRewardsEarned.sub(staker.monaRevenueRewardsReleased);
-//            // The new rewards we calculated earlier are in the same cycle
-//            pendingRewards = newRewards.add(staker.monaRevenueRewardsPending);
-//            // Add the bonus
-//            pendingRewards = pendingRewards.add(newBonusRewards);
-//        }
-//    }
+    function unclaimedRewards(
+        uint256 _poolId,
+        address _user
+    )
+        public
+        view
+        returns(uint256 claimableRewards, uint256 pendingRewards)
+    {
+        StakingPool storage stakingPool = pools[_poolId];
+        if (stakingPool.stakedMonaTotalForPool == 0) {
+            return (0,0);
+        }
+
+        Staker storage staker = stakingPool.stakers[_user];
+
+        uint256 monaRewards = rewardsContract.MonaRevenueRewards(_poolId, stakingPool.lastUpdateTime,
+                                                        _getNow());
+
+        uint256 newRewardPerToken = stakingPool.rewardsPerTokenPoints.add(monaRewards
+                                                                .mul(1e18)
+                                                                .mul(pointMultiplier)
+                                                                .div(stakingPool.stakedMonaTotalForPool))
+                                                         .sub(staker.lastRewardPoints);
+
+        uint256 newRewards = staker.balance.mul(newRewardPerToken)
+                                                .div(1e18)
+                                                .div(pointMultiplier);
+
+        // Figure out how much rewards are still pending
+        uint256 secondsInCycle = stakingPool.daysInCycle.mul(SECONDS_IN_A_DAY);
+        uint256 timeElapsedSinceStakingFromZero = _getNow().sub(staker.cycleStartTimestamp);
+        uint256 startOfCurrentCycle = _getNow().sub(timeElapsedSinceStakingFromZero.mod(secondsInCycle));
+
+        if(startOfCurrentCycle > staker.lastRewardUpdateTime) {
+            // We are in a new cycle
+            // Bring over the pending rewards, they have been earned
+            newRewards = newRewards.add(staker.monaRevenueRewardsEarned);
+            newRewards = newRewards.sub(staker.monaRevenueRewardsReleased);
+            // New cycle, the pending rewards from before move over
+            newRewards = newRewards.add(staker.monaRevenueRewardsPending);
+
+            uint256 monaPendingRewardsTotal = rewardsContract.MonaRevenueRewards(_poolId, startOfCurrentCycle,
+                                                                    _getNow());
+
+            monaPendingRewardsTotal = monaPendingRewardsTotal.mul(1e18);
+
+            pendingRewards = staker.balance.mul(monaPendingRewardsTotal);
+            pendingRewards = pendingRewards.div(stakingPool.stakedMonaTotalForPool);
+            // The pending rewards are now just what is in this cycle (calculation in case it overflows)
+            pendingRewards = pendingRewards.div(1e18);
+
+            claimableRewards = newRewards.sub(pendingRewards);
+
+        } else {
+            // We are in the same cycle, these new rewards calculated above are pending rewards. So no change to claimable rewards
+            claimableRewards = staker.monaRevenueRewardsEarned.sub(staker.monaRevenueRewardsReleased);
+            // The new rewards we calculated earlier are in the same cycle
+            pendingRewards = newRewards.add(staker.monaRevenueRewardsPending);
+        }
+    }
+
+
+
+     /*
+      * @notice Returns the about of rewards yet to be claimed for bonuses (this currently includes pending and awarded together)
+      * @param _poolId the id of the pool we are interested in
+      * @param _user the user we are interested in
+      * @dev returns the claimable rewards and pending rewards
+      */
+     // TODO stack too deep
+    function unclaimedBonusRewards(
+        uint256 _poolId,
+        address _user
+    )
+        public
+        view
+        returns(uint256 claimableRewards, uint256 pendingRewards)
+    {
+        StakingPool storage stakingPool = pools[_poolId];
+        Staker storage staker = stakingPool.stakers[_user];
+        if (stakingPool.stakedMonaTotalForPool == 0 || !staker.isEarlyRewardsStaker) {
+            return (0,0);
+        }
+
+        uint256 monaBonusRewards = rewardsContract.BonusMonaRevenueRewards(_poolId, stakingPool.lastUpdateTime, _getNow());
+
+        uint256 newBonusRewardPerToken = stakingPool.bonusRewardsPerTokenPoints;
+        newBonusRewardPerToken = newBonusRewardPerToken.add(monaBonusRewards.mul(1e18).mul(pointMultiplier).div(stakingPool.earlyStakedMonaTotalForPool));
+        newBonusRewardPerToken = newBonusRewardPerToken.sub(staker.lastBonusRewardPoints);
+
+        uint256 newBonusRewards = staker.balance.mul(newBonusRewardPerToken);
+        newBonusRewards = newBonusRewards.div(1e18);
+        newBonusRewards = newBonusRewards.div(pointMultiplier);
+
+
+        // Figure out how much rewards are still pending
+        uint256 secondsInCycle = stakingPool.daysInCycle.mul(SECONDS_IN_A_DAY);
+        uint256 timeElapsedSinceStakingFromZero = _getNow().sub(staker.cycleStartTimestamp);
+        uint256 startOfCurrentCycle = _getNow().sub(timeElapsedSinceStakingFromZero.mod(secondsInCycle));
+
+        if(startOfCurrentCycle > staker.lastRewardUpdateTime) {
+            // We are in a new cycle
+            // Bring over the pending rewards, they have been earned
+            newBonusRewards = newBonusRewards.add(staker.bonusMonaRevenueRewardsPending);
+
+            uint256 bonusMonaPendingRewardsTotal = 0;
+
+            bonusMonaPendingRewardsTotal = rewardsContract.BonusMonaRevenueRewards(_poolId, startOfCurrentCycle, _getNow());
+
+            bonusMonaPendingRewardsTotal = bonusMonaPendingRewardsTotal.mul(1e18);
+
+            uint256 bonusPendingRewards = staker.balance.mul(bonusMonaPendingRewardsTotal);
+            bonusPendingRewards = bonusPendingRewards.div(stakingPool.earlyStakedMonaTotalForPool);
+            // The pending rewards are now just what is in this cycle (calculation in case it overflows)
+            bonusPendingRewards = bonusPendingRewards.div(1e18);
+            uint256 bonusClaimable = newBonusRewards.sub(bonusPendingRewards);
+
+            pendingRewards = bonusPendingRewards;
+            claimableRewards = staker.monaRevenueRewardsEarned.sub(staker.monaRevenueRewardsReleased);
+            claimableRewards = claimableRewards.add(bonusClaimable);
+
+        } else {
+            // We are in the same cycle, these new rewards calculated above are pending rewards. So no change to claimable rewards
+            claimableRewards = staker.monaRevenueRewardsEarned.sub(staker.monaRevenueRewardsReleased);
+            // The new rewards we calculated earlier are in the same cycle
+            pendingRewards = newBonusRewards.add(staker.bonusMonaRevenueRewardsPending);
+        }
+    }
 
 
     /*
