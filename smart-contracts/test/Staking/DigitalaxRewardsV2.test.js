@@ -5,7 +5,8 @@ const {
   ether,
   send,
   constants,
-  balance
+  balance,
+  time
 } = require('@openzeppelin/test-helpers');
 
 const {expect} = require('chai');
@@ -25,10 +26,11 @@ const TWO_HUNDRED_TOKENS = new BN('200000000000000000000');
 const TWENTY_TOKENS = new BN('20000000000000000000');
 const TWO_ETH = ether('2');
 const THREE_ETH = ether('3');
+const EXCHANGE_RATE = new BN('1200000000000000000');
 const TEN_ETH = ether('10');
 
 contract('DigitalaxRewardsV2', (accounts) => {
-  const [admin, smartContract, platformFeeAddress, minter, owner, designer, staker, newRecipient] = accounts;
+  const [admin, smartContract, platformFeeAddress, minter, owner, provider, staker, newRecipient] = accounts;
 
   beforeEach(async () => {
     this.accessControls = await DigitalaxAccessControls.new({from: admin});
@@ -152,7 +154,7 @@ contract('DigitalaxRewardsV2', (accounts) => {
           this.monaToken.address,
           this.accessControls.address,
           this.monaStaking.address,
-          this.monaWETH.address,
+          this.oracle.address,
           constants.ZERO_ADDRESS,
           0,
           0,
@@ -348,7 +350,7 @@ contract('DigitalaxRewardsV2', (accounts) => {
   describe('depositRevenueSharingRewards', () => {
     describe('depositRevenueSharingRewards()', () => {
     beforeEach(async () => {
-      await this.digitalaxRewards.initializePools([0], [100], [10], {from: admin});
+      await this.digitalaxRewards.initializePools(1, [0], [100], [10], {from: admin});
       await this.monaToken.approve(this.digitalaxRewards.address, ONE_THOUSAND_TOKENS, {from: admin});
     });
       it('is currently week 0', async () => {
@@ -378,7 +380,7 @@ contract('DigitalaxRewardsV2', (accounts) => {
       });
 
       it('successfully deposits revenue sharing rewards', async () => {
-        const {receipt} = await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
+        const {receipt} = await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, {from: admin});
 
         const monaRevenue = await this.digitalaxRewards.weeklyMonaRevenueSharingPerSecond(1);
         expect(monaRevenue).to.be.bignumber.equal(TEN_ETH.div(new BN('604800')));
@@ -421,8 +423,8 @@ contract('DigitalaxRewardsV2', (accounts) => {
       await this.digitalaxRewards.initializePools(0, [1], [ether('10000000000000000000')], [10], {from: admin});
       await this.digitalaxRewards.initializePools(0, [2], [ether('10000000000000000000')], [10], {from: admin});
       await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('5')), {from: admin});
-      await this.digitalaxRewards.depositRevenueSharingRewards(TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
-      await this.digitalaxRewards.depositRevenueSharingRewards(TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
+      await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, {from: admin});
+      await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, {from: admin});
 
       await this.digitalaxRewards.setNowOverride('1209600'); // next week
 
@@ -540,8 +542,8 @@ contract('DigitalaxRewardsV2', (accounts) => {
       await this.digitalaxRewards.initializePools(0, [1], [ether('10000000000000000000')], [10], {from: admin});
       await this.digitalaxRewards.initializePools(0, [2], [ether('10000000000000000000')], [10], {from: admin});
       await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('5')), {from: admin});
-      await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
-      await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
+      await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, {from: admin});
+      await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, {from: admin});
 
       await this.digitalaxRewards.setNowOverride('1209601'); // next week
     });
@@ -596,29 +598,30 @@ contract('DigitalaxRewardsV2', (accounts) => {
       await this.monaStaking.stake(0, TWO_ETH, {from: staker});
       await this.monaStaking.stake(0, THREE_ETH, {from: newRecipient});
       await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('5')), {from: admin});
-      await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
-      await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, {from: admin, value: THREE_ETH});
+      await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, {from: admin});
+      await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, {from: admin});
 
     });
 
     describe('getMonaPerEth()', () => {
       it('successfully queries getMonaPerEth', async () => {
-        const staked = await this.digitalaxRewards.getMonaPerEth(ether('1'), {from: staker});
+        const staked = await this.digitalaxRewards.getMonaPerEth(ether('0.1'), {from: staker});
         // 10 mona per eth
-        expect(staked).to.be.bignumber.equal(ether('10'));
+        expect(staked).to.be.bignumber.equal(ether('0.1')); // TODO review
       });
       it('successfully queries getEthPerMona', async () => {
         const staked = await this.digitalaxRewards.getEthPerMona({from: staker});
         // 10 mona per eth
-        expect(staked).to.be.bignumber.equal(ether('0.1'));
+        expect(staked).to.be.bignumber.equal(new BN('1'));
       });
     });
     describe('getMonaStakedEthTotal()', () => {
       it('successfully queries getMonaStakedEthTotal', async () => {
         const staked = await this.digitalaxRewards.getMonaStakedEthTotal({from: staker});
         // 10 mona per eth
-        expect(staked).to.be.bignumber.equal(ether('0.5'));
+        expect(staked).to.be.bignumber.equal(ether('5')); // TODO REVIEW
       });
+      // TODO ADD BONUSES
     });
     describe('getMonaDailyAPY()', () => {
       it('successfully queries getMonaDailyAPY', async () => {

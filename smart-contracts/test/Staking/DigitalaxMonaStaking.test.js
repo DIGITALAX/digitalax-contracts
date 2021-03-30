@@ -5,7 +5,8 @@ const {
     ether,
     send,
     constants,
-    balance
+    balance,
+    time
   } = require('@openzeppelin/test-helpers');
   
   const {expect} = require('chai');
@@ -20,6 +21,7 @@ const {
   
   // 1,000 * 10 ** 18
   const ONE_THOUSAND_TOKENS = '1000000000000000000000';
+  const EXCHANGE_RATE = new BN('1200000000000000000');
   const TWO_HUNDRED_TOKENS = new BN('200000000000000000000');
   const ONE_TOKEN = new BN('100000000000000000');
   const TEN_TOKENS = new BN('1000000000000000000');
@@ -28,7 +30,7 @@ const {
   const MAX_NUMBER_OF_POOLS = new BN('20');
   
   contract('DigitalaxMonaStaking', (accounts) => {
-    const [admin, smartContract, platformFeeAddress, minter, owner, designer, staker, newRecipient] = accounts;
+    const [admin, smartContract, platformFeeAddress, minter, owner, provider, staker, newRecipient] = accounts;
   
     beforeEach(async () => {
       this.accessControls = await DigitalaxAccessControls.new({from: admin});
@@ -56,7 +58,10 @@ const {
           {from: admin}
       );
 
-  
+      await this.oracle.addProvider(provider, {from: admin});
+      await this.oracle.pushReport(EXCHANGE_RATE, {from: provider});
+      await time.increase(time.duration.seconds(120));
+
       this.monaStaking = await DigitalaxMonaStaking.new(
           this.monaToken.address,
           this.accessControls.address,

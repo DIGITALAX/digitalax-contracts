@@ -277,7 +277,7 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         uint256 _amount,
         uint256 _bonusAmount
     )
-        external payable
+        external
     {
         require(
             accessControls.hasAdminRole(_msgSender()),
