@@ -241,7 +241,7 @@ contract DigitalaxMarketplace is ReentrancyGuard, BaseRelayRecipient {
         // Check the offers to see if this is a valid
         require(_msgSender().isContract() == false, "DigitalaxMarketplace.buyOffer: No contracts permitted");
         require(_isFinished(_garmentCollectionId) == false, "DigitalaxMarketplace.buyOffer: Sale has been finished");
-        require(lastPurchasedTime[_garmentCollectionId][_msgSender()] <= block.timestamp.div(cooldown), "DigitalaxMarketplace.buyOffer: Cooldown not reached");
+        require(lastPurchasedTime[_garmentCollectionId][_msgSender()] <= block.timestamp.sub(cooldown), "DigitalaxMarketplace.buyOffer: Cooldown not reached");
 
         Offer storage offer = offers[_garmentCollectionId];
         require(
