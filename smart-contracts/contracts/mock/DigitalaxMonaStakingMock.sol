@@ -10,9 +10,9 @@ contract DigitalaxMonaStakingMock is DigitalaxMonaStaking {
     constructor(
         address _monaToken,
         DigitalaxAccessControls _accessControls,
-        IWETH _WETH
+        address _trustedForwarder
     )
-    DigitalaxMonaStaking(_monaToken, _accessControls, _WETH)
+    DigitalaxMonaStaking(_monaToken, _accessControls, _trustedForwarder)
     public {}
 
     function setNowOverride(uint256 _now) external {

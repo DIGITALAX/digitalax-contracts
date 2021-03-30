@@ -5,11 +5,9 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../DigitalaxAccessControls.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-// import "../uniswapv2/libraries/UniswapV2Library.sol";
-// import "../uniswapv2/interfaces/IUniswapV2Pair.sol";
 import "./interfaces/IDigitalaxRewards.sol";
-import "./interfaces/IWETH9.sol";
-
+import "../EIP2771/BaseRelayRecipient.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title Digitalax Staking
@@ -18,13 +16,12 @@ import "./interfaces/IWETH9.sol";
  * @author Based on original staking contract by Adrian Guerrera (deepyr)
  */
 
-// TODO non-reentrant
-contract DigitalaxMonaStaking  {
+
+contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     address public monaToken; // MONA ERC20s
-    IWETH public WETH;
 
     uint256 public MAX_NUMBER_OF_POOLS = 20;
     uint256 constant SECONDS_IN_A_DAY = 86400;
@@ -145,20 +142,48 @@ contract DigitalaxMonaStaking  {
 
     event ReclaimedERC20(address indexed token, uint256 amount);
 
-    constructor(address _monaToken, DigitalaxAccessControls _accessControls, IWETH _WETH) public {
+    constructor(address _monaToken, DigitalaxAccessControls _accessControls, address _trustedForwarder) public {
         require(_monaToken != address(0), "DigitalaxMonaStaking: Invalid Mona Token");
         require(address(_accessControls) != address(0), "DigitalaxMonaStaking: Invalid Access Controls");
-        require(address(_WETH) != address(0), "DigitalaxMonaStaking: Invalid WETH Token");
         monaToken = _monaToken;
         accessControls = _accessControls;
-        WETH = _WETH;
+        trustedForwarder = _trustedForwarder;
     }
     receive() external payable {
         require(
-            msg.sender == address(rewardsContract),
+            _msgSender() == address(rewardsContract),
             "DigitalaxMonaStaking.receive: Sender must be rewards contract"
         );
     }
+
+
+    function setTrustedForwarder(address _trustedForwarder) external  {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxMonaStaking.setTrustedForwarder: Sender must be admin"
+            );
+        trustedForwarder = _trustedForwarder;
+    }
+
+    // This is to support Native meta transactions
+    // never use msg.sender directly, use _msgSender() instead
+    function _msgSender()
+    internal
+    view
+    returns (address payable sender)
+    {
+        return BaseRelayRecipient.msgSender();
+    }
+
+    /**
+       * Override this function.
+       * This version is to keep track of BaseRelayRecipient you are using
+       * in your contract.
+       */
+    function versionRecipient() external view override returns (string memory) {
+        return "1";
+    }
+
 
     /*
      * @notice Lets admin set the Rewards Token
@@ -169,7 +194,7 @@ contract DigitalaxMonaStaking  {
     external
     {
         require(
-            accessControls.hasAdminRole(msg.sender),
+            accessControls.hasAdminRole(_msgSender()),
             "DigitalaxMonaStaking.setRewardsContract: Sender must be admin"
         );
         require(_addr != address(0));
@@ -187,7 +212,7 @@ contract DigitalaxMonaStaking  {
     external
     {
         require(
-            accessControls.hasAdminRole(msg.sender),
+            accessControls.hasAdminRole(_msgSender()),
             "DigitalaxMonaStaking.setMaxNumberOfPools: Sender must be admin"
         );
         require(_max >= numberOfStakingPools);
@@ -207,7 +232,7 @@ contract DigitalaxMonaStaking  {
         public
     {
         require(
-            accessControls.hasAdminRole(msg.sender),
+            accessControls.hasAdminRole(_msgSender()),
             "DigitalaxMonaStaking.initMonaStakingPool: Sender must be admin"
         );
 
@@ -256,7 +281,7 @@ contract DigitalaxMonaStaking  {
         external
     {
         require(
-            accessControls.hasAdminRole(msg.sender),
+            accessControls.hasAdminRole(_msgSender()),
             "DigitalaxMonaStaking.setMonaToken: Sender must be admin"
         );
         require(_addr != address(0), "DigitalaxMonaStaking.setMonaToken: Invalid Mona Token");
@@ -274,7 +299,7 @@ contract DigitalaxMonaStaking  {
         external
     {
         require(
-            accessControls.hasAdminRole(msg.sender),
+            accessControls.hasAdminRole(_msgSender()),
             "DigitalaxMonaStaking.setTokensClaimable: Sender must be admin"
         );
         tokensClaimable = _enabled;
@@ -288,7 +313,7 @@ contract DigitalaxMonaStaking  {
      */
     function updateAccessControls(DigitalaxAccessControls _accessControls) external {
         require(
-            accessControls.hasAdminRole(msg.sender),
+            accessControls.hasAdminRole(_msgSender()),
             "DigitalaxMonaStaking.updateAccessControls: Sender must be admin"
         );
         require(address(_accessControls) != address(0), "DigitalaxMonaStaking.updateAccessControls: Zero Address");
@@ -394,7 +419,7 @@ contract DigitalaxMonaStaking  {
     )
         external
     {
-        _stake(_poolId, msg.sender, _amount);
+        _stake(_poolId, _msgSender(), _amount);
     }
 
     /*
@@ -403,8 +428,8 @@ contract DigitalaxMonaStaking  {
     function stakeAll(uint256 _poolId)
         external
     {
-        uint256 balance = IERC20(monaToken).balanceOf(msg.sender);
-        _stake(_poolId, msg.sender, balance);
+        uint256 balance = IERC20(monaToken).balanceOf(_msgSender());
+        _stake(_poolId, _msgSender(), balance);
     }
 
     /**
@@ -493,7 +518,7 @@ contract DigitalaxMonaStaking  {
     ) 
         external 
     {
-        _unstake(_poolId, msg.sender, _amount);
+        _unstake(_poolId, _msgSender(), _amount);
     }
 
      /**
@@ -544,12 +569,12 @@ contract DigitalaxMonaStaking  {
     function emergencyUnstake(uint256 _poolId)
         external
     {
-        uint256 amount = pools[_poolId].stakers[msg.sender].balance;
-        pools[_poolId].stakers[msg.sender].balance = 0;
-        pools[_poolId].stakers[msg.sender].monaRevenueRewardsEarned = 0;
+        uint256 amount = pools[_poolId].stakers[_msgSender()].balance;
+        pools[_poolId].stakers[_msgSender()].balance = 0;
+        pools[_poolId].stakers[_msgSender()].monaRevenueRewardsEarned = 0;
 
-        IERC20(monaToken).safeTransfer(address(msg.sender), amount);
-        emit EmergencyUnstake(msg.sender, amount);
+        IERC20(monaToken).safeTransfer(address(_msgSender()), amount);
+        emit EmergencyUnstake(_msgSender(), amount);
     }
 
 
@@ -906,14 +931,14 @@ contract DigitalaxMonaStaking  {
     {
         // Cannot recover the staking token or the rewards token
         require(
-            accessControls.hasAdminRole(msg.sender),
+            accessControls.hasAdminRole(_msgSender()),
             "DigitalaxMonaStaking.reclaimERC20: Sender must be admin"
         );
         require(
             _tokenAddress != address(monaToken),
             "DigitalaxMonaStaking.reclaimERC20: Cannot withdraw the rewards token"
         );
-        IERC20(_tokenAddress).transfer(msg.sender, _tokenAmount);
+        IERC20(_tokenAddress).transfer(_msgSender(), _tokenAmount);
         emit ReclaimedERC20(_tokenAddress, _tokenAmount);
     }
 
@@ -923,9 +948,9 @@ contract DigitalaxMonaStaking  {
     */
     function reclaimETH(uint256 _amount) external {
         require(
-            accessControls.hasAdminRole(msg.sender),
+            accessControls.hasAdminRole(_msgSender()),
             "DigitalaxMonaStaking.reclaimETH: Sender must be admin"
         );
-        msg.sender.transfer(address(this).balance);
+        _msgSender().transfer(address(this).balance);
     }
 }
