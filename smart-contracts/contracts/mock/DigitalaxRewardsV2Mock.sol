@@ -3,7 +3,7 @@
 pragma solidity 0.6.12;
 
 import "../staking/DigitalaxRewardsV2.sol";
-import "../Oracle/IDigitalaxMonaOracle.sol";
+import "../oracle/IDigitalaxMonaOracle.sol";
 
 contract DigitalaxRewardsV2Mock is DigitalaxRewardsV2 {
     uint256 public nowOverride;
