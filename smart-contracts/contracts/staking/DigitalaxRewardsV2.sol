@@ -5,7 +5,7 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../DigitalaxAccessControls.sol";
 import "./interfaces/IERC20.sol";
-import "../Oracle/IDigitalaxMonaOracle.sol";
+import "../oracle/IDigitalaxMonaOracle.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
