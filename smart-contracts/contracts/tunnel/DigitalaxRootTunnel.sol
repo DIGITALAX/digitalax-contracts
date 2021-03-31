@@ -33,6 +33,7 @@ contract DigitalaxRootTunnel is BaseRootTunnel {
         if(!nft.exists(_tokenId)){
             uint256 newId = nft.mint(_owner, _tokenUri, _garmentDesigner);
             nft.setPrimarySalePrice(newId, _primarySalePrice);
+            nft.setTokenURI(newId, _tokenUri);
         }
     }
 
