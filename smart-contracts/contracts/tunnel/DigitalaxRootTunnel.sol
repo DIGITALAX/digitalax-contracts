@@ -1,4 +1,5 @@
 pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
 import {BaseRootTunnel} from "./BaseRootTunnel.sol";
 import "../garment/DigitalaxGarmentNFT.sol";
