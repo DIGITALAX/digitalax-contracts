@@ -96,6 +96,9 @@ contract DigitalaxGarmentUpgrader is ReentrancyGuard, BaseRelayRecipient  {
             // Set primary price
             garmentTokenV2.setPrimarySalePrice(tokenIds[i], primarySalePrice);
 
+            // Need to setApprovalForAll before calling this method.
+            garmentToken.burn(tokenIds[i]);
+
             newTokenIds[i] = newGarmentTokenId;
         }
 
