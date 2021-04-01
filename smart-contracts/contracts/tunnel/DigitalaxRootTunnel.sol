@@ -20,35 +20,47 @@ contract DigitalaxRootTunnel is BaseRootTunnel {
     }
 
     function _processMessageFromChild(bytes memory message) internal override {
-        uint256 _tokenId;
-        address _owner;
-        uint256 _primarySalePrice;
-        address _garmentDesigner;
-        string memory _tokenUri;
-        uint256[] memory _children;
-        uint256[] memory _childrenBalances;
-        (_tokenId, _owner, _primarySalePrice, _garmentDesigner, _tokenUri, _children, _childrenBalances) = abi.decode(message, (uint256, address, uint256, address, string, uint256[], uint256[]));
+        address[] memory _owners;
+        uint256[] memory _tokenIds;
+        uint256[] memory _primarySalePrices;
+        address[] memory _garmentDesigners;
+        string[] memory _tokenUris;
+        uint256[][] memory _children;
+        uint256[][] memory _childrenBalances;
+        (_owners, _tokenIds, _primarySalePrices, _garmentDesigners, _tokenUris, _children, _childrenBalances) = abi.decode(message, (address[], uint256[], uint256[], address[], string[], uint256[][], uint256[][]));
 
-        // Try to rebuild what is on matic into mainnet
-        if(!nft.exists(_tokenId)){
-            uint256 newId = nft.mint(_owner, _tokenUri, _garmentDesigner);
-            nft.setPrimarySalePrice(newId, _primarySalePrice);
-            nft.setTokenURI(newId, _tokenUri);
+        for( uint256 i; i< _tokenIds.length; i++){
+            // With the information above, rebuild the 721 token on mainnet
+            if(!nft.exists(_tokenIds[i])){
+                uint256 newId = nft.mint(_owners[i], _tokenUris[i], _garmentDesigners[i]); // TODO Check this with the matic way of doing mints (predicate)
+                nft.setPrimarySalePrice(newId, _primarySalePrices[i]);
+            } else {
+                nft.setTokenURI(_tokenIds[i], _tokenUris[i]); // Figure out if I need the line above??
+                nft.setPrimarySalePrice(_tokenIds[i], _primarySalePrices[i]);
+            }
         }
     }
 
     // For children nfts, these should be setup on the matic network before the 721 if there are any
-    function transferNFTDataToMatic(uint256 tokenId) external {
-        uint256 _primarySalePrice = nft.primarySalePrice(tokenId);
-        address _garmentDesigner= nft.garmentDesigners(tokenId);
-        string memory _tokenUri = nft.tokenURI(tokenId);
-        uint256[] memory _children = nft.childIdsForOn(tokenId, address(childContract));
-        uint256 len = _children.length;
-        uint256[] memory childBalances = new uint256[](len);
-        for( uint256 i; i< _children.length; i++){
-            childBalances[i] = nft.childBalance(tokenId, address(childContract), _children[i]);
+    function transferNFTsDataToMatic(uint256[] memory _tokenIds) external {
+        uint256[] memory _salePrices = new uint256[](_tokenIds.length);
+        address[] memory _designers = new address[](_tokenIds.length);
+        string[] memory _tokenUris = new string[](_tokenIds.length);
+        uint256[][] memory _children = new uint256[][](_tokenIds.length);
+        uint256[][] memory _childrenBalances = new uint256[][](_tokenIds.length);
+        for( uint256 i; i< _tokenIds.length; i++){
+            _salePrices[i] = nft.primarySalePrice(_tokenIds[i]);
+            _designers[i] = nft.garmentDesigners(_tokenIds[i]);
+            _tokenUris[i] = nft.tokenURI(_tokenIds[i]);
+            _children[i] = nft.childIdsForOn(_tokenIds[i], address(childContract));
+            uint256 len = _children[i].length;
+            uint256[] memory _childBalances = new uint256[](len);
+            for( uint256 j; j< _children.length; j++){
+                _childBalances[j] = nft.childBalance(_tokenIds[i], address(childContract), _children[i][j]);
+            }
+            _childrenBalances[i] = _childBalances;
         }
 
-        _sendMessageToChild(abi.encode(tokenId, _primarySalePrice, _garmentDesigner, _tokenUri, _children, childBalances));
+        _sendMessageToChild(abi.encode(_tokenIds, _salePrices, _designers, _tokenUris, _children, _childrenBalances));
     }
 }

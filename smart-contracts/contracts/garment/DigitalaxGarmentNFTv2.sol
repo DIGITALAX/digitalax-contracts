@@ -491,35 +491,48 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
     }
 
     function _processMessageFromRoot(bytes memory message) internal override {
-        uint256 _tokenId;
-        uint256 _primarySalePrice;
-        address _garmentDesigner;
-        string memory _tokenUri;
-        uint256[] memory _children;
-        uint256[] memory _childrenBalances;
-        (_tokenId, _primarySalePrice, _garmentDesigner, _tokenUri, _children, _childrenBalances) = abi.decode(message, (uint256, uint256, address, string, uint256[], uint256[]));
+        uint256[] memory _tokenIds;
+        uint256[] memory _primarySalePrices;
+        address[] memory _garmentDesigners;
+        string[] memory _tokenUris;
+        uint256[][] memory _children;
+        uint256[][] memory _childrenBalances;
+        (_tokenIds, _primarySalePrices, _garmentDesigners, _tokenUris, _children, _childrenBalances) = abi.decode(message, (uint256[], uint256[], address[], string[], uint256[][], uint256[][]));
 
-        // With the information above, rebuild the 721 token in matic!
-        primarySalePrice[_tokenId] = _primarySalePrice;
-        garmentDesigners[_tokenId] = _garmentDesigner;
-        _setTokenURI(_tokenId, _tokenUri);
-        for (uint256 i = 0; i< _children.length; i++) {
-            _receiveChild(_tokenId, _msgSender(), _children[i], _childrenBalances[i]);
+        for( uint256 i; i< _tokenIds.length; i++){
+            // With the information above, rebuild the 721 token in matic!
+            primarySalePrice[_tokenIds[i]] = _primarySalePrices[i];
+            garmentDesigners[_tokenIds[i]] = _garmentDesigners[i];
+            _setTokenURI(_tokenIds[i], _tokenUris[i]);
+            for (uint256 j = 0; j< _children.length; j++) {
+                _receiveChild(_tokenIds[i], _msgSender(), _children[i][j], _childrenBalances[i][j]);
+            }
         }
     }
 
     // Send the nft to root - if it does not exist then we can handle it on that side
-    function sendNFTToRoot(uint256 tokenId) external {
-        uint256 _primarySalePrice = primarySalePrice[tokenId];
-        address _garmentDesigner= garmentDesigners[tokenId];
-        string memory _tokenUri = tokenURI(tokenId);
-        uint256[] memory _children = childIdsForOn(tokenId, address(childContract));
-        uint256 len = _children.length;
-        uint256[] memory childBalances = new uint256[](len);
-        for( uint256 i; i< _children.length; i++){
-            childBalances[i] = childBalance(tokenId, address(childContract), _children[i]);
+    // Make this a batch
+    function sendNFTsToRoot(uint256[] memory _tokenIds) external {
+        address[] memory _owners = new address[] (_tokenIds.length);
+        uint256[] memory _salePrices = new uint256[](_tokenIds.length);
+        address[] memory _designers = new address[](_tokenIds.length);
+        string[] memory _tokenUris = new string[](_tokenIds.length);
+        uint256[][] memory _children = new uint256[][](_tokenIds.length);
+        uint256[][] memory _childrenBalances = new uint256[][](_tokenIds.length);
+        for( uint256 i; i< _tokenIds.length; i++){
+            _owners[i] = ownerOf(_tokenIds[i]);
+            _salePrices[i] = primarySalePrice[_tokenIds[i]];
+            _designers[i] = garmentDesigners[_tokenIds[i]];
+            _tokenUris[i] = tokenURI(_tokenIds[i]);
+            _children[i] = childIdsForOn(_tokenIds[i], address(childContract));
+            uint256 len = _children[i].length;
+            uint256[] memory _childBalances = new uint256[](len);
+            for( uint256 j; j< _children.length; j++){
+                _childBalances[j] = childBalance(_tokenIds[i], address(childContract), _children[i][j]);
+            }
+            _childrenBalances[i] = _childBalances;
         }
 
-        _sendMessageToRoot(abi.encode(tokenId, ownerOf(tokenId), _primarySalePrice, _garmentDesigner, _tokenUri, _children, childBalances));
+        _sendMessageToRoot(abi.encode(_tokenIds, _owners, _salePrices, _designers, _tokenUris, _children, _childrenBalances));
     }
 }
