@@ -29,7 +29,7 @@ interface MONA is IERC20 {
     function mint(address tokenOwner, uint tokens) external returns (bool);
 }
 
-contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
+contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
     using SafeMath for uint256;
 
     /* ========== Variables ========== */
