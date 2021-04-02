@@ -6,6 +6,7 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
+import "@openzeppelin/contracts/proxy/Initializable.sol";
 import "../ERC1155/ERC1155.sol";
 import "../ERC998/IERC998ERC1155TopDown.sol";
 import "../tunnel/BaseChildTunnel.sol";
@@ -16,7 +17,7 @@ import "../DigitalaxAccessControls.sol";
  * @title Digitalax Garment NFT a.k.a. parent NFTs
  * @dev Issues ERC-721 tokens as well as being able to hold child 1155 tokens
  */
-contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown, BaseChildTunnel, BaseRelayRecipient {
+contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown, BaseChildTunnel, BaseRelayRecipient, Initializable {
 
     // @notice event emitted upon construction of this contract, used to bootstrap external indexers
     event DigitalaxGarmentNFTContractDeployed();
@@ -42,7 +43,7 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
     ERC1155 public childContract;
 
     /// @dev current max tokenId
-    uint256 public tokenIdPointer = 1000000;
+    uint256 public tokenIdPointer;
 
     /// @dev TokenID -> Designer address
     mapping(uint256 => address) public garmentDesigners;
@@ -60,14 +61,17 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
     mapping(uint256 => EnumerableSet.UintSet) private parentToChildMapping;
 
     /// @dev max children NFTs a single 721 can hold
-    uint256 public maxChildrenPerToken = 10;
+    uint256 public maxChildrenPerToken;
 
     /// @dev limit batching of tokens due to gas limit restrictions
-    uint256 public constant BATCH_LIMIT = 20;
+    uint256 public BATCH_LIMIT;
 
     mapping (uint256 => bool) public withdrawnTokens;
 
     address public childChain;
+
+    /// Required to govern who can call certain functions
+    DigitalaxAccessControls public accessControls;
 
     modifier onlyChildChain() {
         require(
@@ -76,19 +80,20 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
         );
         _;
     }
-    /// Required to govern who can call certain functions
-    DigitalaxAccessControls public accessControls;
 
     /**
      @param _accessControls Address of the Digitalax access control contract
      @param _childContract ERC1155 the Digitalax child NFT contract
      0xb5505a6d998549090530911180f38aC5130101c6
      */
-    constructor(DigitalaxAccessControls _accessControls, ERC1155 _childContract, address _childChain, address _trustedForwarder) public {
+    function initialize(DigitalaxAccessControls _accessControls, ERC1155 _childContract, address _childChain, address _trustedForwarder) public initializer {
         accessControls = _accessControls;
         childContract = _childContract;
         childChain = _childChain;
         trustedForwarder = _trustedForwarder;
+        tokenIdPointer = 1000000;
+        maxChildrenPerToken = 10;
+        BATCH_LIMIT = 20;
         emit DigitalaxGarmentNFTContractDeployed();
     }
 
