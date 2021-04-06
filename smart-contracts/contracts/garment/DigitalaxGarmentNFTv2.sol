@@ -541,4 +541,16 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
 
         _sendMessageToRoot(abi.encode(_tokenIds, _owners, _salePrices, _designers, _tokenUris, _children, _childrenBalances));
     }
+
+    // Batch transfer
+    /**
+     * @dev See {IERC721-transferFrom} for batch
+     */
+    function batchTransferFrom(address _from, address _to, uint256[] memory _tokenIds) public {
+        for( uint256 i; i< _tokenIds.length; i++){
+            //solhint-disable-next-line max-line-length
+            require(_isApprovedOrOwner(_msgSender(), _tokenIds[i]), "ERC721: transfer caller is not owner nor approved");
+            _transfer(_from, _to, _tokenIds[i]);
+        }
+    }
 }
