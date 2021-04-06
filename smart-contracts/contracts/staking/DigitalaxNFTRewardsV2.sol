@@ -69,13 +69,8 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
        @dev rewardsPaid amount of rewards that have been paid to this pool
        */
     struct StakingPoolRewards {
-        mapping (uint256 => WeeklyRewards) weeklyWeightPoints;
         uint256 lastRewardsTime;
         uint256 monaRewardsPaid;
-    }
-
-    struct WeeklyRewards {
-        uint256 weightPointsRevenueSharing; // Weekly weight points For revenue sharing
     }
 
     /* ========== Events ========== */
@@ -87,11 +82,6 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
     event ReclaimedERC20(address indexed token, uint256 amount);
 
     event UpdateOracle(address indexed oracle);
-
-    event InitializePool(
-        uint256[] _weeks,
-        uint256[] _weightPointsRevenueSharing
-    );
 
     event DepositRevenueSharing(
         uint256 weeklyMonaRevenueSharingPerSecond,
@@ -227,40 +217,6 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
                 "DigitalaxRewardsV2.setMonaStaking: Sender must be admin"
             );
             monaStaking = DigitalaxStaking(_addr);
-    }
-
-    /*
-     * @dev Setter functions for contract config
-     * @param _week the week to be changed
-     * @param _poolIds the ids of the pool that are being modified
-     * @param _weightPointsRevenueSharing the weights of the pool to be entered (must be calculated off chain)
-     */
-    function initializePool(
-        uint256[] calldata _weeks,
-        uint256[] calldata _weightPointsRevenueSharing
-    )
-        external
-    {
-        require(
-            accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxRewardsV2.initializePool: Sender must be admin"
-        );
-
-        require(
-            _weeks.length >= 1,
-            "DigitalaxRewardsV2.initializePool: Must be 1 or more weeks"
-        );
-
-        require(
-            _weeks.length == _weightPointsRevenueSharing.length,
-            "DigitalaxRewardsV2.initializePool: Please check weeks and weight point revenue lengths"
-        );
-
-        for (uint256 i = 0; i < _weeks.length; i++) {
-            WeeklyRewards storage weeklyRewards = pool.weeklyWeightPoints[_weeks[i]];
-            weeklyRewards.weightPointsRevenueSharing = _weightPointsRevenueSharing[i]; // Revenue sharing has no fixed return, just weight of the marketplace rewards
-         }
-        emit InitializePool(_weeks, _weightPointsRevenueSharing);
     }
 
     /*
@@ -401,26 +357,22 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
 
         if (fromWeek == toWeek) {
             return _rewardsFromPoints(weeklyMonaRevenueSharingPerSecond[fromWeek],
-                                    _to.sub(_from),
-                                    pool.weeklyWeightPoints[fromWeek].weightPointsRevenueSharing);
+                                    _to.sub(_from));
         }
         /// @dev First count remainder of first week
         uint256 initialRemander = startTime.add((fromWeek+1).mul(SECONDS_PER_WEEK)).sub(_from);
         rewards = _rewardsFromPoints(weeklyMonaRevenueSharingPerSecond[fromWeek],
-                                    initialRemander,
-                                    pool.weeklyWeightPoints[fromWeek].weightPointsRevenueSharing);
+                                    initialRemander);
 
         /// @dev add multiples of the week
         for (uint256 i = fromWeek+1; i < toWeek; i++) {
             rewards = rewards.add(_rewardsFromPoints(weeklyMonaRevenueSharingPerSecond[i],
-                                    SECONDS_PER_WEEK,
-                                    pool.weeklyWeightPoints[i].weightPointsRevenueSharing));
+                                    SECONDS_PER_WEEK));
         }
         /// @dev Adds any remaining time in the most recent week till _to
         uint256 finalRemander = _to.sub(toWeek.mul(SECONDS_PER_WEEK).add(startTime));
         rewards = rewards.add(_rewardsFromPoints(weeklyMonaRevenueSharingPerSecond[toWeek],
-                                    finalRemander,
-                                    pool.weeklyWeightPoints[toWeek].weightPointsRevenueSharing));
+                                    finalRemander));
         return rewards;
     }
 
@@ -446,17 +398,13 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
 
     function _rewardsFromPoints(
         uint256 rate,
-        uint256 duration, 
-        uint256 weight
+        uint256 duration
     ) 
         internal
         pure
         returns(uint256)
     {
-        return rate.mul(duration)
-            .mul(weight)
-            .div(1e18)
-            .div(pointMultiplier);
+        return rate.mul(duration);
     }
 
 
@@ -505,14 +453,6 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         returns(uint256)
     {
         return diffDays(startTime, _getNow()) / 7;
-    }
-
-    function getMonaWeightPoints(uint256 _poolId, uint256 _week)
-        external
-        view
-        returns(uint256)
-    {
-        return pool.weeklyWeightPoints[_week].weightPointsRevenueSharing;
     }
 
     function getMonaStakedEthTotal()
