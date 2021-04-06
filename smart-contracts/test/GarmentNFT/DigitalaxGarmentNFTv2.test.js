@@ -12,7 +12,7 @@ const DigitalaxGarmentFactory = artifacts.require('DigitalaxGarmentFactory');
 contract('Core ERC721 tests for DigitalaxGarmentNFTv2', function ([admin, minter, owner, smart_contract, designer, random]) {
     const randomURI = 'rand';
 
-    const TOKEN_ONE_ID = new BN('1000001');
+    const TOKEN_ONE_ID = new BN('100001');
 
     const STRAND_ONE_ID = new BN('1');
     const STRAND_TWO_ID = new BN('2');
@@ -82,7 +82,7 @@ contract('Core ERC721 tests for DigitalaxGarmentNFTv2', function ([admin, minter
             it('When sender does not have a DEFAULT_ADMIN_ROLE role or SMART_CONTRACT', async () => {
                 await this.token.mint(minter, randomURI, designer, {from: minter});
                 await expectRevert(
-                    this.token.setTokenURI('1000001', randomURI, {from: minter}),
+                    this.token.setTokenURI('100001', randomURI, {from: minter}),
                     "DigitalaxGarmentNFT.setTokenURI: Sender must be an authorised contract or admin"
                 );
             });

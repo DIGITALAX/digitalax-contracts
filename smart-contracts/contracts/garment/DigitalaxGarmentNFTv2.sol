@@ -91,7 +91,7 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
         childContract = _childContract;
         childChain = _childChain;
         trustedForwarder = _trustedForwarder;
-        tokenIdPointer = 1000000;
+        tokenIdPointer = 100000;
         maxChildrenPerToken = 10;
         BATCH_LIMIT = 20;
         emit DigitalaxGarmentNFTContractDeployed();
