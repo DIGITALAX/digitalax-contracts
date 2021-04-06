@@ -510,9 +510,10 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
             primarySalePrice[_tokenIds[i]] = _primarySalePrices[i];
             garmentDesigners[_tokenIds[i]] = _garmentDesigners[i];
             _setTokenURI(_tokenIds[i], _tokenUris[i]);
-            for (uint256 j = 0; j< _children.length; j++) {
-                _receiveChild(_tokenIds[i], _msgSender(), _children[i][j], _childrenBalances[i][j]);
-            }
+            // Future feature, receive child or process it
+            // for (uint256 j = 0; j< _children.length; j++) {
+            //     _receiveChild(_tokenIds[i], _msgSender(), _children[i][j], _childrenBalances[i][j]);
+            // }
         }
     }
 
