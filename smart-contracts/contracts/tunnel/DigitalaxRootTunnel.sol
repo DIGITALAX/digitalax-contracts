@@ -35,9 +35,6 @@ contract DigitalaxRootTunnel is BaseRootTunnel {
             if(!nft.exists(_tokenIds[i])){
                 uint256 newId = nft.mint(_owners[i], _tokenUris[i], _garmentDesigners[i]); // TODO Check this with the matic way of doing mints (predicate)
                 nft.setPrimarySalePrice(newId, _primarySalePrices[i]);
-            } else {
-                nft.setTokenURI(_tokenIds[i], _tokenUris[i]); // Figure out if I need the line above??
-                nft.setPrimarySalePrice(_tokenIds[i], _primarySalePrices[i]);
             }
         }
     }
