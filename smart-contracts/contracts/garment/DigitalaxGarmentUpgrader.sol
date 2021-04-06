@@ -18,11 +18,13 @@ import "../EIP2771/BaseRelayRecipient.sol";
 contract DigitalaxGarmentUpgrader is ReentrancyGuard, BaseRelayRecipient  {
 
     // @notice event emitted on garment creation
-    event GarmentCreated(
+    event GarmentUpgraded(
         uint256[] indexed oldGarmentTokenIds,
         uint256[] indexed newGarmentTokenIds
     );
-
+    event UpdateAccessControls(
+        address indexed accessControls
+    );
     // @notice the parent ERC721 garment token
     DigitalaxGarmentNFT public garmentToken;
 
@@ -38,12 +40,14 @@ contract DigitalaxGarmentUpgrader is ReentrancyGuard, BaseRelayRecipient  {
         DigitalaxAccessControls _accessControls,
         address _trustedForwarder
     ) public {
+        require(address(_accessControls) != address(0), "DigitalaxGarmentUpgrader: Invalid Access Controls");
+        require(address(_garmentToken) != address(0), "DigitalaxGarmentUpgrader: Invalid NFT");
+        require(address(_garmentTokenV2) != address(0), "DigitalaxGarmentUpgrader: Invalid NFT V2");
         garmentToken = _garmentToken;
         garmentTokenV2 = _garmentTokenV2;
         accessControls = _accessControls;
         trustedForwarder = _trustedForwarder;
     }
-
 
     /**
      * Override this function.
@@ -57,7 +61,7 @@ contract DigitalaxGarmentUpgrader is ReentrancyGuard, BaseRelayRecipient  {
     function setTrustedForwarder(address _trustedForwarder) external  {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxMaterials.setTrustedForwarder: Sender must be admin"
+            "DigitalaxGarmentUpgrader.setTrustedForwarder: Sender must be admin"
         );
         trustedForwarder = _trustedForwarder;
     }
@@ -77,8 +81,7 @@ contract DigitalaxGarmentUpgrader is ReentrancyGuard, BaseRelayRecipient  {
      @dev Only callable with minter role
      */
     function upgrade(
-        uint256[] memory tokenIds,
-        address beneficiary
+        uint256[] memory tokenIds
     ) external nonReentrant {
         uint256[] memory newTokenIds = new uint[](tokenIds.length);
         for( uint256 i; i< tokenIds.length; i++){
@@ -94,15 +97,32 @@ contract DigitalaxGarmentUpgrader is ReentrancyGuard, BaseRelayRecipient  {
             // Mint them
             uint256 newGarmentTokenId = garmentTokenV2.mint(_msgSender(), tokenUri, garmentDesigner);
             // Set primary price
-            garmentTokenV2.setPrimarySalePrice(tokenIds[i], primarySalePrice);
+            if(primarySalePrice > 0) {
+                garmentTokenV2.setPrimarySalePrice(newGarmentTokenId, primarySalePrice);
+            }
+
+            newTokenIds[i] = newGarmentTokenId;
 
             // Need to setApprovalForAll before calling this method.
             garmentToken.burn(tokenIds[i]);
-
-            newTokenIds[i] = newGarmentTokenId;
         }
 
         // Emit completion event
-        emit GarmentCreated(tokenIds, newTokenIds);
+        emit GarmentUpgraded(tokenIds, newTokenIds);
+    }
+
+    /**
+     @notice Method for updating the access controls contract used by the NFT
+     @dev Only admin
+     @param _accessControls Address of the new access controls contract (Cannot be zero address)
+     */
+    function updateAccessControls(DigitalaxAccessControls _accessControls) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxMarketplace.updateAccessControls: Sender must be admin"
+        );
+        require(address(_accessControls) != address(0), "DigitalaxMarketplace.updateAccessControls: Zero Address");
+        accessControls = _accessControls;
+        emit UpdateAccessControls(address(_accessControls));
     }
 }
