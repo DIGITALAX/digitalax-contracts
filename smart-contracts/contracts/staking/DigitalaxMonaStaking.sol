@@ -474,7 +474,6 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
                 stakingPool.currentNumberOfStakersInPool < stakingPool.maximumNumberOfStakersInPool,
                 "DigitalaxMonaStaking._stake: This pool is already full"
             );
-            stakingPool.currentNumberOfEarlyRewardsUsers = stakingPool.currentNumberOfEarlyRewardsUsers.add(1);
             stakingPool.currentNumberOfStakersInPool = stakingPool.currentNumberOfStakersInPool.add(1);
 
             // Check if an early staker
