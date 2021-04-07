@@ -411,11 +411,18 @@ const {
 
       it('fails when unstaking more tokens than staked', async () => {
         await expectRevert(
-          this.monaStaking.unstake(1, TWO_TOKEN, {from: staker}),
+          this.monaStaking.unstake(0, TWO_TOKEN, {from: staker}),
           'DigitalaxMonaStaking._unstake: Sender must have staked tokens'
         );
       });
-    })
+
+      it('successfully unstaking', async () => {
+        const originAmount = await this.monaToken.balanceOf(staker);
+        await this.monaStaking.unstake(0, ONE_TOKEN, {from: staker});
+        
+        expect(await this.monaToken.balanceOf(staker)).to.be.bignumber.greaterThan(originAmount);
+      })
+    });
   
   
     async function getGasCosts(receipt) {

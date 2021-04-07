@@ -109,7 +109,7 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
     /*
      * @notice sets the token to be claimable or not, cannot claim if it set to false
      */
-    bool public tokensClaimable;
+    bool public tokensClaimable = true;
 
     /* ========== Events ========== */
     event UpdateAccessControls(
