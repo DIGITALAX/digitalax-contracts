@@ -25,6 +25,7 @@ const {
   const TWO_HUNDRED_TOKENS = new BN('200000000000000000000');
   const HALF_TOKEN = new BN('50000000000000000');
   const ONE_TOKEN = new BN('100000000000000000');
+  const TWO_TOKEN = new BN('200000000000000000');
   const TEN_TOKENS = new BN('1000000000000000000');
   const TWENTY_TOKENS = new BN('20000000000000000000');
   const TWO_ETH = ether('2');
@@ -386,6 +387,33 @@ const {
       it('successfully deposits MONA token', async () => {
         await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
         expect(await this.monaStaking.getStakedBalance(0, staker)).to.be.bignumber.equal(ONE_TOKEN);
+      });
+
+      it('successfully stake more tokens', async () => {
+        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
+        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
+        expect(await this.monaStaking.getStakedBalance(0, staker)).to.be.bignumber.equal(TWO_TOKEN);
+      });
+    });
+
+    describe('Unstaking', () => {
+      beforeEach(async () => {
+        await this.monaStaking.initMonaStakingPool(
+          1,
+          ONE_TOKEN,
+          TEN_TOKENS,
+          100,
+          10,
+          {from: admin}
+        );
+        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
+      });
+
+      it('fails when unstaking more tokens than staked', async () => {
+        await expectRevert(
+          this.monaStaking.unstake(1, TWO_TOKEN, {from: staker}),
+          'DigitalaxMonaStaking._unstake: Sender must have staked tokens'
+        );
       });
     })
   
