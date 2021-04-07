@@ -235,7 +235,7 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
         uint256 _maximumStakeInMona,
         uint256 _maximumNumberOfStakersInPool,
         uint256 _maximumNumberOfEarlyRewardsUsers)
-        public
+        external
     {
         require(
             accessControls.hasAdminRole(_msgSender()),
