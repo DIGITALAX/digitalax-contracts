@@ -34,7 +34,9 @@ contract DigitalaxRootTunnel is BaseRootTunnel {
             // With the information above, rebuild the 721 token on mainnet
             if(!nft.exists(_tokenIds[i])){
                 uint256 newId = nft.mint(_owners[i], _tokenUris[i], _garmentDesigners[i]); // TODO Check this with the matic way of doing mints (predicate)
-                nft.setPrimarySalePrice(newId, _primarySalePrices[i]);
+                if(_primarySalePrices[i] > 0) {
+                    nft.setPrimarySalePrice(newId, _primarySalePrices[i]);
+                }
             }
         }
     }
