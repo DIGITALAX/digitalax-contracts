@@ -544,7 +544,7 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
             pools[_poolId].stakers[_user].balance >= _amount,
             "DigitalaxMonaStaking._unstake: Sender must have staked tokens"
         );
-        claimReward(_poolId, _user);
+        _claimReward(_poolId, _user);
         Staker storage staker = pools[_poolId].stakers[_user];
         
         staker.balance = staker.balance.sub(_amount);
@@ -888,9 +888,17 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
     function claimReward(
         uint256 _poolId,
         address _user
-    )
-        public
-    {
+    ) external {
+        _claimReward(_poolId, _user);
+    }
+
+    /**
+     @notice Internal method for claimReward.
+     */
+    function _claimReward(
+        uint256 _poolId,
+        address _user,
+    ) internal {
         require(
             tokensClaimable == true,
             "Tokens cannnot be claimed yet"
