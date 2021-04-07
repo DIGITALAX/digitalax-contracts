@@ -469,7 +469,7 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
         );
 
         // Check if a new user
-        if(staker.lastRewardUpdateTime == 0) {
+        if(staker.lastRewardUpdateTime == 0 && staker.balance == 0) {
             require(
                 stakingPool.currentNumberOfStakersInPool < stakingPool.maximumNumberOfStakersInPool,
                 "DigitalaxMonaStaking._stake: This pool is already full"
