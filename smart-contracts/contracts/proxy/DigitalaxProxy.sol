@@ -36,9 +36,8 @@ contract DigitalaxProxy is UpgradeableProxy {
      */
     constructor(
         address _logic,
-        DigitalaxAccessControls _accessControls,
-        bytes memory _data
-    ) public payable UpgradeableProxy(_logic, _data) {
+        DigitalaxAccessControls _accessControls
+    ) public payable UpgradeableProxy(_logic, bytes('')) {
         require(address(_accessControls) != address(0), "DigitalaxProxy: Invalid Access Controls");
         accessControls = _accessControls;
     }
