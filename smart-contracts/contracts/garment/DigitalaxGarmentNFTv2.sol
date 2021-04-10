@@ -27,6 +27,11 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
         uint256 indexed _tokenId,
         string _tokenUri
     );
+    // @notice event emitted when designer is updated
+    event DigitalaxGarmentDesignerUpdate(
+        uint256 indexed _tokenId,
+        address _designer
+    );
 
     // @notice event emitted when a tokens primary sale occurs
     event TokenPrimarySalePriceSet(
@@ -284,12 +289,80 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
     }
 
     /**
+     @notice Updates the token URI of a given token
+     @dev Only admin or smart contract
+     @param _tokenIds The ID of the tokens being updated
+     @param _tokenUris The new URIs
+     */
+    function batchSetTokenURI(uint256[] memory _tokenIds, string[] calldata _tokenUris) external {
+        require(
+            _tokenIds.length == _tokenUris.length,
+            "DigitalaxGarmentNFT.batchSetTokenURI: Must have equal length arrays"
+        );
+        for( uint256 i; i< _tokenIds.length; i++){
+            require(
+                accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
+                "DigitalaxGarmentNFT.batchSetTokenURI: Sender must be an authorised contract or admin"
+            );
+            _setTokenURI(_tokenIds[i], _tokenUris[i]);
+            emit DigitalaxGarmentTokenUriUpdate(_tokenIds[i], _tokenUris[i]);
+        }
+    }
+
+    /**
+     @notice Updates the token URI of a given token
+     @dev Only admin or smart contract
+     @param _tokenIds The ID of the token being updated
+     @param _designers The new URI
+     */
+    function batchSetGarmentDesigner(uint256[] memory _tokenIds, address[] calldata _designers) external {
+        require(
+            _tokenIds.length == _designers.length,
+            "DigitalaxGarmentNFT.batchSetGarmentDesigner: Must have equal length arrays"
+        );
+        for( uint256 i; i< _tokenIds.length; i++){
+            require(
+                accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
+                "DigitalaxGarmentNFT.batchSetGarmentDesigner: Sender must be an authorised contract or admin"
+            );
+            garmentDesigners[_tokenIds[i]] = _designers[i];
+            emit DigitalaxGarmentDesignerUpdate(_tokenIds[i], _designers[i]);
+        }
+    }
+
+    /**
+     @notice Records the Ether price that a given token was sold for (in WEI)
+     @dev Only admin or a smart contract can call this method
+     @param _tokenIds The ID of the token being updated
+     @param _salePrices The primary Ether sale price in WEI
+     */
+    function batchSetPrimarySalePrice(uint256[] memory _tokenIds, uint256[] memory _salePrices) external {
+        require(
+            _tokenIds.length == _salePrices.length,
+            "DigitalaxGarmentNFT.batchSetPrimarySalePrice: Must have equal length arrays"
+        );
+        for( uint256 i; i< _tokenIds.length; i++){
+            _setPrimarySalePrice(_tokenIds[i], _salePrices[i]);
+        }
+    }
+
+    /**
      @notice Records the Ether price that a given token was sold for (in WEI)
      @dev Only admin or a smart contract can call this method
      @param _tokenId The ID of the token being updated
      @param _salePrice The primary Ether sale price in WEI
      */
     function setPrimarySalePrice(uint256 _tokenId, uint256 _salePrice) external {
+        _setPrimarySalePrice(_tokenId, _salePrice);
+    }
+
+    /**
+     @notice Records the Ether price that a given token was sold for (in WEI)
+     @dev Only admin or a smart contract can call this method
+     @param _tokenId The ID of the token being updated
+     @param _salePrice The primary Ether sale price in WEI
+     */
+    function _setPrimarySalePrice(uint256 _tokenId, uint256 _salePrice) internal {
         require(
             accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
             "DigitalaxGarmentNFT.setPrimarySalePrice: Sender must be an authorised contract or admin"
