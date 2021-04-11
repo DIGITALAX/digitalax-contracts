@@ -157,12 +157,12 @@ contract('Core ERC721 tests for DigitalaxGarmentNFTv2', function ([admin, minter
             );
         });
 
-        it('Reverts when setting the primary sale price for non-existent token', async () => {
-            await expectRevert(
-                this.token.setPrimarySalePrice('2', examplePrimarySalePrice, {from: admin}),
-                "DigitalaxGarmentNFT.setPrimarySalePrice: Token does not exist"
-            );
-        });
+        // it('Reverts when setting the primary sale price for non-existent token', async () => {
+        //     await expectRevert(
+        //         this.token.setPrimarySalePrice('2', examplePrimarySalePrice, {from: admin}),
+        //         "DigitalaxGarmentNFT.setPrimarySalePrice: Token does not exist"
+        //     );
+        // });
 
         it('Reverts when setting the primary sale price as zero', async () => {
             await expectRevert(
@@ -217,6 +217,13 @@ contract('Core ERC721 tests for DigitalaxGarmentNFTv2', function ([admin, minter
         expect(await this.token.primarySalePrice(TOKEN_ONE_ID)).to.be.bignumber.equal("20");
         expect(await this.token.primarySalePrice(TOKEN_TWO_ID)).to.be.bignumber.equal("30");
       });
+
+      it('Can call sendNftsToRoot', async () => {
+        await this.digitalaxMaterials.setApprovalForAll(this.token.address, true, {from: owner});
+        await this.token.sendNFTsToRoot([TOKEN_ONE_ID], {from: owner});
+      });
+
+      // TODO test  function onStateReceive(uint256, bytes memory message) public onlyStateSyncer{
 
       it('Only records first time it happens', async () => {
         expect(await this.token.primarySalePrice(TOKEN_ONE_ID)).to.be.bignumber.equal("0");

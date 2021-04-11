@@ -3,21 +3,26 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "../ERC721/DigitalaxERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "@openzeppelin/contracts/proxy/Initializable.sol";
-import "../ERC1155/ERC1155.sol";
 import "../ERC998/IERC998ERC1155TopDown.sol";
 import "../tunnel/BaseChildTunnel.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "../DigitalaxAccessControls.sol";
+import "./DigitalaxMaterials.sol";
 
 /**
  * @title Digitalax Garment NFT a.k.a. parent NFTs
  * @dev Issues ERC-721 tokens as well as being able to hold child 1155 tokens
  */
-contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown, BaseChildTunnel, BaseRelayRecipient, Initializable {
+contract DigitalaxGarmentNFTv2 is DigitalaxERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown, BaseChildTunnel, BaseRelayRecipient, Initializable {
+
+    struct ChildNftInventory {
+        uint256[] garmentTokenIds;
+        uint256[] garmentAmounts;
+    }
 
     // @notice event emitted upon construction of this contract, used to bootstrap external indexers
     event DigitalaxGarmentNFTContractDeployed();
@@ -45,7 +50,7 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
     );
 
     /// @dev Child ERC1155 contract address
-    ERC1155 public childContract;
+    DigitalaxMaterials public childContract;
 
     /// @dev current max tokenId
     uint256 public tokenIdPointer;
@@ -91,7 +96,7 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
      @param _childContract ERC1155 the Digitalax child NFT contract
      0xb5505a6d998549090530911180f38aC5130101c6
      */
-    function initialize(DigitalaxAccessControls _accessControls, ERC1155 _childContract, address _childChain, address _trustedForwarder) public initializer {
+    function initialize(DigitalaxAccessControls _accessControls, DigitalaxMaterials _childContract, address _childChain, address _trustedForwarder) public initializer {
         accessControls = _accessControls;
         childContract = _childContract;
         childChain = _childChain;
@@ -155,7 +160,7 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
 
         // Mint token and set token URI
         _safeMint(_beneficiary, tokenId);
-        _setTokenURI(tokenId, _tokenUri);
+        _tokenURIs[tokenId] = _tokenUri;
 
         // Associate garment designer
         garmentDesigners[tokenId] = _designer;
@@ -284,7 +289,7 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
             accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
             "DigitalaxGarmentNFT.setTokenURI: Sender must be an authorised contract or admin"
         );
-        _setTokenURI(_tokenId, _tokenUri);
+        _tokenURIs[_tokenId] = _tokenUri;
         emit DigitalaxGarmentTokenUriUpdate(_tokenId, _tokenUri);
     }
 
@@ -304,7 +309,7 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
                 accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
                 "DigitalaxGarmentNFT.batchSetTokenURI: Sender must be an authorised contract or admin"
             );
-            _setTokenURI(_tokenIds[i], _tokenUris[i]);
+            _tokenURIs[_tokenIds[i]] = _tokenUris[i];
             emit DigitalaxGarmentTokenUriUpdate(_tokenIds[i], _tokenUris[i]);
         }
     }
@@ -367,7 +372,7 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
             accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
             "DigitalaxGarmentNFT.setPrimarySalePrice: Sender must be an authorised contract or admin"
         );
-        require(_exists(_tokenId), "DigitalaxGarmentNFT.setPrimarySalePrice: Token does not exist");
+        // require(_exists(_tokenId), "DigitalaxGarmentNFT.setPrimarySalePrice: Token does not exist"); // Dont need to exist on matic
         require(_salePrice > 0, "DigitalaxGarmentNFT.setPrimarySalePrice: Invalid sale price");
 
         // Only set it once
@@ -448,6 +453,23 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
         }
 
         return childTokenIds;
+    }
+
+    /**
+     @dev Gets mapped URIs for child tokens
+     */
+    function childURIsForOn(uint256 _tokenId, address _childContract) public view returns (string[] memory) {
+        if (!_exists(_tokenId) || _childContract != address(childContract)) {
+            return new string[](0);
+        }
+        uint256 mappingLength = parentToChildMapping[_tokenId].length();
+        string[] memory childTokenURIs = new string[](mappingLength);
+
+        for (uint256 i = 0; i < mappingLength; i++) {
+            childTokenURIs[i] = childContract.uri(parentToChildMapping[_tokenId].at(i));
+        }
+
+        return childTokenURIs;
     }
 
     /**
@@ -549,8 +571,8 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
      * @param tokenId tokenId to withdraw
      */
     function withdraw(uint256 tokenId) external {
-        withdrawnTokens[tokenId] = true;
         burn(tokenId);
+        withdrawnTokens[tokenId] = true;
     }
 
     /**
@@ -563,8 +585,8 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
         require(length <= BATCH_LIMIT, "ChildERC721: EXCEEDS_BATCH_LIMIT");
         for (uint256 i; i < length; i++) {
             uint256 tokenId = tokenIds[i];
-            withdrawnTokens[tokenIds[i]] = true;
             burn(tokenId);
+            withdrawnTokens[tokenIds[i]] = true;
         }
         emit WithdrawnBatch(_msgSender(), tokenIds);
     }
@@ -574,46 +596,53 @@ contract DigitalaxGarmentNFTv2 is ERC721("DigitalaxNFT", "DTX"), ERC1155Receiver
         uint256[] memory _primarySalePrices;
         address[] memory _garmentDesigners;
         string[] memory _tokenUris;
-        uint256[][] memory _children;
-        uint256[][] memory _childrenBalances;
-        (_tokenIds, _primarySalePrices, _garmentDesigners, _tokenUris, _children, _childrenBalances) = abi.decode(message, (uint256[], uint256[], address[], string[], uint256[][], uint256[][]));
+
+        (_tokenIds, _primarySalePrices, _garmentDesigners, _tokenUris) = abi.decode(message, (uint256[], uint256[], address[], string[]));
 
         for( uint256 i; i< _tokenIds.length; i++){
-            // With the information above, rebuild the 721 token in matic!
             primarySalePrice[_tokenIds[i]] = _primarySalePrices[i];
             garmentDesigners[_tokenIds[i]] = _garmentDesigners[i];
-            _setTokenURI(_tokenIds[i], _tokenUris[i]);
-            // Future feature, receive child or process it
-            // for (uint256 j = 0; j< _children.length; j++) {
-            //     _receiveChild(_tokenIds[i], _msgSender(), _children[i][j], _childrenBalances[i][j]);
-            // }
+            _tokenURIs[_tokenIds[i]] = _tokenUris[i];
         }
     }
 
     // Send the nft to root - if it does not exist then we can handle it on that side
     // Make this a batch
+    uint256[][] childNftIdArray;
+    string[][] childNftURIArray;
+    uint256[][] childNftBalanceArray;
+
     function sendNFTsToRoot(uint256[] memory _tokenIds) external {
-        address[] memory _owners = new address[] (_tokenIds.length);
-        uint256[] memory _salePrices = new uint256[](_tokenIds.length);
-        address[] memory _designers = new address[](_tokenIds.length);
-        string[] memory _tokenUris = new string[](_tokenIds.length);
-        uint256[][] memory _children = new uint256[][](_tokenIds.length);
-        uint256[][] memory _childrenBalances = new uint256[][](_tokenIds.length);
-        for( uint256 i; i< _tokenIds.length; i++){
+        uint256 length = _tokenIds.length;
+
+        address[] memory _owners = new address[](length);
+        uint256[] memory _salePrices = new uint256[](length);
+        address[] memory _designers = new address[](length);
+        string[] memory _tokenUris = new string[](length);
+
+        for( uint256 i; i< length; i++){
             _owners[i] = ownerOf(_tokenIds[i]);
+            require(_owners[i] == _msgSender(), "DigitalaxGarmentNFTv2.sendNFTsToRootNFTs: can only be sent by the same user");
             _salePrices[i] = primarySalePrice[_tokenIds[i]];
             _designers[i] = garmentDesigners[_tokenIds[i]];
             _tokenUris[i] = tokenURI(_tokenIds[i]);
-            _children[i] = childIdsForOn(_tokenIds[i], address(childContract));
-            uint256 len = _children[i].length;
-            uint256[] memory _childBalances = new uint256[](len);
-            for( uint256 j; j< _children.length; j++){
-                _childBalances[j] = childBalance(_tokenIds[i], address(childContract), _children[i][j]);
+
+            childNftIdArray.push(childIdsForOn(_tokenIds[i], address(childContract)));
+            childNftURIArray.push(childURIsForOn(_tokenIds[i], address(childContract)));
+            uint256 len = childNftIdArray[i].length;
+            uint256[] memory garmentAmounts = new uint256[](len);
+            for( uint256 j; j< len; j++){
+                garmentAmounts[j] = childBalance(_tokenIds[i], address(childContract), childNftIdArray[i][j]);
             }
-            _childrenBalances[i] = _childBalances;
+            childNftBalanceArray.push(garmentAmounts);
+            // Same as withdraw
+            burn(_tokenIds[i]);
+            withdrawnTokens[_tokenIds[i]] = true;
+
+            childContract.burnBatch(_msgSender(), childNftIdArray[i], childNftBalanceArray[i]);
         }
 
-        _sendMessageToRoot(abi.encode(_tokenIds, _owners, _salePrices, _designers, _tokenUris, _children, _childrenBalances));
+        _sendMessageToRoot(abi.encode(_tokenIds, _owners, _salePrices, _designers, _tokenUris, childNftIdArray, childNftURIArray, childNftBalanceArray));
     }
 
     // Batch transfer
