@@ -11,7 +11,7 @@ import "../EIP2771/BaseRelayRecipient.sol";
  * @title Digitalax Materials NFT a.k.a. child NFTs
  * @dev Issues ERC-1155 tokens which can be held by the parent ERC-721 contract
  */
-contract DigitalaxMaterials is ERC1155Burnable, BaseRelayRecipient {
+contract DigitalaxMaterialsV2 is ERC1155Burnable, BaseRelayRecipient {
 
     // @notice event emitted on contract creation
     event DigitalaxMaterialsDeployed();

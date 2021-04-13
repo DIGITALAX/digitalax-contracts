@@ -9,7 +9,7 @@ import {ICheckpointManager} from "../root/ICheckpointManager.sol";
 import {RLPReader} from "../lib/RLPReader.sol";
 import {Merkle} from "../lib/Merkle.sol";
 
-abstract contract BaseRootTunnel {
+abstract contract BaseRootTunnelMock {
     using RLPReader for bytes;
     using RLPReader for RLPReader.RLPItem;
     using Merkle for bytes32;
@@ -27,6 +27,9 @@ abstract contract BaseRootTunnel {
     address public childTunnel;
     // storage to avoid duplicate exits
     mapping(bytes32 => bool) public processedExits;
+
+    // MessageTunnel on L1 will get data from this event
+    event MockMessageSent(bytes message);
 
     constructor(DigitalaxAccessControls _accessControls, address _stateSender) public {
         // _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -91,7 +94,8 @@ abstract contract BaseRootTunnel {
      *   abi.encode(messageType, messageData);
      */
     function _sendMessageToChild(bytes memory message) internal {
-        stateSender.syncState(childTunnel, message);
+        // stateSender.syncState(childTunnel, message);
+        emit MockMessageSent(message);
     }
 
     function _validateAndExtractMessage(bytes memory inputData) internal returns (bytes memory) {
@@ -212,8 +216,8 @@ abstract contract BaseRootTunnel {
      *  9 - receiptLogIndex - Log Index to read from the receipt
      */
     function receiveMessage(bytes memory inputData) public virtual {
-        bytes memory message = _validateAndExtractMessage(inputData);
-        _processMessageFromChild(message);
+        //bytes memory message = _validateAndExtractMessage(inputData);
+        _processMessageFromChild(inputData);
     }
 
     /**
