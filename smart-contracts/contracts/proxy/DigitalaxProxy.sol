@@ -31,6 +31,17 @@ contract DigitalaxProxy is UpgradeableProxy {
     DigitalaxAccessControls public accessControls;
 
     /**
+     * @dev Modifier used internally that will delegate the call to the implementation unless the sender is the admin.
+     */
+    modifier ifAdmin() {
+        if (accessControls.hasAdminRole(msg.sender)) {
+            _;
+        } else {
+            _fallback();
+        }
+    }
+
+    /**
      * @dev Initializes an upgradeable proxy managed by `_admin`, backed by the implementation at `_logic`, and
      * optionally initialized with `_data` as explained in {UpgradeableProxy-constructor}.
      */
@@ -56,8 +67,7 @@ contract DigitalaxProxy is UpgradeableProxy {
      * https://eth.wiki/json-rpc/API#eth_getstorageat[`eth_getStorageAt`] RPC call.
      * `0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc`
      */
-    function implementation() external returns (address) {
-        require(accessControls.hasAdminRole(msg.sender), "DigitalaxProxy: Sender must be admin");
+    function implementation() external ifAdmin returns (address) {
         return _implementation();
     }
 
@@ -68,10 +78,8 @@ contract DigitalaxProxy is UpgradeableProxy {
      * 
      * NOTE: Only the admin can call this function. See {ProxyAdmin-changeProxyAdmin}.
      */
-    function updateAccessControls(DigitalaxAccessControls _accessControls) external {
-        require(accessControls.hasAdminRole(msg.sender), "DigitalaxProxy: Sender must be admin");
+    function updateAccessControls(DigitalaxAccessControls _accessControls) external virtual ifAdmin {
         accessControls = _accessControls;
-
         emit AccessControlsUpdated(address(_accessControls));
     }
 
@@ -80,8 +88,7 @@ contract DigitalaxProxy is UpgradeableProxy {
      * 
      * NOTE: Only the admin can call this function. See {ProxyAdmin-upgrade}.
      */
-    function upgradeTo(address newImplementation) external {
-        require(accessControls.hasAdminRole(msg.sender), "DigitalaxProxy: Sender must be admin");
+    function upgradeTo(address newImplementation) external virtual ifAdmin {
         _upgradeTo(newImplementation);
     }
 
@@ -92,8 +99,7 @@ contract DigitalaxProxy is UpgradeableProxy {
      * 
      * NOTE: Only the admin can call this function. See {ProxyAdmin-upgradeAndCall}.
      */
-    function upgradeToAndCall(address newImplementation, bytes calldata data) external payable {
-        require(accessControls.hasAdminRole(msg.sender), "DigitalaxProxy: Sender must be admin");
+    function upgradeToAndCall(address newImplementation, bytes calldata data) external payable virtual ifAdmin {
         _upgradeTo(newImplementation);
         // solhint-disable-next-line avoid-low-level-calls
         (bool success,) = newImplementation.delegatecall(data);
@@ -104,7 +110,7 @@ contract DigitalaxProxy is UpgradeableProxy {
      * @dev Makes sure the admin cannot access the fallback function. See {Proxy-_beforeFallback}.
      */
     function _beforeFallback() internal override virtual {
-        require(accessControls.hasAdminRole(msg.sender), "DigitalaxProxy: Sender must be admin");
+        require(!accessControls.hasAdminRole(msg.sender), "DigitalaxProxy: Admin cannot fallback");
         super._beforeFallback();
     }
 }
