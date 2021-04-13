@@ -134,7 +134,7 @@ contract DigitalaxERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721En
      * @dev See {IERC721Metadata-tokenURI}.
      */
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+        //require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
 
         string memory _tokenURI = _tokenURIs[tokenId];
         string memory base = baseURI();

@@ -1,19 +1,19 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import {BaseRootTunnel} from "./BaseRootTunnel.sol";
+import {BaseRootTunnelMock} from "./BaseRootTunnelMock.sol";
 import "../garment/DigitalaxGarmentNFT.sol";
 import "../garment/DigitalaxMaterials.sol";
 import "../ERC1155/ERC1155.sol";
 
-contract DigitalaxRootTunnel is BaseRootTunnel {
+contract DigitalaxRootTunnelMock is BaseRootTunnelMock {
     DigitalaxGarmentNFT public nft;
     DigitalaxMaterials public materials;
 
     /**
     @param _accessControls Address of the Digitalax access control contract
     */
-    constructor(DigitalaxAccessControls _accessControls, DigitalaxGarmentNFT _nft, DigitalaxMaterials _materials, address _stateSender) BaseRootTunnel(_accessControls, _stateSender) public {
+    constructor(DigitalaxAccessControls _accessControls, DigitalaxGarmentNFT _nft, DigitalaxMaterials _materials, address _stateSender) BaseRootTunnelMock(_accessControls, _stateSender) public {
         nft = _nft;
         materials = _materials;
     }
@@ -29,7 +29,6 @@ contract DigitalaxRootTunnel is BaseRootTunnel {
         uint256[][] memory _childrenBalances;
         ( _tokenIds, _owners, _primarySalePrices, _garmentDesigners, _tokenUris, _children, _childrenURIs, _childrenBalances) = abi.decode(message, (uint256[], address[], uint256[], address[], string[], uint256[][], string[][], uint256[][]));
         for( uint256 i; i< _tokenIds.length; i++){
-
             // With the information above, rebuild the 721 token on mainnet
             if(!nft.exists(_tokenIds[i])){
                 uint256 newTokenId = nft.mint(_owners[i], _tokenUris[i], _garmentDesigners[i]);
@@ -38,8 +37,8 @@ contract DigitalaxRootTunnel is BaseRootTunnel {
                 }
                 if(_children[i].length > 0){
                     for( uint256 j; j< _children[i].length; j++){
-                            uint256 newChildId = materials.createChild(_childrenURIs[i][j]);
-                            materials.mintChild(newChildId, _childrenBalances[i][j], address(nft), abi.encodePacked(newTokenId));
+                        uint256 newChildId = materials.createChild(_childrenURIs[i][j]);
+                        materials.mintChild(newChildId, _childrenBalances[i][j], address(nft), abi.encodePacked(newTokenId));
                     }
                 }
             }
