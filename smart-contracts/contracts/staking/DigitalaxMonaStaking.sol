@@ -85,11 +85,11 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
         uint256 daysInCycle;
         uint256 minimumStakeInMona;
         uint256 maximumStakeInMona;
-        uint256 currentNumberOfStakersInPool; // TODO hookup
+        uint256 currentNumberOfStakersInPool;
         uint256 maximumNumberOfStakersInPool;
 
         uint256 maximumNumberOfEarlyRewardsUsers;
-        uint256 currentNumberOfEarlyRewardsUsers; // TODO hookup
+        uint256 currentNumberOfEarlyRewardsUsers;
     }
 
     /*
@@ -109,7 +109,7 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
     /*
      * @notice sets the token to be claimable or not, cannot claim if it set to false
      */
-    bool public tokensClaimable;
+    bool public tokensClaimable = true;
 
     /* ========== Events ========== */
     event UpdateAccessControls(
@@ -118,7 +118,13 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
     /*
      * @notice event emitted when a pool is initialized
      */
-    event PoolInitialized(uint256 poolId);
+    event PoolInitialized(
+        uint256 poolId,
+        uint256 _daysInCycle,
+        uint256 _minimumStakeInMona,
+        uint256 _maximumStakeInMona,
+        uint256 _maximumNumberOfStakersInPool,
+        uint256 _maximumNumberOfEarlyRewardsUsers);
 
     /*
      * @notice event emitted when a user has staked a token
@@ -229,7 +235,7 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
         uint256 _maximumStakeInMona,
         uint256 _maximumNumberOfStakersInPool,
         uint256 _maximumNumberOfEarlyRewardsUsers)
-        public
+        external
     {
         require(
             accessControls.hasAdminRole(_msgSender()),
@@ -268,7 +274,7 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
         stakingPool.lastUpdateTime = _getNow();
 
         // Emit event with this pools id index, and increment the number of staking pools that exist
-        emit PoolInitialized(numberOfStakingPools);
+        emit PoolInitialized(numberOfStakingPools, _daysInCycle, _minimumStakeInMona, _maximumStakeInMona, _maximumNumberOfStakersInPool, _maximumNumberOfEarlyRewardsUsers);
         numberOfStakingPools = numberOfStakingPools.add(1);
     }
 
@@ -463,12 +469,12 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
         );
 
         // Check if a new user
-        if(staker.lastRewardUpdateTime == 0) {
+        if(staker.lastRewardUpdateTime == 0 && staker.balance == 0) {
             require(
                 stakingPool.currentNumberOfStakersInPool < stakingPool.maximumNumberOfStakersInPool,
                 "DigitalaxMonaStaking._stake: This pool is already full"
             );
-            stakingPool.currentNumberOfEarlyRewardsUsers = stakingPool.currentNumberOfEarlyRewardsUsers.add(1);
+            stakingPool.currentNumberOfStakersInPool = stakingPool.currentNumberOfStakersInPool.add(1);
 
             // Check if an early staker
             if(stakingPool.currentNumberOfEarlyRewardsUsers < stakingPool.maximumNumberOfEarlyRewardsUsers){
@@ -538,7 +544,7 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
             pools[_poolId].stakers[_user].balance >= _amount,
             "DigitalaxMonaStaking._unstake: Sender must have staked tokens"
         );
-        claimReward(_poolId, _user);
+        _claimReward(_poolId, _user);
         Staker storage staker = pools[_poolId].stakers[_user];
         
         staker.balance = staker.balance.sub(_amount);
@@ -882,9 +888,17 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
     function claimReward(
         uint256 _poolId,
         address _user
-    )
-        public
-    {
+    ) external {
+        _claimReward(_poolId, _user);
+    }
+
+    /**
+     @notice Internal method for claimReward.
+     */
+    function _claimReward(
+        uint256 _poolId,
+        address _user
+    ) internal {
         require(
             tokensClaimable == true,
             "Tokens cannnot be claimed yet"

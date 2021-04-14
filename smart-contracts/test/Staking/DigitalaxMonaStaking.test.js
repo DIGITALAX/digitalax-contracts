@@ -23,7 +23,9 @@ const {
   const ONE_THOUSAND_TOKENS = '1000000000000000000000';
   const EXCHANGE_RATE = new BN('1200000000000000000');
   const TWO_HUNDRED_TOKENS = new BN('200000000000000000000');
+  const HALF_TOKEN = new BN('50000000000000000');
   const ONE_TOKEN = new BN('100000000000000000');
+  const TWO_TOKEN = new BN('200000000000000000');
   const TEN_TOKENS = new BN('1000000000000000000');
   const TWENTY_TOKENS = new BN('20000000000000000000');
   const TWO_ETH = ether('2');
@@ -78,7 +80,9 @@ const {
           0,
           0
       );
-     // this.monaToken.approve(this.marketplace.address, ONE_THOUSAND_TOKENS);
+
+      await this.monaStaking.setRewardsContract(this.digitalaxRewards.address, { from: admin });
+      await this.monaToken.approve(this.monaStaking.address, ONE_THOUSAND_TOKENS, { from: staker });
     });
   
     describe('Contract deployment', () => {
@@ -329,6 +333,95 @@ const {
           });
         });
       });
+    });
+
+    describe('Staking', () => {
+      beforeEach(async () => {
+        await this.monaStaking.initMonaStakingPool(
+          1,
+          ONE_TOKEN,
+          TEN_TOKENS,
+          100,
+          10,
+          {from: admin}
+        );
+      });
+
+      it('fails when amount is zero', async () => {
+        await expectRevert(
+          this.monaStaking.stake(0, 0, {from: staker}),
+          'DigitalaxMonaStaking._stake: Staked amount must be greater than 0'
+        );
+      });
+
+      it('fails when amount is less than min stake amount', async () => {
+        await expectRevert(
+          this.monaStaking.stake(0, HALF_TOKEN, {from: staker}),
+          'DigitalaxMonaStaking._stake: Staked amount must be greater than or equal to minimum stake'
+        );
+      });
+
+      it('fails when amount is greater than max stake amount', async () => {
+        await expectRevert(
+          this.monaStaking.stake(0, ONE_THOUSAND_TOKENS, {from: staker}),
+          'DigitalaxMonaStaking._stake: Staked amount must be less than or equal to maximum stake'
+        );
+      });
+
+      it('fails when the pool is already full', async () => {
+        await this.monaStaking.initMonaStakingPool(
+          1,
+          ONE_TOKEN,
+          TEN_TOKENS,
+          1,
+          1,
+          {from: admin}
+        );
+        await this.monaStaking.stake(1, ONE_TOKEN, {from: staker});
+        await expectRevert(
+          this.monaStaking.stake(1, ONE_TOKEN, {from: minter}),
+          'DigitalaxMonaStaking._stake: This pool is already full'
+        );
+      });
+
+      it('successfully deposits MONA token', async () => {
+        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
+        expect(await this.monaStaking.getStakedBalance(0, staker)).to.be.bignumber.equal(ONE_TOKEN);
+      });
+
+      it('successfully stake more tokens', async () => {
+        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
+        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
+        expect(await this.monaStaking.getStakedBalance(0, staker)).to.be.bignumber.equal(TWO_TOKEN);
+      });
+    });
+
+    describe('Unstaking', () => {
+      beforeEach(async () => {
+        await this.monaStaking.initMonaStakingPool(
+          1,
+          ONE_TOKEN,
+          TEN_TOKENS,
+          100,
+          10,
+          {from: admin}
+        );
+        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
+      });
+
+      it('fails when unstaking more tokens than staked', async () => {
+        await expectRevert(
+          this.monaStaking.unstake(0, TWO_TOKEN, {from: staker}),
+          'DigitalaxMonaStaking._unstake: Sender must have staked tokens'
+        );
+      });
+
+      it('successfully unstaking', async () => {
+        const originAmount = await this.monaToken.balanceOf(staker);
+        await this.monaStaking.unstake(0, ONE_TOKEN, {from: staker});
+        
+        expect(await this.monaToken.balanceOf(staker)).to.be.bignumber.greaterThan(originAmount);
+      })
     });
   
   
