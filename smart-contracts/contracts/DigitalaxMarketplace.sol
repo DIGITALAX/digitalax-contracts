@@ -11,8 +11,7 @@ import "./garment/IDigitalaxGarmentNFT.sol";
 import "./garment/DigitalaxGarmentCollection.sol";
 import "./oracle/IDigitalaxMonaOracle.sol";
 import "./EIP2771/BaseRelayRecipient.sol";
-//console
-import "@nomiclabs/buidler/console.sol";
+
 /**
  * @notice Marketplace contract for Digitalax NFTs
  */
