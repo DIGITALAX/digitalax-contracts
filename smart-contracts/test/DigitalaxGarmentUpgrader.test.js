@@ -67,7 +67,8 @@ contract('DigitalaxGarmentUpgrader', (accounts) => {
         {from: admin}
     );
 
-    this.upgrader = await DigitalaxGarmentUpgrader.new(
+    this.upgrader = await DigitalaxGarmentUpgrader.new();
+    this.upgrader.initialize(
         this.token.address,
         this.tokenV2.address,
         this.accessControls.address,
@@ -85,8 +86,9 @@ contract('DigitalaxGarmentUpgrader', (accounts) => {
 
   describe('Contract deployment', () => {
     it('Reverts when access controls is zero', async () => {
+      const upgraderTemp = await DigitalaxGarmentUpgrader.new();
       await expectRevert(
-        DigitalaxGarmentUpgrader.new(
+        upgraderTemp.initialize(
           this.token.address,
           this.tokenV2.address,
             constants.ZERO_ADDRESS,
@@ -98,8 +100,9 @@ contract('DigitalaxGarmentUpgrader', (accounts) => {
     });
 
     it('Reverts when garment nft is zero', async () => {
+      const upgraderTemp = await DigitalaxGarmentUpgrader.new();
       await expectRevert(
-          DigitalaxGarmentUpgrader.new(
+          upgraderTemp.initialize(
           constants.ZERO_ADDRESS,
           this.tokenV2.address,
           this.accessControls.address,
@@ -111,8 +114,9 @@ contract('DigitalaxGarmentUpgrader', (accounts) => {
     });
 
     it('Reverts when garment nft v2 is zero', async () => {
+      const upgraderTemp = await DigitalaxGarmentUpgrader.new();
       await expectRevert(
-          DigitalaxGarmentUpgrader.new(
+          upgraderTemp.initialize(
           this.token.address,
           constants.ZERO_ADDRESS,
           this.accessControls.address,

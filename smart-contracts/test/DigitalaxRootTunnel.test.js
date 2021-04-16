@@ -61,7 +61,8 @@ contract('DigitalaxRootTunnel', (accounts) => {
     );
 
 
-    this.digitalaxMaterialsV2 = await DigitalaxMaterialsV2.new(
+    this.digitalaxMaterialsV2 = await DigitalaxMaterialsV2.new();
+    this.digitalaxMaterialsV2.initialize(
         'DigitalaxMaterialsV2',
         'DXM',
         this.accessControls.address,
@@ -210,6 +211,8 @@ contract('DigitalaxRootTunnel', (accounts) => {
         // await expectEvent(receipt2, 'MessageSent', {
         //   message: bytesResponseL2ToL1Next
         // });
+
+        // Does all the minting
         await this.digitalaxRootTunnelMock.receiveMessage(bytesResponseL2ToL1Next); // Does not do Matic msg processing
 
         await expectStrandBalanceOfGarmentToBe(new BN('4'), new BN('6'), '1');

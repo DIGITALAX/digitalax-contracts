@@ -6,12 +6,13 @@ pragma experimental ABIEncoderV2;
 import "../ERC1155/ERC1155Burnable.sol";
 import "../DigitalaxAccessControls.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
+import "@openzeppelin/contracts/proxy/Initializable.sol";
 
 /**
  * @title Digitalax Materials NFT a.k.a. child NFTs
  * @dev Issues ERC-1155 tokens which can be held by the parent ERC-721 contract
  */
-contract DigitalaxMaterialsV2 is ERC1155Burnable, BaseRelayRecipient {
+contract DigitalaxMaterialsV2 is ERC1155Burnable, BaseRelayRecipient, Initializable {
 
     // @notice event emitted on contract creation
     event DigitalaxMaterialsDeployed();
@@ -45,13 +46,13 @@ contract DigitalaxMaterialsV2 is ERC1155Burnable, BaseRelayRecipient {
         _;
     }
 
-    constructor(
+    function initialize(
         string memory _name,
         string memory _symbol,
         DigitalaxAccessControls _accessControls,
         address _childChain,
         address _trustedForwarder
-    ) public {
+    ) public initializer {
         name = _name;
         symbol = _symbol;
         accessControls = _accessControls;

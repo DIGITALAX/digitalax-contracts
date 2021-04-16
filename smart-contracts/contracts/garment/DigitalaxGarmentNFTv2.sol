@@ -11,7 +11,7 @@ import "../ERC998/IERC998ERC1155TopDown.sol";
 import "../tunnel/BaseChildTunnel.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "../DigitalaxAccessControls.sol";
-import "./DigitalaxMaterials.sol";
+import "./DigitalaxMaterialsV2.sol";
 
 /**
  * @title Digitalax Garment NFT a.k.a. parent NFTs
@@ -50,7 +50,7 @@ contract DigitalaxGarmentNFTv2 is DigitalaxERC721("DigitalaxNFT", "DTX"), ERC115
     );
 
     /// @dev Child ERC1155 contract address
-    DigitalaxMaterials public childContract;
+    DigitalaxMaterialsV2 public childContract;
 
     /// @dev current max tokenId
     uint256 public tokenIdPointer;
@@ -96,7 +96,7 @@ contract DigitalaxGarmentNFTv2 is DigitalaxERC721("DigitalaxNFT", "DTX"), ERC115
      @param _childContract ERC1155 the Digitalax child NFT contract
      0xb5505a6d998549090530911180f38aC5130101c6
      */
-    function initialize(DigitalaxAccessControls _accessControls, DigitalaxMaterials _childContract, address _childChain, address _trustedForwarder) public initializer {
+    function initialize(DigitalaxAccessControls _accessControls, DigitalaxMaterialsV2 _childContract, address _childChain, address _trustedForwarder) public initializer {
         accessControls = _accessControls;
         childContract = _childContract;
         childChain = _childChain;
@@ -156,7 +156,7 @@ contract DigitalaxGarmentNFTv2 is DigitalaxERC721("DigitalaxNFT", "DTX"), ERC115
         uint256 tokenId = tokenIdPointer;
 
         // MATIC guard, to catch tokens minted on chain
-        require(!withdrawnTokens[tokenId], "ChildMintableERC721: TOKEN_EXISTS_ON_ROOT_CHAIN");
+        // require(!withdrawnTokens[tokenId], "ChildMintableERC721: TOKEN_EXISTS_ON_ROOT_CHAIN");
 
         // Mint token and set token URI
         _safeMint(_beneficiary, tokenId);

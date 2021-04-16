@@ -9,13 +9,14 @@ import "./DigitalaxGarmentNFTv2.sol";
 import "./DigitalaxMaterials.sol";
 import "../DigitalaxAccessControls.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
+import "@openzeppelin/contracts/proxy/Initializable.sol";
 
 /**
  * @title Digitalax Garment Factory
  * @dev To facilitate the creation of child and parents NFTs
  * @dev This contract needs to be given the smart contract role in order to be given access to mint tokens
  */
-contract DigitalaxGarmentUpgrader is ReentrancyGuard, BaseRelayRecipient  {
+contract DigitalaxGarmentUpgrader is ReentrancyGuard, BaseRelayRecipient, Initializable  {
 
     // @notice event emitted on garment creation
     event GarmentUpgraded(
@@ -34,12 +35,12 @@ contract DigitalaxGarmentUpgrader is ReentrancyGuard, BaseRelayRecipient  {
     // @notice access controls
     DigitalaxAccessControls public accessControls;
 
-    constructor(
+    function initialize(
         DigitalaxGarmentNFT _garmentToken,
         DigitalaxGarmentNFTv2 _garmentTokenV2,
         DigitalaxAccessControls _accessControls,
         address _trustedForwarder
-    ) public {
+    ) public initializer {
         require(address(_accessControls) != address(0), "DigitalaxGarmentUpgrader: Invalid Access Controls");
         require(address(_garmentToken) != address(0), "DigitalaxGarmentUpgrader: Invalid NFT");
         require(address(_garmentTokenV2) != address(0), "DigitalaxGarmentUpgrader: Invalid NFT V2");

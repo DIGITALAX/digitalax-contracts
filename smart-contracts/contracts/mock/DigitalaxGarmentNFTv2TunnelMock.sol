@@ -156,7 +156,7 @@ contract DigitalaxGarmentNFTv2TunnelMock is DigitalaxERC721("DigitalaxNFT", "DTX
         uint256 tokenId = tokenIdPointer;
 
         // MATIC guard, to catch tokens minted on chain
-        require(!withdrawnTokens[tokenId], "ChildMintableERC721: TOKEN_EXISTS_ON_ROOT_CHAIN");
+        // require(!withdrawnTokens[tokenId], "ChildMintableERC721: TOKEN_EXISTS_ON_ROOT_CHAIN");
 
         // Mint token and set token URI
         _safeMint(_beneficiary, tokenId);
