@@ -885,11 +885,8 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
     /*
      * @notice Lets a user with rewards owing to claim tokens
      */
-    function claimReward(
-        uint256 _poolId,
-        address _user
-    ) external {
-        _claimReward(_poolId, _user);
+    function claimReward(uint256 _poolId) external {
+        _claimReward(_poolId, _msgSender());
     }
 
     /**
