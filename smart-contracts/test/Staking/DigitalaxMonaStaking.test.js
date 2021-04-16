@@ -475,6 +475,42 @@ const {
       });
     });
 
+    describe('Rewards differ depends on staking amount', () => {
+      beforeEach(async () => {
+        await this.monaStaking.initMonaStakingPool(
+          7,
+          ONE_TOKEN,
+          TEN_TOKENS,
+          10,
+          5,
+          {from: admin}
+        );
+
+        await this.monaToken.transfer(minter, TWENTY_TOKENS, {from: staker});
+        await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
+        await this.monaToken.approve(this.monaStaking.address, TWENTY_TOKENS, { from: minter });
+        await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
+        await this.digitalaxRewards.initializePools(0, [0], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools(0, [1], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools(0, [2], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, {from: admin});
+        await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, {from: admin});
+        await this.digitalaxRewards.setNowOverride('604800'); // first week
+      });
+      
+      it('less staker should have less rewards', async () => {
+        await this.monaStaking.stake(0, ONE_TOKEN, {from: minter});
+        await this.monaStaking.stake(0, TWO_TOKEN, {from: staker});
+        
+        await this.monaStaking.setNowOverride('1209600'); // next week
+
+        const minterRewards = await this.monaStaking.unclaimedRewards(0, minter);
+        const stakerRewards = await this.monaStaking.unclaimedRewards(0, staker);
+
+        expect(stakerRewards.claimableRewards).to.be.bignumber.greaterThan(minterRewards.claimableRewards);
+      });
+    });
+
     describe('Bonus Rewards', () => {
       beforeEach(async () => {
         await this.monaStaking.initMonaStakingPool(
