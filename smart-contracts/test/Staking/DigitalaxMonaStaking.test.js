@@ -28,11 +28,12 @@ const {
   const TWO_TOKEN = new BN('200000000000000000');
   const TEN_TOKENS = new BN('1000000000000000000');
   const TWENTY_TOKENS = new BN('20000000000000000000');
+  const ONE_HUNDRED_TOKENS = new BN('10000000000000000000');
   const TWO_ETH = ether('2');
   const MAX_NUMBER_OF_POOLS = new BN('20');
   
   contract('DigitalaxMonaStaking', (accounts) => {
-    const [admin, smartContract, platformFeeAddress, minter, owner, provider, staker, newRecipient] = accounts;
+    const [admin, smartContract, platformFeeAddress, minter, provider, staker] = accounts;
   
     beforeEach(async () => {
       this.accessControls = await DigitalaxAccessControls.new({from: admin});
@@ -423,6 +424,188 @@ const {
         expect(await this.monaToken.balanceOf(staker)).to.be.bignumber.greaterThan(originAmount);
       })
     });
+
+    describe('Rewards differ from pool to pool', () => {
+      beforeEach(async () => {
+        await this.monaStaking.initMonaStakingPool(
+          7,
+          ONE_TOKEN,
+          TEN_TOKENS,
+          100,
+          10,
+          {from: admin}
+        );
+        await this.monaStaking.initMonaStakingPool(
+          14,
+          ONE_TOKEN,
+          TEN_TOKENS,
+          100,
+          10,
+          {from: admin}
+        );
+
+        await this.monaToken.transfer(minter, TWENTY_TOKENS, {from: staker});
+        await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
+        await this.monaToken.approve(this.monaStaking.address, TWENTY_TOKENS, { from: minter });
+        await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
+        await this.digitalaxRewards.initializePools(0, [0], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools(0, [1], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools(0, [2], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools(1, [0], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools(1, [1], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools(1, [2], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, {from: admin});
+        await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, {from: admin});
+      });
+
+      it('Rewards of 2 other staking pools', async () => {
+        await this.monaStaking.stake(0, ONE_TOKEN, {from: minter});
+        await this.monaStaking.stake(1, ONE_TOKEN, {from: staker});
+        await this.digitalaxRewards.setNowOverride('1209600'); // next week
+        await this.monaStaking.setNowOverride('1209600'); // next week
+        await this.oracle.pushReport(EXCHANGE_RATE, {from: provider});
+
+        const minterRewards = await this.monaStaking.unclaimedRewards(0, minter);
+
+        await this.digitalaxRewards.setNowOverride('1814400'); // next week
+        await this.monaStaking.setNowOverride('1814400'); // next week
+        const stakerRewards = await this.monaStaking.unclaimedRewards(1, staker);
+
+        expect(stakerRewards.claimableRewards).to.be.bignumber.equal(minterRewards.claimableRewards);
+      });
+    });
+
+    describe('Rewards differ depends on staking amount', () => {
+      beforeEach(async () => {
+        await this.monaStaking.initMonaStakingPool(
+          7,
+          ONE_TOKEN,
+          TEN_TOKENS,
+          10,
+          5,
+          {from: admin}
+        );
+
+        await this.monaToken.transfer(minter, TWENTY_TOKENS, {from: staker});
+        await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
+        await this.monaToken.approve(this.monaStaking.address, TWENTY_TOKENS, { from: minter });
+        await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
+        await this.digitalaxRewards.initializePools(0, [0], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools(0, [1], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools(0, [2], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, {from: admin});
+        await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, {from: admin});
+        await this.digitalaxRewards.setNowOverride('604800'); // first week
+      });
+      
+      it('less staker should have less rewards', async () => {
+        await this.monaStaking.stake(0, ONE_TOKEN, {from: minter});
+        await this.monaStaking.stake(0, TWO_TOKEN, {from: staker});
+        
+        await this.monaStaking.setNowOverride('1209600'); // next week
+
+        const minterRewards = await this.monaStaking.unclaimedRewards(0, minter);
+        const stakerRewards = await this.monaStaking.unclaimedRewards(0, staker);
+
+        expect(stakerRewards.claimableRewards).to.be.bignumber.greaterThan(minterRewards.claimableRewards);
+      });
+    });
+
+    describe('Bonus Rewards', () => {
+      beforeEach(async () => {
+        await this.monaStaking.initMonaStakingPool(
+          7,
+          ONE_TOKEN,
+          TEN_TOKENS,
+          2,
+          1,
+          {from: admin}
+        );
+
+        await this.monaToken.transfer(minter, TWENTY_TOKENS, {from: staker});
+        await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
+        await this.monaToken.approve(this.monaStaking.address, TWENTY_TOKENS, { from: minter });
+        await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
+        await this.digitalaxRewards.initializePools(0, [0], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools(0, [1], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools(0, [2], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, {from: admin});
+        await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, {from: admin});
+        await this.digitalaxRewards.setNowOverride('604800'); // first week
+      });
+      
+      it('late staker should have no bonus rewards', async () => {
+        await this.monaStaking.stake(0, ONE_TOKEN, {from: minter});
+        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
+        
+        await this.monaStaking.setNowOverride('1209600'); // next week
+
+        const bonusRewards = await this.monaStaking.unclaimedBonusRewards(0, staker);
+        expect(bonusRewards.claimableRewards).to.be.bignumber.equal(new BN('0'));
+
+        const minterRewards = await this.monaStaking.unclaimedRewards(0, minter);
+        const stakerRewards = await this.monaStaking.unclaimedRewards(0, staker);
+
+        expect(minterRewards.claimableRewards).to.be.bignumber.equal(stakerRewards.claimableRewards);
+      });
+      
+      it('early staker should have bonus rewards', async () => {
+        await this.monaStaking.stake(0, ONE_TOKEN, {from: minter});
+        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
+        
+        await this.monaStaking.setNowOverride('1209600'); // next week
+        await this.digitalaxRewards.setNowOverride('1209600'); // first week
+
+        await this.digitalaxRewards.updateRewards(0, {from: staker});
+
+        const bonusRewards = await this.monaStaking.unclaimedBonusRewards(0, staker);
+        expect(bonusRewards.claimableRewards).to.be.bignumber.equal(new BN('0'));
+      });
+    });
+
+    describe('Claim Rewards', () => {
+      beforeEach(async () => {
+        await this.monaStaking.initMonaStakingPool(
+          7,
+          ONE_TOKEN,
+          TEN_TOKENS,
+          2,
+          1,
+          {from: admin}
+        );
+
+        await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
+        await this.digitalaxRewards.initializePools(0, [0], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools(0, [1], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools(0, [2], [ether('10000000000000000000')], [10], {from: admin});
+        await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
+        await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, {from: admin});
+        await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, {from: admin});
+        await this.digitalaxRewards.setNowOverride('604800'); // first week
+      });
+
+      it('Tokens cannot be claimed', async () => {
+        await this.monaStaking.setTokensClaimable(false);
+
+        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
+        await this.monaStaking.setNowOverride('1209600'); // next week
+
+        await expectRevert(
+          this.monaStaking.claimReward(0, {from: staker}),
+          "Tokens cannnot be claimed yet"
+        );
+      });
+
+      it('Successfully claim tokens', async () => {
+        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
+        await this.monaStaking.setNowOverride('1209600'); // next week
+        
+        const beforeBalance = await this.monaToken.balanceOf(staker);
+        await this.monaStaking.claimReward(0, {from: staker});
+        const afterBalance = await this.monaToken.balanceOf(staker);
+        expect(afterBalance).to.be.bignumber.greaterThan(beforeBalance);
+      });
+    })
   
   
     async function getGasCosts(receipt) {
