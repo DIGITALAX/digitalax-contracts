@@ -600,10 +600,9 @@ const {
         await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
         await this.monaStaking.setNowOverride('1209600'); // next week
         
-        const beforeBalance = await this.monaToken.balanceOf(staker);
         await this.monaStaking.claimReward(0, {from: staker});
         const afterBalance = await this.monaToken.balanceOf(staker);
-        expect(afterBalance).to.be.bignumber.greaterThan(beforeBalance);
+        expect(afterBalance).to.be.bignumber.equals(new BN('990000000000000000000'));
       });
     })
   
