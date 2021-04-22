@@ -205,7 +205,7 @@ contract DigitalaxNFTStaking {
         staker.balance = staker.balance.add(amount);
         stakedEthTotal = stakedEthTotal.add(amount);
         staker.tokenIds.push(_tokenId);
-        staker.tokenIndex[staker.tokenIds.length - 1];
+        staker.tokenIndex[_tokenId] = staker.tokenIds.length.sub(1);
         tokenOwner[_tokenId] = _user;
         parentNFT.safeTransferFrom(
             _user,
