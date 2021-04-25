@@ -101,6 +101,13 @@ contract('Core ERC721 tests for DigitalaxGarmentNFTv2', function ([admin, minter
                 expect(await this.token.tokenURI('100001')).to.be.equal(randomURI2);
                 expect(await this.token.tokenURI('100002')).to.be.equal(randomURI2);
             });
+            it('Can batch set token uri and batch check', async () => {
+                await this.token.mint(minter, randomURI, designer, {from: minter});
+                await this.token.mint(minter, randomURI, designer, {from: minter});
+                await this.token.batchSetTokenURI(['100001', '100002'], [randomURI2, randomURI2], {from: admin});
+                expect((await this.token.batchTokenURI(['100001', '100002']))[0]).to.be.equal(randomURI2);
+                expect((await this.token.batchTokenURI(['100001', '100002']))[1]).to.be.equal(randomURI2);
+            });
             it('Can batch set garment designer', async () => {
                 await this.token.mint(minter, randomURI, designer, {from: minter});
                 await this.token.mint(minter, randomURI, designer, {from: minter});
@@ -150,6 +157,15 @@ contract('Core ERC721 tests for DigitalaxGarmentNFTv2', function ([admin, minter
             expect(await this.token.primarySalePrice(TOKEN_ONE_ID)).to.be.bignumber.equal(examplePrimarySalePrice);
         });
 
+        it('Can set the primary sale price as a smart contract and check in batch', async () => {
+            expect(await this.token.primarySalePrice(TOKEN_ONE_ID)).to.be.bignumber.equal('0');
+            expect(await this.token.primarySalePrice(TOKEN_TWO_ID)).to.be.bignumber.equal('0');
+            await this.token.setPrimarySalePrice(TOKEN_ONE_ID, examplePrimarySalePrice, {from: smart_contract});
+            await this.token.setPrimarySalePrice(TOKEN_TWO_ID, examplePrimarySalePrice.mul(new BN('2')), {from: smart_contract});
+            expect((await this.token.batchPrimarySalePrice([TOKEN_ONE_ID, TOKEN_TWO_ID]))[0]).to.be.bignumber.equal(examplePrimarySalePrice);
+            expect((await this.token.batchPrimarySalePrice([TOKEN_ONE_ID, TOKEN_TWO_ID]))[1]).to.be.bignumber.equal(examplePrimarySalePrice.mul(new BN('2')));
+        });
+
         it('Reverts when setting the primary sale price as non-admin, non-smart contract', async () => {
             await expectRevert(
                 this.token.setPrimarySalePrice(TOKEN_ONE_ID, examplePrimarySalePrice, {from: designer}),
@@ -176,12 +192,21 @@ contract('Core ERC721 tests for DigitalaxGarmentNFTv2', function ([admin, minter
 
       beforeEach(async () => {
         await this.token.mint(owner, randomURI, designer, {from: minter});
+        await this.token.mint(owner, randomURI, designer, {from: minter});
       });
 
       it('Can batch transfer', async () => {
         expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.equal(owner);
         await this.token.batchTransferFrom(owner, designer, [TOKEN_ONE_ID], {from: owner});
         expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.equal(designer);
+      });
+      it('Can batch transfer and check batch token id', async () => {
+        expect((await this.token.batchTokensOfOwner(owner))[0]).to.be.bignumber.equal(TOKEN_ONE_ID);
+        expect((await this.token.batchTokensOfOwner(owner))[1]).to.be.bignumber.equal(TOKEN_TWO_ID);
+        await this.token.batchTransferFrom(owner, designer, [TOKEN_ONE_ID], {from: owner});
+        await this.token.batchTransferFrom(owner, designer, [TOKEN_TWO_ID], {from: owner});
+        expect((await this.token.batchTokensOfOwner(designer))[0]).to.be.bignumber.equal(TOKEN_ONE_ID);
+        expect((await this.token.batchTokensOfOwner(designer))[1]).to.be.bignumber.equal(TOKEN_TWO_ID);
       });
 
       it('Reverts when sender is not valid', async () => {
