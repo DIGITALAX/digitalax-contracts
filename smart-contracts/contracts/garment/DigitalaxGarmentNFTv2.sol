@@ -656,4 +656,34 @@ contract DigitalaxGarmentNFTv2 is DigitalaxERC721("DigitalaxNFT", "DTX"), ERC115
             _transfer(_from, _to, _tokenIds[i]);
         }
     }
+    
+    function batchTokensOfOwner(address owner) external view returns (uint256[] memory) {
+        uint256 length = balanceOf(owner);
+        uint256[] memory _tokenIds = new uint256[](length);
+
+        for( uint256 i; i< length; i++){
+            _tokenIds[i] = tokenOfOwnerByIndex(owner, i);
+        }
+        return _tokenIds;
+    }
+
+    function batchTokenURI(uint256[] memory tokenIds) external view returns (string[] memory) {
+        uint256 length = tokenIds.length;
+
+        string[] memory _tokenUris = new string[](length);
+        for( uint256 i; i< length; i++){
+            _tokenUris[i] = _tokenURIs[tokenIds[i]];
+        }
+        return _tokenUris;
+    }
+
+    function batchPrimarySalePrice(uint256[] memory tokenIds) external view returns (uint256[] memory) {
+        uint256 length = tokenIds.length;
+
+        uint256[] memory _primarySalePrices = new uint256[](length);
+        for( uint256 i; i< length; i++){
+            _primarySalePrices[i] = primarySalePrice[tokenIds[i]];
+        }
+        return _primarySalePrices;
+    }
 }
