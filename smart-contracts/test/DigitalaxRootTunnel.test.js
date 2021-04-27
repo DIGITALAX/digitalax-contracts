@@ -124,11 +124,11 @@ contract('DigitalaxRootTunnel', (accounts) => {
     await this.accessControls.addSmartContractRole(this.digitalaxRootTunnelMock.address, {from: admin});
     await this.accessControls.addMinterRole(this.digitalaxRootTunnelMock.address, {from: admin});
 
-
+    await this.digitalaxMaterialsV2.setGarmentNFTApproved(this.tokenV2.address, {from: admin});
     // // Create some ERC1155's for use here
     // await this.garmentFactory.createNewChildren(randomChildTokenURIs, {from: minter});
 
-    await this.digitalaxMaterialsV2.setApprovalForAll(this.tokenV2.address, true, {from: owner});
+  //  await this.digitalaxMaterialsV2.setApprovalForAll(this.tokenV2.address, true, {from: owner});
   });
 
   const expectStrandBalanceOfGarmentToBe = async (garmentTokenId, strandId, expectedStrandBalance) => {
