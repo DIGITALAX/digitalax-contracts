@@ -2,8 +2,7 @@
 
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
-
-import "../ERC1155/ERC1155Burnable.sol";
+import "../ERC1155/ERC1155BurnableV2.sol";
 import "../DigitalaxAccessControls.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 
@@ -11,7 +10,7 @@ import "../EIP2771/BaseRelayRecipient.sol";
  * @title Digitalax Materials NFT a.k.a. child NFTs
  * @dev Issues ERC-1155 tokens which can be held by the parent ERC-721 contract
  */
-contract DigitalaxMaterialsV2 is ERC1155Burnable, BaseRelayRecipient {
+contract DigitalaxMaterialsV2 is ERC1155BurnableV2, BaseRelayRecipient {
 
     // @notice event emitted on contract creation
     event DigitalaxMaterialsDeployed();
@@ -249,4 +248,15 @@ contract DigitalaxMaterialsV2 is ERC1155Burnable, BaseRelayRecipient {
     {
         _burnBatch(_msgSender(), ids, amounts);
     }
+
+
+    function setGarmentNFTApproved(address _garmentNFT) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxMaterials.updateAccessControls: Sender must be admin"
+        );
+
+        garmentNFTApproved = _garmentNFT;
+    }
+
 }
