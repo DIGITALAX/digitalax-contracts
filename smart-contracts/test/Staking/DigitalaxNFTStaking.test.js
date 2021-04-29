@@ -33,6 +33,7 @@ const {
   const ONE_HUNDRED_TOKENS = new BN('10000000000000000000');
   const TWO_ETH = ether('2');
   const MAX_NUMBER_OF_POOLS = new BN('20');
+const randomURI = 'rand';
   
   contract('DigitalaxNFTStaking', (accounts) => {
     const [admin, smartContract, platformFeeAddress, minter, provider, staker] = accounts;
@@ -53,6 +54,9 @@ const {
       this.weth = await WethToken.new(
         { from: minter }
       );
+
+
+      await this.monaToken.mint(admin, TWO_HUNDRED_TOKENS, { from: minter });
 
       this.digitalaxMaterials = await DigitalaxMaterials.new(
           'DigitalaxMaterials',
@@ -84,8 +88,8 @@ const {
       await this.oracle.pushReport(EXCHANGE_RATE, {from: provider});
       await time.increase(time.duration.seconds(120));
 
-      this.monaStaking = await DigitalaxNFTStaking.new();
-      this.monaStaking.initStaking(
+      this.nftStaking = await DigitalaxNFTStaking.new();
+      this.nftStaking.initStaking(
           this.monaToken.address,
           this.token.address,
           this.accessControls.address,
@@ -95,30 +99,33 @@ const {
       this.digitalaxRewards = await DigitalaxNFTRewardsV2.new(
           this.monaToken.address,
           this.accessControls.address,
-          this.monaStaking.address,
+          this.nftStaking.address,
           this.oracle.address,
           constants.ZERO_ADDRESS,
           0,
           0,
       );
 
-      await this.monaStaking.setRewardsContract(this.digitalaxRewards.address, { from: admin });
-      await this.monaToken.approve(this.monaStaking.address, ONE_THOUSAND_TOKENS, { from: staker });
+      await this.digitalaxRewards.setNftStaking(this.nftStaking.address, {from: admin});
+
+      await this.nftStaking.setRewardsContract(this.digitalaxRewards.address, { from: admin });
+      await this.nftStaking.setTokensClaimable(true, {from: admin});
+      await this.monaToken.approve(this.nftStaking.address, ONE_THOUSAND_TOKENS, { from: staker });
     });
 
     describe('Rewards Contract', () => {
         describe('setRewardsContract()', () => {
             it('fails when not admin', async () => {
                 await expectRevert(
-                    this.monaStaking.setRewardsContract(this.digitalaxRewards.address, {from: staker}),
+                    this.nftStaking.setRewardsContract(this.digitalaxRewards.address, {from: staker}),
                     'DigitalaxNFTStaking.setRewardsContract: Sender must be admin'
                 );
             });
     
             it('successfully sets rewards contract', async () => {
-                await this.monaStaking.setRewardsContract(this.digitalaxRewards.address, {from: admin});
+                await this.nftStaking.setRewardsContract(this.digitalaxRewards.address, {from: admin});
     
-                const updated = await this.monaStaking.rewardsContract();
+                const updated = await this.nftStaking.rewardsContract();
                 expect(updated).to.be.equal(this.digitalaxRewards.address);
             });
         });
@@ -128,14 +135,14 @@ const {
       describe('updateAccessControls()', () => {
         it('fails when not admin', async () => {
           await expectRevert(
-              this.monaStaking.updateAccessControls(this.accessControls.address, {from: staker}),
+              this.nftStaking.updateAccessControls(this.accessControls.address, {from: staker}),
               'DigitalaxNFTStaking.updateAccessControls: Sender must be admin'
           );
         });
   
         it('reverts when trying to set recipient as ZERO address', async () => {
           await expectRevert(
-              this.monaStaking.updateAccessControls(constants.ZERO_ADDRESS, {from: admin}),
+              this.nftStaking.updateAccessControls(constants.ZERO_ADDRESS, {from: admin}),
               'DigitalaxNFTStaking.updateAccessControls: Zero Address'
           );
         });
@@ -143,16 +150,27 @@ const {
         it('successfully updates access controls', async () => {
           const accessControlsV2 = await DigitalaxAccessControls.new({from: admin});
   
-          const original = await this.monaStaking.accessControls();
+          const original = await this.nftStaking.accessControls();
           expect(original).to.be.equal(this.accessControls.address);
   
-          await this.monaStaking.updateAccessControls(accessControlsV2.address, {from: admin});
+          await this.nftStaking.updateAccessControls(accessControlsV2.address, {from: admin});
   
-          const updated = await this.monaStaking.accessControls();
+          const updated = await this.nftStaking.accessControls();
           expect(updated).to.be.equal(accessControlsV2.address);
         });
       });
     })
+
+
+    it('successfully deposits  NFT', async () => {
+      await this.token.mint(staker, randomURI, minter, {from: minter});
+      await this.token.setApprovalForAll(this.nftStaking.address, true, {from: staker});
+      await this.nftStaking.stake('100001',{from: staker});
+      console.log(await this.nftStaking.getStakedTokens(staker));
+      await time.increase(time.duration.seconds(120));
+      await this.nftStaking.unstake('100001', {from: staker});
+    });
+
 
     /*
   

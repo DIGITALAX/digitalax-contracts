@@ -45,11 +45,11 @@ module.exports = {
       accounts: [`0x${PRIVATE_KEY}`]
     },
     mumbai: {
-      url: `https://rpc-mumbai.matic.today`,
+      url: `http://rpc-mumbai.matic.today`,
       accounts: [`0x${PRIVATE_KEY}`]
     },
     matic: {
-      url: `https://rpc-mainnet.maticvigil.com`,
+      url: `http://rpc-mainnet.maticvigil.com`,
       accounts: [`0x${PRIVATE_KEY}`]
     },
     coverage: {
