@@ -30,6 +30,7 @@ const THREE_ETH = ether('3');
 const EXCHANGE_RATE = new BN('1200000000000000000');
 const TEN_ETH = ether('10');
 
+
 contract('DigitalaxNFTRewardsV2', (accounts) => {
   const [admin, smartContract, platformFeeAddress, minter, owner, provider, staker, newRecipient] = accounts;
 
@@ -102,6 +103,7 @@ contract('DigitalaxNFTRewardsV2', (accounts) => {
 
     // Important
     this.nftStaking.setRewardsContract(this.digitalaxRewards.address, {from: admin});
+    this.digitalaxRewards.depositMonaRewards( 1, TWO_ETH, {from: admin});
   });
 
   describe('Contract deployment', () => {
