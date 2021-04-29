@@ -26,7 +26,7 @@ export function handleMarketplaceDeployed(event: DigitalaxMarketplaceContractDep
     let globalStats = loadOrCreateGarmentNFTGlobalStats();
     globalStats.save();
 }
-
+/*
 export function handleUpdateMarketplacePlatformFee(event: UpdateMarketplacePlatformFee): void {
     let offer = DigitalaxMarketplaceOffer.load(event.params.garmentCollectionId.toString());
     offer.marketplacePlatformFee = event.params.platformFee;
@@ -38,7 +38,7 @@ export function handleUpdateMarketplaceDiscountToPayInErc20(event: UpdateMarketp
     offer.discountToPayMona = event.params.discount;
     offer.save();
 }
-
+*/
 export function handleOfferCreated(event: OfferCreated): void {
     let contract = DigitalaxMarketplaceContract.bind(event.address);
     let offer = new DigitalaxMarketplaceOffer(event.params.garmentCollectionId.toString());
@@ -47,8 +47,8 @@ export function handleOfferCreated(event: OfferCreated): void {
     offer.startTime = offerData.value1;
     offer.amountSold = ZERO;
     offer.garmentCollection = event.params.garmentCollectionId.toString();
-    offer.marketplacePlatformFee = offerData.value3;
-    offer.discountToPayMona = offerData.value4;
+    offer.marketplacePlatformFee = ZERO;
+    offer.discountToPayMona = ZERO;
     offer.save();
 }
 
@@ -72,7 +72,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     history.monaTransferredAmount = event.params.monaTransferredAmount;
     history.garmentAuctionId = collection.garmentAuctionID;
     history.rarity = collection.rarity;
-    history.platformFee = event.params.platformFee;
+    history.platformFee = ZERO;
 
     let day = loadDayFromEvent(event);
     let globalStats = loadOrCreateGarmentNFTGlobalStats();
@@ -80,7 +80,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     if(history.isPaidWithMona){
         globalStats.totalMarketplaceSalesInMona = globalStats.totalMarketplaceSalesInMona.plus(history.monaTransferredAmount);
         day.totalMarketplaceVolumeInMona = day.totalMarketplaceVolumeInMona.plus(history.monaTransferredAmount);
-        history.discountToPayMona = event.params.discountToPayInERC20;
+        history.discountToPayMona = ZERO;
     } else {
         globalStats.totalMarketplaceSalesInETH = globalStats.totalMarketplaceSalesInETH.plus(history.value);
         day.totalMarketplaceVolumeInETH = day.totalMarketplaceVolumeInETH.plus(history.value);
