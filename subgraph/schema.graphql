@@ -182,3 +182,15 @@ type DigitalaxDesignerIndex @entity {
   garments: [DigitalaxGarment!]!
   infoUrl: String!
 }
+
+type DigitalaxGenesisStakedToken @entity {
+  id: ID!
+  staker: Bytes!
+  timestamp: BigInt!
+}
+
+type DigitalaxGarmentStakedToken @entity {
+  id: ID!
+  staker: Bytes!
+  timestamp: BigInt!
+}
