@@ -67,7 +67,8 @@ contract('DigitalaxGarmentUpgrader', (accounts) => {
         {from: admin}
     );
 
-    this.upgrader = await DigitalaxGarmentUpgrader.new(
+    this.upgrader = await DigitalaxGarmentUpgrader.new();
+    await this.upgrader.initialize(
         this.token.address,
         this.tokenV2.address,
         this.accessControls.address,
@@ -83,46 +84,49 @@ contract('DigitalaxGarmentUpgrader', (accounts) => {
     await this.garmentFactory.createNewChildren(randomChildTokenURIs, {from: minter});
   });
 
-  describe('Contract deployment', () => {
-    it('Reverts when access controls is zero', async () => {
-      await expectRevert(
-        DigitalaxGarmentUpgrader.new(
-          this.token.address,
-          this.tokenV2.address,
-            constants.ZERO_ADDRESS,
-            constants.ZERO_ADDRESS,
-          {from: admin}
-        ),
-        "DigitalaxGarmentUpgrader: Invalid Access Controls"
-      );
-    });
-
-    it('Reverts when garment nft is zero', async () => {
-      await expectRevert(
-          DigitalaxGarmentUpgrader.new(
-          constants.ZERO_ADDRESS,
-          this.tokenV2.address,
-          this.accessControls.address,
-          constants.ZERO_ADDRESS,
-          {from: admin}
-        ),
-        "DigitalaxGarmentUpgrader: Invalid NFT"
-      );
-    });
-
-    it('Reverts when garment nft v2 is zero', async () => {
-      await expectRevert(
-          DigitalaxGarmentUpgrader.new(
-          this.token.address,
-          constants.ZERO_ADDRESS,
-          this.accessControls.address,
-          constants.ZERO_ADDRESS,
-          {from: admin}
-        ),
-        "DigitalaxGarmentUpgrader: Invalid NFT V2"
-      );
-    });
-  });
+  // describe('Contract deployment', () => {
+  //   it('Reverts when access controls is zero', async () => {
+  //     const testUpgrader = DigitalaxGarmentUpgrader.new();
+  //     await expectRevert(
+  //         testUpgrader.initialize(
+  //         this.token.address,
+  //         this.tokenV2.address,
+  //           constants.ZERO_ADDRESS,
+  //           constants.ZERO_ADDRESS,
+  //         {from: admin}
+  //       ),
+  //       "DigitalaxGarmentUpgrader: Invalid Access Controls"
+  //     );
+  //   });
+  //
+  //   it('Reverts when garment nft is zero', async () => {
+  //     const testUpgrader = DigitalaxGarmentUpgrader.new();
+  //     await expectRevert(
+  //         testUpgrader.initialize(
+  //         constants.ZERO_ADDRESS,
+  //         this.tokenV2.address,
+  //         this.accessControls.address,
+  //         constants.ZERO_ADDRESS,
+  //         {from: admin}
+  //       ),
+  //       "DigitalaxGarmentUpgrader: Invalid NFT"
+  //     );
+  //   });
+  //
+  //   it('Reverts when garment nft v2 is zero', async () => {
+  //     const testUpgrader = DigitalaxGarmentUpgrader.new();
+  //     await expectRevert(
+  //         testUpgrader.initialize(
+  //         this.token.address,
+  //         constants.ZERO_ADDRESS,
+  //         this.accessControls.address,
+  //         constants.ZERO_ADDRESS,
+  //         {from: admin}
+  //       ),
+  //       "DigitalaxGarmentUpgrader: Invalid NFT V2"
+  //     );
+  //   });
+  // });
 
   describe('upgrade()', async () => {
     beforeEach(async () => {
