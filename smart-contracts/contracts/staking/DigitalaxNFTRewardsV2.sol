@@ -18,11 +18,6 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 interface DigitalaxStaking {
     function stakedEthTotal() external view returns (uint256);
-    function stakedEthTotalByPool(uint256 _poolId) external view returns (uint256);
-    function earlyStakedEthTotalByPool(uint256 _poolId) external view returns (uint256);
-    function stakedMonaInPool(uint256 _poolId) external view returns (uint256);
-    function monaToken() external view returns (address);
-    function WETH() external view returns (address);
 }
 
 interface MONA is IERC20 {
@@ -38,7 +33,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
     /// @notice Mona to Ether Oracle
     IDigitalaxMonaOracle public oracle;
     DigitalaxAccessControls public accessControls;
-    DigitalaxStaking public monaStaking;
+    DigitalaxStaking public nftStaking;
 
     uint256 constant pointMultiplier = 10e18;
     uint256 constant SECONDS_PER_DAY = 24 * 60 * 60;
@@ -94,7 +89,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
     constructor(
         MONA _monaToken,
         DigitalaxAccessControls _accessControls,
-        DigitalaxStaking _monaStaking,
+        DigitalaxStaking _nftStaking,
         IDigitalaxMonaOracle _oracle,
         address _trustedForwarder,
         uint256 _startTime,
@@ -111,7 +106,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
             "DigitalaxRewardsV2: Invalid Access Controls"
         );
         require(
-            address(_monaStaking) != address(0),
+            address(_nftStaking) != address(0),
             "DigitalaxRewardsV2: Invalid Mona Staking"
         );
         require(
@@ -120,7 +115,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         );
         monaToken = _monaToken;
         accessControls = _accessControls;
-        monaStaking = _monaStaking;
+        nftStaking = _nftStaking;
         oracle = _oracle;
         startTime = _startTime;
         monaRewardsPaidTotal = _monaRewardsPaidTotal;
@@ -209,14 +204,14 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
      @dev Only admin
      @param _addr Address of the mona staking contract
     */
-    function setMonaStaking(address _addr)
+    function setNftStaking(address _addr)
         external
         {
             require(
                 accessControls.hasAdminRole(_msgSender()),
-                "DigitalaxRewardsV2.setMonaStaking: Sender must be admin"
+                "DigitalaxRewardsV2.setNftStaking: Sender must be admin"
             );
-            monaStaking = DigitalaxStaking(_addr);
+            nftStaking = DigitalaxStaking(_addr);
     }
 
     /*
@@ -275,7 +270,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
     /* @notice Calculate and update rewards
      * @dev
      */
-    function updateRewards(uint256 _poolId)
+    function updateRewards()
         external
         returns(bool)
     {
@@ -295,7 +290,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         lastOracleQuote = exchangeRate;
 
         /// @dev This sends rewards (Mona from revenue sharing)
-        _updateMonaRewards(_poolId);
+        _updateMonaRewards();
 
         /// @dev update accumulated reward
         pool.lastRewardsTime = _getNow();
@@ -306,17 +301,14 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
     /*
      * @dev Setter functions for contract config custom last rewards time for a pool
      */
-    function setLastRewardsTime(
-    uint256[] memory _poolIds,
-    uint256[] memory _lastRewardsTimes) external
+    function setLastRewardsTime(uint256 _lastRewardsTime) external
     {
         require(
             accessControls.hasAdminRole(_msgSender()),
             "DigitalaxRewardsV2.setLastRewardsTime: Sender must be admin"
         );
-        for (uint256 i = 0; i < _poolIds.length; i++) {
-            pool.lastRewardsTime = _lastRewardsTimes[i];
-        }
+
+        pool.lastRewardsTime = _lastRewardsTime;
     }
 
 
@@ -325,8 +317,8 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
     /*
      * @notice Gets the total rewards outstanding from last reward time
      */
-    function totalNewMonaRewards(uint256 _poolId) external view returns (uint256) {
-        uint256 lRewards = MonaRewards(_poolId, pool.lastRewardsTime, _getNow());
+    function totalNewMonaRewards() external view returns (uint256) {
+        uint256 lRewards = MonaRewards(pool.lastRewardsTime, _getNow());
         return lRewards;
     }
 
@@ -334,7 +326,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
      * @notice Get the last rewards time for a pool
      * @return last rewards time for a pool
      */
-    function lastRewardsTime(uint256 _poolId)
+    function lastRewardsTime()
         external
         view
         returns(uint256)
@@ -345,7 +337,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
     /* @notice Return mona revenue rewards over the given _from to _to timestamp.
      * @dev A fraction of the start, multiples of the middle weeks, fraction of the end
      */
-    function MonaRewards(uint256 _poolId, uint256 _from, uint256 _to) public view returns (uint256 rewards) {
+    function MonaRewards(uint256 _from, uint256 _to) public view returns (uint256 rewards) {
         if (_to <= startTime) {
             return 0;
         }
@@ -379,18 +371,18 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
     /* ========== Internal Functions ========== */
 
 
-    function _updateMonaRewards(uint256 _poolId)
+    function _updateMonaRewards()
         internal
         returns(uint256 rewards)
     {
-        rewards = MonaRewards(_poolId, pool.lastRewardsTime, _getNow());
+        rewards = MonaRewards(pool.lastRewardsTime, _getNow());
         if ( rewards > 0 ) {
             pool.monaRewardsPaid = pool.monaRewardsPaid.add(rewards);
             monaRewardsPaidTotal = monaRewardsPaidTotal.add(rewards);
 
             // Send this amount of MONA to the staking contract
             IERC20(monaToken).transfer(
-                address(monaStaking),
+                address(nftStaking),
                 rewards
             );
         }
@@ -460,20 +452,20 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         view
         returns(uint256)
     {
-        return monaStaking.stakedEthTotal();
+        return nftStaking.stakedEthTotal();
     }
 
-    function getMonaDailyAPY(uint256 _poolId, bool isEarlyStaker)
+    function getMonaDailyAPY(bool isEarlyStaker)
         external
         view 
         returns (uint256) 
     {
-        uint256 stakedEth = monaStaking.stakedEthTotalByPool(_poolId);
+        uint256 stakedEth = nftStaking.stakedEthTotal();
 
         uint256 yearlyReturnInEth = 0;
 
         if ( stakedEth != 0) {
-            uint256 rewards = MonaRewards(_poolId, _getNow() - 60, _getNow());
+            uint256 rewards = MonaRewards(_getNow() - 60, _getNow());
             uint256 rewardsInEth = rewards.mul(getEthPerMona()).div(1e18);
 
             /// @dev minutes per year x 100 = 52560000

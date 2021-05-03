@@ -5,7 +5,7 @@ const web3 = require('web3');
 const { expect } = require('chai');
 
 const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
-const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
+const DigitalaxMaterials = artifacts.require('DigitalaxMaterialsV2');
 const DigitalaxGarmentNFTv2 = artifacts.require('DigitalaxGarmentNFTv2');
 const DigitalaxGarmentFactory = artifacts.require('DigitalaxGarmentFactory');
 
@@ -16,9 +16,9 @@ contract('Core ERC721 tests for DigitalaxGarmentNFTv2', function ([admin, minter
     const TOKEN_ONE_ID = new BN('100001');
     const TOKEN_TWO_ID = new BN('100002');
 
-    const STRAND_ONE_ID = new BN('1');
-    const STRAND_TWO_ID = new BN('2');
-    const STRAND_THREE_ID = new BN('3');
+    const STRAND_ONE_ID = new BN('100001');
+    const STRAND_TWO_ID = new BN('100002');
+    const STRAND_THREE_ID = new BN('100003');
 
     const randomStrandId = 'randomStrandId';
 
@@ -605,14 +605,14 @@ contract('Core ERC721 tests for DigitalaxGarmentNFTv2', function ([admin, minter
 
     describe('burn()', () => {
       it('Can obtain the strands of a garment by burning', async () => {
-        expect(await this.digitalaxMaterials.tokenIdPointer()).to.be.bignumber.equal('0');
+        expect(await this.digitalaxMaterials.tokenIdPointer()).to.be.bignumber.equal('100000');
 
         await this.factory.createNewChildren(
           [randomStrandId,randomStrandId,randomStrandId],
           {from: minter}
         ); // will create strand ID [1], [2], [3]
 
-        expect(await this.digitalaxMaterials.tokenIdPointer()).to.be.bignumber.equal('3');
+        expect(await this.digitalaxMaterials.tokenIdPointer()).to.be.bignumber.equal('100003');
 
         const strand1Amount = '2';
         const strand2Amount = '9';
@@ -645,14 +645,14 @@ contract('Core ERC721 tests for DigitalaxGarmentNFTv2', function ([admin, minter
       });
 
       it('Can obtain a single strand of a garment by burning', async () => {
-        expect(await this.digitalaxMaterials.tokenIdPointer()).to.be.bignumber.equal('0');
+        expect(await this.digitalaxMaterials.tokenIdPointer()).to.be.bignumber.equal('100000');
 
         await this.factory.createNewChild(
           randomURI,
           {from: minter}
         ); // will create strand ID [1]
 
-        expect(await this.digitalaxMaterials.tokenIdPointer()).to.be.bignumber.equal('1');
+        expect(await this.digitalaxMaterials.tokenIdPointer()).to.be.bignumber.equal('100001');
 
         const strand1Amount = '6';
 
@@ -677,12 +677,12 @@ contract('Core ERC721 tests for DigitalaxGarmentNFTv2', function ([admin, minter
       });
 
       it('Can burn a garment that does not have any strands', async () => {
-        expect(await this.digitalaxMaterials.tokenIdPointer()).to.be.bignumber.equal('0');
+        expect(await this.digitalaxMaterials.tokenIdPointer()).to.be.bignumber.equal('100000');
 
         await this.token.mint(owner, randomURI, smart_contract);
 
         expect(await this.token.ownerOf(TOKEN_ONE_ID)).to.be.equal(owner);
-        expect(await this.digitalaxMaterials.tokenIdPointer()).to.be.bignumber.equal('0');
+        expect(await this.digitalaxMaterials.tokenIdPointer()).to.be.bignumber.equal('100000');
 
         await this.token.burn(TOKEN_ONE_ID, {from: owner});
 
