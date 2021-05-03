@@ -7,6 +7,7 @@ import "../DigitalaxAccessControls.sol";
 import "./interfaces/IERC20.sol";
 import "./interfaces/IDigitalaxNFTRewards.sol";
 import "./interfaces/IDigitalaxNFT.sol";
+import "../EIP2771/BaseRelayRecipient.sol";
 
 /**
  * @title Digitalax Staking
@@ -14,7 +15,7 @@ import "./interfaces/IDigitalaxNFT.sol";
  * @author Digitalax Team
  */
 
-contract DigitalaxNFTStaking {
+contract DigitalaxNFTStaking is BaseRelayRecipient {
     using SafeMath for uint256;
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
 
@@ -48,6 +49,10 @@ contract DigitalaxNFTStaking {
         uint256 rewardsEarned;
         uint256 rewardsReleased;
     }
+
+    event UpdateAccessControls(
+        address indexed accessControls
+    );
 
     /// @notice mapping of a staker to its current properties
     mapping (address => Staker) public stakers;
@@ -86,7 +91,8 @@ contract DigitalaxNFTStaking {
     function initStaking(
         IERC20 _rewardsToken,
         IDigitalaxNFT _parentNFT,
-        DigitalaxAccessControls _accessControls
+        DigitalaxAccessControls _accessControls,
+        address _trustedForwarder
     )
         external
     {
@@ -94,10 +100,52 @@ contract DigitalaxNFTStaking {
         rewardsToken = _rewardsToken;
         parentNFT = _parentNFT;
         accessControls = _accessControls;
-        lastUpdateTime = block.timestamp;
+        lastUpdateTime = _getNow();
+        trustedForwarder = _trustedForwarder;
         initialised = true;
     }
 
+    function setTrustedForwarder(address _trustedForwarder) external  {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxRewardsV2.setTrustedForwarder: Sender must be admin"
+        );
+        trustedForwarder = _trustedForwarder;
+    }
+
+    // This is to support Native meta transactions
+    // never use msg.sender directly, use _msgSender() instead
+    function _msgSender()
+    internal
+    view
+    returns (address payable sender)
+    {
+        return BaseRelayRecipient.msgSender();
+    }
+    /**
+       * Override this function.
+       * This version is to keep track of BaseRelayRecipient you are using
+       * in your contract.
+       */
+    function versionRecipient() external view override returns (string memory) {
+        return "1";
+    }
+
+
+    /**
+     @notice Method for updating the access controls contract used by the NFT
+     @dev Only admin
+     @param _accessControls Address of the new access controls contract (Cannot be zero address)
+     */
+    function updateAccessControls(DigitalaxAccessControls _accessControls) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxNFTStaking.updateAccessControls: Sender must be admin"
+        );
+        require(address(_accessControls) != address(0), "DigitalaxNFTStaking.updateAccessControls: Zero Address");
+        accessControls = _accessControls;
+        emit UpdateAccessControls(address(_accessControls));
+    }
 
     /// @notice Lets admin set the Rewards Token
     function setRewardsContract(
@@ -106,8 +154,8 @@ contract DigitalaxNFTStaking {
         external
     {
         require(
-            accessControls.hasAdminRole(msg.sender),
-            "DigitalaxParentStaking.setRewardsContract: Sender must be admin"
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxNFTStaking.setRewardsContract: Sender must be admin"
         );
         require(_addr != address(0));
         address oldAddr = address(rewardsContract);
@@ -122,7 +170,7 @@ contract DigitalaxNFTStaking {
         external
     {
         require(
-            accessControls.hasAdminRole(msg.sender),
+            accessControls.hasAdminRole(_msgSender()),
             "DigitalaxParentStaking.setTokensClaimable: Sender must be admin"
         );
         tokensClaimable = _enabled;
@@ -160,7 +208,7 @@ contract DigitalaxNFTStaking {
         external
     {
         // require();
-        _stake(msg.sender, tokenId);
+        _stake(_msgSender(), tokenId);
     }
 
     /// @notice Stake multiple MONA NFTs and earn reward tokens. 
@@ -168,7 +216,7 @@ contract DigitalaxNFTStaking {
         external
     {
         for (uint i = 0; i < tokenIds.length; i++) {
-            _stake(msg.sender, tokenIds[i]);
+            _stake(_msgSender(), tokenIds[i]);
         }
     }
 
@@ -176,9 +224,9 @@ contract DigitalaxNFTStaking {
     function stakeAll()
         external
     {
-        uint256 balance = parentNFT.balanceOf(msg.sender);
+        uint256 balance = parentNFT.balanceOf(_msgSender());
         for (uint i = 0; i < balance; i++) {
-            _stake(msg.sender, parentNFT.tokenOfOwnerByIndex(msg.sender,i));
+            _stake(_msgSender(), parentNFT.tokenOfOwnerByIndex(_msgSender(),i));
         }
     }
 
@@ -223,11 +271,11 @@ contract DigitalaxNFTStaking {
         external 
     {
         require(
-            tokenOwner[_tokenId] == msg.sender,
+            tokenOwner[_tokenId] == _msgSender(),
             "DigitalaxParentStaking._unstake: Sender must have staked tokenID"
         );
-        claimReward(msg.sender);
-        _unstake(msg.sender, _tokenId);
+        claimReward(_msgSender());
+        _unstake(_msgSender(), _tokenId);
     }
 
     /// @notice Stake multiple MONA NFTs and claim reward tokens. 
@@ -236,10 +284,10 @@ contract DigitalaxNFTStaking {
     )
         external
     {
-        claimReward(msg.sender);
+        claimReward(_msgSender());
         for (uint i = 0; i < tokenIds.length; i++) {
-            if (tokenOwner[tokenIds[i]] == msg.sender) {
-                _unstake(msg.sender, tokenIds[i]);
+            if (tokenOwner[tokenIds[i]] == _msgSender()) {
+                _unstake(_msgSender(), tokenIds[i]);
             }
         }
     }
@@ -291,11 +339,11 @@ contract DigitalaxNFTStaking {
     // Unstake without caring about rewards. EMERGENCY ONLY.
     function emergencyUnstake(uint256 _tokenId) public {
         require(
-            tokenOwner[_tokenId] == msg.sender,
+            tokenOwner[_tokenId] == _msgSender(),
             "DigitalaxParentStaking._unstake: Sender must have staked tokenID"
         );
-        _unstake(msg.sender, _tokenId);
-        emit EmergencyUnstake(msg.sender, _tokenId);
+        _unstake(_msgSender(), _tokenId);
+        emit EmergencyUnstake(_msgSender(), _tokenId);
 
     }
 
@@ -308,7 +356,7 @@ contract DigitalaxNFTStaking {
     {
 
         rewardsContract.updateRewards();
-        uint256 parentRewards = rewardsContract.MonaRewards(lastUpdateTime, block.timestamp);
+        uint256 parentRewards = rewardsContract.MonaRewards(lastUpdateTime, _getNow());
 
         if (stakedEthTotal > 0) {
             rewardsPerTokenPoints = rewardsPerTokenPoints.add(parentRewards
@@ -317,7 +365,7 @@ contract DigitalaxNFTStaking {
                                             .div(stakedEthTotal));
         }
         
-        lastUpdateTime = block.timestamp;
+        lastUpdateTime = _getNow();
         uint256 rewards = rewardsOwing(_user);
 
         Staker storage staker = stakers[_user];
@@ -358,7 +406,7 @@ contract DigitalaxNFTStaking {
             return 0;
         }
 
-        uint256 parentRewards = rewardsContract.MonaRewards(lastUpdateTime, block.timestamp);
+        uint256 parentRewards = rewardsContract.MonaRewards(lastUpdateTime, _getNow());
 
         uint256 newRewardPerToken = rewardsPerTokenPoints.add(parentRewards
                                                                 .mul(1e18)
@@ -412,6 +460,7 @@ contract DigitalaxNFTStaking {
         return _ERC721_RECEIVED;
     }
 
-
-
+    function _getNow() internal virtual view returns (uint256) {
+        return block.timestamp;
+    }
 }
