@@ -49,7 +49,7 @@ module.exports = {
       accounts: [`0x${PRIVATE_KEY}`]
     },
     matic: {
-      url: `http://rpc-mainnet.maticvigil.com`,
+      url: `https://matic-mainnet.chainstacklabs.com`,
       accounts: [`0x${PRIVATE_KEY}`]
     },
     coverage: {
