@@ -11,7 +11,7 @@ const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
 const DigitalaxMaterials = artifacts.require('DigitalaxMaterials');
 const DigitalaxMaterialsV2 = artifacts.require('DigitalaxMaterialsV2');
 const DigitalaxGarmentNFT = artifacts.require('DigitalaxGarmentNFT');
-const DigitalaxGarmentNFTV2TunnelMock = artifacts.require('DigitalaxGarmentNFTV2TunnelMock');
+const DigitalaxGarmentNFTv2TunnelMock = artifacts.require('DigitalaxGarmentNFTv2TunnelMock');
 const DigitalaxGarmentFactory = artifacts.require('DigitalaxGarmentFactory');
 const DigitalaxRootTunnel = artifacts.require('DigitalaxRootTunnel');
 const DigitalaxRootTunnelMock = artifacts.require('DigitalaxRootTunnelMock');
@@ -70,7 +70,7 @@ contract('DigitalaxRootTunnel', (accounts) => {
         {from: owner}
     );
 
-    this.tokenV2 = await DigitalaxGarmentNFTV2TunnelMock.new();
+    this.tokenV2 = await DigitalaxGarmentNFTv2TunnelMock.new();
     await this.tokenV2.initialize(
         this.accessControls.address,
         this.digitalaxMaterialsV2.address,
@@ -87,14 +87,16 @@ contract('DigitalaxRootTunnel', (accounts) => {
         {from: admin}
     );
 
-    this.garmentFactory = await DigitalaxGarmentFactory.new(
+    this.garmentFactory = await DigitalaxGarmentFactory.new();
+    await this.garmentFactory.initialize(
         this.token.address,
         this.digitalaxMaterials.address,
         this.accessControls.address,
         {from: admin}
     );
 
-    this.garmentFactoryMatic = await DigitalaxGarmentFactory.new(
+    this.garmentFactoryMatic = await DigitalaxGarmentFactory.new();
+    await this.garmentFactoryMatic.initialize(
         this.tokenV2.address,
         this.digitalaxMaterialsV2.address,
         this.accessControls.address,

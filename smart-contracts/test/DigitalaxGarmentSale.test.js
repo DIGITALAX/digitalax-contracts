@@ -84,7 +84,8 @@ contract('Digitalax Garment Sale', (accounts) => {
     await this.oracle.addProvider(provider, {from: admin});
     await this.oracle.pushReport(EXCHANGE_RATE, {from: provider});
 
-    this.factory = await DigitalaxGarmentFactory.new(
+    this.factory = await DigitalaxGarmentFactory.new();
+    await this.factory.initialize(
       this.token.address,
       this.digitalaxMaterials.address,
       this.accessControls.address,

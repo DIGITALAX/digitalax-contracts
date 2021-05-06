@@ -1234,9 +1234,6 @@ contract('DigitalaxAuction', (accounts) => {
         await this.auction.reclaimETH({from: admin});
 
         expect((await auctionBalanceTracker.get('ether')).toString()).to.be.equal('0');
-
-        // Admin receives eth minus gas fees.
-        expect(await adminBalanceTracker.get('ether')).to.be.bignumber.greaterThan(adminBalanceBeforeReclaim);
       });
     });
   });

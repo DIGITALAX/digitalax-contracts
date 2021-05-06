@@ -44,7 +44,8 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
       {from: admin}
     );
 
-    this.factory = await DigitalaxGarmentFactoryTest.new(
+    this.factory = await DigitalaxGarmentFactoryTest.new();
+    await this.factory.initialize(
       this.garment.address,
       this.digitalaxMaterials.address,
       this.accessControls.address,

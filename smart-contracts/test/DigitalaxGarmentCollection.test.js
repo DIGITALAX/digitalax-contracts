@@ -58,7 +58,8 @@ contract('DigitalaxGarmentCollection', (accounts) => {
         {from: admin}
     );
 
-    this.garmentFactory = await DigitalaxGarmentFactory.new(
+    this.garmentFactory = await DigitalaxGarmentFactory.new();
+    await this.garmentFactory.initialize(
         this.token.address,
         this.digitalaxMaterials.address,
         this.accessControls.address,
