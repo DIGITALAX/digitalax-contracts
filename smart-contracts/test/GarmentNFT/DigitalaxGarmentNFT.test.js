@@ -43,7 +43,8 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
           {from: admin}
         );
 
-        this.factory = await DigitalaxGarmentFactory.new(
+        this.factory = await DigitalaxGarmentFactory.new()
+        await this.factory.initialize(
           this.token.address,
           this.digitalaxMaterials.address,
           this.accessControls.address,

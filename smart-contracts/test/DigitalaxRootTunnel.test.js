@@ -87,14 +87,16 @@ contract('DigitalaxRootTunnel', (accounts) => {
         {from: admin}
     );
 
-    this.garmentFactory = await DigitalaxGarmentFactory.new(
+    this.garmentFactory = await DigitalaxGarmentFactory.new();
+    await this.garmentFactory.initialize(
         this.token.address,
         this.digitalaxMaterials.address,
         this.accessControls.address,
         {from: admin}
     );
 
-    this.garmentFactoryMatic = await DigitalaxGarmentFactory.new(
+    this.garmentFactoryMatic = await DigitalaxGarmentFactory.new();
+    await this.garmentFactoryMatic.initialize(
         this.tokenV2.address,
         this.digitalaxMaterialsV2.address,
         this.accessControls.address,
