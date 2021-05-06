@@ -17,5 +17,9 @@
     "DigitalaxPodePortalAddress": "0x87c3C6B9C917B1732f13d36d6938E4f8802f7c7E",
     "DigitalaxPodePortalStartBlock": 11740618,
     "DigitalaxIndexAddress": "0x93401DB6e0E17078f785019878063ce5baBA9d46",
-    "DigitalaxIndexStartBlock": 11709635
+    "DigitalaxIndexStartBlock": 11709635,
+    "DigitalaxSubscriptionNFTAddress": "",
+    "DigitalaxSubcriptionNFTStartBlock": 12000000,
+    "DFBundleAddress": "",
+    "DFBundleStartBlock": 12000000
 }
