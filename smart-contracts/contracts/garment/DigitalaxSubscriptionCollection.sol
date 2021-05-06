@@ -32,7 +32,7 @@ contract DigitalaxSubscriptionCollection is Context, ReentrancyGuard, IERC721Rec
 
     /// @notice Parameters of a NFTs Collection
     struct Collection {
-        uint256[] garmentTokenIds;
+        uint256[] subscriptionTokenIds;
         uint256 garmentAmount;
         string metadata;
         address designer;
@@ -107,7 +107,7 @@ contract DigitalaxSubscriptionCollection is Context, ReentrancyGuard, IERC721Rec
             if(_childTokenIds.length > 0){
                 materials.batchMintChildren(_childTokenIds, _childTokenAmounts, address(garmentNft), abi.encodePacked(_mintedTokenId));
             }
-            subscriptionCollections[_collectionId].garmentTokenIds.push(_mintedTokenId);
+            subscriptionCollections[_collectionId].subscriptionTokenIds.push(_mintedTokenId);
         }
 
         emit MintSubscriptionCollection(_collectionId, _bundleId, _rarity);
@@ -143,7 +143,7 @@ contract DigitalaxSubscriptionCollection is Context, ReentrancyGuard, IERC721Rec
             if(_childTokenIds.length > 0){
                 materials.batchMintChildren(_childTokenIds, _childTokenAmounts, address(garmentNft), abi.encodePacked(_mintedTokenId));
             }
-            subscriptionCollections[_collectionId].garmentTokenIds.push(_mintedTokenId);
+            subscriptionCollections[_collectionId].subscriptionTokenIds.push(_mintedTokenId);
         }
 
         _collection.garmentAmount = _collection.garmentAmount.add(_amount);
@@ -160,7 +160,7 @@ contract DigitalaxSubscriptionCollection is Context, ReentrancyGuard, IERC721Rec
         Collection storage collection = subscriptionCollections[_collectionId];
 
         for (uint i = 0; i < collection.garmentAmount; i ++) {
-            uint256 tokenId = collection.garmentTokenIds[i];
+            uint256 tokenId = collection.subscriptionTokenIds[i];
             garmentNft.safeTransferFrom(garmentNft.ownerOf(tokenId), address(this), tokenId);
             garmentNft.burn(tokenId);
         }
@@ -185,10 +185,10 @@ contract DigitalaxSubscriptionCollection is Context, ReentrancyGuard, IERC721Rec
     function getCollection(uint256 _collectionId)
     external
     view
-    returns (uint256[] memory _garmentTokenIds, uint256 _amount, string memory _tokenUri, address _designer) {
+    returns (uint256[] memory _subscriptionTokenIds, uint256 _amount, string memory _tokenUri, address _designer) {
         Collection memory collection = subscriptionCollections[_collectionId];
         return (
-            collection.garmentTokenIds,
+            collection.subscriptionTokenIds,
             collection.garmentAmount,
             collection.metadata,
             collection.designer
@@ -199,9 +199,9 @@ contract DigitalaxSubscriptionCollection is Context, ReentrancyGuard, IERC721Rec
      @notice Method for getting NFT tokenIds of the collection.
      @param _collectionId Id of the collection
      */
-    function getTokenIds(uint256 _collectionId) external view returns (uint256[] memory _garmentTokenIds) {
+    function getTokenIds(uint256 _collectionId) external view returns (uint256[] memory _subscriptionTokenIds) {
         Collection memory collection = subscriptionCollections[_collectionId];
-        return collection.garmentTokenIds;
+        return collection.subscriptionTokenIds;
     }
 
     /**
@@ -241,7 +241,7 @@ contract DigitalaxSubscriptionCollection is Context, ReentrancyGuard, IERC721Rec
         Collection storage collection = subscriptionCollections[_collectionId];
         uint256 _amount;
         for (uint i = 0; i < collection.garmentAmount; i ++) {
-            if (garmentNft.ownerOf(collection.garmentTokenIds[i]) == _address) {
+            if (garmentNft.ownerOf(collection.subscriptionTokenIds[i]) == _address) {
                 _amount = _amount.add(1);
             }
         }
