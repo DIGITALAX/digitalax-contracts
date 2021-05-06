@@ -85,6 +85,61 @@ dataSources:
         - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleSingleTransfer
       file: ./src/DigitalaxMaterials.mapping.ts
+    - kind: ethereum/contract
+    name: DigitalaxSubscriptionNFT
+    network: '{{network}}'
+    source:
+      address: '{{DigitalaxSubscriptionNFTAddress}}'
+      abi: DigitalaxSubscriptionNFT
+      startBlock: {{DigitalaxSubscriptionNFTStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: DigitalaxSubscriptionNFT
+          file: ./abis/DigitalaxSubscriptionNFT.json
+        - name: DFBundle
+          file: ./abis/DFBundle.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: ReceivedChild(indexed address,indexed uint256,indexed address,uint256,uint256)
+          handler: handleChildReceived
+        - event: DigitalaxGarmentTokenUriUpdate(indexed uint256,string)
+          handler: handleUriUpdated
+      file: ./src/DigitalaxSubscripionNFT.mapping.ts
+  - kind: ethereum/contract
+    name: DFBundle
+    network: '{{network}}'
+    source:
+      address: '{{DFBundleAddress}}'
+      abi: DFBundle
+      startBlock: {{DFBundleStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - ChildCreated
+        - ChildrenCreated
+        - TransferBatch
+        - TransferSingle
+      abis:
+        - name: DFBundle
+          file: ./abis/DFBundle.json
+      eventHandlers:
+        - event: ChildCreated(indexed uint256)
+          handler: handleChildCreated
+        - event: ChildrenCreated(uint256[])
+          handler: handleChildrenCreated
+        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
+          handler: handleBatchTransfer
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleSingleTransfer
+      file: ./src/DFBundle.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuction
     network: '{{network}}'
