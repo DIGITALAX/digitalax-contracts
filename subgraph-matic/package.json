@@ -8,8 +8,8 @@
     "prep:mumbai": "mustache networks/mumbai.json subgraph.template.yaml > subgraph.yaml && yarn codegen;",
     "create": "graph create digitalax/digitalaxmatic --node https://api.thegraph.com/deploy/",
     "create-local": "graph create blockrockettech/digitalax --node http://127.0.0.1:8020",
-    "deploy:mumbai": "yarn prep:testnet; graph deploy digitalax/digitalaxmumbai --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
-    "deploy:matic": "yarn prep:mainnet; graph deploy digitalax/digitalaxmatic --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
+    "deploy:mumbai": "yarn prep:mumbai; graph deploy --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/ digitalax/digitalaxmumbai",
+    "deploy:matic": "yarn prep:mainnet; graph deploy --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/ digitalax/digitalaxmatic",
     "deploy-local": "graph deploy blockrockettech/digitalax --ipfs http://localhost:5001 --node http://127.0.0.1:8020"
   },
   "devDependencies": {

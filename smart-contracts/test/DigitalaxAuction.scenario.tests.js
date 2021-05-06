@@ -97,7 +97,8 @@ contract('DigitalaxAuction scenario tests', (accounts) => {
     await this.oracle.pushReport(EXCHANGE_RATE, {from: provider});
 
     // Setup factory
-    this.factory = await DigitalaxGarmentFactory.new(
+    this.factory = await DigitalaxGarmentFactory.new();
+    await this.factory.initialize(
       this.token.address,
       this.digitalaxMaterials.address,
       this.accessControls.address,

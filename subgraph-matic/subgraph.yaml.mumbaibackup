@@ -1,0 +1,297 @@
+specVersion: 0.0.2
+description: Digitalax Smart Contract Indexing
+repository: https://github.com/DIGITALAX/digitalax-contracts/tree/main/subgraph
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: DigitalaxGenesisNFT
+    network: 'mumbai'
+    source:
+      address: '0x89505d2a27b7e8ac56252081d721ecd525e4241e'
+      abi: DigitalaxGenesisNFT
+      startBlock: 11157574
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - GenesisPurchased
+        - ContributionIncreased
+        - DigitalaxGenesisNFTContractDeployed
+      abis:
+        - name: DigitalaxGenesisNFT
+          file: ./abis/DigitalaxGenesisNFT.json
+      eventHandlers:
+        - event: GenesisPurchased(indexed address,indexed uint256,uint256)
+          handler: handleGenesisPurchased
+        - event: ContributionIncreased(indexed address,uint256)
+          handler: handleContributionIncreased
+        - event: DigitalaxGenesisNFTContractDeployed()
+          handler: handleGenesisDeployed
+      file: ./src/DigitalaxGenesisNFT.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxGarmentNFT
+    network: 'mumbai'
+    source:
+      address: '0x4CB61C672ff26c187394a9aA59360FbB6F23e83f'
+      abi: DigitalaxGarmentNFT
+      startBlock: 11680196
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: DigitalaxGarmentNFT
+          file: ./abis/DigitalaxGarmentNFT.json
+        - name: DigitalaxMaterials
+          file: ./abis/DigitalaxMaterials.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: ReceivedChild(indexed address,indexed uint256,indexed address,uint256,uint256)
+          handler: handleChildReceived
+        - event: DigitalaxGarmentTokenUriUpdate(indexed uint256,string)
+          handler: handleUriUpdated
+      file: ./src/DigitalaxGarmentNFT.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxMaterials
+    network: 'mumbai'
+    source:
+      address: '0xACe5A62D509aA947ffFfF55043b317bFc8316bc2'
+      abi: DigitalaxMaterials
+      startBlock: 11675933
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - ChildCreated
+        - ChildrenCreated
+        - TransferBatch
+        - TransferSingle
+      abis:
+        - name: DigitalaxMaterials
+          file: ./abis/DigitalaxMaterials.json
+      eventHandlers:
+        - event: ChildCreated(indexed uint256)
+          handler: handleChildCreated
+        - event: ChildrenCreated(uint256[])
+          handler: handleChildrenCreated
+        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
+          handler: handleBatchTransfer
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleSingleTransfer
+      file: ./src/DigitalaxMaterials.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxAuction
+    network: 'mumbai'
+    source:
+      address: '0x5890F309265870D508556E654FDf5903e51c3f37'
+      abi: DigitalaxAuction
+      startBlock: 11686431
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - AuctionCreated
+        - AuctionResulted
+        - AuctionCancelled
+        - BidPlaced
+        - BidWithdrawn
+        - BidRefunded
+      abis:
+        - name: DigitalaxAuction
+          file: ./abis/DigitalaxAuction.json
+      eventHandlers:
+        - event: AuctionCreated(indexed uint256)
+          handler: handleAuctionCreated
+        - event: DigitalaxAuctionContractDeployed()
+          handler: handleDigitalaxAuctionContractDeployed
+        - event: BidPlaced(indexed uint256,indexed address,uint256)
+          handler: handleBidPlaced
+        - event: BidWithdrawn(indexed uint256,indexed address,uint256)
+          handler: handleBidWithdrawn
+        - event: AuctionResulted(indexed uint256,indexed address,uint256)
+          handler: handleAuctionResulted
+        - event: AuctionCancelled(indexed uint256)
+          handler: handleAuctionCancelled
+        - event: UpdateBidWithdrawalLockTime(uint256)
+          handler: handleUpdateBidWithdrawalLockTime
+        - event: UpdateMinBidIncrement(uint256)
+          handler: handleUpdateMinBidIncrement
+        - event: UpdateAuctionReservePrice(indexed uint256,uint256)
+          handler: handleUpdateAuctionReservePrice
+        - event: UpdateAuctionStartTime(indexed uint256,uint256)
+          handler: handleUpdateAuctionStartTime
+        - event: UpdateAuctionEndTime(indexed uint256,uint256)
+          handler: handleUpdateAuctionEndTime
+        - event: UpdatePlatformFee(uint256)
+          handler: handleUpdatePlatformFee
+        - event: UpdatePlatformFeeRecipient(address)
+          handler: handleUpdatePlatformFeeRecipient
+      file: ./src/DigitalaxAuction.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxAccessControls
+    network: 'mumbai'
+    source:
+      address: '0xf7580d46080E1ce832aC44cF7224b906D44110B4'
+      abi: DigitalaxAccessControls
+      startBlock: 11673871
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - AdminRoleGranted
+        - AdminRoleRemoved
+        - MinterRoleGranted
+        - MinterRoleRemoved
+        - SmartContractRoleGranted
+        - SmartContractRoleRemoved
+        - VerifiedMinterRoleGranted
+        - VerifiedMinterRoleRemoved
+      abis:
+        - name: DigitalaxAccessControls
+          file: ./abis/DigitalaxAccessControls.json
+      eventHandlers:
+        - event: AdminRoleGranted(indexed address,indexed address)
+          handler: handleAdminRoleGranted
+        - event: AdminRoleRemoved(indexed address,indexed address)
+          handler: handleAdminRoleRemoved
+        - event: MinterRoleGranted(indexed address,indexed address)
+          handler: handleMinterRoleGranted
+        - event: MinterRoleRemoved(indexed address,indexed address)
+          handler: handleMinterRoleRemoved
+        - event: SmartContractRoleGranted(indexed address,indexed address)
+          handler: handleSmartContractRoleGranted
+        - event: SmartContractRoleRemoved(indexed address,indexed address)
+          handler: handleSmartContractRoleRemoved
+        - event: VerifiedMinterRoleGranted(indexed address,indexed address)
+          handler: handleVerifiedMinterRoleGranted
+        - event: VerifiedMinterRoleRemoved(indexed address,indexed address)
+          handler: handleVerifiedMinterRoleRemoved
+      file: ./src/DigitalaxAccessControls.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxGarmentCollection
+    network: 'mumbai'
+    source:
+      address: '0x1A785E4F4c7561Fb9495734B418D4f001266ec6b'
+      abi: DigitalaxGarmentCollection
+      startBlock: 11829825
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - MintGarmentCollection
+        - BurnGarmentCollection
+      abis:
+        - name: DigitalaxGarmentCollection
+          file: ./abis/DigitalaxGarmentCollection.json
+      eventHandlers:
+        - event: MintGarmentCollection(uint256,uint256,string)
+          handler: handleGarmentCollectionMinted
+        - event: BurnGarmentCollection(uint256)
+          handler: handleGarmentCollectionBurned
+      file: ./src/DigitalaxGarmentCollection.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxMarketplace
+    network: 'mumbai'
+    source:
+      address: '0x1c6976911FdcBF6BaAEa17c80051525c41681Dae'
+      abi: DigitalaxMarketplace
+      startBlock: 11709635
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - DigitalaxMarketplaceContractDeployed
+        - UpdateMarketplacePlatformFee
+        - UpdateMarketplaceDiscountToPayInErc20
+        - OfferCreated
+        - UpdateOfferPrimarySalePrice
+        - OfferPurchased
+        - OfferCancelled
+      abis:
+        - name: DigitalaxMarketplace
+          file: ./abis/DigitalaxMarketplace.json
+      eventHandlers:
+        - event: DigitalaxMarketplaceContractDeployed()
+          handler: handleMarketplaceDeployed
+        - event: UpdateMarketplacePlatformFee(indexed uint256,uint256)
+          handler: handleUpdateMarketplacePlatformFee
+        - event: UpdateMarketplaceDiscountToPayInErc20(indexed uint256,uint256)
+          handler: handleUpdateMarketplaceDiscountToPayInErc20
+        - event: OfferCreated(indexed uint256)
+          handler: handleOfferCreated
+        - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
+          handler: handleOfferPrimarySalePriceUpdated
+        - event: OfferPurchased(indexed uint256,indexed uint256,indexed address,uint256,bool,uint256,uint256,uint256)
+          handler: handleOfferPurchased
+        - event: OfferCancelled(indexed uint256)
+          handler: handleOfferCancelled
+      file: ./src/DigitalaxMarketplace.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxPodePortal
+    network: 'mumbai'
+    source:
+      address: '0x87c3C6B9C917B1732f13d36d6938E4f8802f7c7E'
+      abi: DigitalaxPodePortal
+      startBlock: 11740618
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - DigitalaxPodePortalMetadataAdded
+      abis:
+        - name: DigitalaxPodePortal
+          file: ./abis/DigitalaxPodePortal.json
+      eventHandlers:
+        - event: DigitalaxPodePortalMetadataAdded(uint256,string)
+          handler: handleMetadataAdded
+      file: ./src/DigitalaxPodePortal.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxIndex
+    network: 'mumbai'
+    source:
+      address: '0x93401DB6e0E17078f785019878063ce5baBA9d46'
+      abi: DigitalaxIndex
+      startBlock: 11709635
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - AuctionSetAdded
+        - AuctionSetRemoved
+        - AuctionSetUpdated
+        - DesignerSetAdded
+        - DesignerSetRemoved
+        - DesignerSetUpdated
+        - DesignerInfoUpdated
+      abis:
+        - name: DigitalaxIndex
+          file: ./abis/DigitalaxIndex.json
+      eventHandlers:
+        - event: AuctionSetAdded(indexed uint256,uint256[])
+          handler: handleAuctionSetAdded
+        - event: AuctionSetRemoved(indexed uint256)
+          handler: handleAuctionSetRemoved
+        - event: AuctionSetUpdated(indexed uint256,uint256[])
+          handler: handleAuctionSetUpdated
+        - event: DesignerSetAdded(indexed uint256,uint256[])
+          handler: handleDesignerSetAdded
+        - event: DesignerSetRemoved(indexed uint256)
+          handler: handleDesignerSetRemoved
+        - event: DesignerSetUpdated(indexed uint256,uint256[])
+          handler: handleDesignerSetUpdated
+        - event: DesignerInfoUpdated(indexed uint256,string)
+          handler: handleDesignerInfoUpdated
+      file: ./src/DigitalaxIndex.mapping.ts
+
