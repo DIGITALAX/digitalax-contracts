@@ -85,7 +85,7 @@ dataSources:
         - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleSingleTransfer
       file: ./src/DigitalaxMaterials.mapping.ts
-    - kind: ethereum/contract
+  - kind: ethereum/contract
     name: DigitalaxSubscriptionNFT
     network: '{{network}}'
     source:
@@ -110,7 +110,7 @@ dataSources:
           handler: handleChildReceived
         - event: DigitalaxGarmentTokenUriUpdate(indexed uint256,string)
           handler: handleUriUpdated
-      file: ./src/DigitalaxSubscripionNFT.mapping.ts
+      file: ./src/DigitalaxSubscriptionNFT.mapping.ts
   - kind: ethereum/contract
     name: DFBundle
     network: '{{network}}'
