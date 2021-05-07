@@ -5,32 +5,6 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: DigitalaxGenesisNFT
-    network: '{{network}}'
-    source:
-      address: '{{DigitalaxGenesisNFTAddress}}'
-      abi: DigitalaxGenesisNFT
-      startBlock: {{DigitalaxGenesisNFTStartBlock}}
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.3
-      language: wasm/assemblyscript
-      entities:
-        - GenesisPurchased
-        - ContributionIncreased
-        - DigitalaxGenesisNFTContractDeployed
-      abis:
-        - name: DigitalaxGenesisNFT
-          file: ./abis/DigitalaxGenesisNFT.json
-      eventHandlers:
-        - event: GenesisPurchased(indexed address,indexed uint256,uint256)
-          handler: handleGenesisPurchased
-        - event: ContributionIncreased(indexed address,uint256)
-          handler: handleContributionIncreased
-        - event: DigitalaxGenesisNFTContractDeployed()
-          handler: handleGenesisDeployed
-      file: ./src/DigitalaxGenesisNFT.mapping.ts
-  - kind: ethereum/contract
     name: DigitalaxGarmentNFT
     network: '{{network}}'
     source:

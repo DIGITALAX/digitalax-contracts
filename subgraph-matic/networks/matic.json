@@ -1,7 +1,5 @@
 {
     "network": "matic",
-    "DigitalaxGenesisNFTAddress": "0x89505d2a27b7e8ac56252081d721ecd525e4241e",
-    "DigitalaxGenesisNFTStartBlock": 12000000,
     "DigitalaxGarmentNFTAddress": "0x728Af879c3212cEf7a51D7fC296b5e9b7c14dbf6",
     "DigitalaxGarmentNFTStartBlock": 12226596,
     "DigitalaxMaterialsAddress": "0x9f0A468AeA1e0F080fB7C9f3E1F9774D1bFAf821",

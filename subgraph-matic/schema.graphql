@@ -26,25 +26,6 @@ type DigitalaxSubscriptionNFTGlobalStat @entity {
   totalMarketplaceSalesInMona: BigInt! # Mona value collected in WEI across all marketplace
 }
 
-type GenesisContributor @entity {
-  id: ID!
-  contributor: Bytes! # address
-  totalContributionInWei: BigInt!
-  firstContributedTimestamp: BigInt!
-  lastContributedTimestamp: BigInt!
-}
-
-type DigitalaxGenesisContract @entity {
-  id: ID!
-  accessControls: Bytes!
-  fundsMultisig: Bytes!
-  genesisStart: BigInt!
-  genesisEnd: BigInt!
-  minimumContributionAmount: BigInt!
-  maximumContributionAmount: BigInt!
-  totalContributions: BigInt!
-}
-
 type DigitalaxGarmentChild @entity {
   id: ID! # {parent-token-id}-{child-token-id}
   parentId: BigInt! # parent token ID

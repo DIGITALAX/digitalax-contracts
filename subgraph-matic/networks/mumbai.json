@@ -1,7 +1,5 @@
 {
     "network": "mumbai",
-    "DigitalaxGenesisNFTAddress": "0x89505d2a27b7e8ac56252081d721ecd525e4241e",
-    "DigitalaxGenesisNFTStartBlock": 11157574,
     "DigitalaxGarmentNFTAddress": "0x4CB61C672ff26c187394a9aA59360FbB6F23e83f",
     "DigitalaxGarmentNFTStartBlock": 11680196,
     "DigitalaxMaterialsAddress": "0xACe5A62D509aA947ffFfF55043b317bFc8316bc2",
