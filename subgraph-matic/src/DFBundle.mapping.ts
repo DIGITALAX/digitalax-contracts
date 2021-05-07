@@ -8,7 +8,7 @@ import {
     TransferSingle
 } from "../generated/DFBundle/DFBundle";
 
-import { DFBundle } from "../generated/schema";
+import { DigitalaxBundle } from "../generated/schema";
 
 import {ZERO, ZERO_ADDRESS} from "./constants";
 import {loadOrCreateDigitalaxSubscriptionCollector} from "./factory/DigitalaxSubscriptionCollector.factory";
@@ -19,7 +19,7 @@ export function handleChildCreated(event: ChildCreated): void {
     log.info("handleChildCreated @ Child ID {}", [event.params.childId.toString()]);
     let contract = DFBundleContract.bind(event.address);
 
-    let strand = new DFBundle(event.params.childId.toString());
+    let strand = new DigitalaxBundle(event.params.childId.toString());
     strand.tokenUri = contract.uri(event.params.childId);
     strand.totalSupply = BigInt.fromI32(0);
     strand.save();
@@ -27,12 +27,12 @@ export function handleChildCreated(event: ChildCreated): void {
 
 export function handleChildrenCreated(event: ChildrenCreated): void {
     log.info("handleChildrenCreated", []);
-    let contract = DFBundle.bind(event.address);
+    let contract = DFBundleContract.bind(event.address);
 
     let childIds = event.params.childIds;
     for (let i = 0; i < event.params.childIds.length; i++) {
         let childId: BigInt = childIds.pop();
-        let strand = new DFBundle(childId.toString());
+        let strand = new DigitalaxBundle(childId.toString());
         strand.tokenUri = contract.uri(childId);
         strand.totalSupply = BigInt.fromI32(0);
         strand.save();
@@ -51,7 +51,7 @@ export function handleSingleTransfer(event: TransferSingle): void {
     // Ensure total supply is correct in cases of birthing or burning
     let contract: DFBundleContract = DFBundleContract.bind(event.address);
     let childId: BigInt = event.params.id;
-    let childToken: DFBundle | null = DFBundle.load(childId.toString());
+    let childToken: DigitalaxBundle | null = DigitalaxBundle.load(childId.toString());
     childToken.totalSupply = contract.tokenTotalSupply(childId);
     childToken.save();
 
@@ -155,7 +155,7 @@ export function handleBatchTransfer(event: TransferBatch): void {
     // Model total supply - Ensure total supply is correct in cases of birthing or burning
     for (let i: number = 0; i < totalIdsTransferred; i++) {
         let childId: BigInt = allIdsInBatch[i as i32];
-        let child: DFBundle | null = DFBundle.load(childId.toString());
+        let child: DigitalaxBundle | null = DigitalaxBundle.load(childId.toString());
         child.totalSupply = contract.tokenTotalSupply(childId);
         child.save();
     }

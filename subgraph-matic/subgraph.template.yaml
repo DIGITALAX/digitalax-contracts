@@ -292,6 +292,70 @@ dataSources:
           handler: handleOfferCancelled
       file: ./src/DigitalaxMarketplace.mapping.ts
   - kind: ethereum/contract
+    name: DigitalaxSubscriptionCollection
+    network: '{{network}}'
+    source:
+      address: '{{DigitalaxSubscriptionCollectionAddress}}'
+      abi: DigitalaxSubscriptionCollection
+      startBlock: {{DigitalaxSubscriptionCollectionStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - MintSubscriptionCollection
+        - BurnSubscriptionCollection
+      abis:
+        - name: DigitalaxSubscriptionCollection
+          file: ./abis/DigitalaxSubscriptionCollection.json
+      eventHandlers:
+        - event: MintSubscriptionCollection(uint256,uint256,string)
+          handler: handleSubscriptionCollectionMinted
+        - event: BurnSubscriptionCollection(uint256)
+          handler: handleSubscriptionCollectionBurned
+      file: ./src/DigitalaxSubscriptionCollection.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxSubscriptionMarketplace
+    network: '{{network}}'
+    source:
+      address: '{{DigitalaxSubscriptionMarketplaceAddress}}'
+      abi: DigitalaxSubscriptionMarketplace
+      startBlock: {{DigitalaxSubscriptionMarketplaceStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - DigitalaxSubscriptionMarketplaceContractDeployed
+        - UpdateMarketplacePlatformFee
+        - UpdateMarketplaceDiscountToPayInErc20
+        - OfferCreated
+        - UpdateOfferPrimarySalePrice
+        - UpdateOfferStartEnd
+        - OfferPurchased
+        - OfferCancelled
+      abis:
+        - name: DigitalaxSubscriptionMarketplace
+          file: ./abis/DigitalaxSubscriptionMarketplace.json
+      eventHandlers:
+        - event: DigitalaxSubscriptionMarketplaceContractDeployed()
+          handler: handleMarketplaceDeployed
+        - event: UpdateMarketplacePlatformFee(indexed uint256,uint256)
+          handler: handleUpdateMarketplacePlatformFee
+        - event: UpdateMarketplaceDiscountToPayInErc20(indexed uint256,uint256)
+          handler: handleUpdateMarketplaceDiscountToPayInErc20
+        - event: OfferCreated(indexed uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleOfferCreated
+        - event:  UpdateOfferStartEnd(indexed uint256,uint256,uint256)
+          handler:  handleUpdateOfferStartEnd
+        - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
+          handler: handleOfferPrimarySalePriceUpdated
+        - event: OfferPurchased(indexed uint256,indexed uint256,indexed address,uint256,bool,uint256,uint256,uint256)
+          handler: handleOfferPurchased
+        - event: OfferCancelled(indexed uint256)
+          handler: handleOfferCancelled
+      file: ./src/DigitalaxSubscriptionMarketplace.mapping.ts
+  - kind: ethereum/contract
     name: DigitalaxPodePortal
     network: '{{network}}'
     source:

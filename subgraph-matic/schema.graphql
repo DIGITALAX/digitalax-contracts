@@ -17,7 +17,7 @@ type DigitalaxGarmentNFTGlobalStat @entity {
   totalSalesValue: BigInt! # Eth value in WEI accross all successful auctions
   totalActiveBidsValue: BigInt! # Eth value of the active aggregate bids across all in flight auctions
   totalMarketplaceSalesInETH: BigInt! # Eth value collected in WEI across all marketplace
-  totalMarketplaceSalesInMona: BigInt! # Mona value collected in WEI across all marketplace 
+  totalMarketplaceSalesInMona: BigInt! # Mona value collected in WEI across all marketplace
 }
 
 type DigitalaxSubscriptionNFTGlobalStat @entity {
@@ -217,7 +217,7 @@ type DigitalaxMarketplaceOffer @entity {
   discountToPayMona: BigInt!
 }
 
-type DigitalaxSubscriptionOffer @entity {
+type DigitalaxSubscriptionMarketplaceOffer @entity {
   id: ID!
   subscriptionCollection: DigitalaxSubscriptionCollection!
   primarySalePrice: BigInt!
