@@ -294,7 +294,7 @@ dataSources:
     source:
       address: '0xb7e04a24934bFfEbB2687e3015fA4F00B858A543'
       abi: DigitalaxSubscriptionMarketplace
-      startBlock:
+      startBlock: 12000000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

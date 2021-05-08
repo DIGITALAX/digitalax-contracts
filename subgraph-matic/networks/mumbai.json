@@ -21,7 +21,7 @@
     "DFBundleAddress": "0x67Bd2D7d361fA0C4BC89E4D2cf758A4C0CbFd7D7",
     "DFBundleStartBlock": 12000000,
     "DigitalaxSubscriptionMarketplaceAddress": "0xb7e04a24934bFfEbB2687e3015fA4F00B858A543",
-    "DigitalaxSubcriptionMarketplaceStartBlock": 12000000,
+    "DigitalaxSubscriptionMarketplaceStartBlock": 12000000,
     "DigitalaxSubscriptionCollectionAddress": "0x2147f0D108D366ECF33aa332247BED7095B0231A",
     "DigitalaxSubscriptionCollectionStartBlock": 12000000
 }
