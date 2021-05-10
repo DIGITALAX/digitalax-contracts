@@ -22,6 +22,7 @@ export function handleSubscriptionCollectionMinted(event: MintSubscriptionCollec
     }
     collection.garments = mintedGarments;
     collection.rarity = event.params.rarity;
+    collection.bundleID = event.params.collectionId;
     collection.save();
 }
 
@@ -30,5 +31,6 @@ export function handleSubscriptionCollectionBurned(event: BurnSubscriptionCollec
     let collection = DigitalaxSubscriptionCollection.load(event.params.collectionId.toString());
     collection.garments = null;
     collection.rarity = null;
+    collection.bundleID = null;
     collection.save();
 }
