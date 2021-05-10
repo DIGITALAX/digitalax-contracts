@@ -43,11 +43,11 @@ export function handleOfferCreated(event: OfferCreated): void {
     let contract = DigitalaxSubscriptionMarketplaceContract.bind(event.address);
     let offer = new DigitalaxSubscriptionMarketplaceOffer(event.params.subscriptionCollectionId.toString());
     let offerData = contract.getOffer(event.params.subscriptionCollectionId);
+    offer.subscriptionCollection = event.params.subscriptionCollectionId.toString();
     offer.primarySalePrice = offerData.value0;
     offer.startTime = offerData.value1;
     offer.endTime = offerData.value2;
     offer.amountSold = ZERO;
-    offer.subscriptionCollection = event.params.subscriptionCollectionId.toString();
     offer.marketplacePlatformFee = offerData.value4;
     offer.discountToPayMona = offerData.value5;
     offer.save();

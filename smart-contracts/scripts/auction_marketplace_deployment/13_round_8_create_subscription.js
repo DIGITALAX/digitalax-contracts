@@ -70,11 +70,33 @@ async function main() {
   // Next step is mint collections and open buy offers, run 1 at a time in production in case something drops
   const collectionUris = [
       {
-          // Collection 2 Semi-Rare
+          // Collection 5 Exclusive
           uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/test_digifizzy/hash.json').uri,
+          price: reservePrice2_exclusive,
+          collectionDesigner: FUND_MULTISIG_ADDRESS,
+          amountToMintInCollection: 50,
+          collectionId: 1,
+          rarity: 'Exclusive',
+          tokendIds: [100001],
+          tokenAmounts: [5],
+      },
+      {
+          // Collection 6 Semirare
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/test_digifizzy_6/hash.json').uri,
+          price: reservePrice2_semirare,
+          collectionDesigner: FUND_MULTISIG_ADDRESS,
+          amountToMintInCollection: 200,
+          collectionId: 1,
+          rarity: 'Semi-Rare',
+          tokendIds: [100001],
+          tokenAmounts: [5],
+      },
+      {
+          // Collection 7 Exclusive
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/test_digifizzy_7/hash.json').uri,
           price: reservePrice_common,
           collectionDesigner: FUND_MULTISIG_ADDRESS,
-          amountToMintInCollection: 128,
+          amountToMintInCollection: 500,
           collectionId: 1,
           rarity: 'Common',
           tokendIds: [100001],
