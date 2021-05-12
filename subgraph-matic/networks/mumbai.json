@@ -23,5 +23,9 @@
     "DigitalaxSubscriptionMarketplaceAddress": "0xb7e04a24934bFfEbB2687e3015fA4F00B858A543",
     "DigitalaxSubscriptionMarketplaceStartBlock": 12000000,
     "DigitalaxSubscriptionCollectionAddress": "0x2147f0D108D366ECF33aa332247BED7095B0231A",
-    "DigitalaxSubscriptionCollectionStartBlock": 12000000
+    "DigitalaxSubscriptionCollectionStartBlock": 12000000,
+    "DigitalaxGarmentNFTv2Address": "0x1Bc6D640710759Be37E5DCD1b23B322250353751",
+    "DigitalaxGarmentNFTv2StartBlock": 12000000,
+    "DigitalaxMaterialsV2Address": "0x632914B69B11DCa3b391B62FB2812f5Eee36A626",
+    "DigitalaxMaterialsV2StartBlock": 12000000
 }
