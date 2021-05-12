@@ -56,49 +56,49 @@ async function main() {
 
   //// SETTINGS
 
-  const reservePrice_common = '50000000000000000'; // reduced 10x
-  const reservePrice2_semirare = '100000000000000000'; // reduced 10x
-  const reservePrice2_exclusive = '200000000000000000'; // reduced 10x
+  const reservePrice_common = '50000000000000000'; // reduced 10x TODO ****
+  const reservePrice2_semirare = '100000000000000000'; // reduced 10x TODO ***
+  const reservePrice2_exclusive = '200000000000000000'; // reduced 10x TODO **
 
  // const test_startTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th
 
-  const mainnet_startTime = '1616439400'; //  TODO confirm
-  const mainnet_endTime = '2616439400'; //  TODO confirm
+  const mainnet_startTime = '1620712800'; //  TODO confirm
+  const mainnet_endTime = '1622440800'; //  TODO confirm
 
   // Use the single auction id processed in the last script to build auction id specific collections in this script
 
   // Next step is mint collections and open buy offers, run 1 at a time in production in case something drops
   const collectionUris = [
       {
-          // Collection 5 Exclusive
-          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/test_digifizzy/hash.json').uri,
-          price: reservePrice2_exclusive,
-          collectionDesigner: FUND_MULTISIG_ADDRESS,
-          amountToMintInCollection: 50,
-          collectionId: 1,
-          rarity: 'Exclusive',
-          tokendIds: [100001],
-          tokenAmounts: [5],
-      },
-      {
-          // Collection 6 Semirare
-          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/test_digifizzy_6/hash.json').uri,
-          price: reservePrice2_semirare,
-          collectionDesigner: FUND_MULTISIG_ADDRESS,
-          amountToMintInCollection: 200,
-          collectionId: 1,
-          rarity: 'Semi-Rare',
-          tokendIds: [100001],
-          tokenAmounts: [5],
-      },
-      {
-          // Collection 7 Exclusive
-          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/test_digifizzy_7/hash.json').uri,
+          // Collection 1 Common
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/DigiFizzy/digifizzy_1_common/hash.json').uri,
           price: reservePrice_common,
           collectionDesigner: FUND_MULTISIG_ADDRESS,
           amountToMintInCollection: 500,
           collectionId: 1,
           rarity: 'Common',
+          tokendIds: [100001],
+          tokenAmounts: [5],
+      },
+      {
+          // Collection 2 Semirare
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/DigiFizzy/digifizzy_2_semirare/hash.json').uri,
+          price: reservePrice2_semirare,
+          collectionDesigner: FUND_MULTISIG_ADDRESS,
+          amountToMintInCollection: 200,
+          collectionId: 2,
+          rarity: 'Semi-Rare',
+          tokendIds: [100001],
+          tokenAmounts: [5],
+      },
+      {
+          // Collection 3 Exclusive
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/DigiFizzy/digifizzy_3_exclusive/hash.json').uri,
+          price: reservePrice2_exclusive,
+          collectionDesigner: FUND_MULTISIG_ADDRESS,
+          amountToMintInCollection: 50,
+          collectionId: 3,
+          rarity: 'Exclusive',
           tokendIds: [100001],
           tokenAmounts: [5],
       }
@@ -176,7 +176,7 @@ async function main() {
         mainnet_endTime,
         0,
         0,
-        50
+        10 // Hardcoded 10 as maximum for this round
     );
 
     await createOfferTx.wait();
