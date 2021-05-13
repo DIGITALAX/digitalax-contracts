@@ -5,32 +5,6 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: DigitalaxGenesisNFT
-    network: 'mumbai'
-    source:
-      address: '0x89505d2a27b7e8ac56252081d721ecd525e4241e'
-      abi: DigitalaxGenesisNFT
-      startBlock: 11157574
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      entities:
-        - GenesisPurchased
-        - ContributionIncreased
-        - DigitalaxGenesisNFTContractDeployed
-      abis:
-        - name: DigitalaxGenesisNFT
-          file: ./abis/DigitalaxGenesisNFT.json
-      eventHandlers:
-        - event: GenesisPurchased(indexed address,indexed uint256,uint256)
-          handler: handleGenesisPurchased
-        - event: ContributionIncreased(indexed address,uint256)
-          handler: handleContributionIncreased
-        - event: DigitalaxGenesisNFTContractDeployed()
-          handler: handleGenesisDeployed
-      file: ./src/DigitalaxGenesisNFT.mapping.ts
-  - kind: ethereum/contract
     name: DigitalaxGarmentNFT
     network: 'mumbai'
     source:
@@ -85,6 +59,116 @@ dataSources:
         - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleSingleTransfer
       file: ./src/DigitalaxMaterials.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxGarmentNFTv2
+    network: 'mumbai'
+    source:
+      address: '0x1Bc6D640710759Be37E5DCD1b23B322250353751'
+      abi: DigitalaxGarmentNFTv2
+      startBlock: 12000000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: DigitalaxGarmentNFTv2
+          file: ./abis/DigitalaxGarmentNFTv2.json
+        - name: DigitalaxMaterialsV2
+          file: ./abis/DigitalaxMaterialsV2.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: ReceivedChild(indexed address,indexed uint256,indexed address,uint256,uint256)
+          handler: handleChildReceived
+        - event: DigitalaxGarmentTokenUriUpdate(indexed uint256,string)
+          handler: handleUriUpdated
+      file: ./src/DigitalaxGarmentNFTv2.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxMaterialsV2
+    network: 'mumbai'
+    source:
+      address: '0x632914B69B11DCa3b391B62FB2812f5Eee36A626'
+      abi: DigitalaxMaterialsV2
+      startBlock: 12000000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - ChildCreated
+        - ChildrenCreated
+        - TransferBatch
+        - TransferSingle
+      abis:
+        - name: DigitalaxMaterialsV2
+          file: ./abis/DigitalaxMaterialsV2.json
+      eventHandlers:
+        - event: ChildCreated(indexed uint256)
+          handler: handleChildCreated
+        - event: ChildrenCreated(uint256[])
+          handler: handleChildrenCreated
+        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
+          handler: handleBatchTransfer
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleSingleTransfer
+      file: ./src/DigitalaxMaterialsV2.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxSubscriptionNFT
+    network: 'mumbai'
+    source:
+      address: '0xD309F477dbA416E5C123Bd0215e6d1eA0a6A81A6'
+      abi: DigitalaxSubscriptionNFT
+      startBlock: 12000000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: DigitalaxSubscriptionNFT
+          file: ./abis/DigitalaxSubscriptionNFT.json
+        - name: DFBundle
+          file: ./abis/DFBundle.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: ReceivedChild(indexed address,indexed uint256,indexed address,uint256,uint256)
+          handler: handleChildReceived
+        - event: DigitalaxGarmentTokenUriUpdate(indexed uint256,string)
+          handler: handleUriUpdated
+      file: ./src/DigitalaxSubscriptionNFT.mapping.ts
+  - kind: ethereum/contract
+    name: DFBundle
+    network: 'mumbai'
+    source:
+      address: '0x67Bd2D7d361fA0C4BC89E4D2cf758A4C0CbFd7D7'
+      abi: DFBundle
+      startBlock: 12000000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - ChildCreated
+        - ChildrenCreated
+        - TransferBatch
+        - TransferSingle
+      abis:
+        - name: DFBundle
+          file: ./abis/DFBundle.json
+      eventHandlers:
+        - event: ChildCreated(indexed uint256)
+          handler: handleChildCreated
+        - event: ChildrenCreated(uint256[])
+          handler: handleChildrenCreated
+        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
+          handler: handleBatchTransfer
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleSingleTransfer
+      file: ./src/DFBundle.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuction
     network: 'mumbai'
@@ -237,6 +321,70 @@ dataSources:
           handler: handleOfferCancelled
       file: ./src/DigitalaxMarketplace.mapping.ts
   - kind: ethereum/contract
+    name: DigitalaxSubscriptionCollection
+    network: 'mumbai'
+    source:
+      address: '0x2147f0D108D366ECF33aa332247BED7095B0231A'
+      abi: DigitalaxSubscriptionCollection
+      startBlock: 12000000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - MintSubscriptionCollection
+        - BurnSubscriptionCollection
+      abis:
+        - name: DigitalaxSubscriptionCollection
+          file: ./abis/DigitalaxSubscriptionCollection.json
+      eventHandlers:
+        - event: MintSubscriptionCollection(uint256,uint256,string)
+          handler: handleSubscriptionCollectionMinted
+        - event: BurnSubscriptionCollection(uint256)
+          handler: handleSubscriptionCollectionBurned
+      file: ./src/DigitalaxSubscriptionCollection.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxSubscriptionMarketplace
+    network: 'mumbai'
+    source:
+      address: '0xb7e04a24934bFfEbB2687e3015fA4F00B858A543'
+      abi: DigitalaxSubscriptionMarketplace
+      startBlock: 12000000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - DigitalaxSubscriptionMarketplaceContractDeployed
+        - UpdateMarketplacePlatformFee
+        - UpdateMarketplaceDiscountToPayInErc20
+        - OfferCreated
+        - UpdateOfferPrimarySalePrice
+        - UpdateOfferStartEnd
+        - OfferPurchased
+        - OfferCancelled
+      abis:
+        - name: DigitalaxSubscriptionMarketplace
+          file: ./abis/DigitalaxSubscriptionMarketplace.json
+      eventHandlers:
+        - event: DigitalaxSubscriptionMarketplaceContractDeployed()
+          handler: handleMarketplaceDeployed
+        - event: UpdateMarketplacePlatformFee(indexed uint256,uint256)
+          handler: handleUpdateMarketplacePlatformFee
+        - event: UpdateMarketplaceDiscountToPayInErc20(indexed uint256,uint256)
+          handler: handleUpdateMarketplaceDiscountToPayInErc20
+        - event: OfferCreated(indexed uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleOfferCreated
+        - event:  UpdateOfferStartEnd(indexed uint256,uint256,uint256)
+          handler:  handleUpdateOfferStartEnd
+        - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
+          handler: handleOfferPrimarySalePriceUpdated
+        - event: OfferPurchased(indexed uint256,indexed uint256,indexed address,uint256,bool,uint256,uint256,uint256)
+          handler: handleOfferPurchased
+        - event: OfferCancelled(indexed uint256)
+          handler: handleOfferCancelled
+      file: ./src/DigitalaxSubscriptionMarketplace.mapping.ts
+  - kind: ethereum/contract
     name: DigitalaxPodePortal
     network: 'mumbai'
     source:
@@ -294,4 +442,3 @@ dataSources:
         - event: DesignerInfoUpdated(indexed uint256,string)
           handler: handleDesignerInfoUpdated
       file: ./src/DigitalaxIndex.mapping.ts
-
