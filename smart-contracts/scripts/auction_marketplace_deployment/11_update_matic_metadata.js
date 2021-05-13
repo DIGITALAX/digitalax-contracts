@@ -24,12 +24,6 @@ async function main() {
         deployer
   );
 
-  // const auction = new ethers.Contract(
-  //       AUCTION_ADDRESS,
-  //       AuctionArtifact.abi,
-  //       deployer
-  //  );
-
     const metadata = require('./res.json');
     //  console.log(metadata.data);
     console.log(metadata.data.length)
@@ -67,7 +61,7 @@ async function main() {
     console.log(tokenUris);
 
   console.log(' setting prices');
-/*
+
   const salePricetx = await garment.batchSetPrimarySalePrice(
       tokenIds,
       primarySalePrices);
@@ -89,12 +83,8 @@ async function main() {
 
   await uritx.wait();
 
-*/
 
     amountToSetInitially = amountToSetInitially + 1;
-
-    // do txs
-
 
   // Mint more
   let counter = 0;
@@ -158,103 +148,6 @@ async function main() {
 
     }
   }
-
-  // Mint collection
-  // const tx = await garmentCollection.mintCollection(
-  //     collectionForMarketplace.uri,
-  //     collectionForMarketplace.collectionDesigner,
-  //     amountToMintInitially,
-  //     collectionForMarketplace.auctionIdToLink,
-  //     collectionForMarketplace.rarity,
-  //     collectionForMarketplace.tokendIds, // childTokenIds
-  //     collectionForMarketplace.tokenAmounts, // childTokenAmounts
-  // );
-  //
-  // const createCollectionId = await new Promise((resolve, reject) => {
-  //   garmentCollection.on('MintGarmentCollection',
-  //       async (collectionId, auctionId, rarity, event) => {
-  //         const block = await event.getBlock();
-  //         console.log(`Collection # ${collectionId} created`);
-  //         console.log(`at time ${block.timestamp} for auction id ${auctionId}`);
-  //         resolve(collectionId);
-  //       });
-  // });
-  //
-  // await tx.wait();
-  // arrayOfCollectionIdsDeployedForExclusiveNFT.push(createCollectionId.toString());
-  //
-  // console.log(`-Collection created-`);
-  //
-  // // Mint more
-  // if(numberOfLoops > 0){
-  //   while(numberOfLoops--){
-  //     const tx2 = await garmentCollection.mintMoreNftsOnCollection(
-  //         createCollectionId,
-  //         MAX_NFT_SINGLE_TX,
-  //         collectionForMarketplace.tokendIds, // childTokenIds
-  //         collectionForMarketplace.tokenAmounts, // childTokenAmounts
-  //     );
-  //     await tx2.wait();
-  //   }
-  // }
-
-
-
-  /*
-    var arrayOfParents = [];
-    for (let [index, auctionGarmentInfo] of uris.entries()) {
-        console.log(`----------------------`);
-        console.log(`Creating exclusive parent nft For uri: ${auctionGarmentInfo.uri} with child token ids of ${auctionGarmentInfo.tokendIds} and amounts: ${auctionGarmentInfo.tokenAmounts}`);
-        const tx = await factory.mintParentWithoutChildren(
-            auctionGarmentInfo.uri,
-            auctionGarmentInfo.designer,
-            // auctionGarmentInfo.tokendIds, // childTokenIds
-            // auctionGarmentInfo.tokenAmounts, // childTokenAmounts
-            '0x0edFe4bEEd72Ae089Cc11f179EB75Dc9eB2278De', // Who receives nft and can approve (beneficiary), should be deployer address
-          );
-
-        const createParentId = await new Promise((resolve, reject) => {
-          factory.on('GarmentCreated',
-              async (garmentTokenId, event) => {
-                const block = await event.getBlock();
-                console.log(`at time ${block.timestamp} for token id ${garmentTokenId}`);
-                resolve(garmentTokenId);
-              });
-        });
-
-        await tx.wait();
-        arrayOfParents.push(createParentId.toString());
-
-        console.log(`-`);
-
-        // // Approve the token for the auction contract
-        // console.log(`Approving ${createParentId} for the auction contract...`)
-        //
-        // const tx10 = await garment.approve(AUCTION_ADDRESS, createParentId);
-        // await tx10.wait();
-        //
-        // // Start an auction with that garment
-        // console.log(`ApprovalConfirmed. Creating the auction for.. [${createParentId}]`)
-
-        // Create an auction for this exclusiveparent nft
-        // const auctionTx = await auction.createAuction(
-        //     createParentId, // garmentTokenId
-        //     auctionGarmentInfo.price, // reservePrice
-        //     auctionGarmentInfo.auctionStartTime, // startTimestamp
-        //     auctionGarmentInfo.auctionEndTime, // endTimestamp
-        //     true // Mona payment
-        // );
-        //
-        // await auctionTx.wait();
-
-        console.log(`----------------------`);
-    }
-
-    console.log('The parent nfts with auctions created for them are as follows: ');
-    console.log(arrayOfParents);
-
-
-   */
 }
 
 
