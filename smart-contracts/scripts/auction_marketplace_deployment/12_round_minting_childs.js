@@ -24,7 +24,11 @@ async function main() {
 
   let tx = await factory.createNewChildren([
 
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/test_digifizzy/hash.json`).uri, // 184
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_1_semirare/hash.json`).uri,
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_2_semirare/hash.json`).uri,
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_3_semirare/hash.json`).uri,
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_4_semirare/hash.json`).uri,
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_5_semirare/hash.json`).uri,
   ]);
 
 
