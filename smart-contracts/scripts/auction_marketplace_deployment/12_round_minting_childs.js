@@ -22,13 +22,37 @@ async function main() {
      deployer
   );
 
-  let tx = await factory.createNewChildren([
+  // Common
+  // let tx = await factory.createNewChildren([
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Common/digifizzy_1_common/hash.json`).uri,
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Common/digifizzy_2_common/hash.json`).uri,
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Common/digifizzy_3_common/hash.json`).uri,
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Common/digifizzy_4_common/hash.json`).uri,
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Common/digifizzy_5_common/hash.json`).uri,
+  //   ]);
 
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_1_semirare/hash.json`).uri,
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_2_semirare/hash.json`).uri,
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_3_semirare/hash.json`).uri,
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_4_semirare/hash.json`).uri,
-      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_5_semirare/hash.json`).uri,
+  // // Semirare
+  // let tx = await factory.createNewChildren([
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_1_semirare/hash.json`).uri,
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_2_semirare/hash.json`).uri,
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_3_semirare/hash.json`).uri,
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_4_semirare/hash.json`).uri,
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_5_semirare/hash.json`).uri,
+  //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_6_semirare/hash.json`).uri,
+  // ]);
+  //
+  // // Exclusive
+  let tx = await factory.createNewChildren([
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Exclusive/digifizzy_1_exclusive/hash.json`).uri,
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Exclusive/digifizzy_2_exclusive/hash.json`).uri,
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Exclusive/digifizzy_3_exclusive/hash.json`).uri,
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Exclusive/digifizzy_4_exclusive/hash.json`).uri,
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Exclusive/digifizzy_5_exclusive/hash.json`).uri,
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Exclusive/digifizzy_6_exclusive/hash.json`).uri,
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Exclusive/digifizzy_7_exclusive/hash.json`).uri,
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Exclusive/digifizzy_8_exclusive/hash.json`).uri,
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Exclusive/digifizzy_9_exclusive/hash.json`).uri,
+      require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Exclusive/digifizzy_10_exclusive/hash.json`).uri,
   ]);
 
 

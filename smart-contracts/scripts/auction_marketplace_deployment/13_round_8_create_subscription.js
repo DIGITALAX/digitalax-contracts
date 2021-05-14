@@ -13,7 +13,7 @@ async function main() {
       deployerAddress
   );
 
-  MAX_NFT_SINGLE_TX = 20;
+  MAX_NFT_SINGLE_TX = 15;
 
   const {SUBSCRIPTION_NFT_ADDRESS, SUBSCRIPTION_NFT_COLLECTION_ADDRESS, SUBSCRIPTION_NFT_MARKETPLACE_ADDRESS, ACCESS_CONTROLS_ADDRESS} = process.env;
   console.log(`SUBSCRIPTION_NFT_ADDRESS found [${SUBSCRIPTION_NFT_ADDRESS}]`);
@@ -69,28 +69,28 @@ async function main() {
 
   // Next step is mint collections and open buy offers, run 1 at a time in production in case something drops
   const collectionUris = [
-      {
-          // Collection 1 Common
-          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/DigiFizzy/digifizzy_1_common/hash.json').uri,
-          price: reservePrice_common,
-          collectionDesigner: FUND_MULTISIG_ADDRESS,
-          amountToMintInCollection: 500,
-          collectionId: 1,
-          rarity: 'Common',
-          tokendIds: [100001],
-          tokenAmounts: [5],
-      },
-      {
-          // Collection 2 Semirare
-          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/DigiFizzy/digifizzy_2_semirare/hash.json').uri,
-          price: reservePrice2_semirare,
-          collectionDesigner: FUND_MULTISIG_ADDRESS,
-          amountToMintInCollection: 200,
-          collectionId: 2,
-          rarity: 'Semi-Rare',
-          tokendIds: [100001],
-          tokenAmounts: [5],
-      },
+      // {
+      //     // Collection 1 Common
+      //     uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/DigiFizzy/digifizzy_1_common/hash.json').uri,
+      //     price: reservePrice_common,
+      //     collectionDesigner: FUND_MULTISIG_ADDRESS,
+      //     amountToMintInCollection: 500,
+      //     collectionId: 1,
+      //     rarity: 'Common',
+      //     tokendIds: [100007,100008,100009,100010,100011],
+      //     tokenAmounts: [1,1,1,1,1],
+      // },
+      // {
+      //     // Collection 2 Semirare
+      //     uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/DigiFizzy/digifizzy_2_semirare/hash.json').uri,
+      //     price: reservePrice2_semirare,
+      //     collectionDesigner: FUND_MULTISIG_ADDRESS,
+      //     amountToMintInCollection: 200,
+      //     collectionId: 2,
+      //     rarity: 'Semi-Rare',
+      //     tokendIds: [100024,100025,100026,100027,100028,100029],
+      //     tokenAmounts: [1,1,1,1,1,1],
+      // },
       {
           // Collection 3 Exclusive
           uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/DigiFizzy/digifizzy_3_exclusive/hash.json').uri,
@@ -99,8 +99,8 @@ async function main() {
           amountToMintInCollection: 50,
           collectionId: 3,
           rarity: 'Exclusive',
-          tokendIds: [100001],
-          tokenAmounts: [5],
+          tokendIds: [100030,100031,100032,100033,100034,100035,100036,100037,100038,100039],
+          tokenAmounts: [1,1,1,1,1,1,1,1,1,1],
       }
   ]
     // Approve for all

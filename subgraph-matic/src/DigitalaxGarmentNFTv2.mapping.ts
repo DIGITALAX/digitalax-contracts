@@ -101,8 +101,19 @@ export function handleChildReceived(event: ReceivedChild): void {
     garment.save();
 }
 
+
 export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
+    let contract = DigitalaxGarmentNFTv2Contract.bind(event.address);
     let garment = DigitalaxGarmentV2.load(event.params._tokenId.toString());
-    garment.tokenUri = event.params._tokenUri;
+    if (garment == null) {
+        garment = new DigitalaxGarmentV2(event.params._tokenId.toString());
+        garment.designer = contract.garmentDesigners(event.params._tokenId).toString();
+        garment.primarySalePrice = contract.primarySalePrice(event.params._tokenId);
+        garment.children = null;
+        garment.owner = null;
+        garment.children
+    }
+    garment.tokenUri = contract.tokenURI(event.params._tokenId);
     garment.save();
 }
+
