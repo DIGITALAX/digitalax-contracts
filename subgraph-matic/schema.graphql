@@ -101,6 +101,24 @@ type DigitalaxSubscription @entity {
   children: [DigitalaxGarmentChild!]!
 }
 
+type DigitalaxGarmentV2 @entity {
+  id: ID!
+  designer: String!
+  owner: Bytes!
+  primarySalePrice: BigInt!
+  tokenUri: String!
+  children: [DigitalaxGarmentChildV2!]!
+}
+
+type DigitalaxSubscription @entity {
+  id: ID!
+  designer: String!
+  owner: Bytes!
+  primarySalePrice: BigInt!
+  tokenUri: String!
+  children: [DigitalaxGarmentChild!]!
+}
+
 # Total support of all children
 type DigitalaxMaterial @entity {
   id: ID!
