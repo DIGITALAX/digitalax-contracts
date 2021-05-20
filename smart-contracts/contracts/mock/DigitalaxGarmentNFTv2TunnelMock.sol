@@ -607,10 +607,6 @@ contract DigitalaxGarmentNFTv2TunnelMock is DigitalaxERC721("DigitalaxNFT", "DTX
     }
 
     // Send the nft to root - if it does not exist then we can handle it on that side
-    // Make this a batch
-    uint256[][] childNftIdArray;
-    string[][] childNftURIArray;
-    uint256[][] childNftBalanceArray;
 
     function sendNFTsToRoot(uint256[] memory _tokenIds) external {
         uint256 length = _tokenIds.length;
@@ -619,6 +615,9 @@ contract DigitalaxGarmentNFTv2TunnelMock is DigitalaxERC721("DigitalaxNFT", "DTX
         uint256[] memory _salePrices = new uint256[](length);
         address[] memory _designers = new address[](length);
         string[] memory _tokenUris = new string[](length);
+        uint256[][] memory childNftIdArray = new uint256[][](length);
+        string[][] memory childNftURIArray = new string[][](length);
+        uint256[][] memory childNftBalanceArray = new uint256[][](length);
 
         for( uint256 i; i< length; i++){
             _owners[i] = ownerOf(_tokenIds[i]);
@@ -627,14 +626,14 @@ contract DigitalaxGarmentNFTv2TunnelMock is DigitalaxERC721("DigitalaxNFT", "DTX
             _designers[i] = garmentDesigners[_tokenIds[i]];
             _tokenUris[i] = tokenURI(_tokenIds[i]);
 
-            childNftIdArray.push(childIdsForOn(_tokenIds[i], address(childContract)));
-            childNftURIArray.push(childURIsForOn(_tokenIds[i], address(childContract)));
+            childNftIdArray[i] = childIdsForOn(_tokenIds[i], address(childContract));
+            childNftURIArray[i] = childURIsForOn(_tokenIds[i], address(childContract));
             uint256 len = childNftIdArray[i].length;
             uint256[] memory garmentAmounts = new uint256[](len);
             for( uint256 j; j< len; j++){
                 garmentAmounts[j] = childBalance(_tokenIds[i], address(childContract), childNftIdArray[i][j]);
             }
-            childNftBalanceArray.push(garmentAmounts);
+            childNftBalanceArray[i] = garmentAmounts;
             // Same as withdraw
             burn(_tokenIds[i]);
             withdrawnTokens[_tokenIds[i]] = true;

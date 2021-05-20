@@ -8,16 +8,16 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "@openzeppelin/contracts/proxy/Initializable.sol";
 import "../ERC998/IERC998ERC1155TopDown.sol";
-import "../tunnel/BaseChildTunnel.sol";
+import "./BaseChildTunnelMock.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "../DigitalaxAccessControls.sol";
-import "./DigitalaxMaterialsV2.sol";
+import "../garment/DFBundle.sol";
 
 /**
  * @title Digitalax Garment NFT a.k.a. parent NFTs
  * @dev Issues ERC-721 tokens as well as being able to hold child 1155 tokens
  */
-contract DigitalaxGarmentNFTv2 is DigitalaxERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown, BaseChildTunnel, BaseRelayRecipient, Initializable {
+contract DigitalaxSubscriptionNFTTunnelMock is DigitalaxERC721("DigiFizzy", "DFZ"), ERC1155Receiver, IERC998ERC1155TopDown, BaseChildTunnelMock, BaseRelayRecipient, Initializable {
 
     struct ChildNftInventory {
         uint256[] garmentTokenIds;
@@ -50,7 +50,7 @@ contract DigitalaxGarmentNFTv2 is DigitalaxERC721("DigitalaxNFT", "DTX"), ERC115
     );
 
     /// @dev Child ERC1155 contract address
-    DigitalaxMaterials public childContract;
+    DFBundle public childContract;
 
     /// @dev current max tokenId
     uint256 public tokenIdPointer;
@@ -96,7 +96,7 @@ contract DigitalaxGarmentNFTv2 is DigitalaxERC721("DigitalaxNFT", "DTX"), ERC115
      @param _childContract ERC1155 the Digitalax child NFT contract
      0xb5505a6d998549090530911180f38aC5130101c6
      */
-    function initialize(DigitalaxAccessControls _accessControls, DigitalaxMaterialsV2 _childContract, address _childChain, address _trustedForwarder) public initializer {
+    function initialize(DigitalaxAccessControls _accessControls, DFBundle _childContract, address _childChain, address _trustedForwarder) public initializer {
         accessControls = _accessControls;
         childContract = _childContract;
         childChain = _childChain;
@@ -510,7 +510,7 @@ contract DigitalaxGarmentNFTv2 is DigitalaxERC721("DigitalaxNFT", "DTX"), ERC115
 
     function _receiveChild(uint256 _tokenId, address, uint256 _childTokenId, uint256 _amount) private {
         if (balances[_tokenId][_childTokenId] == 0) {
-           parentToChildMapping[_tokenId].add(_childTokenId);
+            parentToChildMapping[_tokenId].add(_childTokenId);
         }
         balances[_tokenId][_childTokenId] = balances[_tokenId][_childTokenId].add(_amount);
     }
