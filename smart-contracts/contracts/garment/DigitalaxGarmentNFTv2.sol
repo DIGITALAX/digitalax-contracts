@@ -50,7 +50,7 @@ contract DigitalaxGarmentNFTv2 is DigitalaxERC721("DigitalaxNFT", "DTX"), ERC115
     );
 
     /// @dev Child ERC1155 contract address
-    DigitalaxMaterials public childContract;
+    DigitalaxMaterialsV2 public childContract;
 
     /// @dev current max tokenId
     uint256 public tokenIdPointer;
