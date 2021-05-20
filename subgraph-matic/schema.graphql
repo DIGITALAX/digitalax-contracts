@@ -7,34 +7,64 @@ type Day @entity {
   totalMarketplaceVolumeInMona: BigInt!
 }
 
+type DayV2 @entity {
+  id: ID!
+  totalBidValue: BigInt!
+  totalWithdrawalValue: BigInt!
+  totalNetBidActivity: BigInt!
+  totalMarketplaceVolumeInETH: BigInt!
+  totalMarketplaceVolumeInMona: BigInt!
+}
+
+type SubscriptionDay @entity {
+  id: ID!
+  totalMarketplaceVolumeInMona: BigInt!
+}
+
 type DigitalaxGarmentNFTGlobalStat @entity {
   id: ID!
   totalSalesValue: BigInt! # Eth value in WEI accross all successful auctions
   totalActiveBidsValue: BigInt! # Eth value of the active aggregate bids across all in flight auctions
   totalMarketplaceSalesInETH: BigInt! # Eth value collected in WEI across all marketplace
-  totalMarketplaceSalesInMona: BigInt! # Mona value collected in WEI across all marketplace 
+  totalMarketplaceSalesInMona: BigInt! # Mona value collected in WEI across all marketplace
 }
 
-type GenesisContributor @entity {
+type DigitalaxGarmentNFTV2GlobalStat @entity {
   id: ID!
-  contributor: Bytes! # address
-  totalContributionInWei: BigInt!
-  firstContributedTimestamp: BigInt!
-  lastContributedTimestamp: BigInt!
+  totalSalesValue: BigInt! # Eth value in WEI accross all successful auctions
+  totalActiveBidsValue: BigInt! # Eth value of the active aggregate bids across all in flight auctions
+  totalMarketplaceSalesInETH: BigInt! # Eth value collected in WEI across all marketplace
+  totalMarketplaceSalesInMona: BigInt! # Mona value collected in WEI across all marketplace
 }
 
-type DigitalaxGenesisContract @entity {
+type DigitalaxSubscriptionNFTGlobalStat @entity {
   id: ID!
-  accessControls: Bytes!
-  fundsMultisig: Bytes!
-  genesisStart: BigInt!
-  genesisEnd: BigInt!
-  minimumContributionAmount: BigInt!
-  maximumContributionAmount: BigInt!
-  totalContributions: BigInt!
+  totalSalesValue: BigInt! # Eth value in WEI accross all successful auctions
+  totalMarketplaceSalesInMona: BigInt! # Mona value collected in WEI across all marketplace
 }
 
 type DigitalaxGarmentChild @entity {
+  id: ID! # {parent-token-id}-{child-token-id}
+  parentId: BigInt! # parent token ID
+  childId: BigInt! # child token ID
+  amount: BigInt!
+  contract: Bytes!
+  tokenUri: String!
+  rarity: String!
+}
+
+type DigitalaxGarmentChildV2 @entity {
+  id: ID! # {parent-token-id}-{child-token-id}
+  parentId: BigInt! # parent token ID
+  childId: BigInt! # child token ID
+  amount: BigInt!
+  contract: Bytes!
+  tokenUri: String!
+  rarity: String!
+}
+
+
+type DigitalaxSubscriptionChild @entity {
   id: ID! # {parent-token-id}-{child-token-id}
   parentId: BigInt! # parent token ID
   childId: BigInt! # child token ID
@@ -53,8 +83,40 @@ type DigitalaxGarment @entity {
   children: [DigitalaxGarmentChild!]!
 }
 
+type DigitalaxGarmentV2 @entity {
+  id: ID!
+  designer: String!
+  owner: Bytes!
+  primarySalePrice: BigInt!
+  tokenUri: String!
+  children: [DigitalaxGarmentChildV2!]!
+}
+
+type DigitalaxSubscription @entity {
+  id: ID!
+  designer: String!
+  owner: Bytes!
+  primarySalePrice: BigInt!
+  tokenUri: String!
+  children: [DigitalaxGarmentChild!]!
+}
+
 # Total support of all children
 type DigitalaxMaterial @entity {
+  id: ID!
+  tokenUri: String!
+  totalSupply: BigInt!
+}
+
+# Total support of all children
+type DigitalaxMaterialV2 @entity {
+  id: ID!
+  tokenUri: String!
+  totalSupply: BigInt!
+}
+
+# Total support of all children
+type DigitalaxBundle @entity {
   id: ID!
   tokenUri: String!
   totalSupply: BigInt!
@@ -69,10 +131,40 @@ type DigitalaxChildOwner @entity {
   tokenUri: String!
 }
 
+type DigitalaxChildV2Owner @entity {
+  id: ID! # {parent-token-id-holder}-{child-token-id}
+  childId: BigInt! # the child token ID
+  owner: Bytes! # token owner
+  amount: BigInt!
+  contract: Bytes!
+  tokenUri: String!
+}
+
+type DigitalaxBundleOwner @entity {
+  id: ID! # {parent-token-id-holder}-{child-token-id}
+  childId: BigInt! # the child token ID
+  owner: Bytes! # token owner
+  amount: BigInt!
+  contract: Bytes!
+  tokenUri: String!
+}
+
 type DigitalaxCollector @entity {
   id: ID!
   parentsOwned: [DigitalaxGarment!]! # only parents owned by the
   childrenOwned: [DigitalaxChildOwner!]! # only given children when a parent is burnt
+}
+
+type DigitalaxCollectorV2 @entity {
+  id: ID!
+  parentsOwned: [DigitalaxGarmentV2!]! # only parents owned by the
+  childrenOwned: [DigitalaxChildV2Owner!]! # only given children when a parent is burnt
+}
+
+type DigitalaxSubscriptionCollector @entity {
+  id: ID!
+  parentsOwned: [DigitalaxSubscription!]! # only parents owned by the
+  childrenOwned: [DigitalaxBundleOwner!]! # only given children when a parent is burnt
 }
 
 type DigitalaxGarmentDesigner @entity {
@@ -82,7 +174,32 @@ type DigitalaxGarmentDesigner @entity {
   # sold
 }
 
+type DigitalaxGarmentV2Designer @entity {
+  id: ID!
+  garments: [DigitalaxGarmentV2!]!
+  listings: [DigitalaxGarmentV2Auction!]!
+  # sold
+}
+
+type DigitalaxSubscriptionDesigner @entity {
+  id: ID!
+  garments: [DigitalaxSubscription!]!
+  ## listings: [DigitalaxGarmentAuction!]!
+  # sold
+}
+
 type DigitalaxAuctionContract @entity {
+  ## Global config
+  id: ID!
+  minBidIncrement: BigInt!
+  bidWithdrawalLockTime: BigInt!
+  platformFee: BigInt!
+  platformFeeRecipient: Bytes!
+  ## totals
+  totalSales: BigInt!
+}
+
+type DigitalaxAuctionV2Contract @entity {
   ## Global config
   id: ID!
   minBidIncrement: BigInt!
@@ -115,6 +232,28 @@ type DigitalaxGarmentAuction @entity {
   contract: DigitalaxAuctionContract!
 }
 
+type DigitalaxGarmentV2Auction @entity {
+  id: ID!
+
+  ## Auction setup
+  reservePrice: BigInt!
+  startTime: BigInt!
+  endTime: BigInt!
+  resulted: Boolean!
+  resultedTime: BigInt
+
+  ## Highest bidder
+  topBidder: DigitalaxCollectorV2
+  topBid: BigInt
+  lastBidTime: BigInt
+
+  ## Foreign key link to Garment, designer, history and contract
+  garment: DigitalaxGarmentV2!
+  designer: DigitalaxGarmentV2Designer!
+  history: DigitalaxGarmentV2AuctionHistory!
+  contract: DigitalaxAuctionV2Contract!
+}
+
 type DigitalaxGarmentAuctionHistory @entity {
   id: ID!
   token: DigitalaxGarment!
@@ -122,6 +261,16 @@ type DigitalaxGarmentAuctionHistory @entity {
   timestamp: BigInt!
   transactionHash: Bytes!
   bidder: DigitalaxCollector
+  value: BigInt
+}
+
+type DigitalaxGarmentV2AuctionHistory @entity {
+  id: ID!
+  token: DigitalaxGarmentV2!
+  eventName: String!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  bidder: DigitalaxCollectorV2
   value: BigInt
 }
 
@@ -141,11 +290,46 @@ type DigitalaxGarmentCollection @entity {
   rarity: String!
 }
 
+type DigitalaxGarmentV2Collection @entity {
+  id: ID!
+  garmentAuctionID: BigInt!
+  garments: [DigitalaxGarmentV2!]!
+  rarity: String!
+}
+
+type DigitalaxSubscriptionCollection @entity {
+  id: ID!
+  bundleID: BigInt!
+  garments: [DigitalaxSubscription!]!
+  rarity: String!
+}
+
 type DigitalaxMarketplaceOffer @entity {
   id: ID!
   garmentCollection: DigitalaxGarmentCollection!
   primarySalePrice: BigInt!
   startTime: BigInt!
+  amountSold: BigInt!
+  marketplacePlatformFee: BigInt!
+  discountToPayMona: BigInt!
+}
+
+type DigitalaxMarketplaceV2Offer @entity {
+  id: ID!
+  garmentCollection: DigitalaxGarmentCollection!
+  primarySalePrice: BigInt!
+  startTime: BigInt!
+  amountSold: BigInt!
+  marketplacePlatformFee: BigInt!
+  discountToPayMona: BigInt!
+}
+
+type DigitalaxSubscriptionMarketplaceOffer @entity {
+  id: ID!
+  subscriptionCollection: DigitalaxSubscriptionCollection!
+  primarySalePrice: BigInt!
+  startTime: BigInt!
+  endTime: BigInt!
   amountSold: BigInt!
   marketplacePlatformFee: BigInt!
   discountToPayMona: BigInt!
@@ -167,6 +351,38 @@ type DigitalaxMarketplacePurchaseHistory @entity {
   rarity: String!
 }
 
+type DigitalaxMarketplaceV2PurchaseHistory @entity {
+  id: ID!
+  eventName: String!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  token: DigitalaxGarmentV2!
+  buyer: Bytes!
+  value: BigInt!
+  isPaidWithMona: Boolean!
+  monaTransferredAmount: BigInt!
+  garmentAuctionId: BigInt!
+  platformFee: BigInt!
+  discountToPayMona: BigInt!
+  rarity: String!
+}
+
+type DigitalaxSubscriptionPurchaseHistory @entity {
+  id: ID!
+  eventName: String!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  token: DigitalaxSubscription!
+  buyer: Bytes!
+  value: BigInt!
+  isPaidWithMona: Boolean!
+  monaTransferredAmount: BigInt!
+  bundleId: BigInt!
+  platformFee: BigInt!
+  discountToPayMona: BigInt!
+  rarity: String!
+}
+
 type DigitalaxPodePortalMetadata @entity {
   id: ID!
   tokenUri: String!
@@ -177,8 +393,25 @@ type DigitalaxAuctionIndex @entity {
   garments: [DigitalaxGarment!]!
 }
 
+type DigitalaxAuctionV2Index @entity {
+  id: ID!
+  garments: [DigitalaxGarmentV2!]!
+}
+
 type DigitalaxDesignerIndex @entity {
   id: ID!
   garments: [DigitalaxGarment!]!
+  infoUrl: String!
+}
+
+type DigitalaxDesignerV2Index @entity {
+  id: ID!
+  garments: [DigitalaxGarmentV2!]!
+  infoUrl: String!
+}
+
+type DigitalaxSubscriptionDesignerIndex @entity {
+  id: ID!
+  garments: [DigitalaxSubscription!]!
   infoUrl: String!
 }

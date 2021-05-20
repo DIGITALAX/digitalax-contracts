@@ -11,13 +11,13 @@ import "../ERC998/IERC998ERC1155TopDown.sol";
 import "../tunnel/BaseChildTunnel.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "../DigitalaxAccessControls.sol";
-import "./DigitalaxMaterialsV2.sol";
+import "./DFBundle.sol";
 
 /**
- * @title Digitalax Garment NFT a.k.a. parent NFTs
+ * @title Digitalax Subscription NFT a.k.a. parent NFTs
  * @dev Issues ERC-721 tokens as well as being able to hold child 1155 tokens
  */
-contract DigitalaxGarmentNFTv2 is DigitalaxERC721("DigitalaxNFT", "DTX"), ERC1155Receiver, IERC998ERC1155TopDown, BaseChildTunnel, BaseRelayRecipient, Initializable {
+contract DigitalaxSubscriptionNFT is DigitalaxERC721("DigiFizzy", "DFZ"), ERC1155Receiver, IERC998ERC1155TopDown, BaseChildTunnel, BaseRelayRecipient, Initializable {
 
     struct ChildNftInventory {
         uint256[] garmentTokenIds;
@@ -50,7 +50,7 @@ contract DigitalaxGarmentNFTv2 is DigitalaxERC721("DigitalaxNFT", "DTX"), ERC115
     );
 
     /// @dev Child ERC1155 contract address
-    DigitalaxMaterials public childContract;
+    DFBundle public childContract;
 
     /// @dev current max tokenId
     uint256 public tokenIdPointer;
@@ -96,7 +96,7 @@ contract DigitalaxGarmentNFTv2 is DigitalaxERC721("DigitalaxNFT", "DTX"), ERC115
      @param _childContract ERC1155 the Digitalax child NFT contract
      0xb5505a6d998549090530911180f38aC5130101c6
      */
-    function initialize(DigitalaxAccessControls _accessControls, DigitalaxMaterialsV2 _childContract, address _childChain, address _trustedForwarder) public initializer {
+    function initialize(DigitalaxAccessControls _accessControls, DFBundle _childContract, address _childChain, address _trustedForwarder) public initializer {
         accessControls = _accessControls;
         childContract = _childContract;
         childChain = _childChain;
@@ -656,7 +656,7 @@ contract DigitalaxGarmentNFTv2 is DigitalaxERC721("DigitalaxNFT", "DTX"), ERC115
             _transfer(_from, _to, _tokenIds[i]);
         }
     }
-
+    
     function batchTokensOfOwner(address owner) external view returns (uint256[] memory) {
         uint256 length = balanceOf(owner);
         uint256[] memory _tokenIds = new uint256[](length);

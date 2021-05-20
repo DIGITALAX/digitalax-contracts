@@ -1,7 +1,5 @@
 {
     "network": "matic",
-    "DigitalaxGenesisNFTAddress": "0x89505d2a27b7e8ac56252081d721ecd525e4241e",
-    "DigitalaxGenesisNFTStartBlock": 12000000,
     "DigitalaxGarmentNFTAddress": "0x728Af879c3212cEf7a51D7fC296b5e9b7c14dbf6",
     "DigitalaxGarmentNFTStartBlock": 12226596,
     "DigitalaxMaterialsAddress": "0x9f0A468AeA1e0F080fB7C9f3E1F9774D1bFAf821",
@@ -17,5 +15,17 @@
     "DigitalaxPodePortalAddress": "0x87c3C6B9C917B1732f13d36d6938E4f8802f7c7E",
     "DigitalaxPodePortalStartBlock": 12000000,
     "DigitalaxIndexAddress": "0x93401DB6e0E17078f785019878063ce5baBA9d46",
-    "DigitalaxIndexStartBlock": 12000000
+    "DigitalaxIndexStartBlock": 12000000,
+    "DigitalaxSubscriptionNFTAddress": "0xCED3335378896671C71D6d632a16A474A70A2F38",
+    "DigitalaxSubscriptionNFTStartBlock": 12000000,
+    "DFBundleAddress": "0xdd43Fd6f72d0a35abDb6194E97e7b330822e2263",
+    "DFBundleStartBlock": 12000000,
+    "DigitalaxSubscriptionMarketplaceAddress": "0x3E11cA9933D1236710d4606aEC4a5e3da28aeBcB",
+    "DigitalaxSubscriptionMarketplaceStartBlock": 12000000,
+    "DigitalaxSubscriptionCollectionAddress": "0x8896E908f942bb293b9B76a3A0cAf2Ff004859c4",
+    "DigitalaxSubscriptionCollectionStartBlock": 12000000,
+    "DigitalaxGarmentNFTv2Address": "0x7B2a989c4D1AD1B79a84CE2EB79dA5D8d9C2b7a7",
+    "DigitalaxGarmentNFTv2StartBlock": 12000000,
+    "DigitalaxMaterialsV2Address": "0x567c7b3364ba2903a80ecbad6c54ba8c0e1a069e",
+    "DigitalaxMaterialsV2StartBlock": 12000000
 }
