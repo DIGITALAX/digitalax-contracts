@@ -40,7 +40,7 @@ async function main() {
   //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_5_semirare/hash.json`).uri,
   //     require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Semi-Rare/digifizzy_6_semirare/hash.json`).uri,
   // ]);
-  //
+
   // // Exclusive
   let tx = await factory.createNewChildren([
       require(`../../../../nft-minting-scripts/auction-metadata/token-data/children/DigiFizzy/Exclusive/digifizzy_1_exclusive/hash.json`).uri,
