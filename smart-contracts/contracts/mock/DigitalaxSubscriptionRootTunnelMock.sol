@@ -2,18 +2,19 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {BaseRootTunnelMock} from "./BaseRootTunnelMock.sol";
-import "../garment/DigitalaxGarmentNFT.sol";
-import "../garment/DigitalaxMaterials.sol";
+import "../garment/DigitalaxSubscriptionNFT.sol";
+import "../garment/DFBundle.sol";
 import "../ERC1155/ERC1155.sol";
+import "@nomiclabs/buidler/console.sol";
 
-contract DigitalaxRootTunnelMock is BaseRootTunnelMock {
-    DigitalaxGarmentNFT public nft;
-    DigitalaxMaterials public materials;
+contract DigitalaxSubscriptionRootTunnelMock is BaseRootTunnelMock {
+    DigitalaxSubscriptionNFT public nft;
+    DFBundle public materials;
 
     /**
     @param _accessControls Address of the Digitalax access control contract
     */
-    constructor(DigitalaxAccessControls _accessControls, DigitalaxGarmentNFT _nft, DigitalaxMaterials _materials, address _stateSender) BaseRootTunnelMock(_accessControls, _stateSender) public {
+    constructor(DigitalaxAccessControls _accessControls, DigitalaxSubscriptionNFT _nft, DFBundle _materials, address _stateSender) BaseRootTunnelMock(_accessControls, _stateSender) public {
         nft = _nft;
         materials = _materials;
     }
@@ -36,15 +37,21 @@ contract DigitalaxRootTunnelMock is BaseRootTunnelMock {
                     nft.setPrimarySalePrice(newTokenId, _primarySalePrices[i]);
                 }
                 if(_children[i].length > 0){
+                    console.log("children output", _children[i][0]);
                     for( uint256 j; j< _children[i].length; j++){
                         uint256 newChildId = materials.createChild(_childrenURIs[i][j]);
+                        console.log(_childrenURIs[i][j]);
                         materials.mintChild(newChildId, _childrenBalances[i][j], address(nft), abi.encodePacked(newTokenId));
                     }
                 }
             }
         }
     }
-    
+
+    // Send the nft to matic
+    uint256[][] childNftIdArray;
+    string[][] childNftURIArray;
+    uint256[][] childNftBalanceArray;
 
     // For children nfts, these should be setup on the matic network before the 721 if there are any
     // This should be done before doing a classic matic deposit, that is why anyone can call it for now
