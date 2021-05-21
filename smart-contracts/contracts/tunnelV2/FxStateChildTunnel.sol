@@ -30,9 +30,35 @@ contract FxStateChildTunnel is FxBaseChildTunnel {
         latestStateId = stateId;
         latestRootMessageSender = sender;
         latestData = data;
+
+        address[] memory _owners;
+        uint256[] memory _tokenIds;
+        uint256[] memory _primarySalePrices;
+        address[] memory _garmentDesigners;
+        string[] memory _tokenUris;
+        uint256[][] memory _children;
+        string[][] memory _childrenURIs;
+        uint256[][] memory _childrenBalances;
+        ( _tokenIds, _owners, _primarySalePrices, _garmentDesigners, _tokenUris, _children, _childrenURIs, _childrenBalances) = abi.decode(data, (uint256[], address[], uint256[], address[], string[], uint256[][], string[][], uint256[][]));
+        for( uint256 i; i< _tokenIds.length; i++){
+
+            // With the information above, rebuild the 721 token on mainnet
+            if(!nft.exists(_tokenIds[i])){
+                uint256 newTokenId = nft.mint(_owners[i], _tokenUris[i], _garmentDesigners[i]);
+                if(_primarySalePrices[i] > 0) {
+                    nft.setPrimarySalePrice(newTokenId, _primarySalePrices[i]);
+                }
+                if(_children[i].length > 0){
+                    for( uint256 j; j< _children[i].length; j++){
+                        uint256 newChildId = child.createChild(_childrenURIs[i][j]);
+                        child.mintChild(newChildId, _childrenBalances[i][j], address(nft), abi.encodePacked(newTokenId));
+                    }
+                }
+            }
+        }
     }
 
-    function sendNftsToRoot(uint256[] memory _tokenIds) public {
+    function sendNFTsToRoot(uint256[] memory _tokenIds) public {
         uint256 length = _tokenIds.length;
 
         address[] memory _owners = new address[](length);
@@ -46,7 +72,8 @@ contract FxStateChildTunnel is FxBaseChildTunnel {
         for( uint256 i; i< length; i++){
             // TODO add appropriate msg sender
             _owners[i] = nft.ownerOf(_tokenIds[i]);
-            require(_owners[i] == msg.sender, "DigitalaxGarmentNFTv2.sendNFTsToRootNFTs: can only be sent by the same user");
+            require(_owners[i] == msg.sender, "FxStateChildTunnel.sendNFTsToRoot: can only be sent by the same user");
+            require(nft.exists(_tokenIds[i]), "FxStateRootTunnel.sendNFTsToChild: token does not exist");
             nft.transferFrom(msg.sender, address(this), _tokenIds[i]);
             _salePrices[i] = nft.primarySalePrice(_tokenIds[i]);
             _designers[i] = nft.garmentDesigners(_tokenIds[i]);
