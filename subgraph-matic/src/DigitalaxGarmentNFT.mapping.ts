@@ -1,4 +1,4 @@
-import {log, BigInt, Address, store, ipfs, json, Bytes} from "@graphprotocol/graph-ts/index";
+import {log, BigInt, Address, store, ipfs, json, Bytes, JSONValueKind} from "@graphprotocol/graph-ts/index";
 
 import {
     Transfer,
@@ -37,9 +37,22 @@ export function handleTransfer(event: Transfer): void {
                 let tokenBytes = ipfs.cat(tokenHash);
                 if (tokenBytes) {
                     let data = json.try_fromBytes(tokenBytes as Bytes);
-                    let res = data.value.toObject();
-                    garment.image = res.get('image').toString();
-                    garment.animation = res.get('animation').toString();
+                    log.info('data value kind -------- {}', [data.value.kind.toString()]);
+                    if (data.isOk) {
+                        if (data.value.kind === JSONValueKind.OBJECT) {
+                            let res = data.value.toObject();
+                            log.info('data image -------- {}', [res.get('image').toString()]);
+                            garment.image = res.get('image').toString();
+                            log.info('data animation_url -------- {}', [res.get('animation_url').toString()]);
+                            garment.animation = res.get('animation_url').toString();
+                        } else {
+                            garment.image = null;
+                            garment.animation = null;
+                        }
+                    } else {
+                        garment.image = null;
+                        garment.animation = null;
+                    }
                 } else {
                     garment.image = null;
                     garment.animation = null;
