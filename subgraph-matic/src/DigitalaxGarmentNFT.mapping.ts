@@ -31,20 +31,28 @@ export function handleTransfer(event: Transfer): void {
         garment.tokenUri = contract.tokenURI(event.params.tokenId);
         garment.children = new Array<string>();
         
-        // let tokenHash = garment.tokenUri.split('ipfs/')[1];
-        // log.info('this is tokenHash {}', [tokenHash]);
-        // let tokenBytes = ipfs.cat(tokenHash);
-        // log.info('this is res data {}', ['this si test']);
-        // if (tokenBytes) {
-        //     let data = json.try_fromBytes(tokenBytes as Bytes);
-        //     // log.info('try_fromBytes data {}', [data.value.toObject()]);
-        //     let res = data.value.toObject();
-        //     // garment.image = res.get('image').toString();
-        //     // garment.animation = res.get('animation').toString();
-        // } else {
-        // }
-        garment.image = null;
-        garment.animation = null;
+        if (garment.tokenUri) {
+            if (garment.tokenUri.includes('ipfs/')) {
+                let tokenHash = garment.tokenUri.split('ipfs/')[1];
+                let tokenBytes = ipfs.cat(tokenHash);
+                if (tokenBytes) {
+                    let data = json.try_fromBytes(tokenBytes as Bytes);
+                    let res = data.value.toObject();
+                    garment.image = res.get('image').toString();
+                    garment.animation = res.get('animation').toString();
+                } else {
+                    garment.image = null;
+                    garment.animation = null;
+                }
+
+            } else {
+                garment.image = null;
+                garment.animation = null;
+            }
+        } else {
+            garment.image = null;
+            garment.animation = null;
+        }
 
         garment.save();
 

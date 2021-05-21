@@ -35,6 +35,8 @@ export function handleTransfer(event: Transfer): void {
         // const tokenData = ipfs.cat(tokenHash);
         // garment.image = tokenData.image;
         // garment.animation = tokenData.animation;
+        garment.image = null;
+        garment.animation = null;
         garment.save();
 
         let collector = loadOrCreateDigitalaxSubscriptionCollector(event.params.to);

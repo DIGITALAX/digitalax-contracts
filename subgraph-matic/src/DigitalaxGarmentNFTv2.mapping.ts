@@ -30,6 +30,8 @@ export function handleTransfer(event: Transfer): void {
         garment.designer = garmentDesigner.id;
         garment.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
         garment.children = new Array<string>();
+        garment.image = null;
+        garment.animation = null;
         garment.save();
 
         let collector = loadOrCreateDigitalaxCollectorV2(event.params.to);
