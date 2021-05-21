@@ -80,6 +80,8 @@ type DigitalaxGarment @entity {
   owner: Bytes!
   primarySalePrice: BigInt!
   tokenUri: String!
+  image: String!
+  animation: String!
   children: [DigitalaxGarmentChild!]!
 }
 
@@ -89,6 +91,8 @@ type DigitalaxGarmentV2 @entity {
   owner: Bytes!
   primarySalePrice: BigInt!
   tokenUri: String!
+  image: String!
+  animation: String!
   children: [DigitalaxGarmentChildV2!]!
 }
 
@@ -98,6 +102,8 @@ type DigitalaxSubscription @entity {
   owner: Bytes!
   primarySalePrice: BigInt!
   tokenUri: String!
+  image: String!
+  animation: String!
   children: [DigitalaxGarmentChild!]!
 }
 
