@@ -1,4 +1,4 @@
-import {log, BigInt, Address, store} from "@graphprotocol/graph-ts/index";
+import {log, BigInt, Address, store, ipfs} from "@graphprotocol/graph-ts/index";
 
 import {
     Transfer,
@@ -30,6 +30,11 @@ export function handleTransfer(event: Transfer): void {
         garment.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
         garment.tokenUri = contract.tokenURI(event.params.tokenId);
         garment.children = new Array<string>();
+        
+        // const tokenHash = garment.tokenUri.split('ipfs/')[1];
+        // const tokenData = ipfs.cat(tokenHash);
+        // garment.image = tokenData.image;
+        // garment.animation = tokenData.animation;
         garment.save();
 
         let collector = loadOrCreateDigitalaxSubscriptionCollector(event.params.to);
