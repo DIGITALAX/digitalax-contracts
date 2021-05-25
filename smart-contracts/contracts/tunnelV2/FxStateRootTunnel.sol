@@ -2,7 +2,7 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import { FxBaseRootTunnel } from './FxBaseRootTunnel.sol';
+import "./FxBaseRootTunnel.sol";
 import "../garment/DigitalaxGarmentNFT.sol";
 import "../garment/DigitalaxMaterials.sol";
 
@@ -14,7 +14,7 @@ contract FxStateRootTunnel is FxBaseRootTunnel {
     DigitalaxGarmentNFT public nft;
     DigitalaxMaterials public child;
     mapping (uint256 => bool) public withdrawnTokens;
-
+    event RootMessageSent(bytes message);
 
     constructor(address _checkpointManager, address _fxRoot, DigitalaxGarmentNFT _nft, DigitalaxMaterials _child)  FxBaseRootTunnel(_checkpointManager, _fxRoot) public {
         nft = _nft;
@@ -83,7 +83,9 @@ contract FxStateRootTunnel is FxBaseRootTunnel {
 
             child.burnBatch(address(this), childNftIdArray[i], childNftBalanceArray[i]);
         }
-        _sendMessageToChild(abi.encode(_tokenIds, _owners, _salePrices, _designers, _tokenUris, childNftIdArray, childNftURIArray, childNftBalanceArray));
+        bytes memory message = abi.encode(_tokenIds, _owners, _salePrices, _designers, _tokenUris, childNftIdArray, childNftURIArray, childNftBalanceArray);
+        _sendMessageToChild(message);
+        emit RootMessageSent(message);
     }
 
     /**
@@ -98,5 +100,33 @@ contract FxStateRootTunnel is FxBaseRootTunnel {
         }
 
         return childTokenURIs;
+    }
+
+
+    /**
+     @notice Single ERC721 receiver callback hook
+     */
+    function onERC721Received(address operator, address from, uint256 tokenId, bytes memory data)
+    public
+    returns (bytes4) {
+        return this.onERC721Received.selector;
+    }
+
+    /**
+     @notice Single ERC1155 receiver callback hook, used to enforce children token binding to a given parent token
+     */
+    function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _amount, bytes memory _data)
+    external
+    returns (bytes4) {
+        return this.onERC1155Received.selector;
+    }
+
+    /**
+     @notice Batch ERC1155 receiver callback hook, used to enforce child token bindings to a given parent token ID
+     */
+    function onERC1155BatchReceived(address _operator, address _from, uint256[] memory _ids, uint256[] memory _values, bytes memory _data)
+    external
+    returns (bytes4) {
+        return this.onERC1155BatchReceived.selector;
     }
 }
