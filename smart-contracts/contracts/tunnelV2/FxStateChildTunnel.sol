@@ -13,8 +13,8 @@ contract FxStateChildTunnel is FxBaseChildTunnel {
     uint256 public latestStateId;
     address public latestRootMessageSender;
     bytes public latestData;
-    DigitalaxGarmentNFTv2 nft;
-    DigitalaxMaterialsV2 child;
+    DigitalaxGarmentNFTv2 public nft;
+    DigitalaxMaterialsV2 public child;
     mapping (uint256 => bool) public withdrawnTokens;
 
     constructor(address _fxChild, DigitalaxGarmentNFTv2 _nft) FxBaseChildTunnel(_fxChild) public {
@@ -95,5 +95,33 @@ contract FxStateChildTunnel is FxBaseChildTunnel {
         }
 
         _sendMessageToRoot(abi.encode(_tokenIds, _owners, _salePrices, _designers, _tokenUris, childNftIdArray, childNftURIArray, childNftBalanceArray));
+    }
+
+
+    /**
+     @notice Single ERC721 receiver callback hook
+     */
+    function onERC721Received(address operator, address from, uint256 tokenId, bytes memory data)
+    public
+    returns (bytes4) {
+        return this.onERC721Received.selector;
+    }
+
+    /**
+     @notice Single ERC1155 receiver callback hook, used to enforce children token binding to a given parent token
+     */
+    function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _amount, bytes memory _data)
+    external
+    returns (bytes4) {
+        return this.onERC1155Received.selector;
+    }
+
+    /**
+     @notice Batch ERC1155 receiver callback hook, used to enforce child token bindings to a given parent token ID
+     */
+    function onERC1155BatchReceived(address _operator, address _from, uint256[] memory _ids, uint256[] memory _values, bytes memory _data)
+    external
+    returns (bytes4) {
+        return this.onERC1155BatchReceived.selector;
     }
 }
