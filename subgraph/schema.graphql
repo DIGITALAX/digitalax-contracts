@@ -44,12 +44,24 @@ type DigitalaxGarmentChild @entity {
   rarity: String!
 }
 
+type GarmentAttribute @entity {
+  id: ID!
+  type: String!
+  value: String!
+}
+
 type DigitalaxGarment @entity {
   id: ID!
   designer: String!
   owner: Bytes!
   primarySalePrice: BigInt!
   tokenUri: String!
+  image: String!
+  animation: String!
+  name: String!
+  description: String!
+  external: String!
+  attributes: [GarmentAttribute!]!
   children: [DigitalaxGarmentChild!]!
 }
 
