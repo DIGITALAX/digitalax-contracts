@@ -1,0 +1,10 @@
+{
+    "network": "goerli",
+    "DigitalaxGarmentNFTAddress": "0xc9c3704a65fe2d4f1f94a02480b25dbfa5764332",
+    "DigitalaxGarmentNFTStartBlock": 1200000,
+    "DigitalaxMaterialsAddress": "0x5a328200f26c94c8411f560c7053019674cdd2ef",
+    "DigitalaxMaterialsStartBlock": 1200000,
+    "DigitalaxAccessControlsAddress": "0x1dd28ce255080092327915e13dd61979abd220de",
+    "DigitalaxAccessControlsStartBlock": 1200000
+  }
+  
