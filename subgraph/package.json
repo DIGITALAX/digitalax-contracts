@@ -4,13 +4,15 @@
   "scripts": {
     "build": "graph build",
     "codegen": "graph codegen",
-    "prep:mainnet": "mustache networks/mainnet.json subgraph.template.yaml > subgraph.yaml && yarn codegen;",
-    "prep:rinkeby": "mustache networks/rinkeby.json subgraph.template.yaml > subgraph.yaml && yarn codegen;",
-    "prep:ropsten": "mustache networks/ropsten.json subgraph.template.yaml > subgraph.yaml && yarn codegen;",
+    "prep:mainnet": "mustache networks/mainnet.json subgraph.template.yaml > subgraph.yaml && yarn codegen",
+    "prep:rinkeby": "mustache networks/rinkeby.json subgraph.template.yaml > subgraph.yaml && yarn codegen",
+    "prep:ropsten": "mustache networks/ropsten.json subgraph.template.yaml > subgraph.yaml && yarn codegen",
+    "prep:goerli": "mustache networks/goerli.json subgraph.template.yaml > subgraph.yaml && yarn codegen",
     "create": "graph create digitalax/digitalaxropsten --node https://api.thegraph.com/deploy/",
     "create-local": "graph create blockrockettech/digitalax --node http://127.0.0.1:8020",
     "deploy:testnet": "yarn prep:rinkeby; graph deploy digitalax/digitalaxropsten --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
     "deploy:mainnet": "yarn prep:mainnet; graph deploy digitalax/digitalax --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
+    "deploy:goerli": "graph deploy digitalax/digitalaxgoerli --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
     "deploy-local": "graph deploy blockrockettech/digitalax --ipfs http://localhost:5001 --node http://127.0.0.1:8020"
   },
   "devDependencies": {

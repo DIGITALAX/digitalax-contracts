@@ -126,7 +126,7 @@ export function handleTransfer(event: Transfer): void {
         let fromGarmentsOwned = fromCollector.parentsOwned;
 
         let updatedGarmentsOwned = new Array<string>();
-        for(let i = 0; i < fromGarmentsOwned.length - 1; i++) {
+        for(let i = 0; i <= fromGarmentsOwned.length - 1; i++) {
             let garmentId = fromGarmentsOwned.pop();
             if (garmentId !== event.params.tokenId.toString()) {
                 updatedGarmentsOwned.push(garmentId);
