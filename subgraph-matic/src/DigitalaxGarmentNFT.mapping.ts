@@ -70,7 +70,7 @@ export function handleTransfer(event: Transfer): void {
                                 for (let i = 0; i < attributes.length; i += 1) {
                                     if (attributes[i].kind === JSONValueKind.OBJECT) {
                                         let attribute = attributes[i].toObject();
-                                        let garmentAttribute = new GarmentAttribute(`${garment.id}-${i}`);
+                                        let garmentAttribute = new GarmentAttribute(garment.id + i.toString());
                                         garmentAttribute.type = null;
                                         garmentAttribute.value = null;
 
@@ -81,7 +81,9 @@ export function handleTransfer(event: Transfer): void {
                                             garmentAttribute.value = attribute.get('value').toString();
                                         }
                                         garmentAttribute.save();
-                                        garment.attributes.push(garmentAttribute.id);
+                                        let attrs = garment.attributes;
+                                        attrs.push(garmentAttribute.id);
+                                        garment.attributes = attrs;
                                     }
                                 }
                             }
@@ -127,10 +129,9 @@ export function handleTransfer(event: Transfer): void {
         let fromGarmentsOwned = fromCollector.parentsOwned;
 
         let updatedGarmentsOwned = new Array<string>();
-        for(let i = 0; i <= fromGarmentsOwned.length - 1; i++) {
-            let garmentId = fromGarmentsOwned.pop();
-            if (garmentId !== event.params.tokenId.toString()) {
-                updatedGarmentsOwned.push(garmentId);
+        for (let i = 0; i < fromGarmentsOwned.length; i += 1) {
+            if (fromGarmentsOwned[i] !== event.params.tokenId.toString()) {
+                updatedGarmentsOwned.push(fromGarmentsOwned[i]);
             }
         }
 
@@ -205,7 +206,7 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
                             for (let i = 0; i < attributes.length; i += 1) {
                                 if (attributes[i].kind === JSONValueKind.OBJECT) {
                                     let attribute = attributes[i].toObject();
-                                    let garmentAttribute = new GarmentAttribute(`${garment.id}-${i}`);
+                                    let garmentAttribute = new GarmentAttribute(garment.id + i.toString());
                                     garmentAttribute.type = null;
                                     garmentAttribute.value = null;
 
@@ -216,7 +217,9 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
                                         garmentAttribute.value = attribute.get('value').toString();
                                     }
                                     garmentAttribute.save();
-                                    garment.attributes.push(garmentAttribute.id);
+                                    let attrs = garment.attributes;
+                                    attrs.push(garmentAttribute.id);
+                                    garment.attributes = attrs;
                                 }
                             }
                         }
