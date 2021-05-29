@@ -16,6 +16,10 @@ contract FxStateRootTunnel is FxBaseRootTunnel {
     mapping (uint256 => bool) public withdrawnTokens;
     event RootMessageSent(bytes message);
 
+    event NFTSentToChild(uint256[] tokenIds, address[] owners, uint256[] primarySalePrices, address[] designers, string[] tokenUris);
+    event NFTReceivedFromChild(uint256[] tokenIds, address[] owners, uint256[] primarySalePrices, address[] designers, string[] tokenUris);
+
+
     constructor(address _checkpointManager, address _fxRoot, DigitalaxGarmentNFT _nft, DigitalaxMaterials _child)  FxBaseRootTunnel(_checkpointManager, _fxRoot) public {
         nft = _nft;
         child = _child;
@@ -48,6 +52,8 @@ contract FxStateRootTunnel is FxBaseRootTunnel {
                 }
             }
         }
+
+        emit NFTReceivedFromChild(_tokenIds, _owners, _primarySalePrices, _garmentDesigners, _tokenUris);
     }
 
     function sendNFTsToChild(uint256[] memory _tokenIds) public {
@@ -86,6 +92,8 @@ contract FxStateRootTunnel is FxBaseRootTunnel {
         bytes memory message = abi.encode(_tokenIds, _owners, _salePrices, _designers, _tokenUris, childNftIdArray, childNftURIArray, childNftBalanceArray);
         _sendMessageToChild(message);
         emit RootMessageSent(message);
+        emit NFTSentToChild(_tokenIds, _owners, _salePrices, _designers, _tokenUris);
+
     }
 
     /**

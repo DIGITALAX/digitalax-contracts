@@ -5,21 +5,27 @@ pragma experimental ABIEncoderV2;
 import './FxBaseChildTunnel.sol';
 import '../garment/DigitalaxGarmentNFTv2.sol';
 import '../garment/DigitalaxMaterialsV2.sol';
+import "../EIP2771/BaseRelayRecipient.sol";
 
 /**
  * @title FxStateChildTunnel
  */
-contract FxStateChildTunnel is FxBaseChildTunnel {
+contract FxStateChildTunnel is FxBaseChildTunnel, BaseRelayRecipient {
     uint256 public latestStateId;
     address public latestRootMessageSender;
     bytes public latestData;
     DigitalaxGarmentNFTv2 public nft;
     DigitalaxMaterialsV2 public child;
     mapping (uint256 => bool) public withdrawnTokens;
+    // MessageTunnel on L1 will get data from this event
+    event NFTSentToRoot(uint256[] tokenIds, address[] owners, uint256[] primarySalePrices, address[] designers, string[] tokenUris);
+    event NFTReceivedFromRoot(uint256[] tokenIds, address[] owners, uint256[] primarySalePrices, address[] designers, string[] tokenUris);
 
-    constructor(address _fxChild, DigitalaxGarmentNFTv2 _nft) FxBaseChildTunnel(_fxChild) public {
+    constructor(address _fxChild, DigitalaxGarmentNFTv2 _nft, address _trustedForwarder) FxBaseChildTunnel(_fxChild) public {
         nft = _nft;
         child = nft.childContract();
+
+        trustedForwarder = _trustedForwarder;
     }
 
     function _processMessageFromRoot(uint256 stateId, address sender, bytes memory data)
@@ -40,6 +46,7 @@ contract FxStateChildTunnel is FxBaseChildTunnel {
         string[][] memory _childrenURIs;
         uint256[][] memory _childrenBalances;
         ( _tokenIds, _owners, _primarySalePrices, _garmentDesigners, _tokenUris, _children, _childrenURIs, _childrenBalances) = abi.decode(data, (uint256[], address[], uint256[], address[], string[], uint256[][], string[][], uint256[][]));
+
         for( uint256 i; i< _tokenIds.length; i++){
 
             // With the information above, rebuild the 721 token on mainnet
@@ -56,6 +63,7 @@ contract FxStateChildTunnel is FxBaseChildTunnel {
                 }
             }
         }
+        emit NFTReceivedFromRoot(_tokenIds, _owners, _primarySalePrices, _garmentDesigners, _tokenUris);
     }
 
     function sendNFTsToRoot(uint256[] memory _tokenIds) public {
@@ -72,9 +80,9 @@ contract FxStateChildTunnel is FxBaseChildTunnel {
         for( uint256 i; i< length; i++){
             // TODO add appropriate msg sender
             _owners[i] = nft.ownerOf(_tokenIds[i]);
-            require(_owners[i] == msg.sender, "FxStateChildTunnel.sendNFTsToRoot: can only be sent by the same user");
+            require(_owners[i] == _msgSender(), "FxStateChildTunnel.sendNFTsToRoot: can only be sent by the same user");
             require(nft.exists(_tokenIds[i]), "FxStateRootTunnel.sendNFTsToChild: token does not exist");
-            nft.transferFrom(msg.sender, address(this), _tokenIds[i]);
+            nft.transferFrom(_msgSender(), address(this), _tokenIds[i]);
             _salePrices[i] = nft.primarySalePrice(_tokenIds[i]);
             _designers[i] = nft.garmentDesigners(_tokenIds[i]);
             _tokenUris[i] = nft.tokenURI(_tokenIds[i]);
@@ -94,9 +102,29 @@ contract FxStateChildTunnel is FxBaseChildTunnel {
             child.burnBatch(address(this), childNftIdArray[i], childNftBalanceArray[i]);
         }
 
+        emit NFTSentToRoot(_tokenIds, _owners, _salePrices, _designers, _tokenUris);
         _sendMessageToRoot(abi.encode(_tokenIds, _owners, _salePrices, _designers, _tokenUris, childNftIdArray, childNftURIArray, childNftBalanceArray));
     }
 
+
+    /**
+     * Override this function.
+     * This version is to keep track of BaseRelayRecipient you are using
+     * in your contract.
+     */
+    function versionRecipient() external view override returns (string memory) {
+        return "1";
+    }
+
+    // This is to support Native meta transactions
+    // never use msg.sender directly, use _msgSender() instead
+    function _msgSender()
+    internal
+    view
+    returns (address payable sender)
+    {
+        return BaseRelayRecipient.msgSender();
+    }
 
     /**
      @notice Single ERC721 receiver callback hook
