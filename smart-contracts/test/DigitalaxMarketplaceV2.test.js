@@ -14,7 +14,7 @@ const {expect} = require('chai');
 const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
 const DigitalaxMaterialsV2 = artifacts.require('DigitalaxMaterialsV2');
 const DigitalaxGarmentNFTv2 = artifacts.require('DigitalaxGarmentNFTv2');
-const DigitalaxGarmentCollection = artifacts.require('DigitalaxGarmentCollection');
+const DigitalaxGarmentCollectionV2 = artifacts.require('DigitalaxGarmentCollectionV2');
 const DigitalaxGarmentFactory = artifacts.require('DigitalaxGarmentFactory');
 const DigitalaxMarketplaceV2 = artifacts.require('DigitalaxMarketplaceV2Mock');
 const DigitalaxMarketplaceV2Real = artifacts.require('DigitalaxMarketplaceV2');
@@ -99,7 +99,8 @@ contract('DigitalaxMarketplaceV2', (accounts) => {
       this.weth.address
     );
 
-    this.garmentCollection = await DigitalaxGarmentCollection.new(
+    this.garmentCollection = await DigitalaxGarmentCollectionV2.new()
+    await this.garmentCollection.initialize(
         this.accessControls.address,
         this.token.address,
         this.digitalaxMaterials.address,

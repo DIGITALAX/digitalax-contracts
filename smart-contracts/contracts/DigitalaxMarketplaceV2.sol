@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./DigitalaxAccessControls.sol";
 import "./garment/IDigitalaxGarmentNFT.sol";
-import "./garment/DigitalaxGarmentCollection.sol";
+import "./garment/DigitalaxGarmentCollectionV2.sol";
 import "./EIP2771/BaseRelayRecipient.sol";
 import "@openzeppelin/contracts/proxy/Initializable.sol";
 
@@ -102,7 +102,7 @@ contract DigitalaxMarketplaceV2 is ReentrancyGuard, BaseRelayRecipient, Initiali
     /// @notice Garment ERC721 NFT - the only NFT that can be offered in this contract
     IDigitalaxGarmentNFT public garmentNft;
     /// @notice Garment NFT Collection
-    DigitalaxGarmentCollection public garmentCollection;
+    DigitalaxGarmentCollectionV2 public garmentCollection;
     /// @notice responsible for enforcing admin access
     DigitalaxAccessControls public accessControls;
     /// @notice where to send platform fee funds to
@@ -125,7 +125,7 @@ contract DigitalaxMarketplaceV2 is ReentrancyGuard, BaseRelayRecipient, Initiali
     function initialize(
         DigitalaxAccessControls _accessControls,
         IDigitalaxGarmentNFT _garmentNft,
-        DigitalaxGarmentCollection _garmentCollection,
+        DigitalaxGarmentCollectionV2 _garmentCollection,
         address payable _platformFeeRecipient,
         address _monaErc20Token,
         address _trustedForwarder
