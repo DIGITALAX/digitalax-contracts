@@ -72,7 +72,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
 
     /// @notice event emitted when a user claims reward
     event RewardPaid(address indexed user, uint256 reward);
-    
+
     /// @notice Allows reward tokens to be claimed
     event ClaimableStatusUpdated(bool status);
 
@@ -86,7 +86,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
     }
      /**
      * @dev Single gateway to intialize the staking contract after deploying
-     * @dev Sets the contract with the MONA NFT and MONA reward token 
+     * @dev Sets the contract with the MONA NFT and MONA reward token
      */
     function initStaking(
         IERC20 _rewardsToken,
@@ -193,7 +193,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
     /// @dev Get the amount a staked nft is valued at ie bought at
     function getContribution (
         uint256 _tokenId
-    ) 
+    )
         public
         view
         returns (uint256)
@@ -201,7 +201,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         return parentNFT.primarySalePrice(_tokenId);
     }
 
-    /// @notice Stake MONA NFTs and earn reward tokens. 
+    /// @notice Stake MONA NFTs and earn reward tokens.
     function stake(
         uint256 tokenId
     )
@@ -211,7 +211,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         _stake(_msgSender(), tokenId);
     }
 
-    /// @notice Stake multiple MONA NFTs and earn reward tokens. 
+    /// @notice Stake multiple MONA NFTs and earn reward tokens.
     function stakeBatch(uint256[] memory tokenIds)
         external
     {
@@ -219,18 +219,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
             _stake(_msgSender(), tokenIds[i]);
         }
     }
-
-    /// @notice Stake all your MONA NFTs and earn reward tokens. 
-    function stakeAll()
-        external
-    {
-        uint256 balance = parentNFT.balanceOf(_msgSender());
-        for (uint i = 0; i < balance; i++) {
-            _stake(_msgSender(), parentNFT.tokenOfOwnerByIndex(_msgSender(),i));
-        }
-    }
-
-
+    
     /**
      * @dev All the staking goes through this function
      * @dev Rewards to be given out is calculated
@@ -267,8 +256,8 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
     /// @notice Unstake NFTs.
     function unstake(
         uint256 _tokenId
-    ) 
-        external 
+    )
+        external
     {
         require(
             tokenOwner[_tokenId] == _msgSender(),
@@ -278,7 +267,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         _unstake(_msgSender(), _tokenId);
     }
 
-    /// @notice Stake multiple MONA NFTs and claim reward tokens. 
+    /// @notice Stake multiple MONA NFTs and claim reward tokens.
     function unstakeBatch(
         uint256[] memory tokenIds
     )
@@ -300,8 +289,8 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
     function _unstake(
         address _user,
         uint256 _tokenId
-    ) 
-        internal 
+    )
+        internal
     {
 
         Staker storage staker = stakers[_user];
@@ -313,7 +302,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         uint256 lastIndex = staker.tokenIds.length - 1;
         uint256 lastIndexKey = staker.tokenIds[lastIndex];
         uint256 tokenIdIndex = staker.tokenIndex[_tokenId];
-        
+
         staker.tokenIds[tokenIdIndex] = lastIndexKey;
         staker.tokenIndex[lastIndexKey] = tokenIdIndex;
         if (staker.tokenIds.length > 0) {
@@ -351,8 +340,8 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
     /// @dev Updates the amount of rewards owed for each user before any tokens are moved
     function updateReward(
         address _user
-    ) 
-        public 
+    )
+        public
     {
 
         rewardsContract.updateRewards();
@@ -364,14 +353,14 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
                                             .mul(pointMultiplier)
                                             .div(stakedEthTotal));
         }
-        
+
         lastUpdateTime = _getNow();
         uint256 rewards = rewardsOwing(_user);
 
         Staker storage staker = stakers[_user];
         if (_user != address(0)) {
             staker.rewardsEarned = staker.rewardsEarned.add(rewards);
-            staker.lastRewardPoints = rewardsPerTokenPoints; 
+            staker.lastRewardPoints = rewardsPerTokenPoints;
         }
     }
 
@@ -413,7 +402,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
                                                                 .mul(pointMultiplier)
                                                                 .div(stakedEthTotal))
                                                          .sub(stakers[_user].lastRewardPoints);
-                                                         
+
         uint256 rewards = stakers[_user].balance.mul(newRewardPerToken)
                                                 .div(1e18)
                                                 .div(pointMultiplier);
@@ -434,11 +423,11 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         updateReward(_user);
 
         Staker storage staker = stakers[_user];
-    
+
         uint256 payableAmount = staker.rewardsEarned.sub(staker.rewardsReleased);
         staker.rewardsReleased = staker.rewardsReleased.add(payableAmount);
 
-        /// @dev accounts for dust 
+        /// @dev accounts for dust
         uint256 rewardBal = rewardsToken.balanceOf(address(this));
         if (payableAmount > rewardBal) {
             payableAmount = rewardBal;
