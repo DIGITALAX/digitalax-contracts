@@ -84,6 +84,8 @@ dataSources:
           handler: handleChildReceived
         - event: DigitalaxGarmentTokenUriUpdate(indexed uint256,string)
           handler: handleUriUpdated
+        - event: TokenPrimarySalePriceSet(indexed uint256,uint256)
+          handler: handleTokenPriceSaleUpdated
       file: ./src/DigitalaxGarmentNFTv2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterialsV2
@@ -485,8 +487,8 @@ dataSources:
           handler: handleUpdateMarketplaceDiscountToPayInErc20
         - event: OfferCreated(indexed uint256,uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleOfferCreated
-        - event:  UpdateOfferStartEnd(indexed uint256,uint256,uint256)
-          handler:  handleUpdateOfferStartEnd
+        - event: UpdateOfferStartEnd(indexed uint256,uint256,uint256)
+          handler: handleUpdateOfferStartEnd
         - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
           handler: handleOfferPrimarySalePriceUpdated
         - event: OfferPurchased(indexed uint256,indexed uint256,indexed address,uint256,bool,uint256,uint256,uint256)
