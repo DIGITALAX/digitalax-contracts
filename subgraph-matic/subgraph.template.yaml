@@ -268,7 +268,7 @@ dataSources:
           handler: handleUpdatePlatformFee
         - event: UpdatePlatformFeeRecipient(address)
           handler: handleUpdatePlatformFeeRecipient
-      file: ./src/DigitalaxAuction.mapping.ts
+      file: ./src/DigitalaxAuctionV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAccessControls
     network: '{{network}}'
