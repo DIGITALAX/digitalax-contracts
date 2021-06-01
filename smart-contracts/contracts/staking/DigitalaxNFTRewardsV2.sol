@@ -230,7 +230,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         );
 
         require(
-            _week > getCurrentWeek(),
+            _week >= getCurrentWeek(),
             "DigitalaxRewardsV2.depositRevenueSharingRewards: The rewards generated should be set for the future weeks"
         );
 
