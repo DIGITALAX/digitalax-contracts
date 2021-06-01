@@ -50,14 +50,14 @@ async function main() {
   );
 
   //Optional TODO decide if needed
-  const acr = await accessControls.addSmartContractRole(MARKETPLACE_ADDRESS);
-  await acr.wait();
-
-  const scr =  await accessControls.addSmartContractRole(GARMENT_COLLECTION_ADDRESS);
-  await scr.wait();
-
-  const acr2 = await accessControls.addMinterRole(GARMENT_COLLECTION_ADDRESS);
-  await acr2.wait();
+  // const acr = await accessControls.addSmartContractRole(MARKETPLACE_ADDRESS);
+  // await acr.wait();
+  //
+  // const scr =  await accessControls.addSmartContractRole(GARMENT_COLLECTION_ADDRESS);
+  // await scr.wait();
+  //
+  // const acr2 = await accessControls.addMinterRole(GARMENT_COLLECTION_ADDRESS);
+  // await acr2.wait();
 
 
   //// SETTINGS
@@ -71,32 +71,101 @@ async function main() {
 
   // Use the single auction id processed in the last script to build auction id specific collections in this script
 
-   const auctionId_lockdown = 100353; // TODO update from result of last script (important)
+   const auctionId_9 = 100454; // TODO update from result of last script (important)
+   const auctionId_10 = 100455; // TODO update from result of last script (important)
+   const auctionId_11 = 100456; // TODO update from result of last script (important)
+   const auctionId_12 = 100457; // TODO update from result of last script (important)
 
   // Next step is mint collections and open buy offers, run 1 at a time in production in case something drops
   const collectionUris = [
-      {
-     // Collection Semi-Rare
-     uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Minecraft/Semi-Rare/Semi-Rare Test/hash.json').uri,
-     price: reservePrice2_semirare,
-     collectionDesigner: FUND_MULTISIG_ADDRESS,
-     amountToMintInCollection: 30,
-     auctionIdToLink: auctionId_lockdown,
-     rarity: 'Semi-Rare',
-     tokendIds: [],
-     tokenAmounts: [],
-   },
     {
       // Collection Common
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Minecraft/Common/Common Test/hash.json').uri,
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Minecraft/Common/INMC01/hash.json').uri,
       price: reservePrice_common,
       collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 40,
-      auctionIdToLink: auctionId_lockdown,
+      amountToMintInCollection: 128,
+      auctionIdToLink: auctionId_9,
       rarity: 'Common',
       tokendIds: [],
       tokenAmounts: [],
-    }
+    },
+    {
+      // Collection Common
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Minecraft/Common/INMC02/hash.json').uri,
+      price: reservePrice_common,
+      collectionDesigner: FUND_MULTISIG_ADDRESS,
+      amountToMintInCollection: 128,
+      auctionIdToLink: auctionId_10,
+      rarity: 'Common',
+      tokendIds: [],
+      tokenAmounts: [],
+    },
+    {
+      // Collection Common
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Minecraft/Common/INMC03/hash.json').uri,
+      price: reservePrice_common,
+      collectionDesigner: FUND_MULTISIG_ADDRESS,
+      amountToMintInCollection: 128,
+      auctionIdToLink: auctionId_11,
+      rarity: 'Common',
+      tokendIds: [],
+      tokenAmounts: [],
+    },
+    {
+      // Collection Common
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Minecraft/Common/INMC04/hash.json').uri,
+      price: reservePrice_common,
+      collectionDesigner: FUND_MULTISIG_ADDRESS,
+      amountToMintInCollection: 128,
+      auctionIdToLink: auctionId_12,
+      rarity: 'Common',
+      tokendIds: [],
+      tokenAmounts: [],
+    },
+    {
+      // Collection Semi-Rare
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Minecraft/Semi-Rare/INMC05/hash.json').uri,
+      price: reservePrice2_semirare,
+      collectionDesigner: FUND_MULTISIG_ADDRESS,
+      amountToMintInCollection: 64,
+      auctionIdToLink: auctionId_9,
+      rarity: 'Semi-Rare',
+      tokendIds: [],
+      tokenAmounts: [],
+      },
+    {
+      // Collection Semi-Rare
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Minecraft/Semi-Rare/INMC06/hash.json').uri,
+      price: reservePrice2_semirare,
+      collectionDesigner: FUND_MULTISIG_ADDRESS,
+      amountToMintInCollection: 64,
+      auctionIdToLink: auctionId_10,
+      rarity: 'Semi-Rare',
+      tokendIds: [],
+      tokenAmounts: [],
+      },
+    {
+      // Collection Semi-Rare
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Minecraft/Semi-Rare/INMC07/hash.json').uri,
+      price: reservePrice2_semirare,
+      collectionDesigner: FUND_MULTISIG_ADDRESS,
+      amountToMintInCollection: 64,
+      auctionIdToLink: auctionId_11,
+      rarity: 'Semi-Rare',
+      tokendIds: [],
+      tokenAmounts: [],
+      },
+    {
+      // Collection Semi-Rare
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Minecraft/Semi-Rare/INMC08/hash.json').uri,
+      price: reservePrice2_semirare,
+      collectionDesigner: FUND_MULTISIG_ADDRESS,
+      amountToMintInCollection: 64,
+      auctionIdToLink: auctionId_12,
+      rarity: 'Semi-Rare',
+      tokendIds: [],
+      tokenAmounts: [],
+      },
   ]
     // Approve for all
     const approveToken = await garment.setApprovalForAll(MARKETPLACE_ADDRESS, true);
@@ -141,6 +210,7 @@ async function main() {
     });
 
     await tx.wait();
+
     arrayOfCollectionIdsDeployedForExclusiveNFT.push(createCollectionId.toString());
 
     console.log(`-Collection created-`);
