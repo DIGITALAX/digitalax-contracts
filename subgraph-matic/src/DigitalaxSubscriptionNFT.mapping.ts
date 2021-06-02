@@ -16,6 +16,7 @@ import {loadOrCreateDigitalaxSubscriptionCollector} from "./factory/DigitalaxSub
 
 import {ZERO_ADDRESS} from "./constants";
 import {loadOrCreateDigitalaxSubscriptionChild} from "./factory/DigitalaxSubscriptionChild.factory";
+import { TokenPrimarySalePriceSet } from '../generated/DigitalaxGarmentNFTv2/DigitalaxGarmentNFTv2';
 
 export function handleTransfer(event: Transfer): void {
     log.info("Handle Garment Transfer @ Hash {}", [event.transaction.hash.toHexString()]);
@@ -227,5 +228,13 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
 
         }
     }
+    garment.save();
+}
+
+export function handleTokenPriceSaleUpdated(event: TokenPrimarySalePriceSet): void {
+    let contract = DigitalaxSubscriptionNFTContract.bind(event.address);
+    let garment = DigitalaxSubscription.load(event.params._tokenId.toString());
+    garment.primarySalePrice = contract.primarySalePrice(event.params._tokenId);
+
     garment.save();
 }

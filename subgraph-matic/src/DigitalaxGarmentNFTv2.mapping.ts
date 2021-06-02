@@ -4,7 +4,8 @@ import {
     Transfer,
     ReceivedChild,
     DigitalaxGarmentTokenUriUpdate,
-    DigitalaxGarmentNFTv2 as DigitalaxGarmentNFTv2Contract
+    DigitalaxGarmentNFTv2 as DigitalaxGarmentNFTv2Contract,
+    TokenPrimarySalePriceSet
 } from "../generated/DigitalaxGarmentNFTv2/DigitalaxGarmentNFTv2";
 
 import {
@@ -238,6 +239,14 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
 
         }
     }
+
+    garment.save();
+}
+
+export function handleTokenPriceSaleUpdated(event: TokenPrimarySalePriceSet): void {
+    let contract = DigitalaxGarmentNFTv2Contract.bind(event.address);
+    let garment = DigitalaxGarmentV2.load(event.params._tokenId.toString());
+    garment.primarySalePrice = contract.primarySalePrice(event.params._tokenId);
 
     garment.save();
 }

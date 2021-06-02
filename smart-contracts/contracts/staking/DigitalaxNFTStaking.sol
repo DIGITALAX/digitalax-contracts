@@ -219,7 +219,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
             _stake(_msgSender(), tokenIds[i]);
         }
     }
-    
+
     /**
      * @dev All the staking goes through this function
      * @dev Rewards to be given out is calculated
@@ -310,7 +310,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
             delete staker.tokenIndex[_tokenId];
         }
 
-        if (staker.balance == 0) {
+        if (staker.tokenIds.length == 0) {
             delete stakers[_user];
         }
         delete tokenOwner[_tokenId];
