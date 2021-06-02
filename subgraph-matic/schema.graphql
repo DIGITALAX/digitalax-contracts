@@ -340,9 +340,10 @@ type DigitalaxMarketplaceOffer @entity {
 
 type DigitalaxMarketplaceV2Offer @entity {
   id: ID!
-  garmentCollection: DigitalaxGarmentCollection!
+  garmentCollection: DigitalaxGarmentV2Collection!
   primarySalePrice: BigInt!
   startTime: BigInt!
+  endTime: BigInt!
   amountSold: BigInt!
   marketplacePlatformFee: BigInt!
   discountToPayMona: BigInt!
