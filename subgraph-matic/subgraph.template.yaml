@@ -29,6 +29,8 @@ dataSources:
           handler: handleChildReceived
         - event: DigitalaxGarmentTokenUriUpdate(indexed uint256,string)
           handler: handleUriUpdated
+        - event: TokenPrimarySalePriceSet(indexed uint256,uint256)
+          handler: handleTokenPriceSaleUpdated
       file: ./src/DigitalaxGarmentNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterials
@@ -141,6 +143,8 @@ dataSources:
           handler: handleChildReceived
         - event: DigitalaxGarmentTokenUriUpdate(indexed uint256,string)
           handler: handleUriUpdated
+        - event: TokenPrimarySalePriceSet(indexed uint256,uint256)
+          handler: handleTokenPriceSaleUpdated
       file: ./src/DigitalaxSubscriptionNFT.mapping.ts
   - kind: ethereum/contract
     name: DFBundle
