@@ -33,5 +33,7 @@
     "DigitalaxGarmentCollectionV2Address": "0x991754417522075C75a82AdBd8896fa926da8602",
     "DigitalaxGarmentCollectionV2StartBlock": 12000000,
     "DigitalaxMarketplaceV2Address": "0x6A5DaE9D8E0638Bf1626861b7758eD9fc2AD018c",
-    "DigitalaxMarketplaceV2StartBlock": 11709635
+    "DigitalaxMarketplaceV2StartBlock": 11709635,
+    "DigitalaxNFTStakingAddress": "0x8bE9b1343C56d43f1e13Cf7c79232401632A0573",
+    "DigitalaxNFTStakingStartBlock": 12000000
 }

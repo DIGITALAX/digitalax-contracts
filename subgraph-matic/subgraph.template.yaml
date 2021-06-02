@@ -558,3 +558,32 @@ dataSources:
         - event: DesignerInfoUpdated(indexed uint256,string)
           handler: handleDesignerInfoUpdated
       file: ./src/DigitalaxIndex.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxNFTStaking
+    network: '{{network}}'
+    source:
+      address: '{{DigitalaxNFTStakingAddress}}'
+      abi: DigitalaxNFTStaking
+      startBlock: {{DigitalaxNFTStakingStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+      abis:
+        - name: DigitalaxNFTStaking
+          file: ./abis/DigitalaxNFTStaking.json
+      eventHandlers:
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(address indexed,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(address indexed,uint256)
+          handler: handleRewardPaid
+      file: ./src/DigitalaxNFTStaking.mapping.ts
