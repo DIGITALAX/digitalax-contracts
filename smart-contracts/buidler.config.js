@@ -45,7 +45,7 @@ module.exports = {
       accounts: [`0x${PRIVATE_KEY}`]
     },
     mumbai: {
-      url: `https://matic-mumbai.chainstacklabs.com`,
+      url: `https://matic-testnet-archive-rpc.bwarelabs.com`,
       accounts: [`0x${PRIVATE_KEY}`]
     },
     matic: {

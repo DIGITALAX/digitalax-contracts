@@ -69,7 +69,7 @@ async function main() {
   const uris = [
       {
           // Auction 1 Exclusive
-          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Minecraft/Exclusive/Exclusive Test/hash.json').uri,
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Minecraft/Exclusive/INMC09/hash.json').uri,
           tokendIds: [],
           tokenAmounts: [],
           price: reservePrice,
@@ -77,36 +77,36 @@ async function main() {
           auctionEndTime: mainnet_endTime,
           designer: FUND_MULTISIG_ADDRESS
       },
-      // {
-      //     // Auction 2 Exclusive
-      //     uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Exclusive/CC Pluto Skin/hash.json').uri,
-      //     tokendIds: [],
-      //     tokenAmounts: [],
-      //     price: reservePrice,
-      //     auctionStartTime: mainnet_startTime,
-      //     auctionEndTime: mainnet_endTime,
-      //     designer: FUND_MULTISIG_ADDRESS
-      // },
-      // {
-      //     // Auction 3 Exclusive
-      //     uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Exclusive/CC Prima Skin/hash.json').uri,
-      //     tokendIds: [],
-      //     tokenAmounts: [],
-      //     price: reservePrice,
-      //     auctionStartTime: mainnet_startTime,
-      //     auctionEndTime: mainnet_endTime,
-      //     designer: FUND_MULTISIG_ADDRESS
-      // },
-      // {
-      //     // Auction 4 Exclusive
-      //     uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Among Us/Exclusive/CC Witch Doctor Skin/hash.json').uri,
-      //     tokendIds: [],
-      //     tokenAmounts: [],
-      //     price: reservePrice,
-      //     auctionStartTime: mainnet_startTime,
-      //     auctionEndTime: mainnet_endTime,
-      //     designer: FUND_MULTISIG_ADDRESS
-      // }
+      {
+          // Auction 2 Exclusive
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Minecraft/Exclusive/INMC10/hash.json').uri,
+          tokendIds: [],
+          tokenAmounts: [],
+          price: reservePrice,
+          auctionStartTime: mainnet_startTime,
+          auctionEndTime: mainnet_endTime,
+          designer: FUND_MULTISIG_ADDRESS
+      },
+      {
+          // Auction 3 Exclusive
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Minecraft/Exclusive/INMC11/hash.json').uri,
+          tokendIds: [],
+          tokenAmounts: [],
+          price: reservePrice,
+          auctionStartTime: mainnet_startTime,
+          auctionEndTime: mainnet_endTime,
+          designer: FUND_MULTISIG_ADDRESS
+      },
+      {
+          // Auction 4 Exclusive
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Minecraft/Exclusive/INMC12/hash.json').uri,
+          tokendIds: [],
+          tokenAmounts: [],
+          price: reservePrice,
+          auctionStartTime: mainnet_startTime,
+          auctionEndTime: mainnet_endTime,
+          designer: FUND_MULTISIG_ADDRESS
+      }
   ]
 
   var arrayOfParents = [];
