@@ -582,8 +582,8 @@ dataSources:
           handler: handleStaked
         - event: Unstaked(address,uint256)
           handler: handleUnstaked
-        - event: EmergencyUnstake(address indexed,uint256)
+        - event: EmergencyUnstake(indexed address,uint256)
           handler: handleEmergencyUnstake
-        - event: RewardPaid(address indexed,uint256)
+        - event: RewardPaid(indexed address,uint256)
           handler: handleRewardPaid
       file: ./src/DigitalaxNFTStaking.mapping.ts
