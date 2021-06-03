@@ -324,6 +324,10 @@ const randomURI = 'rand';
     console.log(await this.nftStaking.getStakedTokens(staker2));
     await time.increase(time.duration.seconds(120));
 
+    // Make sure we can withdraw and deposit the same amount back in.
+    await this.digitalaxRewards.withdrawMonaRewards(3, FIFTY_TOKENS, {from: admin});
+    await this.digitalaxRewards.depositMonaRewards(3, FIFTY_TOKENS, {from: admin});
+
     await this.digitalaxRewards.setNowOverride('2420000'); // final week
     await this.nftStaking.setNowOverride('2420000'); // final week
     console.log('balance of staker before and after:');
