@@ -283,20 +283,18 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         );
 
 
-        console.log(IERC20(monaToken).balanceOf(address(this)));
         // Deposit this amount of MONA here
        IERC20(monaToken).transfer(
             _msgSender(),
             _amount
         );
 
-            console.log(IERC20(monaToken).balanceOf(address(this)));
 
         uint256 monaAmount = _amount.mul(pointMultiplier)
                                    .div(SECONDS_PER_WEEK)
                                    .div(pointMultiplier);
 
-
+        require(monaAmount <= weeklyMonaRevenueSharingPerSecond[_week], "DigitalaxRewardsV2.withdrawMonaRewards: Cannot withdraw back more then week amount");
         // Increase the revenue sharing per second for the week for Mona
         weeklyMonaRevenueSharingPerSecond[_week] = weeklyMonaRevenueSharingPerSecond[_week].sub(monaAmount);
 
