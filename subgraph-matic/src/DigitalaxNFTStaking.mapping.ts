@@ -15,7 +15,7 @@ import {ZERO} from "./constants";
 
 export function handleRewardPaid(event: RewardPaid): void {
     let contract = DigitalaxNFTStakingContract.bind(event.address);
-    let owner = event.params.user.toString()
+    let owner = event.params.user.toHexString()
     let reward = event.params.reward;
     let staker = DigitalaxNFTStaker.load(owner);
     if (staker == null) {
@@ -30,7 +30,7 @@ export function handleRewardPaid(event: RewardPaid): void {
 
 export function handleStaked(event: Staked): void {
     let contract = DigitalaxNFTStakingContract.bind(event.address);
-    let owner = event.params.owner.toString()
+    let owner = event.params.owner.toHexString()
     let token = event.params.amount.toString();
     let staker = DigitalaxNFTStaker.load(owner);
     if (staker == null) {
@@ -46,7 +46,7 @@ export function handleStaked(event: Staked): void {
 
 export function handleUnstaked(event: Unstaked): void {
     let contract = DigitalaxNFTStakingContract.bind(event.address);
-    let owner = event.params.owner.toString()
+    let owner = event.params.owner.toHexString()
     let token = event.params.amount.toString();
     let staker = DigitalaxNFTStaker.load(owner);
     let garmentsStaked = staker.garments;
@@ -64,7 +64,7 @@ export function handleUnstaked(event: Unstaked): void {
 
 export function handleEmergencyUnstake(event: EmergencyUnstake): void {
     let contract = DigitalaxNFTStakingContract.bind(event.address);
-    let owner = event.params.user.toString()
+    let owner = event.params.user.toHexString()
     let token = event.params.tokenId.toString();
     let staker = DigitalaxNFTStaker.load(owner);
     let garmentsStaked = staker.garments;
