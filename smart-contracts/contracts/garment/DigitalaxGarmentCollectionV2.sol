@@ -98,7 +98,7 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
         );
 
         Collection memory _newCollection = Collection(new uint256[](0), _amount, _tokenUri, _designer, _auctionId, _rarity);
-        uint256 _collectionId = garmentCollections.length;
+        uint256 _collectionId = garmentCollections.length + 1;
         garmentCollections.push(_newCollection);
 
         for (uint i = 0; i < _amount; i ++) {
