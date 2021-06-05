@@ -27,5 +27,13 @@
     "DigitalaxGarmentNFTv2Address": "0x7B2a989c4D1AD1B79a84CE2EB79dA5D8d9C2b7a7",
     "DigitalaxGarmentNFTv2StartBlock": 12000000,
     "DigitalaxMaterialsV2Address": "0x567c7b3364ba2903a80ecbad6c54ba8c0e1a069e",
-    "DigitalaxMaterialsV2StartBlock": 12000000
+    "DigitalaxMaterialsV2StartBlock": 12000000,
+    "DigitalaxAuctionV2Address": "0x991C2Dc47AB12eF5020876219625A64C422B30d3",
+    "DigitalaxAuctionV2StartBlock": 12000000,
+    "DigitalaxGarmentCollectionV2Address": "0x721f7c76e447174141a761Ce3e80Ad88e5E07047",
+    "DigitalaxGarmentCollectionV2StartBlock": 12000000,
+    "DigitalaxMarketplaceV2Address": "0x8F235A04cC541efF19Fd42EFBfF0FCACAdd09DBC",
+    "DigitalaxMarketplaceV2StartBlock": 11709635,
+    "DigitalaxNFTStakingAddress": "0xa7cf890C70817D57ea355C2F4B4BF23B064D91F7",
+    "DigitalaxNFTStakingStartBlock": 12000000
 }
