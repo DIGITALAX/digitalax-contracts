@@ -58,6 +58,10 @@ contract DigitalaxMarketplaceV2 is ReentrancyGuard, BaseRelayRecipient, Initiali
         uint256 indexed garmentCollectionId,
         uint256 primarySalePrice
     );
+    event UpdateOfferMaxAmount(
+        uint256 indexed garmentCollectionId,
+        uint256 maxAmount
+    );
     event UpdateOfferStartEnd(
         uint256 indexed garmentCollectionId,
         uint256 startTime,
@@ -411,6 +415,19 @@ contract DigitalaxMarketplaceV2 is ReentrancyGuard, BaseRelayRecipient, Initiali
     }
 
     /**
+     @notice Update the offer max amount
+     @dev Only admin
+     @param _garmentCollectionId Collection ID of the garment being offered
+     @param _maxAmount New amount
+     */
+    function updateOfferMaxAmount(uint256 _garmentCollectionId, uint256 _maxAmount) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.updateOfferMaxAmount: Sender must be admin");
+
+        offers[_garmentCollectionId].maxAmount = _maxAmount;
+        emit UpdateOfferMaxAmount(_garmentCollectionId, _maxAmount);
+    }
+
+    /**
      @notice Update the offer start and end time
      @dev Only admin
      @param _garmentCollectionId Collection ID of the garment being offered
@@ -487,6 +504,23 @@ contract DigitalaxMarketplaceV2 is ReentrancyGuard, BaseRelayRecipient, Initiali
             availableAmount,
             offer.platformFee,
             offer.discountToPayERC20
+        );
+    }
+
+    ///////////////
+    // Accessors //
+    ///////////////
+    /**
+     @notice Method for getting all info about the offer
+     @param _garmentCollectionId Token ID of the garment being offered
+     */
+    function getOfferMaxAmount(uint256 _garmentCollectionId)
+    external
+    view
+    returns (uint256 _maxAmount) {
+        Offer storage offer = offers[_garmentCollectionId];
+        return (
+            offer.maxAmount
         );
     }
 

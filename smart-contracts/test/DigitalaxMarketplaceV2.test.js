@@ -224,6 +224,17 @@ contract('DigitalaxMarketplaceV2', (accounts) => {
         const updated = await this.marketplace.platformFeeRecipient();
         expect(updated).to.be.equal(newRecipient);
       });
+
+      it('successfully updates max amount', async () => {
+
+        const _maxAmount = await this.marketplace.getOfferMaxAmount(0);
+        expect(_maxAmount).to.be.bignumber.equal(MAX_SIZE);
+
+        await this.marketplace.updateOfferMaxAmount(0, 20, {from: admin});
+
+        const _maxAmount2 = await this.marketplace.getOfferMaxAmount(0);
+        expect(_maxAmount2).to.be.bignumber.equal(new BN('20'));
+      });
     });
 
     describe('toggleIsPaused()', () => {
