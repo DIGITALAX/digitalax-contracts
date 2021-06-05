@@ -342,6 +342,10 @@ const randomURI = 'rand';
     console.log(await this.nftStaking.unclaimedRewards(staker2));
 
     await time.increase(time.duration.seconds(1000001));
+
+    console.log('await this.digitalaxRewards.getMonaDailyAPY()');
+    console.log(await this.digitalaxRewards.getMonaDailyAPY());
+
     await this.nftStaking.unstakeBatch(['100001','100002'], {from: staker});
     await this.nftStaking.unstakeBatch(['100001','100002'], {from: staker2});
 
@@ -355,6 +359,8 @@ const randomURI = 'rand';
     console.log('Staker 1 and 2');
     console.log(finalMonaBalance.sub(initialMonaBalance).toString());
     console.log(finalMonaBalance2.sub(initialMonaBalance2).toString());
+
+
   });
 
     async function getGasCosts(receipt) {
