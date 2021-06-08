@@ -10,6 +10,7 @@ export function loadOrCreateGarmentNFTV2GlobalStats(): DigitalaxGarmentNFTV2Glob
         globalStats.totalActiveBidsValue = ZERO;
         globalStats.totalMarketplaceSalesInETH = ZERO;
         globalStats.totalMarketplaceSalesInMona = ZERO;
+        globalStats.monaPerEth = ZERO;
         globalStats.save();
     }
 
