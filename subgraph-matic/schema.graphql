@@ -131,6 +131,12 @@ type DigitalaxMaterial @entity {
   id: ID!
   tokenUri: String!
   totalSupply: BigInt!
+  image: String!
+  animation: String!
+  name: String!
+  description: String!
+  external: String!
+  attributes: [GarmentAttribute!]!
 }
 
 # Total support of all children
@@ -138,6 +144,12 @@ type DigitalaxMaterialV2 @entity {
   id: ID!
   tokenUri: String!
   totalSupply: BigInt!
+  image: String!
+  animation: String!
+  name: String!
+  description: String!
+  external: String!
+  attributes: [GarmentAttribute!]!
 }
 
 # Total support of all children
@@ -145,6 +157,12 @@ type DigitalaxBundle @entity {
   id: ID!
   tokenUri: String!
   totalSupply: BigInt!
+  image: String!
+  animation: String!
+  name: String!
+  description: String!
+  external: String!
+  attributes: [GarmentAttribute!]!
 }
 
 type DigitalaxChildOwner @entity {
