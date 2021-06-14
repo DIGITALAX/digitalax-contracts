@@ -11,6 +11,7 @@ import "./garment/IDigitalaxGarmentNFT.sol";
 import "./garment/DigitalaxGarmentCollectionV2.sol";
 import "./EIP2771/BaseRelayRecipient.sol";
 import "@openzeppelin/contracts/proxy/Initializable.sol";
+import "./oracle/IDigitalaxMonaOracle.sol";
 
 /**
  * @notice Marketplace contract for Digitalax NFTs
@@ -57,10 +58,17 @@ contract DigitalaxMarketplaceV2 is ReentrancyGuard, BaseRelayRecipient, Initiali
         uint256 indexed garmentCollectionId,
         uint256 primarySalePrice
     );
+    event UpdateOfferMaxAmount(
+        uint256 indexed garmentCollectionId,
+        uint256 maxAmount
+    );
     event UpdateOfferStartEnd(
         uint256 indexed garmentCollectionId,
         uint256 startTime,
         uint256 endTime
+    );
+    event UpdateOracle(
+        address indexed oracle
     );
     event UpdatePlatformFeeRecipient(
         address payable platformFeeRecipient
@@ -103,6 +111,8 @@ contract DigitalaxMarketplaceV2 is ReentrancyGuard, BaseRelayRecipient, Initiali
     IDigitalaxGarmentNFT public garmentNft;
     /// @notice Garment NFT Collection
     DigitalaxGarmentCollectionV2 public garmentCollection;
+    /// @notice oracle for MONA/ETH exchange rate
+    IDigitalaxMonaOracle public oracle;
     /// @notice responsible for enforcing admin access
     DigitalaxAccessControls public accessControls;
     /// @notice where to send platform fee funds to
@@ -115,6 +125,8 @@ contract DigitalaxMarketplaceV2 is ReentrancyGuard, BaseRelayRecipient, Initiali
     bool public freezeMonaERC20Payment;
     /// @notice Cool down period
     uint256 public cooldown = 60;
+    /// @notice for storing information from oracle
+    uint256 public lastOracleQuote = 1e18;
 
     modifier whenNotPaused() {
         require(!isPaused, "Function is currently paused");
@@ -126,6 +138,7 @@ contract DigitalaxMarketplaceV2 is ReentrancyGuard, BaseRelayRecipient, Initiali
         DigitalaxAccessControls _accessControls,
         IDigitalaxGarmentNFT _garmentNft,
         DigitalaxGarmentCollectionV2 _garmentCollection,
+        IDigitalaxMonaOracle _oracle,
         address payable _platformFeeRecipient,
         address _monaErc20Token,
         address _trustedForwarder
@@ -133,8 +146,10 @@ contract DigitalaxMarketplaceV2 is ReentrancyGuard, BaseRelayRecipient, Initiali
         require(address(_accessControls) != address(0), "DigitalaxMarketplace: Invalid Access Controls");
         require(address(_garmentNft) != address(0), "DigitalaxMarketplace: Invalid NFT");
         require(address(_garmentCollection) != address(0), "DigitalaxMarketplace: Invalid Collection");
+        require(address(_oracle) != address(0), "DigitalaxMarketplace: Invalid Oracle");
         require(_platformFeeRecipient != address(0), "DigitalaxMarketplace: Invalid Platform Fee Recipient");
         require(_monaErc20Token != address(0), "DigitalaxMarketplace: Invalid ERC20 Token");
+        oracle = _oracle;
         accessControls = _accessControls;
         garmentNft = _garmentNft;
         garmentCollection = _garmentCollection;
@@ -171,6 +186,33 @@ contract DigitalaxMarketplaceV2 is ReentrancyGuard, BaseRelayRecipient, Initiali
     returns (address payable sender)
     {
         return BaseRelayRecipient.msgSender();
+    }
+
+    /**
+     @notice Method for updating oracle
+     @dev Only admin
+     @param _oracle new oracle
+     */
+    function updateOracle(IDigitalaxMonaOracle _oracle) external {
+    require(
+        accessControls.hasAdminRole(_msgSender()),
+        "DigitalaxAuction.updateOracle: Sender must be admin"
+        );
+
+        oracle = _oracle;
+        emit UpdateOracle(address(_oracle));
+    }
+
+    /**
+     @notice Private method to estimate ETH for paying
+     @param _amountInMona MONA amount in wei
+     */
+    function _estimateETHAmount(uint256 _amountInMona) public returns (uint256) {
+        (uint256 exchangeRate, bool rateValid) = oracle.getData();
+        require(rateValid, "DigitalaxMarketplace.estimateMonaAmount: Oracle data is invalid");
+        lastOracleQuote = exchangeRate;
+
+        return _amountInMona.mul(exchangeRate).div(1e18);
     }
 
     /**
@@ -274,7 +316,7 @@ contract DigitalaxMarketplaceV2 is ReentrancyGuard, BaseRelayRecipient, Initiali
 
         offer.availableIndex = offer.availableIndex.add(1);
         // Record the primary sale price for the garment
-        garmentNft.setPrimarySalePrice(bundleTokenId, offer.primarySalePrice);
+        garmentNft.setPrimarySalePrice(bundleTokenId, _estimateETHAmount(offer.primarySalePrice));
         // Transfer the token to the purchaser
         garmentNft.safeTransferFrom(garmentNft.ownerOf(bundleTokenId), _msgSender(), bundleTokenId);
         lastPurchasedTime[_garmentCollectionId][_msgSender()] = _getNow();
@@ -373,6 +415,19 @@ contract DigitalaxMarketplaceV2 is ReentrancyGuard, BaseRelayRecipient, Initiali
     }
 
     /**
+     @notice Update the offer max amount
+     @dev Only admin
+     @param _garmentCollectionId Collection ID of the garment being offered
+     @param _maxAmount New amount
+     */
+    function updateOfferMaxAmount(uint256 _garmentCollectionId, uint256 _maxAmount) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.updateOfferMaxAmount: Sender must be admin");
+
+        offers[_garmentCollectionId].maxAmount = _maxAmount;
+        emit UpdateOfferMaxAmount(_garmentCollectionId, _maxAmount);
+    }
+
+    /**
      @notice Update the offer start and end time
      @dev Only admin
      @param _garmentCollectionId Collection ID of the garment being offered
@@ -449,6 +504,23 @@ contract DigitalaxMarketplaceV2 is ReentrancyGuard, BaseRelayRecipient, Initiali
             availableAmount,
             offer.platformFee,
             offer.discountToPayERC20
+        );
+    }
+
+    ///////////////
+    // Accessors //
+    ///////////////
+    /**
+     @notice Method for getting all info about the offer
+     @param _garmentCollectionId Token ID of the garment being offered
+     */
+    function getOfferMaxAmount(uint256 _garmentCollectionId)
+    external
+    view
+    returns (uint256 _maxAmount) {
+        Offer storage offer = offers[_garmentCollectionId];
+        return (
+            offer.maxAmount
         );
     }
 

@@ -84,7 +84,13 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         uint256 _amount
     );
 
-    
+    event WithdrawRevenueSharing(
+        uint256 weeklyMonaRevenueSharingPerSecond,
+        uint256 _week,
+        uint256 _amount
+    );
+
+
     /* ========== Admin Functions ========== */
     constructor(
         MONA _monaToken,
@@ -226,7 +232,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
     {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxRewardsV2.setRewards: Sender must be admin"
+            "DigitalaxRewardsV2.depositMonaRewards: Sender must be admin"
         );
 
         require(
@@ -254,6 +260,46 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
 
 
         emit DepositRevenueSharing(weeklyMonaRevenueSharingPerSecond[_week], _week, _amount);
+    }
+
+    /*
+     * @notice Deposit revenue sharing rewards to be distributed during a certain week
+     * @dev this number is the total rewards that week with 18 decimals
+     */
+    function withdrawMonaRewards(
+        uint256 _week,
+        uint256 _amount
+    )
+        external
+    {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxRewardsV2.withdrawMonaRewards: Sender must be admin"
+        );
+
+        require(
+            _week > getCurrentWeek(),
+            "DigitalaxRewardsV2.withdrawMonaRewards: The rewards generated should be set for the future weeks"
+        );
+
+
+        // Deposit this amount of MONA here
+       IERC20(monaToken).transfer(
+            _msgSender(),
+            _amount
+        );
+
+
+        uint256 monaAmount = _amount.mul(pointMultiplier)
+                                   .div(SECONDS_PER_WEEK)
+                                   .div(pointMultiplier);
+
+        require(monaAmount <= weeklyMonaRevenueSharingPerSecond[_week], "DigitalaxRewardsV2.withdrawMonaRewards: Cannot withdraw back more then week amount");
+        // Increase the revenue sharing per second for the week for Mona
+        weeklyMonaRevenueSharingPerSecond[_week] = weeklyMonaRevenueSharingPerSecond[_week].sub(monaAmount);
+
+
+        emit WithdrawRevenueSharing(weeklyMonaRevenueSharingPerSecond[_week], _week, _amount);
     }
 
     /* From BokkyPooBah's DateTime Library v1.01
@@ -455,10 +501,10 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         return nftStaking.stakedEthTotal();
     }
 
-    function getMonaDailyAPY(bool isEarlyStaker)
+    function getMonaDailyAPY()
         external
-        view 
-        returns (uint256) 
+        view
+        returns (uint256)
     {
         uint256 stakedEth = nftStaking.stakedEthTotal();
 
@@ -490,7 +536,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         view
         returns (uint256)
     {
-        return lastOracleQuote.div(1e18);
+        return lastOracleQuote;
     }
 
     function _getNow() internal virtual view returns (uint256) {
