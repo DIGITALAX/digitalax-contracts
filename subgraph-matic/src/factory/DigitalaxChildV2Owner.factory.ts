@@ -1,7 +1,7 @@
 import {BigInt, ethereum, Address} from "@graphprotocol/graph-ts/index";
 import {ZERO} from "../constants";
 
-import {DigitalaxChildV2Owner} from "../../generated/schema";
+import {DigitalaxBundle, DigitalaxChildV2Owner, DigitalaxMaterial, DigitalaxMaterialV2} from "../../generated/schema";
 import {DigitalaxMaterialsV2 as DigitalaxMaterialsV2Contract} from "../../generated/DigitalaxMaterialsV2/DigitalaxMaterialsV2";
 
 export function loadOrCreateDigitalaxChildV2Owner(
@@ -22,7 +22,8 @@ export function loadOrCreateDigitalaxChildV2Owner(
         materialOwner.owner = parentTokenOwner;
         materialOwner.contract = event.address;
         materialOwner.tokenUri = childContract.uri(childTokenId);
-        materialOwner.amount = ZERO
+        materialOwner.amount = ZERO;
+        materialOwner.token = DigitalaxMaterialV2.load(childTokenId.toString()).id.toString();
     }
     materialOwner.save();
 

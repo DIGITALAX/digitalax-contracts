@@ -172,6 +172,7 @@ type DigitalaxChildOwner @entity {
   amount: BigInt!
   contract: Bytes!
   tokenUri: String!
+  token: DigitalaxMaterial!
 }
 
 type DigitalaxChildV2Owner @entity {
@@ -181,6 +182,7 @@ type DigitalaxChildV2Owner @entity {
   amount: BigInt!
   contract: Bytes!
   tokenUri: String!
+  token: DigitalaxMaterialV2!
 }
 
 type DigitalaxBundleOwner @entity {
@@ -190,6 +192,7 @@ type DigitalaxBundleOwner @entity {
   amount: BigInt!
   contract: Bytes!
   tokenUri: String!
+  token: DigitalaxBundle!
 }
 
 type DigitalaxCollector @entity {
@@ -331,6 +334,7 @@ type DigitalaxGarmentCollection @entity {
   garmentAuctionID: BigInt!
   garments: [DigitalaxGarment!]!
   rarity: String!
+  valueSold: BigInt!
 }
 
 type DigitalaxGarmentV2Collection @entity {
@@ -338,6 +342,7 @@ type DigitalaxGarmentV2Collection @entity {
   garmentAuctionID: BigInt!
   garments: [DigitalaxGarmentV2!]!
   rarity: String!
+  valueSold: BigInt!
 }
 
 type DigitalaxSubscriptionCollection @entity {
@@ -345,6 +350,7 @@ type DigitalaxSubscriptionCollection @entity {
   bundleID: BigInt!
   garments: [DigitalaxSubscription!]!
   rarity: String!
+  valueSold: BigInt!
 }
 
 type DigitalaxNFTStaker @entity {
