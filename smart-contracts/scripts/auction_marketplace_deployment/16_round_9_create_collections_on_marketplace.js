@@ -50,24 +50,26 @@ async function main() {
   );
 
   //Optional TODO decide if needed
-  // const acr = await accessControls.addSmartContractRole(MARKETPLACE_ADDRESS);
-  // await acr.wait();
-  //
-  // const scr =  await accessControls.addSmartContractRole(GARMENT_COLLECTION_ADDRESS);
-  // await scr.wait();
-  //
-  // const acr2 = await accessControls.addMinterRole(GARMENT_COLLECTION_ADDRESS);
-  // await acr2.wait();
+  const acr1 = await accessControls.addAdminRole(MARKETPLACE_ADDRESS);
+  await acr1.wait();
+  const acr2 = await accessControls.addSmartContractRole(MARKETPLACE_ADDRESS);
+  await acr2.wait();
+
+  const scr =  await accessControls.addSmartContractRole(GARMENT_COLLECTION_ADDRESS);
+  await scr.wait();
+
+  const acr3 = await accessControls.addMinterRole(GARMENT_COLLECTION_ADDRESS);
+  await acr3.wait();
 
 
   //// SETTINGS
 
-    const reservePrice_common = '200000000000000000';
-    const reservePrice2_semirare = '50000000000000000';
-    const reservePrice2_exclusive = '50000000000000000';
+    const reservePrice_common = '15000000000000000';
+    const reservePrice2_semirare = '450000000000000000';
+    const reservePrice3_digibundle = '2000000000000000000';
 
-    const mainnet_startTime = '1621017000';
-    const mainnet_endTime = '1623344400';
+    const mainnet_startTime = '1623201316';
+    const mainnet_endTime = '1823806116';
 
   // Use the single auction id processed in the last script to build auction id specific collections in this script
 
@@ -161,6 +163,17 @@ async function main() {
       price: reservePrice2_semirare,
       collectionDesigner: FUND_MULTISIG_ADDRESS,
       amountToMintInCollection: 64,
+      auctionIdToLink: auctionId_12,
+      rarity: 'Semi-Rare',
+      tokendIds: [],
+      tokenAmounts: [],
+      },
+    {
+      // Collection Digi bundle
+      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Minecraft/Semi-Rare/DIGIBUNDLE/hash.json').uri,
+      price: reservePrice3_digibundle,
+      collectionDesigner: FUND_MULTISIG_ADDRESS,
+      amountToMintInCollection: 30,
       auctionIdToLink: auctionId_12,
       rarity: 'Semi-Rare',
       tokendIds: [],

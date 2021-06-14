@@ -1,4 +1,4 @@
-import {BigInt, log} from "@graphprotocol/graph-ts/index";
+import {BigInt, Bytes, ipfs, json, JSONValueKind, log} from "@graphprotocol/graph-ts/index";
 
 import {
     ChildCreated,
@@ -8,7 +8,7 @@ import {
     TransferSingle
 } from "../generated/DigitalaxMaterials/DigitalaxMaterials";
 
-import {DigitalaxMaterial} from "../generated/schema";
+import {DigitalaxMaterial, GarmentAttribute} from "../generated/schema";
 
 import {ZERO, ZERO_ADDRESS} from "./constants";
 import {loadOrCreateDigitalaxCollector} from "./factory/DigitalaxCollector.factory";
@@ -21,6 +21,69 @@ export function handleChildCreated(event: ChildCreated): void {
 
     let strand = new DigitalaxMaterial(event.params.childId.toString());
     strand.tokenUri = contract.uri(event.params.childId);
+
+    strand.image = "";
+    strand.animation = "";
+    strand.name = "";
+    strand.description = "";
+    strand.external = "";
+    strand.attributes = new Array<string>();
+
+    if (strand.tokenUri) {
+        if (strand.tokenUri.includes('ipfs/')) {
+            let tokenHash = strand.tokenUri.split('ipfs/')[1];
+            let tokenBytes = ipfs.cat(tokenHash);
+            if (tokenBytes) {
+                let data = json.try_fromBytes(tokenBytes as Bytes);
+                if (data.isOk) {
+                    if (data.value.kind === JSONValueKind.OBJECT) {
+                        let res = data.value.toObject();
+                        if (res.get('image').kind === JSONValueKind.STRING) {
+                            strand.image = res.get('image').toString();
+                        }
+                        if (res.get('Animation').kind === JSONValueKind.STRING) {
+                            strand.animation = res.get('Animation').toString();
+                        }
+                        if (res.get('animation_url').kind === JSONValueKind.STRING) {
+                            strand.animation = res.get('animation_url').toString();
+                        }
+                        if (res.get('name').kind === JSONValueKind.STRING) {
+                            strand.name = res.get('name').toString();
+                        }
+                        if (res.get('description').kind === JSONValueKind.STRING) {
+                            strand.description = res.get('description').toString();
+                        }
+                        if (res.get('external url').kind === JSONValueKind.STRING) {
+                            strand.external = res.get('external url').toString();
+                        }
+                        if (res.get('attributes').kind === JSONValueKind.ARRAY) {
+                            let attributes = res.get('attributes').toArray();
+                            for (let i = 0; i < attributes.length; i += 1) {
+                                if (attributes[i].kind === JSONValueKind.OBJECT) {
+                                    let attribute = attributes[i].toObject();
+                                    let garmentAttribute = new GarmentAttribute(strand.id + i.toString());
+                                    garmentAttribute.type = null;
+                                    garmentAttribute.value = null;
+
+                                    if (attribute.get('trait_type').kind === JSONValueKind.STRING) {
+                                        garmentAttribute.type = attribute.get('trait_type').toString();
+                                    }
+                                    if (attribute.get('value').kind === JSONValueKind.STRING) {
+                                        garmentAttribute.value = attribute.get('value').toString();
+                                    }
+                                    garmentAttribute.save();
+                                    let attrs = strand.attributes;
+                                    attrs.push(garmentAttribute.id);
+                                    strand.attributes = attrs;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+    }
     strand.totalSupply = BigInt.fromI32(0);
     strand.save();
 }
@@ -34,6 +97,69 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
         let childId: BigInt = childIds.pop();
         let strand = new DigitalaxMaterial(childId.toString());
         strand.tokenUri = contract.uri(childId);
+
+        strand.image = "";
+        strand.animation = "";
+        strand.name = "";
+        strand.description = "";
+        strand.external = "";
+        strand.attributes = new Array<string>();
+
+        if (strand.tokenUri) {
+            if (strand.tokenUri.includes('ipfs/')) {
+                let tokenHash = strand.tokenUri.split('ipfs/')[1];
+                let tokenBytes = ipfs.cat(tokenHash);
+                if (tokenBytes) {
+                    let data = json.try_fromBytes(tokenBytes as Bytes);
+                    if (data.isOk) {
+                        if (data.value.kind === JSONValueKind.OBJECT) {
+                            let res = data.value.toObject();
+                            if (res.get('image').kind === JSONValueKind.STRING) {
+                                strand.image = res.get('image').toString();
+                            }
+                            if (res.get('Animation').kind === JSONValueKind.STRING) {
+                                strand.animation = res.get('Animation').toString();
+                            }
+                            if (res.get('animation_url').kind === JSONValueKind.STRING) {
+                                strand.animation = res.get('animation_url').toString();
+                            }
+                            if (res.get('name').kind === JSONValueKind.STRING) {
+                                strand.name = res.get('name').toString();
+                            }
+                            if (res.get('description').kind === JSONValueKind.STRING) {
+                                strand.description = res.get('description').toString();
+                            }
+                            if (res.get('external url').kind === JSONValueKind.STRING) {
+                                strand.external = res.get('external url').toString();
+                            }
+                            if (res.get('attributes').kind === JSONValueKind.ARRAY) {
+                                let attributes = res.get('attributes').toArray();
+                                for (let i = 0; i < attributes.length; i += 1) {
+                                    if (attributes[i].kind === JSONValueKind.OBJECT) {
+                                        let attribute = attributes[i].toObject();
+                                        let garmentAttribute = new GarmentAttribute(strand.id + i.toString());
+                                        garmentAttribute.type = null;
+                                        garmentAttribute.value = null;
+
+                                        if (attribute.get('trait_type').kind === JSONValueKind.STRING) {
+                                            garmentAttribute.type = attribute.get('trait_type').toString();
+                                        }
+                                        if (attribute.get('value').kind === JSONValueKind.STRING) {
+                                            garmentAttribute.value = attribute.get('value').toString();
+                                        }
+                                        garmentAttribute.save();
+                                        let attrs = strand.attributes;
+                                        attrs.push(garmentAttribute.id);
+                                        strand.attributes = attrs;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
         strand.totalSupply = BigInt.fromI32(0);
         strand.save();
     }

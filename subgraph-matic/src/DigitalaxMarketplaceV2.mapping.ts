@@ -60,6 +60,7 @@ export function handleOfferPrimarySalePriceUpdated(event: UpdateOfferPrimarySale
 }
 
 export function handleOfferPurchased(event: OfferPurchased): void {
+    let contract = DigitalaxMarketplaceV2Contract.bind(event.address);
     let collection = DigitalaxGarmentV2Collection.load(event.params.garmentCollectionId.toString());
     let history = new DigitalaxMarketplaceV2PurchaseHistory(event.params.bundleTokenId.toString());
     history.eventName = "Purchased";
@@ -74,6 +75,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     history.garmentAuctionId = collection.garmentAuctionID;
     history.rarity = collection.rarity;
     history.platformFee = event.params.platformFee;
+    history.monaPerEth = contract.lastOracleQuote();
 
     let day = loadDayFromEvent(event);
     let globalStats = loadOrCreateGarmentNFTV2GlobalStats();
@@ -88,6 +90,8 @@ export function handleOfferPurchased(event: OfferPurchased): void {
         history.discountToPayMona = ZERO;
     }
 
+    globalStats.monaPerEth = contract.lastOracleQuote();
+
     day.save();
     history.save();
     globalStats.save();
@@ -95,6 +99,9 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     let offer = DigitalaxMarketplaceV2Offer.load(event.params.garmentCollectionId.toString());
     offer.amountSold = offer.amountSold.plus(ONE);
     offer.save();
+
+    collection.valueSold = collection.valueSold.plus(event.params.primarySalePrice);
+    collection.save();
 }
 
 export function handleOfferCancelled(event: OfferCancelled): void {

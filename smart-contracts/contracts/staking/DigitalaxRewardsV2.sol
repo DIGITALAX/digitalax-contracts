@@ -647,7 +647,7 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         view
         returns (uint256)
     {
-        return lastOracleQuote.div(1e18);
+        return lastOracleQuote;
     }
 
     function _getNow() internal virtual view returns (uint256) {

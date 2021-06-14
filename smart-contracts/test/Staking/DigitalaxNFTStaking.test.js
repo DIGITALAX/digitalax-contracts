@@ -324,6 +324,10 @@ const randomURI = 'rand';
     console.log(await this.nftStaking.getStakedTokens(staker2));
     await time.increase(time.duration.seconds(120));
 
+    // Make sure we can withdraw and deposit the same amount back in.
+    await this.digitalaxRewards.withdrawMonaRewards(3, FIFTY_TOKENS, {from: admin});
+    await this.digitalaxRewards.depositMonaRewards(3, FIFTY_TOKENS, {from: admin});
+
     await this.digitalaxRewards.setNowOverride('2420000'); // final week
     await this.nftStaking.setNowOverride('2420000'); // final week
     console.log('balance of staker before and after:');
@@ -338,6 +342,10 @@ const randomURI = 'rand';
     console.log(await this.nftStaking.unclaimedRewards(staker2));
 
     await time.increase(time.duration.seconds(1000001));
+
+    console.log('await this.digitalaxRewards.getMonaDailyAPY()');
+    console.log(await this.digitalaxRewards.getMonaDailyAPY());
+
     await this.nftStaking.unstakeBatch(['100001','100002'], {from: staker});
     await this.nftStaking.unstakeBatch(['100001','100002'], {from: staker2});
 
@@ -351,6 +359,8 @@ const randomURI = 'rand';
     console.log('Staker 1 and 2');
     console.log(finalMonaBalance.sub(initialMonaBalance).toString());
     console.log(finalMonaBalance2.sub(initialMonaBalance2).toString());
+
+
   });
 
     async function getGasCosts(receipt) {

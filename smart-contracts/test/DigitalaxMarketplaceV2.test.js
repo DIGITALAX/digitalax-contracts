@@ -18,6 +18,7 @@ const DigitalaxGarmentCollectionV2 = artifacts.require('DigitalaxGarmentCollecti
 const DigitalaxGarmentFactory = artifacts.require('DigitalaxGarmentFactory');
 const DigitalaxMarketplaceV2 = artifacts.require('DigitalaxMarketplaceV2Mock');
 const DigitalaxMarketplaceV2Real = artifacts.require('DigitalaxMarketplaceV2');
+const DigitalaxMonaOracle = artifacts.require('DigitalaxMonaOracle');
 const MockERC20 = artifacts.require('MockERC20');
 const UniswapV2Router02 = artifacts.require('UniswapV2Router02');
 const UniswapV2Factory = artifacts.require('UniswapV2Factory');
@@ -46,7 +47,7 @@ contract('DigitalaxMarketplaceV2', (accounts) => {
   const erc1155ChildStrandIds = [STRAND_ONE_ID, STRAND_TWO_ID];
 
   const bundleID = new BN('0');
-  const EXCHANGE_RATE = new BN('1200000000000000000');
+  const EXCHANGE_RATE = new BN('1000000000000000000');
 
   beforeEach(async () => {
     this.accessControls = await DigitalaxAccessControls.new({from: admin});
@@ -99,6 +100,14 @@ contract('DigitalaxMarketplaceV2', (accounts) => {
       this.weth.address
     );
 
+    this.oracle = await DigitalaxMonaOracle.new(
+        '86400',
+        '120',
+        '1',
+        this.accessControls.address,
+        {from: admin}
+    );
+
     this.garmentCollection = await DigitalaxGarmentCollectionV2.new()
     await this.garmentCollection.initialize(
         this.accessControls.address,
@@ -122,6 +131,7 @@ contract('DigitalaxMarketplaceV2', (accounts) => {
       this.accessControls.address,
       this.token.address,
       this.garmentCollection.address,
+        this.oracle.address,
       platformFeeAddress,
       this.monaToken.address,
         constants.ZERO_ADDRESS,
@@ -135,6 +145,9 @@ contract('DigitalaxMarketplaceV2', (accounts) => {
     await this.accessControls.addSmartContractRole(this.garmentFactory.address, {from: admin});
     // Create some ERC1155's for use here
     await this.garmentFactory.createNewChildren(randomChildTokenURIs, {from: minter});
+
+    await this.oracle.addProvider(provider, {from: admin});
+    await this.oracle.pushReport(EXCHANGE_RATE, {from: provider});
     await time.increase(time.duration.seconds(120));
   });
 
@@ -210,6 +223,17 @@ contract('DigitalaxMarketplaceV2', (accounts) => {
 
         const updated = await this.marketplace.platformFeeRecipient();
         expect(updated).to.be.equal(newRecipient);
+      });
+
+      it('successfully updates max amount', async () => {
+
+        const _maxAmount = await this.marketplace.getOfferMaxAmount(0);
+        expect(_maxAmount).to.be.bignumber.equal(MAX_SIZE);
+
+        await this.marketplace.updateOfferMaxAmount(0, 20, {from: admin});
+
+        const _maxAmount2 = await this.marketplace.getOfferMaxAmount(0);
+        expect(_maxAmount2).to.be.bignumber.equal(new BN('20'));
       });
     });
 
@@ -321,6 +345,7 @@ contract('DigitalaxMarketplaceV2', (accounts) => {
           this.accessControls.address,
           this.token.address,
           this.garmentCollection.address,
+          this.oracle.address,
           platformFeeAddress,
           this.monaToken.address,
             constants.ZERO_ADDRESS,

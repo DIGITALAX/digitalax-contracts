@@ -58,8 +58,8 @@ async function main() {
   const reservePrice = '0';
 
  // const testStartTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th only test
-   const mainnet_startTime = '1622354667';   //  TODO confirm
-   const mainnet_endTime = '1622801067'; //  TODO confirm
+   const mainnet_startTime = '1623358800';   //  TODO update
+   const mainnet_endTime = '1623187000'; //  TODO update
 
     // Approve for all
     const approveToken = await garment.setApprovalForAll(AUCTION_ADDRESS, true);
