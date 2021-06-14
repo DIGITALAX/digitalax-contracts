@@ -99,6 +99,9 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     let offer = DigitalaxMarketplaceV2Offer.load(event.params.garmentCollectionId.toString());
     offer.amountSold = offer.amountSold.plus(ONE);
     offer.save();
+
+    collection.valueSold = collection.valueSold.plus(event.params.primarySalePrice);
+    collection.save();
 }
 
 export function handleOfferCancelled(event: OfferCancelled): void {

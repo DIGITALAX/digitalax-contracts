@@ -9,6 +9,7 @@ import {
     DigitalaxGarmentCollection,
     DigitalaxGarment,
 } from "../generated/schema";
+import {ZERO} from "./constants";
 
 export function handleGarmentCollectionMinted(event: MintGarmentCollection): void {
     let contract = DigitalaxGarmentCollectionContract.bind(event.address);
@@ -23,6 +24,7 @@ export function handleGarmentCollectionMinted(event: MintGarmentCollection): voi
     collection.garments = mintedGarments;
     collection.garmentAuctionID = event.params.auctionTokenId;
     collection.rarity = event.params.rarity;
+    collection.valueSold = ZERO;
     collection.save();
 }
 

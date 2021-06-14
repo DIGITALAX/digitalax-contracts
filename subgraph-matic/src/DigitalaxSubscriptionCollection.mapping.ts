@@ -9,6 +9,7 @@ import {
     DigitalaxSubscriptionCollection,
     DigitalaxSubscription,
 } from "../generated/schema";
+import {ZERO} from "./constants";
 
 export function handleSubscriptionCollectionMinted(event: MintSubscriptionCollection): void {
     let contract = DigitalaxSubscriptionCollectionContract.bind(event.address);
@@ -23,6 +24,7 @@ export function handleSubscriptionCollectionMinted(event: MintSubscriptionCollec
     collection.garments = mintedGarments;
     collection.rarity = event.params.rarity;
     collection.bundleID = event.params.collectionId;
+    collection.valueSold = ZERO;
     collection.save();
 }
 

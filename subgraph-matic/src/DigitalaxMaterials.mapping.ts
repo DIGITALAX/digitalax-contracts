@@ -42,7 +42,7 @@ export function handleChildCreated(event: ChildCreated): void {
                             strand.image = res.get('image').toString();
                         }
                         if (res.get('Animation').kind === JSONValueKind.STRING) {
-                            strand.animation = res.get('animation_url').toString();
+                            strand.animation = res.get('Animation').toString();
                         }
                         if (res.get('animation_url').kind === JSONValueKind.STRING) {
                             strand.animation = res.get('animation_url').toString();
@@ -118,7 +118,7 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
                                 strand.image = res.get('image').toString();
                             }
                             if (res.get('Animation').kind === JSONValueKind.STRING) {
-                                strand.animation = res.get('animation_url').toString();
+                                strand.animation = res.get('Animation').toString();
                             }
                             if (res.get('animation_url').kind === JSONValueKind.STRING) {
                                 strand.animation = res.get('animation_url').toString();
