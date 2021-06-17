@@ -56,3 +56,4 @@ yarn run coverage
 ```
 npx buidler run --network rinkeby scripts/1_deploy_access_controls.js
 ```
+npx buidler run --network mumbai scripts/auction_marketplace_deployment/18_round_8_create_subscription.js
