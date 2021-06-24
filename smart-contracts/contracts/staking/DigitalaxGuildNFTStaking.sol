@@ -35,6 +35,10 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
 
     uint256 constant pointMultiplier = 10e18;
 
+    /// @notice whitelisted tokens
+    mapping (uint256 => bool) public whitelistedNFTs;
+    uint256 public whitelistedNFTCount;
+
     /**
     @notice Struct to track what user is staking which tokens
     @dev tokenIds are all the tokens staked by the staker
@@ -91,6 +95,12 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
 
     /// @notice Admin update of the NFT token's sale price
     event UpdatedTokenPrice(uint256 _tokenId, uint256 _salePrice);
+
+    /// @notice Admin add a new whitelisted NFT list
+    event RegisteredWhitelistedTokens(uint256 _whitelistedNFTCount, uint256 _tokenId);
+
+    /// @notice Admin remove a whitelisted NFT list
+    event UnregisteredWhitelistedTokens(uint256 _whitelistedNFTCount, uint256 _tokenId);
 
 
     constructor() public {
@@ -211,6 +221,40 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
         return primarySalePrice[_tokenId];
     }
 
+    function registerWhitelistedToken(uint256 _tokenId) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxGuildNFTStaking.registerWhitelistedToken: Sender must be admin"
+        );
+
+        require(
+            !whitelistedNFTs[_tokenId],
+            "DigitalaxGuildNFTStaking.registerWhitelistedToken: Already registed token"
+        );
+
+        whitelistedNFTs[_tokenId] = true;
+        whitelistedNFTCount.add(1);
+
+        emit RegisteredWhitelistedTokens(whitelistedNFTCount, _tokenId);
+    }
+
+    function unregisterWhitelistedToken(uint256 _tokenId) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxGuildNFTStaking.registerWhitelistedToken: Sender must be admin"
+        );
+
+        require(
+            whitelistedNFTs[_tokenId],
+            "DigitalaxGuildNFTStaking.registerWhitelistedToken: Invalid token"
+        );
+
+        whitelistedNFTs[_tokenId] = false;
+        whitelistedNFTCount.sub(1);
+
+        emit UnregisteredWhitelistedTokens(whitelistedNFTCount, _tokenId);
+    }
+
     /// @notice Stake NFT and earn reward tokens.
     function stake(uint256 tokenId) external {
         // require();
@@ -230,6 +274,11 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
      * @dev Balance of stakers are updated as they stake the nfts based on ether price
     */
     function _stake(address _user, uint256 _tokenId) internal {
+        require(
+            whitelistedNFTs[_tokenId],
+            "DigitalaxGuildNFTStaking._stake: Not whitelisted token"
+        );
+
         Staker storage staker = stakers[_user];
 
         if (staker.balance == 0 && staker.lastRewardPoints == 0 ) {
@@ -254,7 +303,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
             _tokenId
         );
 
-        weightContract.stake(_tokenId, amount);
+        weightContract.stake(_tokenId, _msgSender(), amount);
 
         emit Staked(_user, _tokenId);
     }
@@ -355,13 +404,8 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     function rewardsOwing(address _user) public view returns(uint256) {
         uint256 newRewardPerToken = rewardsPerTokenPoints.sub(stakers[_user].lastRewardPoints);
 
-        uint256 userWeight = 0;
-        Staker storage staker = stakers[_user];
-        for (uint i = 0; i < staker.tokenIds.length; i++) {
-            uint256 tokenWeight = weightContract.weightOf(staker.tokenIds[i]);
-            userWeight = userWeight.add(tokenWeight);
-        }
-
+        uint256 userWeight = weightContract.getUserWeight(_user);
+        
         if (userWeight == 0) {
             return 0;
         }
