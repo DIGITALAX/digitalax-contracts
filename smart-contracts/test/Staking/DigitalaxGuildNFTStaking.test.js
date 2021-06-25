@@ -19,7 +19,7 @@ const {
   const DigitalaxGuildNFTStaking = artifacts.require('DigitalaxGuildNFTStakingMock');
   const DigitalaxGuildNFTStakingWeight = artifacts.require('DigitalaxGuildNFTStakingWeightMock');
   const DigitalaxMonaOracle = artifacts.require('DigitalaxMonaOracle');
-  const DigitalaxGarmentNFTv2 = artifacts.require('DigitalaxGarmentNFTv2');
+  const PodeNFTv2 = artifacts.require('PodeNFTv2');
   const DigitalaxMaterials = artifacts.require('DigitalaxMaterialsV2');
 
   // 1,000 * 10 ** 18
@@ -72,7 +72,7 @@ const {
 		  {from: admin}
 	  );
 
-	  this.token = await DigitalaxGarmentNFTv2.new();
+	  this.token = await PodeNFTv2.new();
 	  await this.token.initialize(
 		  this.accessControls.address,
 		  this.digitalaxMaterials.address,
