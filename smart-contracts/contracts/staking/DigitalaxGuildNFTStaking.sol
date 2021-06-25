@@ -92,7 +92,6 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     /// @notice Admin update of the NFT token's sale price
     event UpdatedTokenPrice(uint256 _tokenId, uint256 _salePrice);
 
-
     constructor() public {
     }
      /**
@@ -148,9 +147,9 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     function updateAccessControls(DigitalaxAccessControls _accessControls) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxNFTStaking.updateAccessControls: Sender must be admin"
+            "DigitalaxGuildNFTStaking.updateAccessControls: Sender must be admin"
         );
-        require(address(_accessControls) != address(0), "DigitalaxNFTStaking.updateAccessControls: Zero Address");
+        require(address(_accessControls) != address(0), "DigitalaxGuildNFTStaking.updateAccessControls: Zero Address");
         accessControls = _accessControls;
         emit UpdateAccessControls(address(_accessControls));
     }
@@ -159,7 +158,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     function setRewardsContract(address _addr) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxNFTStaking.setRewardsContract: Sender must be admin"
+            "DigitalaxGuildNFTStaking.setRewardsContract: Sender must be admin"
         );
         require(_addr != address(0));
         address oldAddr = address(rewardsContract);
@@ -230,6 +229,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
      * @dev Balance of stakers are updated as they stake the nfts based on ether price
     */
     function _stake(address _user, uint256 _tokenId) internal {
+
         Staker storage staker = stakers[_user];
 
         if (staker.balance == 0 && staker.lastRewardPoints == 0 ) {
@@ -254,7 +254,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
             _tokenId
         );
 
-        weightContract.stake(_tokenId, amount);
+        weightContract.stake(_tokenId, _msgSender(), amount);
 
         emit Staked(_user, _tokenId);
     }
@@ -355,13 +355,8 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     function rewardsOwing(address _user) public view returns(uint256) {
         uint256 newRewardPerToken = rewardsPerTokenPoints.sub(stakers[_user].lastRewardPoints);
 
-        uint256 userWeight = 0;
-        Staker storage staker = stakers[_user];
-        for (uint i = 0; i < staker.tokenIds.length; i++) {
-            uint256 tokenWeight = weightContract.weightOf(staker.tokenIds[i]);
-            userWeight = userWeight.add(tokenWeight);
-        }
-
+        uint256 userWeight = weightContract.getUserWeight(_user);
+        
         if (userWeight == 0) {
             return 0;
         }
