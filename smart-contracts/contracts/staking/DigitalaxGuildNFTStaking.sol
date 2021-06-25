@@ -35,10 +35,6 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
 
     uint256 constant pointMultiplier = 10e18;
 
-    /// @notice whitelisted tokens
-    mapping (uint256 => bool) public whitelistedNFTs;
-    uint256 public whitelistedNFTCount;
-
     /**
     @notice Struct to track what user is staking which tokens
     @dev tokenIds are all the tokens staked by the staker
@@ -96,13 +92,6 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     /// @notice Admin update of the NFT token's sale price
     event UpdatedTokenPrice(uint256 _tokenId, uint256 _salePrice);
 
-    /// @notice Admin add a new whitelisted NFT list
-    event RegisteredWhitelistedTokens(uint256 _whitelistedNFTCount, uint256 _tokenId);
-
-    /// @notice Admin remove a whitelisted NFT list
-    event UnregisteredWhitelistedTokens(uint256 _whitelistedNFTCount, uint256 _tokenId);
-
-
     constructor() public {
     }
      /**
@@ -158,9 +147,9 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     function updateAccessControls(DigitalaxAccessControls _accessControls) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxNFTStaking.updateAccessControls: Sender must be admin"
+            "DigitalaxGuildNFTStaking.updateAccessControls: Sender must be admin"
         );
-        require(address(_accessControls) != address(0), "DigitalaxNFTStaking.updateAccessControls: Zero Address");
+        require(address(_accessControls) != address(0), "DigitalaxGuildNFTStaking.updateAccessControls: Zero Address");
         accessControls = _accessControls;
         emit UpdateAccessControls(address(_accessControls));
     }
@@ -169,7 +158,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     function setRewardsContract(address _addr) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxNFTStaking.setRewardsContract: Sender must be admin"
+            "DigitalaxGuildNFTStaking.setRewardsContract: Sender must be admin"
         );
         require(_addr != address(0));
         address oldAddr = address(rewardsContract);
@@ -221,40 +210,6 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
         return primarySalePrice[_tokenId];
     }
 
-    function registerWhitelistedToken(uint256 _tokenId) external {
-        require(
-            accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxGuildNFTStaking.registerWhitelistedToken: Sender must be admin"
-        );
-
-        require(
-            !whitelistedNFTs[_tokenId],
-            "DigitalaxGuildNFTStaking.registerWhitelistedToken: Already registed token"
-        );
-
-        whitelistedNFTs[_tokenId] = true;
-        whitelistedNFTCount.add(1);
-
-        emit RegisteredWhitelistedTokens(whitelistedNFTCount, _tokenId);
-    }
-
-    function unregisterWhitelistedToken(uint256 _tokenId) external {
-        require(
-            accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxGuildNFTStaking.registerWhitelistedToken: Sender must be admin"
-        );
-
-        require(
-            whitelistedNFTs[_tokenId],
-            "DigitalaxGuildNFTStaking.registerWhitelistedToken: Invalid token"
-        );
-
-        whitelistedNFTs[_tokenId] = false;
-        whitelistedNFTCount.sub(1);
-
-        emit UnregisteredWhitelistedTokens(whitelistedNFTCount, _tokenId);
-    }
-
     /// @notice Stake NFT and earn reward tokens.
     function stake(uint256 tokenId) external {
         // require();
@@ -274,10 +229,6 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
      * @dev Balance of stakers are updated as they stake the nfts based on ether price
     */
     function _stake(address _user, uint256 _tokenId) internal {
-        require(
-            whitelistedNFTs[_tokenId],
-            "DigitalaxGuildNFTStaking._stake: Not whitelisted token"
-        );
 
         Staker storage staker = stakers[_user];
 
