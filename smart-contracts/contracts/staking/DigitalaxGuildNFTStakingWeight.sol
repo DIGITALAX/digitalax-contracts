@@ -27,10 +27,6 @@ contract DigitalaxGuildNFTStakingWeight {
 
     event UpdatedTokenWeight(uint256 tokenId, uint256 weight);
 
-    constructor() public {
-        totalWeight = 0;
-    }
-
     function getTotalWeight() external view returns (uint256) {
         return totalWeight;
     }
@@ -60,7 +56,7 @@ contract DigitalaxGuildNFTStakingWeight {
         uint256 _now = _getNow();
         require(
             token.lastAppraisalTime[_appraiser] == 0 || _now >= token.lastAppraisalTime[_appraiser].add(1 days),
-            "DigitalaxGuildNFTStakingWeight._stake: You can appraise each token once a day."
+            "DigitalaxGuildNFTStakingWeight.appraise: You can appraise each token once a day."
         );
 
         token.lastAppraisalTime[_appraiser] = _now;
