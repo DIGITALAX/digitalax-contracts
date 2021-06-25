@@ -15,9 +15,10 @@ contract DigitalaxIndex is Context {
     using Address for address;
 
     // DigitalaxIndex Events
-    event AuctionSetAdded(uint256 indexed sid, uint256[] tokenIds);
-    event AuctionSetRemoved(uint256 indexed sid);
-    event AuctionSetUpdated(uint256 indexed sid, uint256[] tokenIds);
+    event CollectionGroupAdded(uint256 indexed sid, uint256[] auctions, uint256[] collections, uint256 digiBundleCollection);
+    event CollectionGroupRemoved(uint256 indexed sid);
+    event CollectionGroupUpdated(uint256 indexed sid, uint256[] auctions, uint256[] collections, uint256 digiBundleCollection);
+
     event DesignerSetAdded(uint256 indexed sid, uint256[] tokenIds);
     event DesignerSetRemoved(uint256 indexed sid);
     event DesignerSetUpdated(uint256 indexed sid, uint256[] tokenIds);
@@ -28,14 +29,20 @@ contract DigitalaxIndex is Context {
         uint256[] value;
     }
 
+    struct CollectionGroup {
+        TokenIdSet auctions;
+        TokenIdSet collections;
+        uint256 digiBundleCollection;
+    }
+
     // Access Controls
     DigitalaxAccessControls public accessControls;
 
-    // Array for auction set
-    TokenIdSet[] auctionSet;
-
     // Array for designer set
     TokenIdSet[] designerSet;
+
+    // Array for Collection Groups
+    CollectionGroup[] collectionGroupSet;
 
     // Mapping for designer info
     mapping(uint256 => string) public designerInfo;
@@ -63,9 +70,14 @@ contract DigitalaxIndex is Context {
      * @dev View function for auction set
      * @param _sid Id of auction set
      */
-    function AuctionSet(uint256 _sid) external view returns (uint256[] memory tokenIds) {
-        TokenIdSet memory set = auctionSet[_sid];
-        tokenIds = set.value;
+    function CollectionSet(uint256 _sid) external view returns (uint256[] memory auctionIds, uint256[] memory collectionIds,uint256 digiBundleCollectionId) {
+        TokenIdSet memory auctionSet = collectionGroupSet[_sid].auctions;
+        auctionIds = auctionSet.value;
+
+        TokenIdSet memory collectionSet = collectionGroupSet[_sid].collections;
+        collectionIds = collectionSet.value;
+
+        digiBundleCollectionId = collectionGroupSet[_sid].digiBundleCollection;
     }
 
     /**
@@ -78,40 +90,48 @@ contract DigitalaxIndex is Context {
     }
 
     /**
-     * @dev Function for adding auction set
-     * @param _tokenIds Array of token ids to be added
+     * @dev Function for adding set
+     * @param _auctionTokenIds Array of token ids to be added
+     * @param _collectionIds Array of token ids to be added
+     * @param digiBundleCollectionId token id
      */
-    function addAuctionSet(uint256[] calldata _tokenIds) external {
+    function addCollectionGroup(uint256[] calldata _auctionTokenIds, uint256[] calldata _collectionIds, uint256 digiBundleCollectionId) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.addAuctionSet: Sender must be admin");
 
-        uint256 index = auctionSet.length;
-        auctionSet.push(TokenIdSet(_tokenIds));
-        emit AuctionSetAdded(index, _tokenIds);
+        uint256 index = collectionGroupSet.length;
+        collectionGroupSet.push(CollectionGroup(TokenIdSet(_auctionTokenIds), TokenIdSet(_collectionIds), digiBundleCollectionId));
+        emit CollectionGroupAdded(index, _auctionTokenIds, _collectionIds, digiBundleCollectionId);
     }
 
     /**
-     * @dev Funtion for removal of auction set
+     * @dev Funtion for removal of set
      * @param _sid Id of auction set
      */
-    function removeAuctionSet(uint256 _sid) external {
+    function removeCollectionGroup(uint256 _sid) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.removeAuctionSet: Sender must be admin");
-        
-        TokenIdSet storage set = auctionSet[_sid];
-        delete set.value;
-        emit AuctionSetRemoved(_sid);
+
+        CollectionGroup storage set = collectionGroupSet[_sid];
+        delete set.digiBundleCollection;
+        delete set.auctions.value;
+        delete set.collections.value;
+        emit CollectionGroupRemoved(_sid);
     }
 
     /**
      * @dev Function for auction set update
-     * @param _sid Id of auction set
-     * @param _tokenIds Array of token ids to be updated
+     * @param _sid Id of set
+     * @param _auctionTokenIds Array of token ids to be added
+     * @param _collectionIds Array of token ids to be added
+     * @param digiBundleCollectionId token id
      */
-    function updateAuctionSet(uint256 _sid, uint256[] calldata _tokenIds) external {
+    function updateAuctionSet(uint256 _sid, uint256[] calldata _auctionTokenIds, uint256[] calldata _collectionIds, uint256 digiBundleCollectionId) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.removeAuctionSet: Sender must be admin");
-        
-        TokenIdSet storage set = auctionSet[_sid];
-        set.value = _tokenIds;
-        emit AuctionSetUpdated(_sid, _tokenIds);
+
+        CollectionGroup storage set = collectionGroupSet[_sid];
+        set.digiBundleCollection = digiBundleCollectionId;
+        set.auctions.value = _auctionTokenIds;
+        set.collections.value = _collectionIds;
+        emit CollectionGroupUpdated(_sid, _auctionTokenIds, _collectionIds, digiBundleCollectionId);
     }
 
     /**
@@ -132,7 +152,7 @@ contract DigitalaxIndex is Context {
      */
     function removeDesignerSet(uint256 _sid) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.removeDesignerSet: Sender must be admin");
-        
+
         TokenIdSet storage set = designerSet[_sid];
         delete set.value;
         emit DesignerSetRemoved(_sid);
@@ -145,7 +165,7 @@ contract DigitalaxIndex is Context {
      */
     function updateDesignerSet(uint256 _sid, uint256[] calldata _tokenIds) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.updateDesignerSet: Sender must be admin");
-        
+
         TokenIdSet storage set = designerSet[_sid];
         set.value = _tokenIds;
         emit DesignerSetUpdated(_sid, _tokenIds);
