@@ -43,6 +43,8 @@ contract PodeNFTv2 is ERC721WithSameTokenURIForAllTokens("PODE", "PODE"), BaseRe
     /// @dev TokenID -> Primary Ether Sale Price in Wei
     mapping(uint256 => uint256) public primarySalePrice;
 
+    uint256 defaultPrimarySalePrice = 1000000000000000000;
+
     /// @dev limit batching of tokens due to gas limit restrictions
     uint256 public BATCH_LIMIT;
 
@@ -60,7 +62,7 @@ contract PodeNFTv2 is ERC721WithSameTokenURIForAllTokens("PODE", "PODE"), BaseRe
     function initialize(DigitalaxAccessControls _accessControls, address _trustedForwarder) public initializer {
         accessControls = _accessControls;
         trustedForwarder = _trustedForwarder;
-        tokenIdPointer = 100000;
+        tokenIdPointer = 0;
         BATCH_LIMIT = 20;
         emit PodeNFTContractDeployed();
     }
@@ -118,6 +120,8 @@ contract PodeNFTv2 is ERC721WithSameTokenURIForAllTokens("PODE", "PODE"), BaseRe
 
         // Associate OG Holder
         ogHolders[tokenId] = _ogHolder;
+        primarySalePrice[tokenId] = defaultPrimarySalePrice;
+        emit TokenPrimarySalePriceSet(tokenId, defaultPrimarySalePrice);
 
         return tokenId;
     }
@@ -245,6 +249,19 @@ contract PodeNFTv2 is ERC721WithSameTokenURIForAllTokens("PODE", "PODE"), BaseRe
      */
     function setPrimarySalePrice(uint256 _tokenId, uint256 _salePrice) external {
         _setPrimarySalePrice(_tokenId, _salePrice);
+    }
+
+    /**
+     @notice Default for minting the Ether price that a given token was sold for (in WEI)
+     @dev Only admin can call this method
+     @param _salePrice The primary Ether sale price in WEI
+     */
+    function setDefaultPrimarySalePrice(uint256 _salePrice) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "PodeNFT.setDefaultPrimarySalePrice: Sender must be an admin"
+        );
+        defaultPrimarySalePrice = _salePrice;
     }
 
     /**
