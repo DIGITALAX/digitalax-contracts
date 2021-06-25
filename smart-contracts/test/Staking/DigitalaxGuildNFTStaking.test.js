@@ -15,7 +15,6 @@ const {
   const MockERC20 = artifacts.require('MockERC20');
   const WethToken = artifacts.require('WethToken');
   const DigitalaxNFTRewardsV2 = artifacts.require('DigitalaxNFTRewardsV2Mock');
-  const DigitalaxNFTRewardsV2Real = artifacts.require('DigitalaxNFTRewardsV2');
   const DigitalaxGuildNFTStaking = artifacts.require('DigitalaxGuildNFTStakingMock');
   const DigitalaxGuildNFTStakingWeight = artifacts.require('DigitalaxGuildNFTStakingWeightMock');
   const DigitalaxMonaOracle = artifacts.require('DigitalaxMonaOracle');
@@ -63,20 +62,9 @@ const {
 	  await this.decoToken.mint(admin, TWO_HUNDRED_TOKENS, { from: minter });
 	  await this.decoToken.mint(admin, TEN_TOKENS, { from: minter });
 
-	  this.digitalaxMaterials = await DigitalaxMaterials.new(
-		  'DigitalaxMaterials',
-		  'DXM',
-		  this.accessControls.address,
-		  '0xb5505a6d998549090530911180f38aC5130101c6',
-		  constants.ZERO_ADDRESS,
-		  {from: admin}
-	  );
-
 	  this.token = await PodeNFTv2.new();
 	  await this.token.initialize(
 		  this.accessControls.address,
-		  this.digitalaxMaterials.address,
-		  '0xb5505a6d998549090530911180f38aC5130101c6',
 		  constants.ZERO_ADDRESS,
 		  {from: admin}
 	  );
@@ -198,7 +186,7 @@ const {
 	})
 
 	it('successfully deposits NFT and unstakes', async () => {
-	  await this.token.mint(staker, randomURI, minter, {from: minter});
+	  await this.token.mint(staker, minter, {from: minter});
 	  await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
 	  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
 	  await this.guildNftStaking.stake('100001',{from: staker});
@@ -223,10 +211,10 @@ const {
 	});
 
 	it('successfully deposits many NFT and batch', async () => {
-	  await this.token.mint(staker, randomURI, minter, {from: minter});
-	  await this.token.mint(staker, randomURI, minter, {from: minter});
-	  await this.token.mint(staker, randomURI, minter, {from: minter});
-	  await this.token.mint(staker, randomURI, minter, {from: minter});
+	  await this.token.mint(staker, minter, {from: minter});
+	  await this.token.mint(staker, minter, {from: minter});
+	  await this.token.mint(staker, minter, {from: minter});
+	  await this.token.mint(staker, minter, {from: minter});
 	  await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
 	  await this.token.setPrimarySalePrice('100002', TWO_ETH, {from: admin});
 	  await this.token.setPrimarySalePrice('100003', TWO_ETH, {from: admin});
@@ -255,7 +243,7 @@ const {
 	});
 
 	it('successfully claims reward  NFT', async () => {
-	  await this.token.mint(staker, randomURI, minter, {from: minter});
+	  await this.token.mint(staker, minter, {from: minter});
 	  await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
 	  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
 	  await this.guildNftStaking.stake('100001',{from: staker});
@@ -279,7 +267,7 @@ const {
 	});
 
 	it('successfully claims reward  NFT', async () => {
-	  await this.token.mint(staker, randomURI, minter, {from: minter});
+	  await this.token.mint(staker, minter, {from: minter});
 	  await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
 	  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
 	  await this.guildNftStaking.stake('100001',{from: staker});
@@ -303,7 +291,7 @@ const {
 	});
 
 	it('successfully emergency unstakes  NFT', async () => {
-	  await this.token.mint(staker, randomURI, minter, {from: minter});
+	  await this.token.mint(staker, minter, {from: minter});
 	  await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
 	  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
 	  await this.guildNftStaking.stake('100001',{from: staker});
@@ -327,10 +315,10 @@ const {
 	});
 
 	it('successfully deposits many NFT and batch with multiple users multiple weeks', async () => {
-	await this.token.mint(staker, randomURI, minter, {from: minter});
-	await this.token.mint(staker, randomURI, minter, {from: minter});
-	await this.token.mint(staker2, randomURI, minter, {from: minter});
-	await this.token.mint(staker2, randomURI, minter, {from: minter});
+	await this.token.mint(staker, minter, {from: minter});
+	await this.token.mint(staker, minter, {from: minter});
+	await this.token.mint(staker2, minter, {from: minter});
+	await this.token.mint(staker2, minter, {from: minter});
 	await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
 	await this.token.setPrimarySalePrice('100002', TWO_ETH, {from: admin});
 	await this.token.setPrimarySalePrice('100003', TWO_ETH, {from: admin});
