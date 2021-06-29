@@ -64,6 +64,13 @@ type DigitalaxGarmentChildV2 @entity {
   rarity: String!
 }
 
+type DigitalaxCollectionGroup @entity {
+  id: ID!
+  auctions: [DigitalaxGarmentV2Auction!]!
+  collections: [DigitalaxGarmentV2Collection!]!
+  digiBundle: DigitalaxGarmentV2Collection!
+}
+
 
 type DigitalaxSubscriptionChild @entity {
   id: ID! # {parent-token-id}-{child-token-id}
