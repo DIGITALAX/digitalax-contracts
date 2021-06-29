@@ -532,9 +532,9 @@ dataSources:
       apiVersion: 0.0.3
       language: wasm/assemblyscript
       entities:
-        - AuctionSetAdded
-        - AuctionSetRemoved
-        - AuctionSetUpdated
+        - CollectionGroupAdded
+        - CollectionGroupRemoved
+        - CollectionGroupUpdated
         - DesignerSetAdded
         - DesignerSetRemoved
         - DesignerSetUpdated
@@ -543,12 +543,12 @@ dataSources:
         - name: DigitalaxIndex
           file: ./abis/DigitalaxIndex.json
       eventHandlers:
-        - event: AuctionSetAdded(indexed uint256,uint256[])
-          handler: handleAuctionSetAdded
-        - event: AuctionSetRemoved(indexed uint256)
-          handler: handleAuctionSetRemoved
-        - event: AuctionSetUpdated(indexed uint256,uint256[])
-          handler: handleAuctionSetUpdated
+        - event: CollectionGroupAdded(indexed uint256,uint256[],uint256[],uint256)
+          handler: handleCollectionGroupAdded
+        - event: CollectionGroupRemoved(indexed uint256)
+          handler: handleCollectionGroupRemoved
+        - event: CollectionGroupUpdated(indexed uint256,uint256[],uint256[],uint256)
+          handler: handleCollectionGroupUpdated
         - event: DesignerSetAdded(indexed uint256,uint256[])
           handler: handleDesignerSetAdded
         - event: DesignerSetRemoved(indexed uint256)
