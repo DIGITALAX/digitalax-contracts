@@ -30,8 +30,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     uint256 public stakedEthTotal;
     uint256 public lastUpdateTime;
 
-    uint256 public rewardsPerTokenPoints;
-    uint256 public totalUnclaimedRewards;
+    uint256 public totalRewards;
 
     uint256 constant pointMultiplier = 10e18;
 
@@ -46,7 +45,6 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
         uint256[] tokenIds;
         mapping (uint256 => uint256) tokenIndex;
         uint256 balance;
-        uint256 lastRewardPoints;
         uint256 rewardsEarned;
         uint256 rewardsReleased;
     }
@@ -60,9 +58,6 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
 
     // Mapping from token ID to owner address
     mapping (uint256 => address) public tokenOwner;
-
-    // Mapping from token ID to primary sale price
-    mapping (uint256 => uint256) public primarySalePrice;
 
     /// @notice sets the token to be claimable or not, cannot claim if it set to false
     bool public tokensClaimable;
@@ -88,9 +83,6 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
 
     /// @notice Admin update of weighting contract
     event WeightingContractUpdated(address indexed oldWeightingContract, address newWeightingContract );
-
-    /// @notice Admin update of the NFT token's sale price
-    event UpdatedTokenPrice(uint256 _tokenId, uint256 _salePrice);
 
     constructor() public {
     }
@@ -188,17 +180,6 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
         emit ClaimableStatusUpdated(_enabled);
     }
 
-    /// @notice Lets admin set the sale price of the NFT token
-    function updatePrimarySalePrice(uint256 _tokenId, uint256 _salePrice) external {
-        require(
-            accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxGuildNFTStaking.updatePrimarySalePrice: Sender must be admin"
-        );
-        require(_salePrice > 0);
-        primarySalePrice[_tokenId] = _salePrice * (1 ether);
-        emit UpdatedTokenPrice(_tokenId, _salePrice);
-    }
-
     /// @dev Getter functions for Staking contract
     /// @dev Get the tokens staked by a user
     function getStakedTokens(address _user) external view returns (uint256[] memory tokenIds) {
@@ -207,7 +188,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
 
     /// @dev Get the amount a staked nft is valued at ie bought at
     function getContribution (uint256 _tokenId) public view returns (uint256) {
-        return primarySalePrice[_tokenId];
+        return weightContract.getTokenPrice(_tokenId);
     }
 
     /// @notice Stake NFT and earn reward tokens.
@@ -232,14 +213,6 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
 
         Staker storage staker = stakers[_user];
 
-        if (staker.balance == 0 && staker.lastRewardPoints == 0 ) {
-          staker.lastRewardPoints = rewardsPerTokenPoints;
-        }
-
-        // PODE token primary sale price = 1 ETH
-        // It can be changed to open sea price by admin if this token is in other guilds
-        primarySalePrice[_tokenId] = 1 ether;
-        
         updateReward(_user);
         uint256 amount = getContribution(_tokenId);
         staker.balance = staker.balance.add(amount);
@@ -307,7 +280,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
         }
         delete tokenOwner[_tokenId];
 
-        weightContract.unstake(_tokenId);
+        weightContract.unstake(_tokenId, _user);
         parentNFT.safeTransferFrom(address(this), _user, _tokenId);
 
         emit Unstaked(_user, _tokenId);
@@ -327,47 +300,26 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     /// @dev Updates the amount of rewards owed for each user before any tokens are moved
     function updateReward(address _user) public {
         rewardsContract.updateRewards();
-        uint256 parentRewards = rewardsContract.MonaRewards(lastUpdateTime, _getNow());
+        uint256 newRewards = rewardsContract.MonaRewards(lastUpdateTime, _getNow());
+        totalRewards = totalRewards.add(newRewards);
 
         uint256 totalWeight = weightContract.getTotalWeight();
 
-        if (totalWeight > 0) {
-            rewardsPerTokenPoints = rewardsPerTokenPoints.add(parentRewards
-                                            .mul(1e18)
-                                            .mul(pointMultiplier)
-                                            .div(totalWeight));
+        if (totalWeight == 0) {
+            return;
         }
+        
+        uint256 ownerWeight = weightContract.getOwnerWeight(_user);
 
         lastUpdateTime = _getNow();
-        uint256 rewards = rewardsOwing(_user);
 
         Staker storage staker = stakers[_user];
-        if (_user != address(0)) {
-            staker.rewardsEarned = staker.rewardsEarned.add(rewards);
-            staker.lastRewardPoints = rewardsPerTokenPoints;
-        }
+
+        staker.rewardsEarned = totalRewards.mul(pointMultiplier)
+                                    .div(totalWeight)
+                                    .mul(ownerWeight)
+                                    .div(pointMultiplier);
     }
-
-
-    /// @notice Returns the rewards owing for a user
-    /// @dev The rewards are dynamic and normalised from the other pools
-    /// @dev This gets the rewards from each of the periods as one multiplier
-    function rewardsOwing(address _user) public view returns(uint256) {
-        uint256 newRewardPerToken = rewardsPerTokenPoints.sub(stakers[_user].lastRewardPoints);
-
-        uint256 userWeight = weightContract.getUserWeight(_user);
-        
-        if (userWeight == 0) {
-            return 0;
-        }
-        
-        // uint256 rewards = stakers[_user].balance.mul(newRewardPerToken)
-        uint256 rewards = userWeight.mul(newRewardPerToken)
-                                        .div(1e18)
-                                        .div(pointMultiplier);
-        return rewards;
-    }
-
 
     /// @notice Returns the about of rewards yet to be claimed
     function unclaimedRewards(address _user) external view returns(uint256) {
@@ -375,18 +327,15 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
             return 0;
         }
 
-        uint256 parentRewards = rewardsContract.MonaRewards(lastUpdateTime, _getNow());
+        uint256 newRewards = rewardsContract.MonaRewards(lastUpdateTime, _getNow());
 
-        uint256 newRewardPerToken = rewardsPerTokenPoints.add(parentRewards
-                                                                .mul(1e18)
-                                                                .mul(pointMultiplier)
-                                                                .div(stakedEthTotal))
-                                                         .sub(stakers[_user].lastRewardPoints);
+        uint256 totalWeight = weightContract.getTotalWeight();
+        uint256 ownerWeight = weightContract.getOwnerWeight(_user);
 
-        uint256 rewards = stakers[_user].balance.mul(newRewardPerToken)
-                                                .div(1e18)
-                                                .div(pointMultiplier);
-        return rewards.add(stakers[_user].rewardsEarned).sub(stakers[_user].rewardsReleased);
+        return totalRewards.add(newRewards)
+                        .div(totalWeight)
+                        .mul(ownerWeight)
+                        .sub(stakers[_user].rewardsReleased);
     }
 
 
