@@ -1,9 +1,9 @@
-import {log, BigInt, Address, store} from "@graphprotocol/graph-ts/index";
+import {store} from "@graphprotocol/graph-ts/index";
 
 import {
-    AuctionSetAdded,
-    AuctionSetRemoved,
-    AuctionSetUpdated,
+    CollectionGroupAdded,
+    CollectionGroupRemoved,
+    CollectionGroupUpdated,
     DesignerSetAdded,
     DesignerSetRemoved,
     DesignerSetUpdated,
@@ -12,46 +12,66 @@ import {
 
 import {
     DigitalaxDesignerIndex,
-    DigitalaxAuctionIndex,
-    DigitalaxGarment
+    DigitalaxGarment,
+    DigitalaxCollectionGroup,
 } from "../generated/schema";
-import {loadOrCreateGarmentDesigner} from "./factory/DigitalaxGarmentDesigner.factory";
-import {loadOrCreateDigitalaxCollector} from "./factory/DigitalaxCollector.factory";
 
-import {ZERO_ADDRESS} from "./constants";
-import {loadOrCreateDigitalaxGarmentChild} from "./factory/DigitalaxGarmentChild.factory";
+export function handleCollectionGroupAdded(event: CollectionGroupAdded): void {
+    let collectionGroupId = event.params.sid;
+    let collectionGroup = new DigitalaxCollectionGroup(collectionGroupId.toString());
 
-export function handleAuctionSetAdded(event: AuctionSetAdded): void {
-    let auctionId = event.params.sid;
-    let auctionIndex = new DigitalaxAuctionIndex(auctionId.toString());
-    let auctionGarments = new Array<string>();
-    for(let i = 0; i < event.params.tokenIds.length; i ++) {
-        let tokenId = event.params.tokenIds.pop();
-        let garmentToken = DigitalaxGarment.load(tokenId.toString());
-        auctionGarments.push(garmentToken.id);
+    let auctions = new Array<string>();
+    let paramAuctions = event.params.auctions;
+    for (let i = 0; i < paramAuctions.length; i += 1) {
+        let auctionId = paramAuctions[i];
+        auctions.push(auctionId.toString());
     }
-    auctionIndex.garments = auctionGarments;
-    auctionIndex.save();
+
+    let collections = new Array<string>();
+    let paramCollections = event.params.collections;
+    for (let i = 0; i < paramCollections.length; i += 1) {
+        let collectionId = paramCollections[i];
+        collections.push(collectionId.toString());
+    }
+
+    let digiBudngle = event.params.digiBundleCollection.toString();
+
+    collectionGroup.auctions = auctions;
+    collectionGroup.collections = collections;
+    collectionGroup.digiBundle = digiBudngle;
+
+    collectionGroup.save();
 }
 
-export function handleAuctionSetRemoved(event: AuctionSetRemoved): void {
-    let auctionId = event.params.sid;
-    let auctionIndex = DigitalaxAuctionIndex.load(auctionId.toString());
-    auctionIndex.garments = null;
-    auctionIndex.save();
+export function handleCollectionGroupRemoved(event: CollectionGroupRemoved): void {
+    store.remove("DigitalaxCollectionGroup", event.params.sid.toString());
 }
 
-export function handleAuctionSetUpdated(event: AuctionSetUpdated): void {
-    let auctionId = event.params.sid;
-    let auctionIndex = DigitalaxAuctionIndex.load(auctionId.toString());
-    let auctionGarments = new Array<string>();
-    for(let i = 0; i < event.params.tokenIds.length; i ++) {
-        let tokenId = event.params.tokenIds.pop();
-        let garmentToken = DigitalaxGarment.load(tokenId.toString());
-        auctionGarments.push(garmentToken.id);
+export function handleCollectionGroupUpdated(event: CollectionGroupUpdated): void {
+    let collectionGroupId = event.params.sid;
+    let collectionGroup = DigitalaxCollectionGroup.load(collectionGroupId.toString());
+
+    let auctions = new Array<string>();
+    let paramAuctions = event.params.auctions;
+    for (let i = 0; i < paramAuctions.length; i += 1) {
+        let auctionId = paramAuctions[i];
+        auctions.push(auctionId.toString());
     }
-    auctionIndex.garments = auctionGarments;
-    auctionIndex.save();
+
+    let collections = new Array<string>();
+    let paramCollections = event.params.collections;
+    for (let i = 0; i < paramCollections.length; i += 1) {
+        let collectionId = paramCollections[i];
+        collections.push(collectionId.toString());
+    }
+
+    let digiBudngle = event.params.digiBundleCollection.toString();
+
+    collectionGroup.auctions = auctions;
+    collectionGroup.collections = collections;
+    collectionGroup.digiBundle = digiBudngle;
+
+    collectionGroup.save();
 }
 
 export function handleDesignerSetAdded(event: DesignerSetAdded): void {
