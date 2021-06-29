@@ -53,11 +53,9 @@ const {
 		  {from: staker}
 	  );
 
-
 	  this.weth = await WethToken.new(
 		{ from: minter }
 	  );
-
 
 	  await this.decoToken.mint(admin, TWO_HUNDRED_TOKENS, { from: minter });
 	  await this.decoToken.mint(admin, TEN_TOKENS, { from: minter });
