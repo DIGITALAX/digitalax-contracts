@@ -19,9 +19,9 @@ contract DigitalaxIndex is Context {
     event CollectionGroupRemoved(uint256 indexed sid);
     event CollectionGroupUpdated(uint256 indexed sid, uint256[] auctions, uint256[] collections, uint256 digiBundleCollection);
 
-    event DesignerGroupAdded(uint256 indexed sid, string uri, uint256[] tokenIds);
-    event DesignerGroupRemoved(uint256 indexed sid, string uri);
-    event DesignerGroupUpdated(uint256 indexed sid, string uri, uint256[] tokenIds);
+    event DesignerGroupAdded(address address, string uri, uint256[] tokenIds);
+    event DesignerGroupRemoved(address address, string uri);
+    event DesignerGroupUpdated(address address, string uri, uint256[] tokenIds);
 
     // Structure for set of token ids
     struct TokenIdSet {
@@ -45,7 +45,8 @@ contract DigitalaxIndex is Context {
     // Array for designer set
     TokenIdSet[] designerSet;
 
-    DesignerGroup[] designerGroupSet;
+    // Mapping for designer group
+    mapping(address => DesignerGroup) designerGroupSet;
 
     // Array for Collection Groups
     CollectionGroup[] collectionGroupSet;
@@ -140,40 +141,43 @@ contract DigitalaxIndex is Context {
 
     /**
      * @dev Function for adding designer token group
+     * @param address Address of designer to be added
+     * @param _uri ipfs uri for designer to be added
      * @param _tokenIds Array of token ids to be added
      */
-    function addDesignerGroup(string _uri, uint256[] calldata _tokenIds) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.addDesignerSet: Sender must be admin");
+    function addDesignerGroup(address address, string _uri, uint256[] calldata _tokenIds) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.addDesignerGroup: Sender must be admin");
+        require(address == address(0), "DigitalaxIndex.addDesignerGroup: address must not be zero address.");
+        require(designerGroupSet[address].uri, "DigitalaxIndex.addDesignerGroup: designer already exists.");
 
-        uint256 index = designerGroupSet.length;
-        designerGroupSet.push(DesignerGroup(_uri, TokenIdSet(_tokenIds)));
-        emit DesignerGroupAdded(index, _uri, _tokenIds);
+        designerGroupSet[address] = DesignerGroup(_uri, TokenIdSet(_tokenIds));
+        emit DesignerGroupAdded(address, _uri, _tokenIds);
     }
 
     /**
      * @dev Funtion for removal of designer group
-     * @param _sid Id of designer set
+     * @param address Address of designer to be deleted
      */
-    function removeDesignerGroup(uint256 _sid) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.removeDesignerSet: Sender must be admin");
+    function removeDesignerGroup(address address) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.removeDesignerGroup: Sender must be admin");
+        require(!designerGroupSet[address].uri, "DigitalaxIndex.removeDesignerGroup: designer is not existed.");
 
-        DesignerGroup storage set = designerGroupSet[_sid];
-        delete set.uri;
-        delete set.tokenIds.value;
-        emit DesignerGroupRemoved(_sid);
+        delete designerGroupSet[address];
+
+        emit DesignerGroupRemoved(address);
     }
 
     /**
-     * @dev Function for designer set update
-     * @param _sid Id of designer set
+     * @dev Function for designer group update
+     * @param address Address of designer to be updated
+     * @param _uri ipfs uri for designer to be updated
      * @param _tokenIds Array of token ids to be updated
      */
-    function updateDesignerGroup(uint256 _sid, string _uri, uint256[] calldata _tokenIds) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.updateDesignerSet: Sender must be admin");
+    function updateDesignerGroup(address address, string _uri, uint256[] calldata _tokenIds) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.updateDesignerGroup: Sender must be admin");
+        require(!designerGroupSet[address].uri, "DigitalaxIndex.updateDesignerGroup: designer is not existed.");
 
-        DesignerGroup storage set = designerSet[_sid];
-        set.uri = _uri;
-        set.tokenIds.value = _tokenIds;
-        emit DesignerGroupUpdated(_sid, _uri, _tokenIds);
+        designerGroupSet[address] = DesignerGroup(_uri, TokenIdSet(_tokenIds));
+        emit DesignerGroupUpdated(address, _uri, _tokenIds);
     }
 }
