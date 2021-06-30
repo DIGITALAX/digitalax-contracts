@@ -19,10 +19,9 @@ contract DigitalaxIndex is Context {
     event CollectionGroupRemoved(uint256 indexed sid);
     event CollectionGroupUpdated(uint256 indexed sid, uint256[] auctions, uint256[] collections, uint256 digiBundleCollection);
 
-    event DesignerSetAdded(uint256 indexed sid, uint256[] tokenIds);
-    event DesignerSetRemoved(uint256 indexed sid);
-    event DesignerSetUpdated(uint256 indexed sid, uint256[] tokenIds);
-    event DesignerInfoUpdated(uint256 indexed designerId, string uri);
+    event DesignerGroupAdded(uint256 indexed sid, string uri, uint256[] tokenIds);
+    event DesignerGroupRemoved(uint256 indexed sid, string uri);
+    event DesignerGroupUpdated(uint256 indexed sid, string uri, uint256[] tokenIds);
 
     // Structure for set of token ids
     struct TokenIdSet {
@@ -35,17 +34,22 @@ contract DigitalaxIndex is Context {
         uint256 digiBundleCollection;
     }
 
+    struct DesignerGroup {
+        string uri;
+        TokenIdSet tokens;
+    }
+
     // Access Controls
     DigitalaxAccessControls public accessControls;
 
     // Array for designer set
     TokenIdSet[] designerSet;
 
+    DesignerGroup[] designerGroupSet;
+
     // Array for Collection Groups
     CollectionGroup[] collectionGroupSet;
 
-    // Mapping for designer info
-    mapping(uint256 => string) public designerInfo;
 
     /**
      * @dev Constructor of DigitalaxIndex contract
@@ -135,27 +139,28 @@ contract DigitalaxIndex is Context {
     }
 
     /**
-     * @dev Function for adding designer token set
+     * @dev Function for adding designer token group
      * @param _tokenIds Array of token ids to be added
      */
-    function addDesignerSet(uint256[] calldata _tokenIds) external {
+    function addDesignerGroup(string _uri, uint256[] calldata _tokenIds) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.addDesignerSet: Sender must be admin");
 
-        uint256 index = designerSet.length;
-        designerSet.push(TokenIdSet(_tokenIds));
-        emit DesignerSetAdded(index, _tokenIds);
+        uint256 index = designerGroupSet.length;
+        designerGroupSet.push(DesignerGroup(_uri, TokenIdSet(_tokenIds)));
+        emit DesignerGroupAdded(index, _uri, _tokenIds);
     }
 
     /**
-     * @dev Funtion for removal of designer set
+     * @dev Funtion for removal of designer group
      * @param _sid Id of designer set
      */
-    function removeDesignerSet(uint256 _sid) external {
+    function removeDesignerGroup(uint256 _sid) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.removeDesignerSet: Sender must be admin");
 
-        TokenIdSet storage set = designerSet[_sid];
-        delete set.value;
-        emit DesignerSetRemoved(_sid);
+        DesignerGroup storage set = designerGroupSet[_sid];
+        delete set.uri;
+        delete set.tokenIds.value;
+        emit DesignerGroupRemoved(_sid);
     }
 
     /**
@@ -163,23 +168,12 @@ contract DigitalaxIndex is Context {
      * @param _sid Id of designer set
      * @param _tokenIds Array of token ids to be updated
      */
-    function updateDesignerSet(uint256 _sid, uint256[] calldata _tokenIds) external {
+    function updateDesignerGroup(uint256 _sid, string _uri, uint256[] calldata _tokenIds) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.updateDesignerSet: Sender must be admin");
 
-        TokenIdSet storage set = designerSet[_sid];
-        set.value = _tokenIds;
-        emit DesignerSetUpdated(_sid, _tokenIds);
-    }
-
-    /**
-     * @dev Function to update designer info
-     * @param _designerId Designer Id
-     * @param _uri IPFS uri for designer info
-     */
-    function updateDesignerInfo(uint256 _designerId, string memory _uri) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.updateDesignerInfo: Sender must be admin");
-
-        designerInfo[_designerId] = _uri;
-        emit DesignerInfoUpdated(_designerId, _uri);
+        DesignerGroup storage set = designerSet[_sid];
+        set.uri = _uri;
+        set.tokenIds.value = _tokenIds;
+        emit DesignerGroupUpdated(_sid, _uri, _tokenIds);
     }
 }
