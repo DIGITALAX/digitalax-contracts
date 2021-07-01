@@ -33,9 +33,14 @@ const {
   const TEN_TOKENS = new BN('1000000000000000000');
   const TWENTY_TOKENS = new BN('20000000000000000000');
   const ONE_HUNDRED_TOKENS = new BN('10000000000000000000');
+  const ONE_ETH = ether('1');
   const TWO_ETH = ether('2');
   const MAX_NUMBER_OF_POOLS = new BN('20');
 	const randomURI = 'rand';
+	const TOKEN_1 = '1';
+	const TOKEN_2 = '2';
+	const TOKEN_3 = '3';
+	const TOKEN_4 = '4';
 
   contract('DigitalaxGuildNFTStaking', (accounts) => {
 	const [admin, smartContract, platformFeeAddress, minter, provider, staker, staker2] = accounts;
@@ -66,7 +71,7 @@ const {
 		  {from: admin}
 	  );
 
-	  this.weightToken = await DigitalaxGuildNFTStakingWeight.new();
+	  this.stakingWeight = await DigitalaxGuildNFTStakingWeight.new();
 
 	  this.oracle = await DigitalaxMonaOracle.new(
 		  '86400000',
@@ -85,7 +90,7 @@ const {
 		  this.decoToken.address,
 		  this.token.address,
 		  this.accessControls.address,
-		  this.weightToken.address,
+		  this.stakingWeight.address,
 		  constants.ZERO_ADDRESS
 	  );
 
@@ -168,37 +173,41 @@ const {
 		describe('setWeightingContract()', () => {
 			it('fails when not admin', async () => {
 				await expectRevert(
-					this.guildNftStaking.setWeightingContract(this.weightToken.address, {from: staker}),
+					this.guildNftStaking.setWeightingContract(this.stakingWeight.address, {from: staker}),
 					'DigitalaxGuildNFTStaking.setWeightingContract: Sender must be admin'
 				);
 			});
 
 			it('successfully sets weighting contract', async () => {
-				await this.guildNftStaking.setWeightingContract(this.weightToken.address, {from: admin});
+				await this.guildNftStaking.setWeightingContract(this.stakingWeight.address, {from: admin});
 
 				const updated = await this.guildNftStaking.weightContract();
-				expect(updated).to.be.equal(this.weightToken.address);
+				expect(updated).to.be.equal(this.stakingWeight.address);
 			});
 		});
 	})
 
 	it('successfully deposits NFT and unstakes', async () => {
 	  await this.token.mint(staker, minter, {from: minter});
-	  await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
 	  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
-	  await this.guildNftStaking.stake('100001',{from: staker});
+
+	  await this.guildNftStaking.stake(TOKEN_1, {from: staker});
 	  console.log(await this.guildNftStaking.getStakedTokens(staker));
 	  await time.increase(time.duration.seconds(120));
 
 	  await this.digitalaxRewards.setNowOverride('1209601'); // next week
 	  await this.guildNftStaking.setNowOverride('1209601'); // next week
+	  await this.stakingWeight.setNowOverride('1209601'); // next week
 	  console.log('balance of staker before and after:');
 
 	  const initialMonaBalance = await this.decoToken.balanceOf(staker);
 
-	  await time.increase(time.duration.seconds(1000000));
-	  await this.guildNftStaking.unstake('100001', {from: staker});
+		await this.stakingWeight.updateOwnerWeight(staker);
+		const stakedBalance = await this.stakingWeight.balanceOf(staker);
+	  expect(stakedBalance).to.be.bignumber.equal(ONE_ETH);
 
+		await time.increase(time.duration.seconds(1000000));
+	  await this.guildNftStaking.unstake(TOKEN_1, {from: staker});
 
 	  const finalMonaBalance = await this.decoToken.balanceOf(staker);
 
@@ -212,24 +221,25 @@ const {
 	  await this.token.mint(staker, minter, {from: minter});
 	  await this.token.mint(staker, minter, {from: minter});
 	  await this.token.mint(staker, minter, {from: minter});
-	  await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
-	  await this.token.setPrimarySalePrice('100002', TWO_ETH, {from: admin});
-	  await this.token.setPrimarySalePrice('100003', TWO_ETH, {from: admin});
-	  await this.token.setPrimarySalePrice('100004', TWO_ETH, {from: admin});
+	  await this.token.setPrimarySalePrice(TOKEN_1, ONE_ETH, {from: admin});
+	  await this.token.setPrimarySalePrice(TOKEN_2, ONE_ETH, {from: admin});
+	  await this.token.setPrimarySalePrice(TOKEN_3, ONE_ETH, {from: admin});
+	  await this.token.setPrimarySalePrice(TOKEN_4, ONE_ETH, {from: admin});
 	  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
-	  await this.guildNftStaking.stakeBatch(['100001','100002', '100003','100004'],{from: staker});
+	  await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2, TOKEN_3,TOKEN_4],{from: staker});
 	  //await this.guildNftStaking.stakeAll({from: staker});
 	  console.log(await this.guildNftStaking.getStakedTokens(staker));
 	  await time.increase(time.duration.seconds(120));
 
 	  await this.digitalaxRewards.setNowOverride('1209601'); // next week
 	  await this.guildNftStaking.setNowOverride('1209601'); // next week
+	  await this.stakingWeight.setNowOverride('1209601'); // next week
 	  console.log('balance of staker before and after:');
 
 	  const initialMonaBalance = await this.decoToken.balanceOf(staker);
 
 	  await time.increase(time.duration.seconds(1000000));
-	  await this.guildNftStaking.unstakeBatch(['100002','100004','100001','100003'], {from: staker});
+	  await this.guildNftStaking.unstakeBatch([TOKEN_2,TOKEN_4,TOKEN_1,TOKEN_3], {from: staker});
 
 
 	  const finalMonaBalance = await this.decoToken.balanceOf(staker);
@@ -241,13 +251,14 @@ const {
 
 	it('successfully claims reward  NFT', async () => {
 	  await this.token.mint(staker, minter, {from: minter});
-	  await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
+	  await this.token.setPrimarySalePrice(TOKEN_1, ONE_ETH, {from: admin});
 	  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
-	  await this.guildNftStaking.stake('100001',{from: staker});
+	  await this.guildNftStaking.stake(TOKEN_1,{from: staker});
 	  await time.increase(time.duration.seconds(120));
 
 	  await this.digitalaxRewards.setNowOverride('1209601'); // next week
 	  await this.guildNftStaking.setNowOverride('1209601'); // next week
+	  await this.stakingWeight.setNowOverride('1209601'); // next week
 	  console.log('balance of staker before and after:');
 
 	  const initialMonaBalance = await this.decoToken.balanceOf(staker);
@@ -265,13 +276,14 @@ const {
 
 	it('successfully claims reward  NFT', async () => {
 	  await this.token.mint(staker, minter, {from: minter});
-	  await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
+	  await this.token.setPrimarySalePrice(TOKEN_1, ONE_ETH, {from: admin});
 	  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
-	  await this.guildNftStaking.stake('100001',{from: staker});
+	  await this.guildNftStaking.stake(TOKEN_1,{from: staker});
 	  await time.increase(time.duration.seconds(120));
 
 	  await this.digitalaxRewards.setNowOverride('1209601'); // next week
 	  await this.guildNftStaking.setNowOverride('1209601'); // next week
+	  await this.stakingWeight.setNowOverride('1209601'); // next week
 	  console.log('balance of staker before and after:');
 
 	  const initialMonaBalance = await this.decoToken.balanceOf(staker);
@@ -289,19 +301,20 @@ const {
 
 	it('successfully emergency unstakes  NFT', async () => {
 	  await this.token.mint(staker, minter, {from: minter});
-	  await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
+	  await this.token.setPrimarySalePrice(TOKEN_1, ONE_ETH, {from: admin});
 	  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
-	  await this.guildNftStaking.stake('100001',{from: staker});
+	  await this.guildNftStaking.stake(TOKEN_1,{from: staker});
 	  await time.increase(time.duration.seconds(120));
 
 	  await this.digitalaxRewards.setNowOverride('1209601'); // next week
 	  await this.guildNftStaking.setNowOverride('1209601'); // next week
+	  await this.stakingWeight.setNowOverride('1209601'); // next week
 	  console.log('balance of staker before and after:');
 
 	  const initialMonaBalance = await this.decoToken.balanceOf(staker);
 
 	  await time.increase(time.duration.seconds(1000000));
-	  await this.guildNftStaking.emergencyUnstake('100001', {from: staker});
+	  await this.guildNftStaking.emergencyUnstake(TOKEN_1, {from: staker});
 
 
 	  const finalMonaBalance = await this.decoToken.balanceOf(staker);
@@ -316,14 +329,14 @@ const {
 	await this.token.mint(staker, minter, {from: minter});
 	await this.token.mint(staker2, minter, {from: minter});
 	await this.token.mint(staker2, minter, {from: minter});
-	await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
-	await this.token.setPrimarySalePrice('100002', TWO_ETH, {from: admin});
-	await this.token.setPrimarySalePrice('100003', TWO_ETH, {from: admin});
-	await this.token.setPrimarySalePrice('100004', TWO_ETH, {from: admin});
+	await this.token.setPrimarySalePrice(TOKEN_1, ONE_ETH, {from: admin});
+	await this.token.setPrimarySalePrice(TOKEN_2, ONE_ETH, {from: admin});
+	await this.token.setPrimarySalePrice(TOKEN_3, ONE_ETH, {from: admin});
+	await this.token.setPrimarySalePrice(TOKEN_4, ONE_ETH, {from: admin});
 	await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
 	await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker2});
-	await this.guildNftStaking.stakeBatch(['100001','100002'],{from: staker});
-	await this.guildNftStaking.stakeBatch(['100003','100004'],{from: staker2});
+	await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2],{from: staker});
+	await this.guildNftStaking.stakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
 	//await this.guildNftStaking.stakeAll({from: staker});
 	console.log(await this.guildNftStaking.getStakedTokens(staker));
 	console.log(await this.guildNftStaking.getStakedTokens(staker2));
@@ -335,14 +348,13 @@ const {
 
 	await this.digitalaxRewards.setNowOverride('2420000'); // final week
 	await this.guildNftStaking.setNowOverride('2420000'); // final week
+	await this.stakingWeight.setNowOverride('2420000'); // final week
 	console.log('balance of staker before and after:');
 
 	const initialMonaBalance = await this.decoToken.balanceOf(staker);
 	const initialMonaBalance2 = await this.decoToken.balanceOf(staker2);
 
-	console.log("Rewards owing and unclaimed rewards");
-	console.log(await this.guildNftStaking.rewardsOwing(staker));
-	console.log(await this.guildNftStaking.rewardsOwing(staker2));
+	console.log("Unclaimed rewards");
 	console.log(await this.guildNftStaking.unclaimedRewards(staker));
 	console.log(await this.guildNftStaking.unclaimedRewards(staker2));
 
@@ -351,8 +363,8 @@ const {
 	console.log('await this.digitalaxRewards.getMonaDailyAPY()');
 	console.log(await this.digitalaxRewards.getMonaDailyAPY());
 
-	await this.guildNftStaking.unstakeBatch(['100001','100002'], {from: staker});
-	await this.guildNftStaking.unstakeBatch(['100001','100002'], {from: staker2});
+	await this.guildNftStaking.unstakeBatch([TOKEN_1,TOKEN_2], {from: staker});
+	await this.guildNftStaking.unstakeBatch([TOKEN_1,TOKEN_2], {from: staker2});
 
 
 	const finalMonaBalance = await this.decoToken.balanceOf(staker);
