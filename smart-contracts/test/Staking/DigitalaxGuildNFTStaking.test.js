@@ -19,7 +19,6 @@ const {
   const DigitalaxGuildNFTStakingWeight = artifacts.require('DigitalaxGuildNFTStakingWeightMock');
   const DigitalaxMonaOracle = artifacts.require('DigitalaxMonaOracle');
   const PodeNFTv2 = artifacts.require('PodeNFTv2');
-  const DigitalaxMaterials = artifacts.require('DigitalaxMaterialsV2');
 
   // 1,000 * 10 ** 18
   const ONE_THOUSAND_TOKENS = '1000000000000000000000';

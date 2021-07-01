@@ -10,7 +10,7 @@ import "./interfaces/IDigitalaxGuildNFTStakingWeight.sol";
  * @author 
  */
 
-contract DigitalaxGuildNFTStakingWeight {
+contract DigitalaxGuildNFTStakingWeightV2 {
     using SafeMath for uint256;
 
     uint256 constant SECONDS_PER_DAY = 24 * 60 * 60;
@@ -91,6 +91,12 @@ contract DigitalaxGuildNFTStakingWeight {
         return tokenWeight[_tokenId].primarySalePrice;
     }
 
+    function updateReactionPoint(string memory _reaction, uint256 _reactionPoint) external returns (bool) {
+        reactionPoint[_reaction] = _reactionPoint;
+
+        return true;
+    }
+
     function _calcWeightWithDecayRate(uint256 _primarySalePrice, uint256 _appraisalScore, uint256 _decayRate) internal returns (uint256) {
         return _primarySalePrice.mul(_appraisalScore)
                             .mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - _decayRate)
@@ -143,6 +149,7 @@ contract DigitalaxGuildNFTStakingWeight {
 
                 owner.dailyTotalPriceOfCalculatedTokens[_currentDay] = owner.balance;
                 owner.dailyWeight[_currentDay] = owner.dailyWeight[_currentDay].add(_missedTotalWeight);
+                owner.totalWeight = owner.totalWeight.add(_missedTotalWeight);
             }
         }
 
@@ -151,7 +158,7 @@ contract DigitalaxGuildNFTStakingWeight {
         return true;
     }
 
-    function appraise(uint256 _tokenId, address _appraiser, uint256 _limitAppraisalCount, string memory _appraiseAction) external {
+    function appraise(uint256 _tokenId, address _appraiser, uint256 _limitAppraisalCount, string memory _reaction) public {
         uint256 _currentDay = getCurrentDay();
         AppraiserReaction storage appraiser = appraiserReaction[_appraiser];
 
@@ -174,12 +181,12 @@ contract DigitalaxGuildNFTStakingWeight {
             token.dailyAppraisalScore[_currentDay] = DAILY_NFT_WEIGHT_DEFAULT;
         }
 
-        token.dailyAppraisalScore[_currentDay] = token.dailyAppraisalScore[_currentDay].add(reactionPoint[_appraiseAction]);
+        token.dailyAppraisalScore[_currentDay] = token.dailyAppraisalScore[_currentDay].add(reactionPoint[_reaction]);
 
         uint256 _newWeight = _calcWeightWithDecayRate(token.primarySalePrice, token.dailyAppraisalScore[_currentDay], DECAY_POINT_WITH_APPRAISAL); // 2.5%
         token.totalWeight = token.totalWeight.sub(token.dailyWeight[_currentDay])
                                         .add(_newWeight);
-        token.appraisalCount[_appraiseAction] = token.appraisalCount[_appraiseAction].add(1);
+        token.appraisalCount[_reaction] = token.appraisalCount[_reaction].add(1);
 
         // OwnerWeight
         OwnerWeight storage owner = ownerWeight[tokenOwner[_tokenId]];
