@@ -587,3 +587,25 @@ dataSources:
         - event: RewardPaid(indexed address,uint256)
           handler: handleRewardPaid
       file: ./src/DigitalaxNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: PodeNFTv2
+    network: 'matic'
+    source:
+      address: '0xCED3335378896671C71D6d632a16A474A70A2F38'
+      abi: PodeNFTv2
+      startBlock: 12000000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: PodeNFTv2
+          file: ./abis/PodeNFTv2.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: TokenPrimarySalePriceSet(indexed uint256,uint256)
+          handler: handleTokenPriceSaleUpdated
+      file: ./src/PodeNFTv2.mapping.ts
