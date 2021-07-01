@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPLv2
 
 pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -191,6 +192,26 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
         return weightContract.getTokenPrice(_tokenId);
     }
 
+    function getAppraisalLimit (address _appraiser) public view returns (uint256) {
+        return 10;
+    }
+
+    /// @notice Appraise NFT.
+    function appraise(uint256 _tokenId, string memory _reaction) external {
+        uint256 _appraisalLimit = getAppraisalLimit(_msgSender());
+
+        weightContract.appraise(_tokenId, _msgSender(), _appraisalLimit, _reaction);
+    }
+
+    /// @notice Appraise multiple NFTs.
+    function appraiseBatch(uint256[] calldata _tokenIds, string[] calldata _reactions) external {
+        uint256 _appraisalLimit = getAppraisalLimit(_msgSender());
+
+        for (uint i = 0; i < _tokenIds.length; i++) {
+            weightContract.appraise(_tokenIds[i], _msgSender(), _appraisalLimit, _reactions[i]);
+        }
+    }
+
     /// @notice Stake NFT and earn reward tokens.
     function stake(uint256 tokenId) external {
         // require();
@@ -308,7 +329,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
         if (totalWeight == 0) {
             return;
         }
-        
+
         uint256 ownerWeight = weightContract.getOwnerWeight(_user);
 
         lastUpdateTime = _getNow();

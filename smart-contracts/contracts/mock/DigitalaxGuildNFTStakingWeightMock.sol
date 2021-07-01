@@ -2,14 +2,14 @@
 
 pragma solidity 0.6.12;
 
-import "../staking/DigitalaxGuildNFTStakingWeight.sol";
+import "../staking/DigitalaxGuildNFTStakingWeightV1.sol";
 
-contract DigitalaxGuildNFTStakingWeightMock is DigitalaxGuildNFTStakingWeight {
+contract DigitalaxGuildNFTStakingWeightMock is DigitalaxGuildNFTStakingWeightV1 {
     uint256 public nowOverride;
 
     constructor(
     )
-    DigitalaxGuildNFTStakingWeight()
+    DigitalaxGuildNFTStakingWeightV1()
     public {}
 
     function setNowOverride(uint256 _now) external {
