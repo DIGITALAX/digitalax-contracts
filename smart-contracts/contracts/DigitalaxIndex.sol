@@ -19,12 +19,20 @@ contract DigitalaxIndex is Context {
     event CollectionGroupRemoved(uint256 indexed sid);
     event CollectionGroupUpdated(uint256 indexed sid, uint256[] auctions, uint256[] collections, uint256 digiBundleCollection);
 
-    event DesignerGroupAdded(address _address, string uri, uint256[] tokenIds);
+    event DesignerGroupAdded(address _address, string uri, uint256[] collectionIds);
     event DesignerGroupRemoved(address _address);
-    event DesignerGroupUpdated(address _address, string uri, uint256[] tokenIds);
+    event DesignerGroupUpdated(address _address, string uri, uint256[] collectionIds);
+
+    event DeveloperGroupAdded(address _address, string uri, uint256[] collectionIds);
+    event DeveloperGroupRemoved(address _address);
+    event DeveloperGroupUpdated(address _address, string uri, uint256[] collectionIds);
 
     // Structure for set of token ids
     struct TokenIdSet {
+        uint256[] value;
+    }
+
+    struct CollectionIdSet {
         uint256[] value;
     }
 
@@ -36,17 +44,22 @@ contract DigitalaxIndex is Context {
 
     struct DesignerGroup {
         string uri;
-        TokenIdSet tokenIds;
+        CollectionIdSet collectionIds;
+    }
+
+    struct DeveloperGroup {
+        string uri;
+        CollectionIdSet collectionIds;
     }
 
     // Access Controls
     DigitalaxAccessControls public accessControls;
 
-    // Array for designer set
-    TokenIdSet[] designerSet;
-
     // Mapping for designer group
     mapping(address => DesignerGroup) designerGroupSet;
+
+    // Mapping for developer group
+    mapping(address => DeveloperGroup) developerGroupSet;
 
     // Array for Collection Groups
     CollectionGroup[] collectionGroupSet;
@@ -89,10 +102,20 @@ contract DigitalaxIndex is Context {
      * @dev View function for designer group
      * @param _address Designer address
      */
-    function DesignerGroupSet(address _address) external view returns (string memory  _uri, uint256[] memory tokenIds) {
+    function DesignerGroupSet(address _address) external view returns (string memory  _uri, uint256[] memory collectionIds) {
         DesignerGroup memory designerGroup = designerGroupSet[_address];
         _uri = designerGroup.uri;
-        tokenIds = designerGroup.tokenIds.value;
+        collectionIds = designerGroup.collectionIds.value;
+    }
+
+    /**
+     * @dev View function for designer group
+     * @param _address Developer address
+     */
+    function DeveloperGroupSet(address _address) external view returns (string memory  _uri, uint256[] memory collectionIds) {
+        DeveloperGroup memory developerGroup = developerGroupSet[_address];
+        _uri = developerGroup.uri;
+        collectionIds = developerGroup.collectionIds.value;
     }
 
     /**
@@ -144,13 +167,13 @@ contract DigitalaxIndex is Context {
      * @dev Function for adding designer token group
      * @param _address Address of designer to be added
      * @param _uri ipfs uri for designer to be added
-     * @param _tokenIds Array of token ids to be added
+     * @param _collectionIds Array of collection ids to be added
      */
-    function addDesignerGroup(address _address, string calldata _uri, uint256[] calldata _tokenIds) external {
+    function addDesignerGroup(address _address, string calldata _uri, uint256[] calldata _collectionIds) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.addDesignerGroup: Sender must be admin");
 
-        designerGroupSet[_address] = DesignerGroup(_uri, TokenIdSet(_tokenIds));
-        emit DesignerGroupAdded(_address, _uri, _tokenIds);
+        designerGroupSet[_address] = DesignerGroup(_uri, CollectionIdSet(_collectionIds));
+        emit DesignerGroupAdded(_address, _uri, _collectionIds);
     }
 
     /**
@@ -169,12 +192,50 @@ contract DigitalaxIndex is Context {
      * @dev Function for designer group update
      * @param _address Address of designer to be updated
      * @param _uri ipfs uri for designer to be updated
-     * @param _tokenIds Array of token ids to be updated
+     * @param _collectionIds Array of collection ids to be updated
      */
-    function updateDesignerGroup(address _address, string calldata _uri, uint256[] calldata _tokenIds) external {
+    function updateDesignerGroup(address _address, string calldata _uri, uint256[] calldata _collectionIds) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.updateDesignerGroup: Sender must be admin");
 
-        designerGroupSet[_address] = DesignerGroup(_uri, TokenIdSet(_tokenIds));
-        emit DesignerGroupUpdated(_address, _uri, _tokenIds);
+        designerGroupSet[_address] = DesignerGroup(_uri, CollectionIdSet(_collectionIds));
+        emit DesignerGroupUpdated(_address, _uri, _collectionIds);
+    }
+
+    /**
+     * @dev Function for adding developer token group
+     * @param _address Address of developer to be added
+     * @param _uri ipfs uri for developer to be added
+     * @param _collectionIds Array of collection ids to be added
+     */
+    function addDeveloperGroup(address _address, string calldata _uri, uint256[] calldata _collectionIds) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.addDeveloperGroup: Sender must be admin");
+
+        developerGroupSet[_address] = DeveloperGroup(_uri, CollectionIdSet(_collectionIds));
+        emit DeveloperGroupAdded(_address, _uri, _collectionIds);
+    }
+
+    /**
+     * @dev Funtion for removal of developer group
+     * @param _address Address of developer to be deleted
+     */
+    function removeDeveloperGroup(address _address) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.removeDeveloperGroup: Sender must be admin");
+
+        delete developerGroupSet[_address];
+
+        emit DeveloperGroupRemoved(_address);
+    }
+
+    /**
+     * @dev Function for developer group update
+     * @param _address Address of developer to be updated
+     * @param _uri ipfs uri for developer to be updated
+     * @param _collectionIds Array of token ids to be updated
+     */
+    function updateDeveloperGroup(address _address, string calldata _uri, uint256[] calldata _collectionIds) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.updateDeveloperGroup: Sender must be admin");
+
+        developerGroupSet[_address] = DeveloperGroup(_uri, CollectionIdSet(_collectionIds));
+        emit DeveloperGroupUpdated(_address, _uri, _collectionIds);
     }
 }
