@@ -189,7 +189,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
 
     /// @dev Get the amount a staked nft is valued at ie bought at
     function getContribution (uint256 _tokenId) public view returns (uint256) {
-        return weightContract.getTokenPrice(_tokenId);
+        return 1 ether;
     }
 
     function getAppraisalLimit (address _appraiser) public view returns (uint256) {
@@ -235,9 +235,9 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
         Staker storage staker = stakers[_user];
 
         updateReward(_user);
-        uint256 amount = getContribution(_tokenId);
-        staker.balance = staker.balance.add(amount);
-        stakedEthTotal = stakedEthTotal.add(amount);
+        uint256 _primarySalePrice = getContribution(_tokenId);
+        staker.balance = staker.balance.add(_primarySalePrice);
+        stakedEthTotal = stakedEthTotal.add(_primarySalePrice);
         staker.tokenIds.push(_tokenId);
         staker.tokenIndex[_tokenId] = staker.tokenIds.length.sub(1);
         tokenOwner[_tokenId] = _user;
@@ -248,7 +248,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
             _tokenId
         );
 
-        weightContract.stake(_tokenId, _msgSender(), amount);
+        weightContract.stake(_tokenId, _msgSender(), _primarySalePrice);
 
         emit Staked(_user, _tokenId);
     }
@@ -324,6 +324,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
         uint256 newRewards = rewardsContract.MonaRewards(lastUpdateTime, _getNow());
         totalRewards = totalRewards.add(newRewards);
 
+        weightContract.updateOwnerWeight(_user);
         uint256 totalWeight = weightContract.getTotalWeight();
 
         if (totalWeight == 0) {
@@ -343,13 +344,14 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     }
 
     /// @notice Returns the about of rewards yet to be claimed
-    function unclaimedRewards(address _user) external view returns(uint256) {
+    function unclaimedRewards(address _user) external returns(uint256) {
         if (stakedEthTotal == 0) {
             return 0;
         }
 
         uint256 newRewards = rewardsContract.MonaRewards(lastUpdateTime, _getNow());
 
+        weightContract.updateOwnerWeight(_user);
         uint256 totalWeight = weightContract.getTotalWeight();
         uint256 ownerWeight = weightContract.getOwnerWeight(_user);
 
