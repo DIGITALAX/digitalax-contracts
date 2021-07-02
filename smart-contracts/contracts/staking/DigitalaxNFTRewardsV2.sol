@@ -38,7 +38,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
     uint256 constant pointMultiplier = 10e18;
     uint256 constant SECONDS_PER_DAY = 24 * 60 * 60;
     uint256 constant SECONDS_PER_WEEK = 7 * 24 * 60 * 60;
-    
+
     mapping (uint256 => uint256) public weeklyMonaRevenueSharingPerSecond; // Mona revenue sharing
 
 
@@ -390,8 +390,8 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         if (_from < startTime) {
             _from = startTime;
         }
-        uint256 fromWeek = diffDays(startTime, _from) / 7;                      
-        uint256 toWeek = diffDays(startTime, _to) / 7;                          
+        uint256 fromWeek = diffDays(startTime, _from) / 7;
+        uint256 toWeek = diffDays(startTime, _to) / 7;
 
         if (fromWeek == toWeek) {
             return _rewardsFromPoints(weeklyMonaRevenueSharingPerSecond[fromWeek],
@@ -437,7 +437,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
     function _rewardsFromPoints(
         uint256 rate,
         uint256 duration
-    ) 
+    )
         internal
         pure
         returns(uint256)
@@ -519,12 +519,12 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         }
 
       return yearlyReturnInEth;
-    } 
+    }
 
     // MONA amount for custom ETH amount
     function getMonaPerEth(uint256 _ethAmt)
-        public 
-        view 
+        public
+        view
         returns (uint256)
     {
         return _ethAmt.mul(1e18).div(lastOracleQuote);
