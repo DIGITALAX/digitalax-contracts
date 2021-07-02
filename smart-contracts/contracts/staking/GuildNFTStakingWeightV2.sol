@@ -1,7 +1,7 @@
 pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "./interfaces/IDigitalaxGuildNFTStakingWeight.sol";
+import "./interfaces/IGuildNFTStakingWeight.sol";
 
 /**
  * @title Digitalax Guild NFT Staking Weight
@@ -10,7 +10,7 @@ import "./interfaces/IDigitalaxGuildNFTStakingWeight.sol";
  * @author 
  */
 
-contract DigitalaxGuildNFTStakingWeightV2 {
+contract GuildNFTStakingWeightV2 {
     using SafeMath for uint256;
 
     uint256 constant SECONDS_PER_DAY = 24 * 60 * 60;
@@ -166,7 +166,7 @@ contract DigitalaxGuildNFTStakingWeightV2 {
 
         require(
             appraiser.dailyReactionCount[_currentDay] < _limitAppraisalCount, 
-            "DigitalaxGuildNFTStakingWeight.appraise: Limit appraisal count per day"
+            "GuildNFTStakingWeight.appraise: Limit appraisal count per day"
         );
 
         // AppraiserReaction

@@ -15,8 +15,8 @@ const {
   const MockERC20 = artifacts.require('MockERC20');
   const WethToken = artifacts.require('WethToken');
   const DigitalaxNFTRewardsV2 = artifacts.require('DigitalaxNFTRewardsV2Mock');
-  const DigitalaxGuildNFTStaking = artifacts.require('DigitalaxGuildNFTStakingMock');
-  const DigitalaxGuildNFTStakingWeight = artifacts.require('DigitalaxGuildNFTStakingWeightMock');
+  const GuildNFTStaking = artifacts.require('GuildNFTStakingMock');
+  const GuildNFTStakingWeight = artifacts.require('GuildNFTStakingWeightMock');
   const DigitalaxMonaOracle = artifacts.require('DigitalaxMonaOracle');
   const PodeNFTv2 = artifacts.require('PodeNFTv2');
 
@@ -47,7 +47,7 @@ const {
   const MAX_NUMBER_OF_POOLS = new BN('20');
 	const randomURI = 'rand';
 
-  contract('DigitalaxGuildNFTStaking', (accounts) => {
+  contract('GuildNFTStaking', (accounts) => {
 	const [admin, smartContract, platformFeeAddress, minter, provider, staker, staker2] = accounts;
 
 	beforeEach(async () => {
@@ -55,7 +55,7 @@ const {
 	  await this.accessControls.addMinterRole(minter, {from: admin});
 	  await this.accessControls.addSmartContractRole(smartContract, {from: admin});
 
-	  this.stakingWeight = await DigitalaxGuildNFTStakingWeight.new();
+	  this.stakingWeight = await GuildNFTStakingWeight.new();
 	});
 
 	it('successfully stakes NFT and unstakes', async () => {

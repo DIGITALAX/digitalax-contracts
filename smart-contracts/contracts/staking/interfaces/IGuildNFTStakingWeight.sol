@@ -3,7 +3,7 @@
 pragma solidity 0.6.12;
 
 /// @dev an interface to interact with the Guild Staking Weight that will 
-interface IDigitalaxGuildNFTStakingWeight {
+interface IGuildNFTStakingWeight {
     function updateWeight() external returns (bool);
     function updateOwnerWeight(address _tokenOwner) external returns (bool);
     function appraise(uint256 _tokenId, address _appraiser, uint256 _limitAppraisalCount, string memory _reaction) external;

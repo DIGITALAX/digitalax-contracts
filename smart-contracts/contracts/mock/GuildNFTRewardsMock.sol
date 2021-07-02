@@ -3,9 +3,9 @@
 pragma solidity 0.6.12;
 
 import "../oracle/IDigitalaxMonaOracle.sol";
-import "../staking/DigitalaxGuildNFTRewards.sol";
+import "../staking/GuildNFTRewards.sol";
 
-contract DigitalaxGuildNFTRewardsMock is DigitalaxGuildNFTRewards {
+contract GuildNFTRewardsMock is GuildNFTRewards {
     uint256 public nowOverride;
 
     constructor(
@@ -17,7 +17,7 @@ contract DigitalaxGuildNFTRewardsMock is DigitalaxGuildNFTRewards {
         uint256 _startTime,
         uint256 _decoRewardsPaidTotal
     )
-    DigitalaxGuildNFTRewards(_decoToken, _accessControls, _nftStaking, _oracle, _trustedForwarder, _startTime, _decoRewardsPaidTotal)
+    GuildNFTRewards(_decoToken, _accessControls, _nftStaking, _oracle, _trustedForwarder, _startTime, _decoRewardsPaidTotal)
     public {}
 
     function setNowOverride(uint256 _now) external {

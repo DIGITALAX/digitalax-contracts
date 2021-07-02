@@ -7,9 +7,9 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "../DigitalaxAccessControls.sol";
 import "./interfaces/IERC20.sol";
-import "./interfaces/IDigitalaxGuildNFTRewards.sol";
+import "./interfaces/IGuildNFTRewards.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
-import "./interfaces/IDigitalaxGuildNFTStakingWeight.sol";
+import "./interfaces/IGuildNFTStakingWeight.sol";
 
 /**
  * @title Digitalax Staking
@@ -17,15 +17,15 @@ import "./interfaces/IDigitalaxGuildNFTStakingWeight.sol";
  * @author Digitalax Team
  */
 
-contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
+contract GuildNFTStaking is BaseRelayRecipient {
     using SafeMath for uint256;
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
 
     IERC20 public rewardsToken;
     IERC721 public parentNFT;
     DigitalaxAccessControls public accessControls;
-    IDigitalaxGuildNFTRewards public rewardsContract;
-    IDigitalaxGuildNFTStakingWeight public weightContract;
+    IGuildNFTRewards public rewardsContract;
+    IGuildNFTStakingWeight public weightContract;
 
     /// @notice total ethereum staked currently in the guild nft staking contract
     uint256 public stakedEthTotal;
@@ -95,7 +95,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
         IERC20 _rewardsToken,
         IERC721 _parentNFT,
         DigitalaxAccessControls _accessControls,
-        IDigitalaxGuildNFTStakingWeight _weightContract,
+        IGuildNFTStakingWeight _weightContract,
         address _trustedForwarder
     )
         external
@@ -140,9 +140,9 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     function updateAccessControls(DigitalaxAccessControls _accessControls) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxGuildNFTStaking.updateAccessControls: Sender must be admin"
+            "GuildNFTStaking.updateAccessControls: Sender must be admin"
         );
-        require(address(_accessControls) != address(0), "DigitalaxGuildNFTStaking.updateAccessControls: Zero Address");
+        require(address(_accessControls) != address(0), "GuildNFTStaking.updateAccessControls: Zero Address");
         accessControls = _accessControls;
         emit UpdateAccessControls(address(_accessControls));
     }
@@ -151,11 +151,11 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     function setRewardsContract(address _addr) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxGuildNFTStaking.setRewardsContract: Sender must be admin"
+            "GuildNFTStaking.setRewardsContract: Sender must be admin"
         );
         require(_addr != address(0));
         address oldAddr = address(rewardsContract);
-        rewardsContract = IDigitalaxGuildNFTRewards(_addr);
+        rewardsContract = IGuildNFTRewards(_addr);
         emit RewardsTokenUpdated(oldAddr, _addr);
     }
 
@@ -163,11 +163,11 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     function setWeightingContract(address _addr) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxGuildNFTStaking.setWeightingContract: Sender must be admin"
+            "GuildNFTStaking.setWeightingContract: Sender must be admin"
         );
         require(_addr != address(0));
         address oldAddr = address(weightContract);
-        weightContract = IDigitalaxGuildNFTStakingWeight(_addr);
+        weightContract = IGuildNFTStakingWeight(_addr);
         emit WeightingContractUpdated(oldAddr, _addr);
     }
 
@@ -175,7 +175,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     function setTokensClaimable(bool _enabled) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxGuildNFTStaking.setTokensClaimable: Sender must be admin"
+            "GuildNFTStaking.setTokensClaimable: Sender must be admin"
         );
         tokensClaimable = _enabled;
         emit ClaimableStatusUpdated(_enabled);

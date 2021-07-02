@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
-import "../staking/DigitalaxGuildNFTStakingWeightV1.sol";
+import "../staking/GuildNFTStaking.sol";
 
-contract DigitalaxGuildNFTStakingWeightMock is DigitalaxGuildNFTStakingWeightV1 {
+contract GuildNFTStakingMock is GuildNFTStaking {
     uint256 public nowOverride;
 
     constructor(
     )
-    DigitalaxGuildNFTStakingWeightV1()
+    GuildNFTStaking()
     public {}
 
     function setNowOverride(uint256 _now) external {
