@@ -6,11 +6,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DigitalaxGarmentNFT
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0x728Af879c3212cEf7a51D7fC296b5e9b7c14dbf6'
+      address: '0x4CB61C672ff26c187394a9aA59360FbB6F23e83f'
       abi: DigitalaxGarmentNFT
-      startBlock: 12226596
+      startBlock: 11680196
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -34,11 +34,11 @@ dataSources:
       file: ./src/DigitalaxGarmentNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterials
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0x9f0A468AeA1e0F080fB7C9f3E1F9774D1bFAf821'
+      address: '0xACe5A62D509aA947ffFfF55043b317bFc8316bc2'
       abi: DigitalaxMaterials
-      startBlock: 12187339
+      startBlock: 11675933
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -63,9 +63,9 @@ dataSources:
       file: ./src/DigitalaxMaterials.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentNFTv2
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0x7B2a989c4D1AD1B79a84CE2EB79dA5D8d9C2b7a7'
+      address: '0x1Bc6D640710759Be37E5DCD1b23B322250353751'
       abi: DigitalaxGarmentNFTv2
       startBlock: 12000000
     mapping:
@@ -91,9 +91,9 @@ dataSources:
       file: ./src/DigitalaxGarmentNFTv2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterialsV2
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0x567c7b3364ba2903a80ecbad6c54ba8c0e1a069e'
+      address: '0x632914B69B11DCa3b391B62FB2812f5Eee36A626'
       abi: DigitalaxMaterialsV2
       startBlock: 12000000
     mapping:
@@ -120,9 +120,9 @@ dataSources:
       file: ./src/DigitalaxMaterialsV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxSubscriptionNFT
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0xCED3335378896671C71D6d632a16A474A70A2F38'
+      address: '0xD309F477dbA416E5C123Bd0215e6d1eA0a6A81A6'
       abi: DigitalaxSubscriptionNFT
       startBlock: 12000000
     mapping:
@@ -148,9 +148,9 @@ dataSources:
       file: ./src/DigitalaxSubscriptionNFT.mapping.ts
   - kind: ethereum/contract
     name: DFBundle
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0xdd43Fd6f72d0a35abDb6194E97e7b330822e2263'
+      address: '0x67Bd2D7d361fA0C4BC89E4D2cf758A4C0CbFd7D7'
       abi: DFBundle
       startBlock: 12000000
     mapping:
@@ -177,11 +177,11 @@ dataSources:
       file: ./src/DFBundle.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuction
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0x196Fd570D49dE7cF8AaB245F63330D6957A9223a'
+      address: '0x5890F309265870D508556E654FDf5903e51c3f37'
       abi: DigitalaxAuction
-      startBlock: 12296647
+      startBlock: 11686431
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -226,9 +226,9 @@ dataSources:
       file: ./src/DigitalaxAuction.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuctionV2
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0x991C2Dc47AB12eF5020876219625A64C422B30d3'
+      address: '0x1e345D7bdd9eF4E0b2dAc1A3dEf26A841B1b12f6'
       abi: DigitalaxAuctionV2
       startBlock: 12000000
     mapping:
@@ -275,11 +275,11 @@ dataSources:
       file: ./src/DigitalaxAuctionV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAccessControls
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0xBe5C84E6B036cB41a7a6b5008B9427A5F4f1C9f5'
+      address: '0xf7580d46080E1ce832aC44cF7224b906D44110B4'
       abi: DigitalaxAccessControls
-      startBlock: 12186276
+      startBlock: 11673871
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -316,11 +316,11 @@ dataSources:
       file: ./src/DigitalaxAccessControls.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentCollection
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0x73D0995D5603C76119db0a801B9e2c1A78e04aDF'
+      address: '0x1A785E4F4c7561Fb9495734B418D4f001266ec6b'
       abi: DigitalaxGarmentCollection
-      startBlock: 12297721
+      startBlock: 11829825
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -339,9 +339,9 @@ dataSources:
       file: ./src/DigitalaxGarmentCollection.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentCollectionV2
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0x721f7c76e447174141a761Ce3e80Ad88e5E07047'
+      address: '0x3E9F4f4E542Dcf984EaF35BC1B900E0bdC2Cc04D'
       abi: DigitalaxGarmentCollectionV2
       startBlock: 12000000
     mapping:
@@ -362,11 +362,11 @@ dataSources:
       file: ./src/DigitalaxGarmentCollectionV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMarketplace
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0xB0b0859117512410Ec1a6Da6E012Ff35E65543D7'
+      address: '0x1c6976911FdcBF6BaAEa17c80051525c41681Dae'
       abi: DigitalaxMarketplace
-      startBlock: 12297984
+      startBlock: 11709635
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -400,9 +400,9 @@ dataSources:
       file: ./src/DigitalaxMarketplace.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMarketplaceV2
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0x8F235A04cC541efF19Fd42EFBfF0FCACAdd09DBC'
+      address: '0x18a38C3EB196671d702017C323a562D00a6eD003'
       abi: DigitalaxMarketplaceV2
       startBlock: 11709635
     mapping:
@@ -438,9 +438,9 @@ dataSources:
       file: ./src/DigitalaxMarketplaceV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxSubscriptionCollection
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0x8896E908f942bb293b9B76a3A0cAf2Ff004859c4'
+      address: '0x2147f0D108D366ECF33aa332247BED7095B0231A'
       abi: DigitalaxSubscriptionCollection
       startBlock: 12000000
     mapping:
@@ -461,9 +461,9 @@ dataSources:
       file: ./src/DigitalaxSubscriptionCollection.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxSubscriptionMarketplace
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0x3E11cA9933D1236710d4606aEC4a5e3da28aeBcB'
+      address: '0xb7e04a24934bFfEbB2687e3015fA4F00B858A543'
       abi: DigitalaxSubscriptionMarketplace
       startBlock: 12000000
     mapping:
@@ -502,11 +502,11 @@ dataSources:
       file: ./src/DigitalaxSubscriptionMarketplace.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxPodePortal
-    network: 'matic'
+    network: 'mumbai'
     source:
       address: '0x87c3C6B9C917B1732f13d36d6938E4f8802f7c7E'
       abi: DigitalaxPodePortal
-      startBlock: 12000000
+      startBlock: 11740618
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -522,11 +522,11 @@ dataSources:
       file: ./src/DigitalaxPodePortal.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxIndex
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0x6c1ce174c1b447cacf0df5986aacb952bd4e550a'
+      address: '0x26698A1F2B2bbc6991221489e8E658cFe658BD41'
       abi: DigitalaxIndex
-      startBlock: 12000000
+      startBlock: 11709635
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -535,10 +535,10 @@ dataSources:
         - CollectionGroupAdded
         - CollectionGroupRemoved
         - CollectionGroupUpdated
-        - DesignerSetAdded
-        - DesignerSetRemoved
-        - DesignerSetUpdated
-        - DesignerInfoUpdated
+        - DesignerGroupAdded
+        - DesignerGroupRemoved
+        - DeveloperGroupAdded
+        - DeveloperGroupRemoved
       abis:
         - name: DigitalaxIndex
           file: ./abis/DigitalaxIndex.json
@@ -549,20 +549,20 @@ dataSources:
           handler: handleCollectionGroupRemoved
         - event: CollectionGroupUpdated(indexed uint256,uint256[],uint256[],uint256)
           handler: handleCollectionGroupUpdated
-        - event: DesignerSetAdded(indexed uint256,uint256[])
-          handler: handleDesignerSetAdded
-        - event: DesignerSetRemoved(indexed uint256)
-          handler: handleDesignerSetRemoved
-        - event: DesignerSetUpdated(indexed uint256,uint256[])
-          handler: handleDesignerSetUpdated
-        - event: DesignerInfoUpdated(indexed uint256,string)
-          handler: handleDesignerInfoUpdated
+        - event: DesignerGroupAdded(address,string,uint256[],uint256[])
+          handler: handleDesignerGroupAdded
+        - event: DesignerGroupRemoved(address)
+          handler: handleDesignerGroupRemoved
+        - event: DeveloperGroupAdded(address,string,uint256[],uint256[])
+          handler: handleDeveloperGroupAdded
+        - event: DeveloperGroupRemoved(address)
+          handler: handleDeveloperGroupRemoved
       file: ./src/DigitalaxIndex.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxNFTStaking
-    network: 'matic'
+    network: 'mumbai'
     source:
-      address: '0xa7cf890C70817D57ea355C2F4B4BF23B064D91F7'
+      address: '0x8bE9b1343C56d43f1e13Cf7c79232401632A0573'
       abi: DigitalaxNFTStaking
       startBlock: 12000000
     mapping:
