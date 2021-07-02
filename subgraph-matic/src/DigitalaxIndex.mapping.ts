@@ -1,20 +1,23 @@
-import {store} from "@graphprotocol/graph-ts/index";
+import {Bytes, ipfs, json, JSONValueKind, log, store} from "@graphprotocol/graph-ts/index";
 
 import {
     CollectionGroupAdded,
     CollectionGroupRemoved,
     CollectionGroupUpdated,
-    DesignerSetAdded,
-    DesignerSetRemoved,
-    DesignerSetUpdated,
-    DesignerInfoUpdated
+    DesignerGroupAdded,
+    DesignerGroupRemoved,
+    DeveloperGroupRemoved
 } from "../generated/DigitalaxIndex/DigitalaxIndex";
 
 import {
-    DigitalaxDesignerIndex,
-    DigitalaxGarment,
+    DigitalaxDesigner,
     DigitalaxCollectionGroup,
+    DigitalaxDeveloper,
+    DigitalaxGarmentV2Auction,
+    DigitalaxGarmentV2Collection,
 } from "../generated/schema";
+import { loadOrCreateDigitalaxDesigner } from './factory/DigitalaxDesigner.factory';
+import { loadOrCreateDigitalaxDeveloper } from './factory/DigitalaxDeveloper.factory';
 
 export function handleCollectionGroupAdded(event: CollectionGroupAdded): void {
     let collectionGroupId = event.params.sid;
@@ -74,44 +77,151 @@ export function handleCollectionGroupUpdated(event: CollectionGroupUpdated): voi
     collectionGroup.save();
 }
 
-export function handleDesignerSetAdded(event: DesignerSetAdded): void {
-    let designerId = event.params.sid;
-    let designerIndex = new DigitalaxDesignerIndex(designerId.toString());
-    let designerGarments = new Array<string>();
-    for(let i = 0; i < event.params.tokenIds.length; i ++) {
-        let tokenId = event.params.tokenIds.pop();
-        let garmentToken = DigitalaxGarment.load(tokenId.toString());
-        designerGarments.push(garmentToken.id);
+export function handleDesignerGroupRemoved(event: DesignerGroupRemoved): void {
+    let designer = DigitalaxDesigner.load(event.params._address.toHexString());
+    let collectionIds = designer.collections;
+    let auctionIds = designer.auctions;
+    for (let i = 0; i < collectionIds.length; i += 1) {
+        let collectionId = collectionIds[i];
+        let collection = DigitalaxGarmentV2Collection.load(collectionId.toString());
+        if (collection) {
+            collection.designer = null;
+            collection.save();
+        }
     }
-    designerIndex.garments = designerGarments;
-    designerIndex.infoUrl = '';
-    designerIndex.save();
-}
 
-export function handleDesignerSetRemoved(event: DesignerSetRemoved): void {
-    let designerId = event.params.sid;
-    let designerIndex = DigitalaxDesignerIndex.load(designerId.toString());
-    designerIndex.garments = null;
-    designerIndex.infoUrl = null;
-    designerIndex.save();
-}
+    for (let i = 0; i < auctionIds.length; i += 1) {
+        let auctionId = auctionIds[i];
+        let auction = DigitalaxGarmentV2Auction.load(auctionId.toString());
+        if (auction) {
+            auction.designer = null;
+            auction.save();
+        }
 
-export function handleDesignerSetUpdated(event: DesignerSetUpdated): void {
-    let designerId = event.params.sid;
-    let designerIndex = DigitalaxDesignerIndex.load(designerId.toString());
-    let designerGarments = new Array<string>();
-    for(let i = 0; i < event.params.tokenIds.length; i ++) {
-        let tokenId = event.params.tokenIds.pop();
-        let garmentToken = DigitalaxGarment.load(tokenId.toString());
-        designerGarments.push(garmentToken.id);
     }
-    designerIndex.garments = designerGarments;
-    designerIndex.save();
+    store.remove('DigitalaxDesigner', event.params._address.toHexString());
 }
 
-export function handleDesignerInfoUpdated(event: DesignerInfoUpdated): void {
-    let designerId = event.params.designerId;
-    let designerIndex = DigitalaxDesignerIndex.load(designerId.toString());
-    designerIndex.infoUrl = event.params.uri;
-    designerIndex.save();
+export function handleDesignerGroupAdded(event: DesignerGroupAdded): void {
+    let designer = loadOrCreateDigitalaxDesigner(event.params._address);
+    let collectionIds = event.params.collectionIds;
+    let auctionIds = event.params.auctionIds;
+    let collections = new Array<string>();
+    let auctions = new Array<string>();
+    for(let i = 0; i < collectionIds.length; i += 1) {
+        let collectionId = collectionIds[i];
+        let collection = DigitalaxGarmentV2Collection.load(collectionId.toString());
+        if (collection) {
+            collection.designer = designer.id;
+            collection.save();
+            collections.push(collection.id);
+        }
+    }
+    for(let i = 0; i < auctionIds.length; i += 1) {
+        let auctionId = auctionIds[i];
+        let auction = DigitalaxGarmentV2Auction.load(auctionId.toString());
+        if (auction) {
+            auction.designer = designer.id;
+            auction.save();
+            auctions.push(auction.id);
+        }
+    }
+    designer.collections = collections;
+    designer.auctions = auctions;
+
+    let designerHash = event.params.uri;
+    let designerBytes = ipfs.cat(designerHash);
+    if (designerBytes) {
+        let data = json.try_fromBytes(designerBytes as Bytes);
+        if (data.isOk) {
+            if (data.value.kind === JSONValueKind.OBJECT) {
+                let res = data.value.toObject();
+                if (res.get('Designer ID').kind === JSONValueKind.STRING) {
+                    designer.name = res.get('Designer ID').toString();
+                }
+                if (res.get('description').kind === JSONValueKind.STRING) {
+                    designer.description = res.get('description').toString();
+                }
+                if (res.get('image_url').kind === JSONValueKind.STRING) {
+                    designer.image = res.get('image_url').toString();
+                }
+            }
+        }
+    }
+    designer.save();
+}
+
+export function handleDeveloperGroupRemoved(event: DeveloperGroupRemoved): void {
+    let developer = DigitalaxDeveloper.load(event.params._address.toHexString());
+    let collectionIds = developer.collections;
+    let auctionIds = developer.auctions;
+    for (let i = 0; i < collectionIds.length; i += 1) {
+        let collectionId = collectionIds[i];
+        let collection = DigitalaxGarmentV2Collection.load(collectionId);
+        if (collection) {
+            collection.developer = null;
+            collection.save();
+        }
+    }
+
+    for (let i = 0; i < auctionIds.length; i += 1) {
+        let auctionId = auctionIds[i];
+        let auction = DigitalaxGarmentV2Auction.load(auctionId);
+        if (auction) {
+            auction.developer = null;
+            auction.save();
+        }
+
+    }
+    store.remove('DigitalaxDeveloper', event.params._address.toHexString());
+}
+
+export function handleDeveloperGroupAdded(event: DesignerGroupAdded): void {
+    let developer = loadOrCreateDigitalaxDeveloper(event.params._address);
+    let collections = new Array<string>();
+    let auctions = new Array<string>();
+    let collectionIds = event.params.collectionIds;
+    let auctionIds = event.params.auctionIds;
+    for(let i = 0; i < collectionIds.length; i += 1) {
+        let collectionId = collectionIds[i];
+        let collection = DigitalaxGarmentV2Collection.load(collectionId.toString());
+        if (collection) {
+            collection.developer = developer.id;
+            collection.save();
+            collections.push(developer.id);
+        }
+    }
+    
+    for(let i = 0; i < auctionIds.length; i += 1) {
+        let auctionId = auctionIds[i];
+        let auction = DigitalaxGarmentV2Auction.load(auctionId.toString());
+        if (auction) {
+            auction.developer = developer.id;
+            auction.save();
+            collections.push(developer.id);
+        }
+    }
+    developer.collections = collections;
+    developer.auctions = auctions;
+
+    let developerHash = event.params.uri;
+    let developerBytes = ipfs.cat(developerHash);
+    if (developerBytes) {
+        let data = json.try_fromBytes(developerBytes as Bytes);
+        if (data.isOk) {
+            if (data.value.kind === JSONValueKind.OBJECT) {
+                let res = data.value.toObject();
+                if (res.get('Developer ID').kind === JSONValueKind.STRING) {
+                    developer.name = res.get('Developer ID').toString();
+                }
+                if (res.get('description').kind === JSONValueKind.STRING) {
+                    developer.description = res.get('description').toString();
+                }
+                if (res.get('image_url').kind === JSONValueKind.STRING) {
+                    developer.image = res.get('image_url').toString();
+                }
+            }
+        }
+    }
+    developer.save();
 }

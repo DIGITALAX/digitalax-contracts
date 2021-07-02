@@ -19,13 +19,19 @@ contract DigitalaxIndex is Context {
     event CollectionGroupRemoved(uint256 indexed sid);
     event CollectionGroupUpdated(uint256 indexed sid, uint256[] auctions, uint256[] collections, uint256 digiBundleCollection);
 
-    event DesignerSetAdded(uint256 indexed sid, uint256[] tokenIds);
-    event DesignerSetRemoved(uint256 indexed sid);
-    event DesignerSetUpdated(uint256 indexed sid, uint256[] tokenIds);
-    event DesignerInfoUpdated(uint256 indexed designerId, string uri);
+    event DesignerGroupAdded(address _address, string uri, uint256[] collectionIds, uint256[] auctionIds);
+    event DeveloperGroupAdded(address _address, string uri, uint256[] collectionIds, uint256[] auctionIds);
+
+    event DesignerGroupRemoved(address _address);
+    event DeveloperGroupRemoved(address _address);
+
 
     // Structure for set of token ids
     struct TokenIdSet {
+        uint256[] value;
+    }
+
+    struct CollectionIdSet {
         uint256[] value;
     }
 
@@ -35,17 +41,30 @@ contract DigitalaxIndex is Context {
         uint256 digiBundleCollection;
     }
 
+    struct DesignerGroup {
+        string uri;
+        CollectionIdSet collectionIds;
+        CollectionIdSet auctionIds;
+    }
+
+    struct DeveloperGroup {
+        string uri;
+        CollectionIdSet collectionIds;
+        CollectionIdSet auctionIds;
+    }
+
     // Access Controls
     DigitalaxAccessControls public accessControls;
 
-    // Array for designer set
-    TokenIdSet[] designerSet;
+    // Mapping for designer group
+    mapping(address => DesignerGroup) designerGroupSet;
+
+    // Mapping for developer group
+    mapping(address => DeveloperGroup) developerGroupSet;
 
     // Array for Collection Groups
     CollectionGroup[] collectionGroupSet;
 
-    // Mapping for designer info
-    mapping(uint256 => string) public designerInfo;
 
     /**
      * @dev Constructor of DigitalaxIndex contract
@@ -81,12 +100,25 @@ contract DigitalaxIndex is Context {
     }
 
     /**
-     * @dev View function for designer set
-     * @param _sid Designer Id
+     * @dev View function for designer group
+     * @param _address Designer address
      */
-    function DesignerSet(uint256 _sid) external view returns (uint256[] memory tokenIds) {
-        TokenIdSet memory set = designerSet[_sid];
-        tokenIds = set.value;
+    function DesignerGroupSet(address _address) external view returns (string memory  _uri, uint256[] memory collectionIds, uint256[] memory auctionIds) {
+        DesignerGroup memory designerGroup = designerGroupSet[_address];
+        _uri = designerGroup.uri;
+        collectionIds = designerGroup.collectionIds.value;
+        auctionIds = designerGroup.auctionIds.value;
+    }
+
+    /**
+     * @dev View function for developer group
+     * @param _address Developer address
+     */
+    function DeveloperGroupSet(address _address) external view returns (string memory  _uri, uint256[] memory collectionIds, uint256[] memory auctionIds) {
+        DeveloperGroup memory developerGroup = developerGroupSet[_address];
+        _uri = developerGroup.uri;
+        collectionIds = developerGroup.collectionIds.value;
+        auctionIds = developerGroup.auctionIds.value;
     }
 
     /**
@@ -96,7 +128,7 @@ contract DigitalaxIndex is Context {
      * @param digiBundleCollectionId token id
      */
     function addCollectionGroup(uint256[] calldata _auctionTokenIds, uint256[] calldata _collectionIds, uint256 digiBundleCollectionId) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.addAuctionSet: Sender must be admin");
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.addCollectionGroup: Sender must be admin");
 
         uint256 index = collectionGroupSet.length;
         collectionGroupSet.push(CollectionGroup(TokenIdSet(_auctionTokenIds), TokenIdSet(_collectionIds), digiBundleCollectionId));
@@ -108,7 +140,7 @@ contract DigitalaxIndex is Context {
      * @param _sid Id of auction set
      */
     function removeCollectionGroup(uint256 _sid) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.removeAuctionSet: Sender must be admin");
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.removeCollectionGroup: Sender must be admin");
 
         CollectionGroup storage set = collectionGroupSet[_sid];
         delete set.digiBundleCollection;
@@ -124,8 +156,8 @@ contract DigitalaxIndex is Context {
      * @param _collectionIds Array of token ids to be added
      * @param digiBundleCollectionId token id
      */
-    function updateAuctionSet(uint256 _sid, uint256[] calldata _auctionTokenIds, uint256[] calldata _collectionIds, uint256 digiBundleCollectionId) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.removeAuctionSet: Sender must be admin");
+    function updateCollectionGroup(uint256 _sid, uint256[] calldata _auctionTokenIds, uint256[] calldata _collectionIds, uint256 digiBundleCollectionId) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.updateCollectionGroup: Sender must be admin");
 
         CollectionGroup storage set = collectionGroupSet[_sid];
         set.digiBundleCollection = digiBundleCollectionId;
@@ -135,51 +167,53 @@ contract DigitalaxIndex is Context {
     }
 
     /**
-     * @dev Function for adding designer token set
-     * @param _tokenIds Array of token ids to be added
+     * @dev Function for adding designer token group
+     * @param _address Address of designer to be added
+     * @param _uri ipfs uri for designer to be added
+     * @param _collectionIds Array of collection ids to be added
      */
-    function addDesignerSet(uint256[] calldata _tokenIds) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.addDesignerSet: Sender must be admin");
+    function addDesignerGroup(address _address, string calldata _uri, uint256[] calldata _collectionIds, uint256[] calldata _auctionIds) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.addDesignerGroup: Sender must be admin");
 
-        uint256 index = designerSet.length;
-        designerSet.push(TokenIdSet(_tokenIds));
-        emit DesignerSetAdded(index, _tokenIds);
+        designerGroupSet[_address] = DesignerGroup(_uri, CollectionIdSet(_collectionIds), CollectionIdSet(_auctionIds));
+        emit DesignerGroupAdded(_address, _uri, _collectionIds, _auctionIds);
     }
 
     /**
-     * @dev Funtion for removal of designer set
-     * @param _sid Id of designer set
+     * @dev Funtion for removal of designer group
+     * @param _address Address of designer to be deleted
      */
-    function removeDesignerSet(uint256 _sid) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.removeDesignerSet: Sender must be admin");
+    function removeDesignerGroup(address _address) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.removeDesignerGroup: Sender must be admin");
 
-        TokenIdSet storage set = designerSet[_sid];
-        delete set.value;
-        emit DesignerSetRemoved(_sid);
+        delete designerGroupSet[_address];
+
+        emit DesignerGroupRemoved(_address);
     }
 
     /**
-     * @dev Function for designer set update
-     * @param _sid Id of designer set
-     * @param _tokenIds Array of token ids to be updated
+     * @dev Function for adding developer token group
+     * @param _address Address of developer to be added
+     * @param _uri ipfs uri for developer to be added
+     * @param _collectionIds Array of collection ids to be added
      */
-    function updateDesignerSet(uint256 _sid, uint256[] calldata _tokenIds) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.updateDesignerSet: Sender must be admin");
+    function addDeveloperGroup(address _address, string calldata _uri, uint256[] calldata _collectionIds, uint256[] calldata _auctionIds) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.addDeveloperGroup: Sender must be admin");
 
-        TokenIdSet storage set = designerSet[_sid];
-        set.value = _tokenIds;
-        emit DesignerSetUpdated(_sid, _tokenIds);
+        developerGroupSet[_address] = DeveloperGroup(_uri, CollectionIdSet(_collectionIds), CollectionIdSet(_auctionIds));
+
+        emit DeveloperGroupAdded(_address, _uri, _collectionIds, _auctionIds);
     }
 
     /**
-     * @dev Function to update designer info
-     * @param _designerId Designer Id
-     * @param _uri IPFS uri for designer info
+     * @dev Funtion for removal of developer group
+     * @param _address Address of developer to be deleted
      */
-    function updateDesignerInfo(uint256 _designerId, string memory _uri) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.updateDesignerInfo: Sender must be admin");
+    function removeDeveloperGroup(address _address) external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.removeDeveloperGroup: Sender must be admin");
 
-        designerInfo[_designerId] = _uri;
-        emit DesignerInfoUpdated(_designerId, _uri);
+        delete developerGroupSet[_address];
+
+        emit DeveloperGroupRemoved(_address);
     }
 }
