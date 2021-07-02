@@ -89,70 +89,88 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "designerId",
-        "type": "uint256"
+        "indexed": false,
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
       },
       {
         "indexed": false,
         "internalType": "string",
         "name": "uri",
         "type": "string"
-      }
-    ],
-    "name": "DesignerInfoUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "sid",
-        "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256[]",
-        "name": "tokenIds",
+        "name": "collectionIds",
         "type": "uint256[]"
-      }
-    ],
-    "name": "DesignerSetAdded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "sid",
-        "type": "uint256"
-      }
-    ],
-    "name": "DesignerSetRemoved",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "sid",
-        "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256[]",
-        "name": "tokenIds",
+        "name": "auctionIds",
         "type": "uint256[]"
       }
     ],
-    "name": "DesignerSetUpdated",
+    "name": "DesignerGroupAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      }
+    ],
+    "name": "DesignerGroupRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "uri",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "collectionIds",
+        "type": "uint256[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "auctionIds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "DeveloperGroupAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      }
+    ],
+    "name": "DeveloperGroupRemoved",
     "type": "event"
   },
   {
@@ -187,16 +205,55 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_sid",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
       }
     ],
-    "name": "DesignerSet",
+    "name": "DesignerGroupSet",
     "outputs": [
       {
+        "internalType": "string",
+        "name": "_uri",
+        "type": "string"
+      },
+      {
         "internalType": "uint256[]",
-        "name": "tokenIds",
+        "name": "collectionIds",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "auctionIds",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      }
+    ],
+    "name": "DeveloperGroupSet",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "_uri",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "collectionIds",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "auctionIds",
         "type": "uint256[]"
       }
     ],
@@ -242,12 +299,27 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "_uri",
+        "type": "string"
+      },
+      {
         "internalType": "uint256[]",
-        "name": "_tokenIds",
+        "name": "_collectionIds",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_auctionIds",
         "type": "uint256[]"
       }
     ],
-    "name": "addDesignerSet",
+    "name": "addDesignerGroup",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -255,20 +327,29 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "designerInfo",
-    "outputs": [
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      },
       {
         "internalType": "string",
-        "name": "",
+        "name": "_uri",
         "type": "string"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_collectionIds",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_auctionIds",
+        "type": "uint256[]"
       }
     ],
-    "stateMutability": "view",
+    "name": "addDeveloperGroup",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -287,12 +368,25 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_sid",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
       }
     ],
-    "name": "removeDesignerSet",
+    "name": "removeDesignerGroup",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      }
+    ],
+    "name": "removeDeveloperGroup",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -333,43 +427,7 @@
         "type": "uint256"
       }
     ],
-    "name": "updateAuctionSet",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_designerId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "_uri",
-        "type": "string"
-      }
-    ],
-    "name": "updateDesignerInfo",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_sid",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_tokenIds",
-        "type": "uint256[]"
-      }
-    ],
-    "name": "updateDesignerSet",
+    "name": "updateCollectionGroup",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
