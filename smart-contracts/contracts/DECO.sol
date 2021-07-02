@@ -144,8 +144,9 @@ contract DECO is IERC20, BaseRelayRecipient, Initializable {
     function mint(address tokenOwner, uint tokens) external returns (bool success) {
         require(
             accessControls.hasMinterRole(_msgSender()),
-            "MONA.mint: Sender must have permission to mint"
+            "DECO.mint: Sender must have permission to mint"
         );
+
         require(cap == 0 || _totalSupply + tokens <= cap, "Cap exceeded");
         balances[tokenOwner] = balances[tokenOwner].add(tokens);
         _totalSupply = _totalSupply.add(tokens);

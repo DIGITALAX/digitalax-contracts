@@ -12,12 +12,12 @@ const {
   const {expect} = require('chai');
 
   const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
-  const MockERC20 = artifacts.require('MockERC20');
+  const MockDECO = artifacts.require('MockDECO');
   const WethToken = artifacts.require('WethToken');
-  const DigitalaxNFTRewardsV2 = artifacts.require('DigitalaxNFTRewardsV2Mock');
+  const DigitalaxGuildNFTRewardsMock = artifacts.require('DigitalaxGuildNFTRewardsMock');
   const DigitalaxGuildNFTStaking = artifacts.require('DigitalaxGuildNFTStakingMock');
   const DigitalaxGuildNFTStakingWeight = artifacts.require('DigitalaxGuildNFTStakingWeightMock');
-  const DigitalaxMonaOracle = artifacts.require('DigitalaxMonaOracle');
+  const DecoOracle = artifacts.require('DecoOracle');
   const PodeNFTv2 = artifacts.require('PodeNFTv2');
 
   // 1,000 * 10 ** 18
@@ -50,12 +50,20 @@ const {
 	  await this.accessControls.addMinterRole(minter, {from: admin});
 	  await this.accessControls.addSmartContractRole(smartContract, {from: admin});
 
-	  this.decoToken = this.token = await MockERC20.new(
-		  'DECO',
-		  'DECO',
-		  ONE_THOUSAND_TOKENS,
-		  {from: staker}
+	  this.decoToken = this.token = await MockDECO.new(
+		  // 'DECO',
+		  // 'DECO',
+		  // ONE_THOUSAND_TOKENS,
+		  // {from: staker}
 	  );
+	  await this.decoToken.initialize(
+	  		"DECO",
+			"DECO",
+			18,
+			this.accessControls.address,
+		  	admin,
+			0,
+			constants.ZERO_ADDRESS);
 
 	  this.weth = await WethToken.new(
 		{ from: minter }
@@ -73,7 +81,7 @@ const {
 
 	  this.stakingWeight = await DigitalaxGuildNFTStakingWeight.new();
 
-	  this.oracle = await DigitalaxMonaOracle.new(
+	  this.oracle = await DecoOracle.new(
 		  '86400000',
 		  '120',
 		  '1',
@@ -96,7 +104,7 @@ const {
 
 	  await this.guildNftStaking.setTokensClaimable(true, {from: admin});
 
-	  this.digitalaxRewards = await DigitalaxNFTRewardsV2.new(
+	  this.digitalaxRewards = await DigitalaxGuildNFTRewardsMock.new(
 		  this.decoToken.address,
 		  this.accessControls.address,
 		  this.guildNftStaking.address,
@@ -106,14 +114,17 @@ const {
 		  0,
 	  );
 
+
+	  await this.accessControls.addMinterRole(this.digitalaxRewards.address, {from: admin});
+
 	  await this.digitalaxRewards.setNftStaking(this.guildNftStaking.address, {from: admin});
 
 	  await this.decoToken.approve(this.digitalaxRewards.address, TWO_THOUSAND_TOKENS, {from: admin});
 
-	  await this.digitalaxRewards.depositMonaRewards(1, FIFTY_TOKENS, {from: admin});
-	  await this.digitalaxRewards.depositMonaRewards(2, HUNDRED_TOKENS, {from: admin});
-	  await this.digitalaxRewards.depositMonaRewards(3, FIFTY_TOKENS, {from: admin});
-	  await this.digitalaxRewards.depositMonaRewards(4, TEN_TOKENS, {from: admin});
+	  await this.digitalaxRewards.setRewards([1], [FIFTY_TOKENS], {from: admin});
+	  await this.digitalaxRewards.setRewards([2], [HUNDRED_TOKENS], {from: admin});
+	  await this.digitalaxRewards.setRewards([3], [FIFTY_TOKENS], {from: admin});
+	  await this.digitalaxRewards.setRewards([4], [TEN_TOKENS], {from: admin});
 
 	  await this.guildNftStaking.setRewardsContract(this.digitalaxRewards.address, { from: admin });
 	  await this.guildNftStaking.setTokensClaimable(true, {from: admin});
@@ -342,9 +353,8 @@ const {
 	console.log(await this.guildNftStaking.getStakedTokens(staker2));
 	await time.increase(time.duration.seconds(120));
 
-	// Make sure we can withdraw and deposit the same amount back in.
-	await this.digitalaxRewards.withdrawMonaRewards(3, FIFTY_TOKENS, {from: admin});
-	await this.digitalaxRewards.depositMonaRewards(3, FIFTY_TOKENS, {from: admin});
+	// // Make sure we can withdraw and deposit the same amount back in.
+	// await this.digitalaxRewards.setRewards([3], [FIFTY_TOKENS], {from: admin});
 
 	await this.digitalaxRewards.setNowOverride('2420000'); // final week
 	await this.guildNftStaking.setNowOverride('2420000'); // final week
@@ -360,8 +370,8 @@ const {
 
 	await time.increase(time.duration.seconds(1000001));
 
-	console.log('await this.digitalaxRewards.getMonaDailyAPY()');
-	console.log(await this.digitalaxRewards.getMonaDailyAPY());
+	console.log('await this.digitalaxRewards.getDecoDailyAPY()');
+	console.log(await this.digitalaxRewards.getDecoDailyAPY());
 
 	await this.guildNftStaking.unstakeBatch([TOKEN_1,TOKEN_2], {from: staker});
 	await this.guildNftStaking.unstakeBatch([TOKEN_1,TOKEN_2], {from: staker2});

@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "../DigitalaxAccessControls.sol";
 import "./interfaces/IERC20.sol";
-import "./interfaces/IDigitalaxNFTRewards.sol";
+import "./interfaces/IDigitalaxGuildNFTRewards.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "./interfaces/IDigitalaxGuildNFTStakingWeight.sol";
 
@@ -24,7 +24,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     IERC20 public rewardsToken;
     IERC721 public parentNFT;
     DigitalaxAccessControls public accessControls;
-    IDigitalaxNFTRewards public rewardsContract;
+    IDigitalaxGuildNFTRewards public rewardsContract;
     IDigitalaxGuildNFTStakingWeight public weightContract;
 
     /// @notice total ethereum staked currently in the guild nft staking contract
@@ -89,7 +89,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     }
      /**
      * @dev Single gateway to intialize the staking contract after deploying
-     * @dev Sets the contract with the MONA NFT and MONA reward token
+     * @dev Sets the contract with the DECO NFT and DECO reward token
      */
     function initStaking(
         IERC20 _rewardsToken,
@@ -155,7 +155,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
         );
         require(_addr != address(0));
         address oldAddr = address(rewardsContract);
-        rewardsContract = IDigitalaxNFTRewards(_addr);
+        rewardsContract = IDigitalaxGuildNFTRewards(_addr);
         emit RewardsTokenUpdated(oldAddr, _addr);
     }
 
@@ -263,7 +263,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
         _unstake(_msgSender(), _tokenId);
     }
 
-    /// @notice Stake multiple MONA NFTs and claim reward tokens.
+    /// @notice Stake multiple DECO NFTs and claim reward tokens.
     function unstakeBatch(uint256[] memory tokenIds) external {
         claimReward(_msgSender());
         for (uint i = 0; i < tokenIds.length; i++) {
@@ -321,7 +321,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
     /// @dev Updates the amount of rewards owed for each user before any tokens are moved
     function updateReward(address _user) public {
         rewardsContract.updateRewards();
-        uint256 newRewards = rewardsContract.MonaRewards(lastUpdateTime, _getNow());
+        uint256 newRewards = rewardsContract.DecoRewards(lastUpdateTime, _getNow());
         totalRewards = totalRewards.add(newRewards);
 
         weightContract.updateOwnerWeight(_user);
@@ -349,7 +349,7 @@ contract DigitalaxGuildNFTStaking is BaseRelayRecipient {
             return 0;
         }
 
-        uint256 newRewards = rewardsContract.MonaRewards(lastUpdateTime, _getNow());
+        uint256 newRewards = rewardsContract.DecoRewards(lastUpdateTime, _getNow());
 
         weightContract.updateOwnerWeight(_user);
         uint256 totalWeight = weightContract.getTotalWeight();
