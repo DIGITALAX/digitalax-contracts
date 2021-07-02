@@ -14,9 +14,9 @@ const {
   const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
   const MockDECO = artifacts.require('MockDECO');
   const WethToken = artifacts.require('WethToken');
-  const DigitalaxGuildNFTRewardsMock = artifacts.require('DigitalaxGuildNFTRewardsMock');
-  const DigitalaxGuildNFTStaking = artifacts.require('DigitalaxGuildNFTStakingMock');
-  const DigitalaxGuildNFTStakingWeight = artifacts.require('DigitalaxGuildNFTStakingWeightMock');
+  const GuildNFTRewardsMock = artifacts.require('GuildNFTRewardsMock');
+  const GuildNFTStaking = artifacts.require('GuildNFTStakingMock');
+  const GuildNFTStakingWeight = artifacts.require('GuildNFTStakingWeightMock');
   const DecoOracle = artifacts.require('DecoOracle');
   const PodeNFTv2 = artifacts.require('PodeNFTv2');
 
@@ -42,7 +42,7 @@ const {
 	const TOKEN_3 = '3';
 	const TOKEN_4 = '4';
 
-  contract('DigitalaxGuildNFTStaking', (accounts) => {
+  contract('GuildNFTStaking', (accounts) => {
 	const [admin, smartContract, platformFeeAddress, minter, provider, staker, staker2] = accounts;
 
 	beforeEach(async () => {
@@ -79,7 +79,7 @@ const {
 		  {from: admin}
 	  );
 
-	  this.stakingWeight = await DigitalaxGuildNFTStakingWeight.new();
+	  this.stakingWeight = await GuildNFTStakingWeight.new();
 
 	  this.oracle = await DecoOracle.new(
 		  '86400000',
@@ -93,7 +93,7 @@ const {
 	  await this.oracle.pushReport(EXCHANGE_RATE, {from: provider});
 	  await time.increase(time.duration.seconds(120));
 
-	  this.guildNftStaking = await DigitalaxGuildNFTStaking.new();
+	  this.guildNftStaking = await GuildNFTStaking.new();
 	  await this.guildNftStaking.initStaking(
 		  this.decoToken.address,
 		  this.token.address,
@@ -104,7 +104,7 @@ const {
 
 	  await this.guildNftStaking.setTokensClaimable(true, {from: admin});
 
-	  this.digitalaxRewards = await DigitalaxGuildNFTRewardsMock.new(
+	  this.digitalaxRewards = await GuildNFTRewardsMock.new(
 		  this.decoToken.address,
 		  this.accessControls.address,
 		  this.guildNftStaking.address,
@@ -137,7 +137,7 @@ const {
 			it('fails when not admin', async () => {
 				await expectRevert(
 					this.guildNftStaking.setRewardsContract(this.digitalaxRewards.address, {from: staker}),
-					'DigitalaxGuildNFTStaking.setRewardsContract: Sender must be admin'
+					'GuildNFTStaking.setRewardsContract: Sender must be admin'
 				);
 			});
 
@@ -155,14 +155,14 @@ const {
 		it('fails when not admin', async () => {
 		  await expectRevert(
 			  this.guildNftStaking.updateAccessControls(this.accessControls.address, {from: staker}),
-			  'DigitalaxGuildNFTStaking.updateAccessControls: Sender must be admin'
+			  'GuildNFTStaking.updateAccessControls: Sender must be admin'
 		  );
 		});
 
 		it('reverts when trying to set recipient as ZERO address', async () => {
 		  await expectRevert(
 			  this.guildNftStaking.updateAccessControls(constants.ZERO_ADDRESS, {from: admin}),
-			  'DigitalaxGuildNFTStaking.updateAccessControls: Zero Address'
+			  'GuildNFTStaking.updateAccessControls: Zero Address'
 		  );
 		});
 
@@ -185,7 +185,7 @@ const {
 			it('fails when not admin', async () => {
 				await expectRevert(
 					this.guildNftStaking.setWeightingContract(this.stakingWeight.address, {from: staker}),
-					'DigitalaxGuildNFTStaking.setWeightingContract: Sender must be admin'
+					'GuildNFTStaking.setWeightingContract: Sender must be admin'
 				);
 			});
 

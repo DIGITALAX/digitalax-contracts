@@ -5,7 +5,9 @@
     "test": "npx buidler test",
     "test-with-gas": "REPORT_GAS=true; npx buidler test --network localhost",
     "coverage": "npx buidler coverage",
-    "compile": "npx buidler compile"
+    "compile": "npx buidler compile",
+    "build-contracts": "sol-merger \"./contracts/*.sol\" ./build",
+    "merge-contract": "sol-merger --removeRootComments"
   },
   "author": "BlockRocket.tech",
   "license": "MIT",
@@ -30,5 +32,8 @@
     "prompt-sync": "^4.2.0",
     "solidity-coverage": "^0.7.10",
     "web3": "^1.3.0"
+  },
+  "devDependencies": {
+    "sol-merger": "^3.1.0"
   }
 }

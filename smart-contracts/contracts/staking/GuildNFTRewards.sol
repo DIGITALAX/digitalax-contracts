@@ -24,7 +24,7 @@ interface DECO is IERC20 {
     function mint(address tokenOwner, uint tokens) external returns (bool);
 }
 
-contract DigitalaxGuildNFTRewards is BaseRelayRecipient, ReentrancyGuard {
+contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard {
     using SafeMath for uint256;
 
     /* ========== Variables ========== */
@@ -225,7 +225,7 @@ contract DigitalaxGuildNFTRewards is BaseRelayRecipient, ReentrancyGuard {
         {
             require(
                 accessControls.hasAdminRole(msg.sender),
-                "DigitalaxGuildNFTRewards.setRewards: Sender must be admin"
+                "GuildNFTRewards.setRewards: Sender must be admin"
                 );
             uint256 numRewards = rewardWeeks.length;
             for (uint256 i = 0; i < numRewards; i++) {
