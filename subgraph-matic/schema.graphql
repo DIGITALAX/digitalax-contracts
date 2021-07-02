@@ -302,7 +302,8 @@ type DigitalaxGarmentV2Auction @entity {
 
   ## Foreign key link to Garment, designer, history and contract
   garment: DigitalaxGarmentV2!
-  designer: DigitalaxGarmentV2Designer!
+  designer: DigitalaxDesigner
+  developer: DigitalaxDeveloper
   history: DigitalaxGarmentV2AuctionHistory!
   contract: DigitalaxAuctionV2Contract!
 }
@@ -350,6 +351,8 @@ type DigitalaxGarmentV2Collection @entity {
   garments: [DigitalaxGarmentV2!]!
   rarity: String!
   valueSold: BigInt!
+  designer: DigitalaxDesigner
+  developer: DigitalaxDeveloper
 }
 
 type DigitalaxSubscriptionCollection @entity {
@@ -462,10 +465,22 @@ type DigitalaxAuctionV2Index @entity {
   garments: [DigitalaxGarmentV2!]!
 }
 
-type DigitalaxDesignerIndex @entity {
+type DigitalaxDesigner @entity {
   id: ID!
-  garments: [DigitalaxGarment!]!
-  infoUrl: String!
+  name: String!
+  description: String!
+  image: String!
+  collections: [DigitalaxGarmentV2Collection!]!
+  auctions: [DigitalaxGarmentV2Auction!]!
+}
+
+type DigitalaxDeveloper @entity {
+  id: ID!
+  name: String!
+  description: String!
+  image: String!
+  collections: [DigitalaxGarmentV2Collection!]!
+  auctions: [DigitalaxGarmentV2Auction!]!
 }
 
 type DigitalaxDesignerV2Index @entity {

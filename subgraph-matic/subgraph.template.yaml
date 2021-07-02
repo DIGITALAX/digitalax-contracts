@@ -535,10 +535,10 @@ dataSources:
         - CollectionGroupAdded
         - CollectionGroupRemoved
         - CollectionGroupUpdated
-        - DesignerSetAdded
-        - DesignerSetRemoved
-        - DesignerSetUpdated
-        - DesignerInfoUpdated
+        - DesignerGroupAdded
+        - DesignerGroupRemoved
+        - DeveloperGroupAdded
+        - DeveloperGroupRemoved
       abis:
         - name: DigitalaxIndex
           file: ./abis/DigitalaxIndex.json
@@ -549,14 +549,14 @@ dataSources:
           handler: handleCollectionGroupRemoved
         - event: CollectionGroupUpdated(indexed uint256,uint256[],uint256[],uint256)
           handler: handleCollectionGroupUpdated
-        - event: DesignerSetAdded(indexed uint256,uint256[])
-          handler: handleDesignerSetAdded
-        - event: DesignerSetRemoved(indexed uint256)
-          handler: handleDesignerSetRemoved
-        - event: DesignerSetUpdated(indexed uint256,uint256[])
-          handler: handleDesignerSetUpdated
-        - event: DesignerInfoUpdated(indexed uint256,string)
-          handler: handleDesignerInfoUpdated
+        - event: DesignerGroupAdded(address,string,uint256[],uint256[])
+          handler: handleDesignerGroupAdded
+        - event: DesignerGroupRemoved(address)
+          handler: handleDesignerGroupRemoved
+        - event: DeveloperGroupAdded(address,string,uint256[],uint256[])
+          handler: handleDeveloperGroupAdded
+        - event: DeveloperGroupRemoved(address)
+          handler: handleDeveloperGroupRemoved
       file: ./src/DigitalaxIndex.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxNFTStaking

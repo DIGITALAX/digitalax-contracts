@@ -19,21 +19,12 @@ contract DigitalaxIndex is Context {
     event CollectionGroupRemoved(uint256 indexed sid);
     event CollectionGroupUpdated(uint256 indexed sid, uint256[] auctions, uint256[] collections, uint256 digiBundleCollection);
 
-    event DesignerGroupAdded(address _address, string uri, uint256[] collectionIds);
+    event DesignerGroupAdded(address _address, string uri, uint256[] collectionIds, uint256[] auctionIds);
+    event DeveloperGroupAdded(address _address, string uri, uint256[] collectionIds, uint256[] auctionIds);
+
     event DesignerGroupRemoved(address _address);
-    event DesignerGroupUpdated(address _address, string uri, uint256[] collectionIds);
-
-    event DeveloperGroupAdded(address _address, string uri, uint256[] collectionIds);
     event DeveloperGroupRemoved(address _address);
-    event DeveloperGroupUpdated(address _address, string uri, uint256[] collectionIds);
 
-    event AuctionDeveloperGroupAdded(address _address, string uri, uint256[] auctionIds);
-    event AuctionDeveloperGroupRemoved(address _address);
-    event AuctionDeveloperGroupUpdated(address _address, string uri, uint256[] auctionIds);
-
-    event AuctionDesignerGroupAdded(address _address, string uri, uint256[] auctionIds);
-    event AuctionDesignerGroupRemoved(address _address);
-    event AuctionDesignerGroupUpdated(address _address, string uri, uint256[] auctionIds);
 
     // Structure for set of token ids
     struct TokenIdSet {
@@ -53,20 +44,12 @@ contract DigitalaxIndex is Context {
     struct DesignerGroup {
         string uri;
         CollectionIdSet collectionIds;
+        CollectionIdSet auctionIds;
     }
 
     struct DeveloperGroup {
         string uri;
         CollectionIdSet collectionIds;
-    }
-
-    struct AuctionDesignerGroup {
-        string uri;
-        CollectionIdSet auctionIds;
-    }
-
-    struct AuctionDeveloperGroup {
-        string uri;
         CollectionIdSet auctionIds;
     }
 
@@ -78,12 +61,6 @@ contract DigitalaxIndex is Context {
 
     // Mapping for developer group
     mapping(address => DeveloperGroup) developerGroupSet;
-
-    // Mapping for designer group
-    mapping(address => AuctionDesignerGroup) auctionDesignerGroupSet;
-
-    // Mapping for developer group
-    mapping(address => AuctionDeveloperGroup) auctionDeveloperGroupSet;
 
     // Array for Collection Groups
     CollectionGroup[] collectionGroupSet;
@@ -126,40 +103,22 @@ contract DigitalaxIndex is Context {
      * @dev View function for designer group
      * @param _address Designer address
      */
-    function DesignerGroupSet(address _address) external view returns (string memory  _uri, uint256[] memory collectionIds) {
+    function DesignerGroupSet(address _address) external view returns (string memory  _uri, uint256[] memory collectionIds, uint256[] memory auctionIds) {
         DesignerGroup memory designerGroup = designerGroupSet[_address];
         _uri = designerGroup.uri;
         collectionIds = designerGroup.collectionIds.value;
+        auctionIds = designerGroup.auctionIds.value;
     }
 
     /**
      * @dev View function for developer group
      * @param _address Developer address
      */
-    function DeveloperGroupSet(address _address) external view returns (string memory  _uri, uint256[] memory collectionIds) {
+    function DeveloperGroupSet(address _address) external view returns (string memory  _uri, uint256[] memory collectionIds, uint256[] memory auctionIds) {
         DeveloperGroup memory developerGroup = developerGroupSet[_address];
         _uri = developerGroup.uri;
         collectionIds = developerGroup.collectionIds.value;
-    }
-
-    /**
-     * @dev View function for developer group
-     * @param _address Developer address
-     */
-    function AuctionDeveloperGroupSet(address _address) external view returns (string memory  _uri, uint256[] memory auctionIds) {
-        AuctionDeveloperGroup memory auctionDeveloperGroup = auctionDeveloperGroupSet[_address];
-        _uri = auctionDeveloperGroup.uri;
-        auctionIds = auctionDeveloperGroup.auctionIds.value;
-    }
-
-    /**
-     * @dev View function for designer group
-     * @param _address Designer address
-     */
-    function AuctionDesignerGroupSet(address _address) external view returns (string memory  _uri, uint256[] memory auctionIds) {
-        AuctionDesignerGroup memory auctionDesignerGroup = auctionDesignerGroupSet[_address];
-        _uri = auctionDesignerGroup.uri;
-        auctionIds = auctionDesignerGroup.auctionIds.value;
+        auctionIds = developerGroup.auctionIds.value;
     }
 
     /**
@@ -213,11 +172,11 @@ contract DigitalaxIndex is Context {
      * @param _uri ipfs uri for designer to be added
      * @param _collectionIds Array of collection ids to be added
      */
-    function addDesignerGroup(address _address, string calldata _uri, uint256[] calldata _collectionIds) external {
+    function addDesignerGroup(address _address, string calldata _uri, uint256[] calldata _collectionIds, uint256[] calldata _auctionIds) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.addDesignerGroup: Sender must be admin");
 
-        designerGroupSet[_address] = DesignerGroup(_uri, CollectionIdSet(_collectionIds));
-        emit DesignerGroupAdded(_address, _uri, _collectionIds);
+        designerGroupSet[_address] = DesignerGroup(_uri, CollectionIdSet(_collectionIds), CollectionIdSet(_auctionIds));
+        emit DesignerGroupAdded(_address, _uri, _collectionIds, _auctionIds);
     }
 
     /**
@@ -233,29 +192,17 @@ contract DigitalaxIndex is Context {
     }
 
     /**
-     * @dev Function for designer group update
-     * @param _address Address of designer to be updated
-     * @param _uri ipfs uri for designer to be updated
-     * @param _collectionIds Array of collection ids to be updated
-     */
-    function updateDesignerGroup(address _address, string calldata _uri, uint256[] calldata _collectionIds) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.updateDesignerGroup: Sender must be admin");
-
-        designerGroupSet[_address] = DesignerGroup(_uri, CollectionIdSet(_collectionIds));
-        emit DesignerGroupUpdated(_address, _uri, _collectionIds);
-    }
-
-    /**
      * @dev Function for adding developer token group
      * @param _address Address of developer to be added
      * @param _uri ipfs uri for developer to be added
      * @param _collectionIds Array of collection ids to be added
      */
-    function addDeveloperGroup(address _address, string calldata _uri, uint256[] calldata _collectionIds) external {
+    function addDeveloperGroup(address _address, string calldata _uri, uint256[] calldata _collectionIds, uint256[] calldata _auctionIds) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.addDeveloperGroup: Sender must be admin");
 
-        developerGroupSet[_address] = DeveloperGroup(_uri, CollectionIdSet(_collectionIds));
-        emit DeveloperGroupAdded(_address, _uri, _collectionIds);
+        developerGroupSet[_address] = DeveloperGroup(_uri, CollectionIdSet(_collectionIds), CollectionIdSet(_auctionIds));
+
+        emit DeveloperGroupAdded(_address, _uri, _collectionIds, _auctionIds);
     }
 
     /**
@@ -268,94 +215,5 @@ contract DigitalaxIndex is Context {
         delete developerGroupSet[_address];
 
         emit DeveloperGroupRemoved(_address);
-    }
-
-    /**
-     * @dev Function for developer group update
-     * @param _address Address of developer to be updated
-     * @param _uri ipfs uri for developer to be updated
-     * @param _collectionIds Array of collection ids to be updated
-     */
-    function updateDeveloperGroup(address _address, string calldata _uri, uint256[] calldata _collectionIds) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.updateDeveloperGroup: Sender must be admin");
-
-        developerGroupSet[_address] = DeveloperGroup(_uri, CollectionIdSet(_collectionIds));
-        emit DeveloperGroupUpdated(_address, _uri, _collectionIds);
-    }
-
-    /**
-     * @dev Function for adding developer token group
-     * @param _address Address of developer to be added
-     * @param _uri ipfs uri for developer to be added
-     * @param _auctionIds Array of auction ids to be added
-     */
-    function addAuctionDeveloperGroup(address _address, string calldata _uri, uint256[] calldata _auctionIds) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.addAuctionDeveloperGroup: Sender must be admin");
-
-        auctionDeveloperGroupSet[_address] = AuctionDeveloperGroup(_uri, CollectionIdSet(_auctionIds));
-        emit AuctionDeveloperGroupAdded(_address, _uri, _auctionIds);
-    }
-
-    /**
-     * @dev Funtion for removal of developer group
-     * @param _address Address of developer to be deleted
-     */
-    function removeAuctionDeveloperGroup(address _address) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.removeAuctionDeveloperGroup: Sender must be admin");
-
-        delete auctionDeveloperGroupSet[_address];
-
-        emit AuctionDeveloperGroupRemoved(_address);
-    }
-
-    /**
-     * @dev Function for developer group update
-     * @param _address Address of developer to be updated
-     * @param _uri ipfs uri for developer to be updated
-     * @param _auctionIds Array of auction ids to be updated
-     */
-    function updateAuctionDeveloperGroup(address _address, string calldata _uri, uint256[] calldata _auctionIds) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.updateAuctionDeveloperGroup: Sender must be admin");
-
-        auctionDeveloperGroupSet[_address] = AuctionDeveloperGroup(_uri, CollectionIdSet(_auctionIds));
-        emit AuctionDeveloperGroupUpdated(_address, _uri, _auctionIds);
-    }
-
-    /**
-     * @dev Function for adding designer token group
-     * @param _address Address of designer to be added
-     * @param _uri ipfs uri for designer to be added
-     * @param _auctionIds Array of auction ids to be added
-     */
-    function addAuctionDesignerGroup(address _address, string calldata _uri, uint256[] calldata _auctionIds) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.addAuctionDesignerGroup: Sender must be admin");
-
-        auctionDesignerGroupSet[_address] = AuctionDesignerGroup(_uri, CollectionIdSet(_auctionIds));
-        emit AuctionDesignerGroupAdded(_address, _uri, _auctionIds);
-    }
-
-    /**
-     * @dev Funtion for removal of designer group
-     * @param _address Address of designer to be deleted
-     */
-    function removeAuctionDesignerGroup(address _address) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.removeAuctionDesignerGroup: Sender must be admin");
-
-        delete auctionDesignerGroupSet[_address];
-
-        emit AuctionDesignerGroupRemoved(_address);
-    }
-
-    /**
-     * @dev Function for designer group update
-     * @param _address Address of designer to be updated
-     * @param _uri ipfs uri for designer to be updated
-     * @param _auctionIds Array of auction ids to be updated
-     */
-    function updateAuctionDesignerGroup(address _address, string calldata _uri, uint256[] calldata _auctionIds) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxIndex.updateAuctionDesignerGroup: Sender must be admin");
-
-        auctionDesignerGroupSet[_address] = AuctionDesignerGroup(_uri, CollectionIdSet(_auctionIds));
-        emit AuctionDesignerGroupUpdated(_address, _uri, _auctionIds);
     }
 }
