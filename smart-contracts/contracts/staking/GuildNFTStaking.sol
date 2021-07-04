@@ -337,32 +337,35 @@ contract GuildNFTStaking is BaseRelayRecipient {
 
         Staker storage staker = stakers[_user];
 
-        staker.rewardsEarned = totalRewards.mul(pointMultiplier)
-                                    .div(totalWeight)
-                                    .mul(ownerWeight)
-                                    .div(pointMultiplier);
+        staker.rewardsEarned = totalRewards.mul(ownerWeight)
+                                    .div(totalWeight);
     }
 
     /// @notice Returns the about of rewards yet to be claimed
-    function unclaimedRewards(address _user) external returns(uint256) {
+    function unclaimedRewards(address _user) external view returns(uint256) {
         if (stakedEthTotal == 0) {
             return 0;
         }
 
-        uint256 newRewards = rewardsContract.DecoRewards(lastUpdateTime, _getNow());
+        uint256 _newRewards = rewardsContract.DecoRewards(lastUpdateTime, _getNow());
+        uint256 _totalRewards = totalRewards.add(_newRewards);
 
-        weightContract.updateOwnerWeight(_user);
-        uint256 totalWeight = weightContract.getTotalWeight();
-        uint256 ownerWeight = weightContract.getOwnerWeight(_user);
+        uint256 _totalWeight = weightContract.calcNewWeight();
+        uint256 _ownerWeight = weightContract.calcNewOwnerWeight(_user);
 
-        return totalRewards.add(newRewards)
-                        .div(totalWeight)
-                        .mul(ownerWeight)
+        uint256 _payableAmount = _totalRewards.mul(_ownerWeight)
+                        .div(_totalWeight)
                         .sub(stakers[_user].rewardsReleased);
+
+        /// @dev accounts for dust
+        uint256 rewardBal = rewardsToken.balanceOf(address(this));
+        if (_payableAmount > rewardBal) {
+            _payableAmount = rewardBal;
+        }
+
+        return _payableAmount;
     }
 
-
-    /// @notice Lets a user with rewards owing to claim tokens
     function claimReward(address _user) public {
         require(
             tokensClaimable == true,
@@ -372,19 +375,18 @@ contract GuildNFTStaking is BaseRelayRecipient {
 
         Staker storage staker = stakers[_user];
 
-        uint256 payableAmount = staker.rewardsEarned.sub(staker.rewardsReleased);
-        staker.rewardsReleased = staker.rewardsReleased.add(payableAmount);
+        uint256 _payableAmount = staker.rewardsEarned.sub(staker.rewardsReleased);
+        staker.rewardsReleased = staker.rewardsReleased.add(_payableAmount);
 
         /// @dev accounts for dust
         uint256 rewardBal = rewardsToken.balanceOf(address(this));
-        if (payableAmount > rewardBal) {
-            payableAmount = rewardBal;
+        if (_payableAmount > rewardBal) {
+            _payableAmount = rewardBal;
         }
 
-        rewardsToken.transfer(_user, payableAmount);
-        emit RewardPaid(_user, payableAmount);
+        rewardsToken.transfer(_user, _payableAmount);
+        emit RewardPaid(_user, _payableAmount);
     }
-
 
     function onERC721Received(address, address, uint256, bytes calldata data) public returns(bytes4) {
         return _ERC721_RECEIVED;

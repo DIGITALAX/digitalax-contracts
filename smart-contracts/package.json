@@ -7,7 +7,7 @@
     "coverage": "npx buidler coverage",
     "compile": "npx buidler compile",
     "build-contracts": "sol-merger \"./contracts/*.sol\" ./build",
-    "merge-contract": "sol-merger --removeRootComments"
+    "merge-contract": "sol-merger -a _me"
   },
   "author": "BlockRocket.tech",
   "license": "MIT",

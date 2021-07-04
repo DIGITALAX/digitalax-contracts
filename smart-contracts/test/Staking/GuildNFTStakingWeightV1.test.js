@@ -89,10 +89,7 @@ const {
 	  expect(startTime).to.be.bignumber.equal("0");
 
 	  await time.increase(time.duration.seconds(120));
-	  await this.stakingWeight.setNowOverride('259201'); // after 3 days
-
-		const currentDays = await this.stakingWeight.getCurrentDay();
-	  expect(currentDays).to.be.bignumber.equal("3");
+	  await this.stakingWeight.setNowOverride('3'); // after 3 seconds3
 
 		await this.stakingWeight.updateOwnerWeight(staker);
 		const ownerWeight2 = await this.stakingWeight.getOwnerWeight(staker);
@@ -110,10 +107,7 @@ const {
 	  expect(stakedBalance).to.be.bignumber.equal(FIVE_ETH);
 
 	  await time.increase(time.duration.seconds(120));
-	  await this.stakingWeight.setNowOverride('259201'); // after 3 days
-
-		const currentDays = await this.stakingWeight.getCurrentDay();
-	  expect(currentDays).to.be.bignumber.equal("3");
+	  await this.stakingWeight.setNowOverride('3'); // after 3 seconds
 
 		await this.stakingWeight.updateOwnerWeight(staker);	// update only staker1's weight (update total weight automatically)
 		const owner1_Weight1 = await this.stakingWeight.getOwnerWeight(staker);
@@ -134,20 +128,14 @@ const {
 
 	it('successfully update weight with multiple owners and different stake & update time', async () => {
 		
-		// --------------------- 1st day (owner1 stakes his token) ---------------------
+		// --------------------- after 1 sec (owner1 stakes his token) ---------------------
 		await this.stakingWeight.stake('100001', staker, ONE_ETH);
 		let stakedBalance = await this.stakingWeight.balance();
 	  expect(stakedBalance).to.be.bignumber.equal(ONE_ETH);
 
-		// --------------------- 2nd day (owner2 stakes his token & update total weight) ---------------------
+		// --------------------- after 2 secs (owner2 stakes his token & update total weight) ---------------------
 		await time.increase(time.duration.seconds(120));
-	  await this.stakingWeight.setNowOverride('86401');
-
-		let currentDays = await this.stakingWeight.getCurrentDay();
-	  expect(currentDays).to.be.bignumber.equal("1");
-
-		let lastUpdateDay = await this.stakingWeight.lastUpdateDay();
-	  expect(lastUpdateDay).to.be.bignumber.equal("0");
+	  await this.stakingWeight.setNowOverride('1');
 
 		await this.stakingWeight.stake('100003', staker2, ONE_ETH);
 		stakedBalance = await this.stakingWeight.balance();
@@ -161,15 +149,9 @@ const {
 	  expect(owner2_Weight).to.be.bignumber.equal("0");
 	  expect(totalWeight).to.be.bignumber.equal(ONE_ETH);
 
-		// --------------------- 3th day (owner1 & owner2 stake new tokens) ---------------------
+		// --------------------- after 3 secs (owner1 & owner2 stake new tokens) ---------------------
 		await time.increase(time.duration.seconds(120));
-	  await this.stakingWeight.setNowOverride('172801');
-
-		currentDays = await this.stakingWeight.getCurrentDay();
-	  expect(currentDays).to.be.bignumber.equal("2");
-
-		lastUpdateDay = await this.stakingWeight.lastUpdateDay();
-	  expect(lastUpdateDay).to.be.bignumber.equal("1");
+	  await this.stakingWeight.setNowOverride('2');
 
 		await this.stakingWeight.stake('100002', staker, ONE_ETH);
 		await this.stakingWeight.stake('100004', staker2, TWO_ETH);
@@ -183,15 +165,9 @@ const {
 	  expect(owner2_Weight).to.be.bignumber.equal(ONE_ETH);	// updateOwnerWeight has been called in stake
 	  expect(totalWeight).to.be.bignumber.equal(THREE_ETH);
 
-		// --------------------- 4th day (owner2 updateOwnerWeight) ---------------------
+		// --------------------- after 4 secs (owner2 updateOwnerWeight) ---------------------
 		await time.increase(time.duration.seconds(120));
-	  await this.stakingWeight.setNowOverride('259201');
-
-		currentDays = await this.stakingWeight.getCurrentDay();
-	  expect(currentDays).to.be.bignumber.equal("3");
-
-		lastUpdateDay = await this.stakingWeight.lastUpdateDay();
-	  expect(lastUpdateDay).to.be.bignumber.equal("2");
+	  await this.stakingWeight.setNowOverride('3');
 
 		await this.stakingWeight.updateOwnerWeight(staker2);
 		owner1_Weight = await this.stakingWeight.getOwnerWeight(staker);
@@ -201,15 +177,9 @@ const {
 	  expect(owner2_Weight).to.be.bignumber.equal(FOUR_ETH);
 	  expect(totalWeight).to.be.bignumber.equal(EIGHT_ETH);
 
-		// --------------------- 5th day (owner2 unstakes 1ETH token) ---------------------
+		// --------------------- after 5 secs (owner2 unstakes 1ETH token) ---------------------
 		await time.increase(time.duration.seconds(120));
-	  await this.stakingWeight.setNowOverride('345601');
-
-		currentDays = await this.stakingWeight.getCurrentDay();
-	  expect(currentDays).to.be.bignumber.equal("4");
-
-		lastUpdateDay = await this.stakingWeight.lastUpdateDay();
-	  expect(lastUpdateDay).to.be.bignumber.equal("3");
+	  await this.stakingWeight.setNowOverride('4');
 
 		await this.stakingWeight.unstake('100003', staker2);
 		stakedBalance = await this.stakingWeight.balance();

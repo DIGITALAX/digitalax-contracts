@@ -10,6 +10,8 @@ interface IGuildNFTStakingWeight {
     function stake(uint256 _tokenId, address _tokenOwner, uint256 _primarySalePrice) external;
     function unstake(uint256 _tokenId, address _tokenOwner) external;
 
+    function calcNewWeight() external view returns (uint256);
+    function calcNewOwnerWeight(address _tokenOwner) external view returns (uint256);
     function getTotalWeight() external view returns (uint256);
     function getOwnerWeight(address _tokenOwner) external view returns (uint256);
     function getTokenPrice(uint256 _tokenId) external view returns (uint256);

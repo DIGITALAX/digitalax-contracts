@@ -23,9 +23,6 @@ abstract contract Context {
     }
 }
 
-// SPDX-License-Identifier: MIT
-
-// SPDX-License-Identifier: MIT
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
  * checks.
@@ -237,7 +234,6 @@ library SafeMath {
     }
 }
 
-// SPDX-License-Identifier: MIT
 /**
  * @dev Library for managing
  * https://en.wikipedia.org/wiki/Set_(abstract_data_type)[sets] of primitive
@@ -532,7 +528,6 @@ library EnumerableSet {
     }
 }
 
-// SPDX-License-Identifier: MIT
 /**
  * @dev Collection of functions related to the address type
  */
@@ -719,7 +714,6 @@ library Address {
     }
 }
 
-// SPDX-License-Identifier: MIT
 /**
  * @dev Contract module that allows children to implement role-based access
  * control mechanisms.
@@ -930,7 +924,6 @@ abstract contract AccessControl is Context {
     }
 }
 
-// SPDX-License-Identifier: MIT
 /**
  * @notice Access Controls contract for the Digitalax Platform
  * @author BlockRocket.tech
@@ -1118,12 +1111,10 @@ contract DigitalaxAccessControls is AccessControl {
     }
 }
 
-// SPDX-License-Identifier: MIT
 interface IOracle {
     function getData() external returns (uint256, bool);
 }
 
-// SPDX-License-Identifier: MIT
 library Select {
     using SafeMath for uint256;
 
