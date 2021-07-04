@@ -213,7 +213,6 @@ library SafeMath {
     }
 }
 
-// SPDX-License-Identifier: GPLv2
 /// @dev an interface to interact with the Guild Staking Weight that will
 interface IGuildNFTStakingWeight {
     function updateWeight() external returns (bool);
@@ -222,6 +221,8 @@ interface IGuildNFTStakingWeight {
     function stake(uint256 _tokenId, address _tokenOwner, uint256 _primarySalePrice) external;
     function unstake(uint256 _tokenId, address _tokenOwner) external;
 
+    function calcNewWeight() external view returns (uint256);
+    function calcNewOwnerWeight(address _tokenOwner) external view returns (uint256);
     function getTotalWeight() external view returns (uint256);
     function getOwnerWeight(address _tokenOwner) external view returns (uint256);
     function getTokenPrice(uint256 _tokenId) external view returns (uint256);
@@ -239,13 +240,11 @@ interface IGuildNFTStakingWeight {
 contract GuildNFTStakingWeightV1 {
     using SafeMath for uint256;
 
-    uint256 constant SECONDS_PER_DAY = 24 * 60 * 60;
-
     struct OwnerWeight {
         uint256 totalWeight;
         uint256 currentStakedNFTCount;
         uint256 balance;
-        uint256 lastUpdateDay;
+        uint256 lastUpdateTime;
     }
 
     uint256 public startTime;
@@ -257,7 +256,6 @@ contract GuildNFTStakingWeightV1 {
     mapping (uint256 => address) public tokenOwner;
     mapping (address => OwnerWeight) public ownerWeight;
 
-    uint256 public lastUpdateDay;
     uint256 public lastUpdateTime;
 
     function balanceOf(address _owner) external view returns (uint256) {
@@ -276,39 +274,55 @@ contract GuildNFTStakingWeightV1 {
         return tokenPrice[_tokenId];
     }
 
+    function calcNewWeight() public view returns (uint256) {
+        if (_getNow() <= lastUpdateTime) {
+            return totalGuildWeight;
+        }
+
+        uint256 _newWeight = balance.mul(_getNow() - lastUpdateTime);
+
+        return totalGuildWeight.add(_newWeight);
+    }
+
     function updateWeight() public returns (bool) {
+        if (lastUpdateTime < startTime) {
+            lastUpdateTime = startTime;
+        }
+
         if (_getNow() <= lastUpdateTime) {
             return false;
         }
 
-        uint256 _currentDay = getCurrentDay();
-
-        for (uint256 i = lastUpdateDay; i < _currentDay; i++) {
-            totalGuildWeight = totalGuildWeight.add(balance);
-        }
+        totalGuildWeight = calcNewWeight();
 
         lastUpdateTime = _getNow();
-        lastUpdateDay = _currentDay;
 
         return true;
     }
 
+    function calcNewOwnerWeight(address _tokenOwner) public view returns (uint256) {
+        OwnerWeight memory _owner = ownerWeight[_tokenOwner];
+
+        if (_getNow() <= _owner.lastUpdateTime) {
+            return _owner.totalWeight;
+        }
+
+        uint256 _newWeight = _owner.balance.mul(_getNow() - _owner.lastUpdateTime);
+
+        return _owner.totalWeight.add(_newWeight);
+    }
+
     function updateOwnerWeight(address _tokenOwner) public returns (bool) {
         updateWeight();
-
-        uint256 _currentDay = getCurrentDay();
-
         OwnerWeight storage owner = ownerWeight[_tokenOwner];
 
-        if (_currentDay <= owner.lastUpdateDay) {
+        if (_getNow() <= owner.lastUpdateTime) {
             return false;
         }
 
-        for (uint256 i = owner.lastUpdateDay; i < _currentDay; i++) {
-            owner.totalWeight = owner.totalWeight.add(owner.balance);
-        }
+        owner.totalWeight = calcNewOwnerWeight(_tokenOwner);        
 
-        owner.lastUpdateDay = _currentDay;
+        owner.lastUpdateTime = _getNow();
 
         return true;
     }
@@ -319,8 +333,6 @@ contract GuildNFTStakingWeightV1 {
         if (balance == 0 && startTime == 0) {
             startTime = _getNow();
         }
-
-        uint256 _currentDay = getCurrentDay();
 
         tokenPrice[_tokenId] = _primarySalePrice;
         tokenOwner[_tokenId] = _tokenOwner;
@@ -355,15 +367,6 @@ contract GuildNFTStakingWeightV1 {
         if (owner.balance == 0) {
             delete ownerWeight[_tokenOwner];
         }
-    }
-
-    function diffDays(uint fromTimestamp, uint toTimestamp) internal pure returns (uint _days) {
-        require(fromTimestamp <= toTimestamp);
-        _days = (toTimestamp - fromTimestamp) / SECONDS_PER_DAY;
-    }
-
-    function getCurrentDay() public view returns(uint256) {
-        return diffDays(startTime, _getNow());
     }
 
     function _getNow() internal virtual view returns (uint256) {

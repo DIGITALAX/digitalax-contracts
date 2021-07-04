@@ -214,7 +214,6 @@ library SafeMath {
     }
 }
 
-// SPDX-License-Identifier: MIT
 /**
  * @dev Interface of the ERC165 standard, as defined in the
  * https://eips.ethereum.org/EIPS/eip-165[EIP].
@@ -236,7 +235,6 @@ interface IERC165 {
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 }
 
-// SPDX-License-Identifier: MIT
 /**
  * @dev Required interface of an ERC721 compliant contract.
  */
@@ -361,7 +359,6 @@ interface IERC721 is IERC165 {
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) external;
 }
 
-// SPDX-License-Identifier: MIT
 /**
  * @dev Library for managing
  * https://en.wikipedia.org/wiki/Set_(abstract_data_type)[sets] of primitive
@@ -656,7 +653,6 @@ library EnumerableSet {
     }
 }
 
-// SPDX-License-Identifier: MIT
 /**
  * @dev Collection of functions related to the address type
  */
@@ -843,7 +839,6 @@ library Address {
     }
 }
 
-// SPDX-License-Identifier: MIT
 /*
  * @dev Provides information about the current execution context, including the
  * sender of the transaction and its data. While these are generally available
@@ -865,7 +860,6 @@ abstract contract Context {
     }
 }
 
-// SPDX-License-Identifier: MIT
 /**
  * @dev Contract module that allows children to implement role-based access
  * control mechanisms.
@@ -1076,7 +1070,6 @@ abstract contract AccessControl is Context {
     }
 }
 
-// SPDX-License-Identifier: MIT
 /**
  * @notice Access Controls contract for the Digitalax Platform
  * @author BlockRocket.tech
@@ -1264,7 +1257,6 @@ contract DigitalaxAccessControls is AccessControl {
     }
 }
 
-// SPDX-License-Identifier: UNLICENSED
 interface IERC20 {
     function name() external view returns (string memory);
     function symbol() external view returns (string memory);
@@ -1280,7 +1272,6 @@ interface IERC20 {
     event Approval(address indexed owner, address indexed spender, uint256 amount);
 }
 
-// SPDX-License-Identifier: GPLv2
 /// @dev an interface to interact with PODE NFT that will
 interface IGuildNFTRewards {
     function updateRewards() external returns (bool);
@@ -1289,7 +1280,6 @@ interface IGuildNFTRewards {
     function lastRewardsTime() external view returns (uint256);
 }
 
-// SPDX-License-Identifier:MIT
 /**
  * a contract must implement this interface in order to support relayed transaction.
  * It is better to inherit the BaseRelayRecipient as its implementation.
@@ -1315,7 +1305,6 @@ abstract contract IRelayRecipient {
     function versionRecipient() external virtual view returns (string memory);
 }
 
-// SPDX-License-Identifier:MIT
 /**
  * A base contract to be inherited by any contract that want to receive relayed transactions
  * A subclass must use "_msgSender()" instead of "msg.sender"
@@ -1359,7 +1348,6 @@ abstract contract BaseRelayRecipient is IRelayRecipient {
     }
 }
 
-// SPDX-License-Identifier: GPLv2
 /// @dev an interface to interact with the Guild Staking Weight that will
 interface IGuildNFTStakingWeight {
     function updateWeight() external returns (bool);
@@ -1368,6 +1356,8 @@ interface IGuildNFTStakingWeight {
     function stake(uint256 _tokenId, address _tokenOwner, uint256 _primarySalePrice) external;
     function unstake(uint256 _tokenId, address _tokenOwner) external;
 
+    function calcNewWeight() external view returns (uint256);
+    function calcNewOwnerWeight(address _tokenOwner) external view returns (uint256);
     function getTotalWeight() external view returns (uint256);
     function getOwnerWeight(address _tokenOwner) external view returns (uint256);
     function getTokenPrice(uint256 _tokenId) external view returns (uint256);
@@ -1376,7 +1366,6 @@ interface IGuildNFTStakingWeight {
     function updateReactionPoint(string memory _reaction, uint256 _reactionPoint) external returns (bool);
 }
 
-// SPDX-License-Identifier: GPLv2
 /**
  * @title Digitalax Staking
  * @dev Stake NFTs, earn tokens on the Digitalax platform
@@ -1702,32 +1691,35 @@ contract GuildNFTStaking is BaseRelayRecipient {
 
         Staker storage staker = stakers[_user];
 
-        staker.rewardsEarned = totalRewards.mul(pointMultiplier)
-                                    .div(totalWeight)
-                                    .mul(ownerWeight)
-                                    .div(pointMultiplier);
+        staker.rewardsEarned = totalRewards.mul(ownerWeight)
+                                    .div(totalWeight);
     }
 
     /// @notice Returns the about of rewards yet to be claimed
-    function unclaimedRewards(address _user) external returns(uint256) {
+    function unclaimedRewards(address _user) external view returns(uint256) {
         if (stakedEthTotal == 0) {
             return 0;
         }
 
-        uint256 newRewards = rewardsContract.DecoRewards(lastUpdateTime, _getNow());
+        uint256 _newRewards = rewardsContract.DecoRewards(lastUpdateTime, _getNow());
+        uint256 _totalRewards = totalRewards.add(_newRewards);
 
-        weightContract.updateOwnerWeight(_user);
-        uint256 totalWeight = weightContract.getTotalWeight();
-        uint256 ownerWeight = weightContract.getOwnerWeight(_user);
+        uint256 _totalWeight = weightContract.calcNewWeight();
+        uint256 _ownerWeight = weightContract.calcNewOwnerWeight(_user);
 
-        return totalRewards.add(newRewards)
-                        .div(totalWeight)
-                        .mul(ownerWeight)
+        uint256 _payableAmount = _totalRewards.mul(_ownerWeight)
+                        .div(_totalWeight)
                         .sub(stakers[_user].rewardsReleased);
+
+        /// @dev accounts for dust
+        uint256 rewardBal = rewardsToken.balanceOf(address(this));
+        if (_payableAmount > rewardBal) {
+            _payableAmount = rewardBal;
+        }
+
+        return _payableAmount;
     }
 
-
-    /// @notice Lets a user with rewards owing to claim tokens
     function claimReward(address _user) public {
         require(
             tokensClaimable == true,
@@ -1737,19 +1729,18 @@ contract GuildNFTStaking is BaseRelayRecipient {
 
         Staker storage staker = stakers[_user];
 
-        uint256 payableAmount = staker.rewardsEarned.sub(staker.rewardsReleased);
-        staker.rewardsReleased = staker.rewardsReleased.add(payableAmount);
+        uint256 _payableAmount = staker.rewardsEarned.sub(staker.rewardsReleased);
+        staker.rewardsReleased = staker.rewardsReleased.add(_payableAmount);
 
         /// @dev accounts for dust
         uint256 rewardBal = rewardsToken.balanceOf(address(this));
-        if (payableAmount > rewardBal) {
-            payableAmount = rewardBal;
+        if (_payableAmount > rewardBal) {
+            _payableAmount = rewardBal;
         }
 
-        rewardsToken.transfer(_user, payableAmount);
-        emit RewardPaid(_user, payableAmount);
+        rewardsToken.transfer(_user, _payableAmount);
+        emit RewardPaid(_user, _payableAmount);
     }
-
 
     function onERC721Received(address, address, uint256, bytes calldata data) public returns(bytes4) {
         return _ERC721_RECEIVED;
