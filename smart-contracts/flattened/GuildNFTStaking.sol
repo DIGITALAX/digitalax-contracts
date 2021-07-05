@@ -1383,6 +1383,7 @@ contract GuildNFTStaking is BaseRelayRecipient {
 
     /// @notice total ethereum staked currently in the guild nft staking contract
     uint256 public stakedEthTotal;
+    uint256 public nftStakedTotal;
     uint256 public lastUpdateTime;
 
     uint256 public totalRewards;
@@ -1592,6 +1593,7 @@ contract GuildNFTStaking is BaseRelayRecipient {
         uint256 _primarySalePrice = getContribution(_tokenId);
         staker.balance = staker.balance.add(_primarySalePrice);
         stakedEthTotal = stakedEthTotal.add(_primarySalePrice);
+        nftStakedTotal = nftStakedTotal.add(1);
         staker.tokenIds.push(_tokenId);
         staker.tokenIndex[_tokenId] = staker.tokenIds.length.sub(1);
         tokenOwner[_tokenId] = _user;
@@ -1638,6 +1640,7 @@ contract GuildNFTStaking is BaseRelayRecipient {
         uint256 amount = getContribution(_tokenId);
         staker.balance = staker.balance.sub(amount);
         stakedEthTotal = stakedEthTotal.sub(amount);
+        nftStakedTotal = nftStakedTotal.sub(1);
 
         uint256 lastIndex = staker.tokenIds.length - 1;
         uint256 lastIndexKey = staker.tokenIds[lastIndex];
