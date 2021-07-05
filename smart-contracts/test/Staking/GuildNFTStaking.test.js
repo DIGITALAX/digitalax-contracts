@@ -237,7 +237,13 @@ const {
 	  await this.token.setPrimarySalePrice(TOKEN_3, ONE_ETH, {from: admin});
 	  await this.token.setPrimarySalePrice(TOKEN_4, ONE_ETH, {from: admin});
 	  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
+
+	  expect(await this.guildNftStaking.nftStakedTotal()).to.be.bignumber.equal("0");
+
 	  await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2, TOKEN_3,TOKEN_4],{from: staker});
+
+	  expect(await this.guildNftStaking.nftStakedTotal()).to.be.bignumber.equal("4");
+
 	  //await this.guildNftStaking.stakeAll({from: staker});
 	  console.log(await this.guildNftStaking.getStakedTokens(staker));
 	  await time.increase(time.duration.seconds(120));
@@ -252,6 +258,7 @@ const {
 	  await time.increase(time.duration.seconds(1000000));
 	  await this.guildNftStaking.unstakeBatch([TOKEN_2,TOKEN_4,TOKEN_1,TOKEN_3], {from: staker});
 
+	  expect(await this.guildNftStaking.nftStakedTotal()).to.be.bignumber.equal("0");
 
 	  const finalMonaBalance = await this.decoToken.balanceOf(staker);
 
