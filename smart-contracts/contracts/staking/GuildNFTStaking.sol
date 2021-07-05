@@ -336,9 +336,14 @@ contract GuildNFTStaking is BaseRelayRecipient {
         lastUpdateTime = _getNow();
 
         Staker storage staker = stakers[_user];
-
-        staker.rewardsEarned = totalRewards.mul(ownerWeight)
+        uint256 _stakerRewards = totalRewards.mul(ownerWeight)
                                     .div(totalWeight);
+
+        if (staker.rewardsReleased >= _stakerRewards) {
+            staker.rewardsEarned = staker.rewardsReleased;
+        } else {
+            staker.rewardsEarned = _stakerRewards;
+        }
     }
 
     /// @notice Returns the about of rewards yet to be claimed
@@ -351,11 +356,22 @@ contract GuildNFTStaking is BaseRelayRecipient {
         uint256 _totalRewards = totalRewards.add(_newRewards);
 
         uint256 _totalWeight = weightContract.calcNewWeight();
-        uint256 _ownerWeight = weightContract.calcNewOwnerWeight(_user);
 
-        uint256 _payableAmount = _totalRewards.mul(_ownerWeight)
-                        .div(_totalWeight)
-                        .sub(stakers[_user].rewardsReleased);
+        if (_totalWeight == 0) {
+            return 0;
+        }
+
+        uint256 _ownerWeight = weightContract.calcNewOwnerWeight(_user);
+        uint256 _ownerTotalRewards = _totalRewards.mul(_ownerWeight)
+                        .div(_totalWeight);
+
+        uint256 _payableAmount = 0;
+
+        if (_ownerTotalRewards > stakers[_user].rewardsReleased) {
+            _payableAmount = _ownerTotalRewards.sub(stakers[_user].rewardsReleased);
+        } else {
+            return 0;
+        }
 
         /// @dev accounts for dust
         uint256 rewardBal = rewardsToken.balanceOf(address(this));
@@ -374,6 +390,10 @@ contract GuildNFTStaking is BaseRelayRecipient {
         updateReward(_user);
 
         Staker storage staker = stakers[_user];
+
+        if (staker.rewardsEarned <= staker.rewardsReleased) {
+            return;
+        }
 
         uint256 _payableAmount = staker.rewardsEarned.sub(staker.rewardsReleased);
         staker.rewardsReleased = staker.rewardsReleased.add(_payableAmount);
