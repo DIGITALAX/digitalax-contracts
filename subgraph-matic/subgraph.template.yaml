@@ -588,6 +588,35 @@ dataSources:
           handler: handleRewardPaid
       file: ./src/DigitalaxNFTStaking.mapping.ts
   - kind: ethereum/contract
+    name: GuildNFTStaking
+    network: '{{network}}'
+    source:
+      address: '{{GuildNFTStakingAddress}}'
+      abi: GuildNFTStaking
+      startBlock: {{GuildNFTStakingStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+      abis:
+        - name: GuildNFTStaking
+          file: ./abis/GuildNFTStaking.json
+      eventHandlers:
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+      file: ./src/GuildNFTStaking.mapping.ts
+  - kind: ethereum/contract
     name: PodeNFTv2
     network: '{{network}}'
     source:

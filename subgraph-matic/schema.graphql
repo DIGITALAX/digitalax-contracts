@@ -516,3 +516,9 @@ type DigitalaxSubscriptionDesignerIndex @entity {
   garments: [DigitalaxSubscription!]!
   infoUrl: String!
 }
+
+type PodeNFTv2Staker @entity {
+  id: ID!
+  garments: [PodeNFTv2!]!
+  rewardsClaimed: BigInt!
+}
