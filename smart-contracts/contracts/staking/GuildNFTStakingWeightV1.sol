@@ -1,7 +1,7 @@
 pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "./interfaces/IGuildNFTStakingWeight.sol";
+import "../EIP2771/BaseRelayRecipient.sol";
 
 /**
  * @title Digitalax Guild NFT Staking Weight
@@ -10,7 +10,7 @@ import "./interfaces/IGuildNFTStakingWeight.sol";
  * @author 
  */
 
-contract GuildNFTStakingWeightV1 {
+contract GuildNFTStakingWeightV1 is BaseRelayRecipient {
     using SafeMath for uint256;
 
     struct OwnerWeight {
@@ -29,7 +29,18 @@ contract GuildNFTStakingWeightV1 {
     mapping (uint256 => address) public tokenOwner;
     mapping (address => OwnerWeight) public ownerWeight;
 
+    address stakingContract;
+
     uint256 public lastUpdateTime;
+
+    bool initialised;
+
+    function init(address _stakingContract) external {
+        require(!initialised, "Already initialised");
+        
+        stakingContract = _stakingContract;
+        initialised = true;
+    }
 
     function balanceOf(address _owner) external view returns (uint256) {
         return ownerWeight[_owner].balance;
@@ -100,7 +111,21 @@ contract GuildNFTStakingWeightV1 {
         return true;
     }
 
+    function _msgSender() internal view returns (address payable sender) {
+        return BaseRelayRecipient.msgSender();
+    }
+
+    /**
+       * Override this function.
+       * This version is to keep track of BaseRelayRecipient you are using
+       * in your contract.
+       */
+    function versionRecipient() external view override returns (string memory) {
+        return "1";
+    }
+
     function stake(uint256 _tokenId, address _tokenOwner, uint256 _primarySalePrice) external {
+        require(_msgSender() == stakingContract, "Sender must be staking contract");
         require(tokenOwner[_tokenId] == address(0) || tokenOwner[_tokenId] == _tokenOwner);
 
         if (balance == 0 && startTime == 0) {
@@ -122,6 +147,7 @@ contract GuildNFTStakingWeightV1 {
     }
 
     function unstake(uint256 _tokenId, address _tokenOwner) external {
+        require(_msgSender() == stakingContract, "Sender must be staking contract");
         require(tokenOwner[_tokenId] == _tokenOwner);
 
         updateOwnerWeight(_tokenOwner);
