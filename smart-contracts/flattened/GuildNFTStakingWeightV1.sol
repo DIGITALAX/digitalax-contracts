@@ -213,22 +213,72 @@ library SafeMath {
     }
 }
 
-/// @dev an interface to interact with the Guild Staking Weight that will
-interface IGuildNFTStakingWeight {
-    function updateWeight() external returns (bool);
-    function updateOwnerWeight(address _tokenOwner) external returns (bool);
-    function appraise(uint256 _tokenId, address _appraiser, uint256 _limitAppraisalCount, string memory _reaction) external;
-    function stake(uint256 _tokenId, address _tokenOwner, uint256 _primarySalePrice) external;
-    function unstake(uint256 _tokenId, address _tokenOwner) external;
+/**
+ * a contract must implement this interface in order to support relayed transaction.
+ * It is better to inherit the BaseRelayRecipient as its implementation.
+ */
+abstract contract IRelayRecipient {
 
-    function calcNewWeight() external view returns (uint256);
-    function calcNewOwnerWeight(address _tokenOwner) external view returns (uint256);
-    function getTotalWeight() external view returns (uint256);
-    function getOwnerWeight(address _tokenOwner) external view returns (uint256);
-    function getTokenPrice(uint256 _tokenId) external view returns (uint256);
-    function balanceOf(address _owner) external view returns (uint256);
+    /**
+     * return if the forwarder is trusted to forward relayed transactions to us.
+     * the forwarder is required to verify the sender's signature, and verify
+     * the call is not a replay.
+     */
+    function isTrustedForwarder(address forwarder) public virtual view returns(bool);
 
-    function updateReactionPoint(string memory _reaction, uint256 _reactionPoint) external returns (bool);
+    /**
+     * return the sender of this call.
+     * if the call came through our trusted forwarder, then the real sender is appended as the last 20 bytes
+     * of the msg.data.
+     * otherwise, return `msg.sender`
+     * should be used in the contract anywhere instead of msg.sender
+     */
+    function msgSender() internal virtual view returns (address payable);
+
+    function versionRecipient() external virtual view returns (string memory);
+}
+
+/**
+ * A base contract to be inherited by any contract that want to receive relayed transactions
+ * A subclass must use "_msgSender()" instead of "msg.sender"
+ */
+abstract contract BaseRelayRecipient is IRelayRecipient {
+
+    /*
+     * Forwarder singleton we accept calls from
+     */
+    address public trustedForwarder;
+
+    /*
+     * require a function to be called through GSN only
+     */
+    modifier trustedForwarderOnly() {
+        require(msg.sender == address(trustedForwarder), "Function can only be called through the trusted Forwarder");
+        _;
+    }
+
+    function isTrustedForwarder(address forwarder) public override view returns(bool) {
+        return forwarder == trustedForwarder;
+    }
+
+    /**
+     * return the sender of this call.
+     * if the call came through our trusted forwarder, return the original sender.
+     * otherwise, return `msg.sender`.
+     * should be used in the contract anywhere instead of msg.sender
+     */
+    function msgSender() internal override view returns (address payable ret) {
+        if (msg.data.length >= 24 && isTrustedForwarder(msg.sender)) {
+            // At this point we know that the sender is a trusted forwarder,
+            // so we trust that the last bytes of msg.data are the verified sender address.
+            // extract sender address from the end of msg.data
+            assembly {
+                ret := shr(96,calldataload(sub(calldatasize(),20)))
+            }
+        } else {
+            return msg.sender;
+        }
+    }
 }
 
 /**
@@ -237,7 +287,7 @@ interface IGuildNFTStakingWeight {
  * @author DIGITALAX CORE TEAM
  * @author 
  */
-contract GuildNFTStakingWeightV1 {
+contract GuildNFTStakingWeightV1 is BaseRelayRecipient {
     using SafeMath for uint256;
 
     struct OwnerWeight {
@@ -256,7 +306,18 @@ contract GuildNFTStakingWeightV1 {
     mapping (uint256 => address) public tokenOwner;
     mapping (address => OwnerWeight) public ownerWeight;
 
+    address stakingContract;
+
     uint256 public lastUpdateTime;
+
+    bool initialised;
+
+    function init(address _stakingContract) external {
+        require(!initialised, "Already initialised");
+        
+        stakingContract = _stakingContract;
+        initialised = true;
+    }
 
     function balanceOf(address _owner) external view returns (uint256) {
         return ownerWeight[_owner].balance;
@@ -327,7 +388,21 @@ contract GuildNFTStakingWeightV1 {
         return true;
     }
 
+    function _msgSender() internal view returns (address payable sender) {
+        return BaseRelayRecipient.msgSender();
+    }
+
+    /**
+       * Override this function.
+       * This version is to keep track of BaseRelayRecipient you are using
+       * in your contract.
+       */
+    function versionRecipient() external view override returns (string memory) {
+        return "1";
+    }
+
     function stake(uint256 _tokenId, address _tokenOwner, uint256 _primarySalePrice) external {
+        require(_msgSender() == stakingContract, "Sender must be staking contract");
         require(tokenOwner[_tokenId] == address(0) || tokenOwner[_tokenId] == _tokenOwner);
 
         if (balance == 0 && startTime == 0) {
@@ -349,6 +424,7 @@ contract GuildNFTStakingWeightV1 {
     }
 
     function unstake(uint256 _tokenId, address _tokenOwner) external {
+        require(_msgSender() == stakingContract, "Sender must be staking contract");
         require(tokenOwner[_tokenId] == _tokenOwner);
 
         updateOwnerWeight(_tokenOwner);
