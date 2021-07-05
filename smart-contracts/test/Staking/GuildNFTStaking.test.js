@@ -102,6 +102,8 @@ const {
 		  constants.ZERO_ADDRESS
 	  );
 
+	  await this.stakingWeight.init(this.guildNftStaking.address);
+
 	  await this.guildNftStaking.setTokensClaimable(true, {from: admin});
 
 	  this.digitalaxRewards = await GuildNFTRewardsMock.new(
