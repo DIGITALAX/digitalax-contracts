@@ -129,13 +129,14 @@ const {
 	it('successfully update weight with multiple owners and different stake & update time', async () => {
 		
 		// --------------------- after 1 sec (owner1 stakes his token) ---------------------
+	  await this.stakingWeight.setNowOverride('1');
 		await this.stakingWeight.stake('100001', staker, ONE_ETH);
 		let stakedBalance = await this.stakingWeight.balance();
 	  expect(stakedBalance).to.be.bignumber.equal(ONE_ETH);
 
 		// --------------------- after 2 secs (owner2 stakes his token & update total weight) ---------------------
 		await time.increase(time.duration.seconds(120));
-	  await this.stakingWeight.setNowOverride('1');
+	  await this.stakingWeight.setNowOverride('2');
 
 		await this.stakingWeight.stake('100003', staker2, ONE_ETH);
 		stakedBalance = await this.stakingWeight.balance();
@@ -151,7 +152,7 @@ const {
 
 		// --------------------- after 3 secs (owner1 & owner2 stake new tokens) ---------------------
 		await time.increase(time.duration.seconds(120));
-	  await this.stakingWeight.setNowOverride('2');
+	  await this.stakingWeight.setNowOverride('3');
 
 		await this.stakingWeight.stake('100002', staker, ONE_ETH);
 		await this.stakingWeight.stake('100004', staker2, TWO_ETH);
@@ -167,7 +168,7 @@ const {
 
 		// --------------------- after 4 secs (owner2 updateOwnerWeight) ---------------------
 		await time.increase(time.duration.seconds(120));
-	  await this.stakingWeight.setNowOverride('3');
+	  await this.stakingWeight.setNowOverride('4');
 
 		await this.stakingWeight.updateOwnerWeight(staker2);
 		owner1_Weight = await this.stakingWeight.getOwnerWeight(staker);
@@ -179,7 +180,7 @@ const {
 
 		// --------------------- after 5 secs (owner2 unstakes 1ETH token) ---------------------
 		await time.increase(time.duration.seconds(120));
-	  await this.stakingWeight.setNowOverride('4');
+	  await this.stakingWeight.setNowOverride('5');
 
 		await this.stakingWeight.unstake('100003', staker2);
 		stakedBalance = await this.stakingWeight.balance();

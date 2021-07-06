@@ -106,7 +106,7 @@ const {
 
 	  await this.guildNftStaking.setTokensClaimable(true, {from: admin});
 
-	  this.digitalaxRewards = await GuildNFTRewardsMock.new(
+	  this.guildNFTRewards = await GuildNFTRewardsMock.new(
 		  this.decoToken.address,
 		  this.accessControls.address,
 		  this.guildNftStaking.address,
@@ -117,18 +117,18 @@ const {
 	  );
 
 
-	  await this.accessControls.addMinterRole(this.digitalaxRewards.address, {from: admin});
+	  await this.accessControls.addMinterRole(this.guildNFTRewards.address, {from: admin});
 
-	  await this.digitalaxRewards.setNftStaking(this.guildNftStaking.address, {from: admin});
+	  await this.guildNFTRewards.setNftStaking(this.guildNftStaking.address, {from: admin});
 
-	  await this.decoToken.approve(this.digitalaxRewards.address, TWO_THOUSAND_TOKENS, {from: admin});
+	  await this.decoToken.approve(this.guildNFTRewards.address, TWO_THOUSAND_TOKENS, {from: admin});
 
-	  await this.digitalaxRewards.setRewards([1], [FIFTY_TOKENS], {from: admin});
-	  await this.digitalaxRewards.setRewards([2], [HUNDRED_TOKENS], {from: admin});
-	  await this.digitalaxRewards.setRewards([3], [FIFTY_TOKENS], {from: admin});
-	  await this.digitalaxRewards.setRewards([4], [TEN_TOKENS], {from: admin});
+	  await this.guildNFTRewards.setRewards([1], [FIFTY_TOKENS], {from: admin});
+	  await this.guildNFTRewards.setRewards([2], [HUNDRED_TOKENS], {from: admin});
+	  await this.guildNFTRewards.setRewards([3], [FIFTY_TOKENS], {from: admin});
+	  await this.guildNFTRewards.setRewards([4], [TEN_TOKENS], {from: admin});
 
-	  await this.guildNftStaking.setRewardsContract(this.digitalaxRewards.address, { from: admin });
+	  await this.guildNftStaking.setRewardsContract(this.guildNFTRewards.address, { from: admin });
 	  await this.guildNftStaking.setTokensClaimable(true, {from: admin});
 	  await this.decoToken.approve(this.guildNftStaking.address, ONE_THOUSAND_TOKENS, { from: staker });
 	  await this.decoToken.approve(this.guildNftStaking.address, ONE_THOUSAND_TOKENS, { from: staker2 });
@@ -138,16 +138,16 @@ const {
 		describe('setRewardsContract()', () => {
 			it('fails when not admin', async () => {
 				await expectRevert(
-					this.guildNftStaking.setRewardsContract(this.digitalaxRewards.address, {from: staker}),
+					this.guildNftStaking.setRewardsContract(this.guildNFTRewards.address, {from: staker}),
 					'GuildNFTStaking.setRewardsContract: Sender must be admin'
 				);
 			});
 
 			it('successfully sets rewards contract', async () => {
-				await this.guildNftStaking.setRewardsContract(this.digitalaxRewards.address, {from: admin});
+				await this.guildNftStaking.setRewardsContract(this.guildNFTRewards.address, {from: admin});
 
 				const updated = await this.guildNftStaking.rewardsContract();
-				expect(updated).to.be.equal(this.digitalaxRewards.address);
+				expect(updated).to.be.equal(this.guildNFTRewards.address);
 			});
 		});
 	})
@@ -208,25 +208,24 @@ const {
 	  console.log(await this.guildNftStaking.getStakedTokens(staker));
 	  await time.increase(time.duration.seconds(120));
 
-	  await this.digitalaxRewards.setNowOverride('1209601'); // next week
+	  await this.guildNFTRewards.setNowOverride('1209601'); // next week
 	  await this.guildNftStaking.setNowOverride('1209601'); // next week
 	  await this.stakingWeight.setNowOverride('1209601'); // next week
 	  console.log('balance of staker before and after:');
 
-	  const initialMonaBalance = await this.decoToken.balanceOf(staker);
+	  const initialDecoBalance = await this.decoToken.balanceOf(staker);
 
-		await this.stakingWeight.updateOwnerWeight(staker);
 		const stakedBalance = await this.stakingWeight.balanceOf(staker);
 	  expect(stakedBalance).to.be.bignumber.equal(ONE_ETH);
 
-		await time.increase(time.duration.seconds(1000000));
+		// await time.increase(time.duration.seconds(1000000));
 	  await this.guildNftStaking.unstake(TOKEN_1, {from: staker});
 
-	  const finalMonaBalance = await this.decoToken.balanceOf(staker);
+	  const finalDecoBalance = await this.decoToken.balanceOf(staker);
 
-	  expect(finalMonaBalance.sub(initialMonaBalance)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+	  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
 
-	  console.log(finalMonaBalance.sub(initialMonaBalance).toString());
+	  console.log(finalDecoBalance.sub(initialDecoBalance).toString());
 	});
 
 	it('successfully deposits many NFT and batch', async () => {
@@ -250,23 +249,23 @@ const {
 	  console.log(await this.guildNftStaking.getStakedTokens(staker));
 	  await time.increase(time.duration.seconds(120));
 
-	  await this.digitalaxRewards.setNowOverride('1209601'); // next week
+	  await this.guildNFTRewards.setNowOverride('1209601'); // next week
 	  await this.guildNftStaking.setNowOverride('1209601'); // next week
 	  await this.stakingWeight.setNowOverride('1209601'); // next week
 	  console.log('balance of staker before and after:');
 
-	  const initialMonaBalance = await this.decoToken.balanceOf(staker);
+	  const initialDecoBalance = await this.decoToken.balanceOf(staker);
 
 	  await time.increase(time.duration.seconds(1000000));
 	  await this.guildNftStaking.unstakeBatch([TOKEN_2,TOKEN_4,TOKEN_1,TOKEN_3], {from: staker});
 
 	  expect(await this.guildNftStaking.nftStakedTotal()).to.be.bignumber.equal("0");
 
-	  const finalMonaBalance = await this.decoToken.balanceOf(staker);
+	  const finalDecoBalance = await this.decoToken.balanceOf(staker);
 
-	  expect(finalMonaBalance.sub(initialMonaBalance)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+	  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
 
-	  console.log(finalMonaBalance.sub(initialMonaBalance).toString());
+	  console.log(finalDecoBalance.sub(initialDecoBalance).toString());
 	});
 
 	it('successfully claims reward  NFT', async () => {
@@ -276,22 +275,22 @@ const {
 	  await this.guildNftStaking.stake(TOKEN_1,{from: staker});
 	  await time.increase(time.duration.seconds(120));
 
-	  await this.digitalaxRewards.setNowOverride('1209601'); // next week
+	  await this.guildNFTRewards.setNowOverride('1209601'); // next week
 	  await this.guildNftStaking.setNowOverride('1209601'); // next week
 	  await this.stakingWeight.setNowOverride('1209601'); // next week
 	  console.log('balance of staker before and after:');
 
-	  const initialMonaBalance = await this.decoToken.balanceOf(staker);
+	  const initialDecoBalance = await this.decoToken.balanceOf(staker);
 
 	  await time.increase(time.duration.seconds(1000000));
 	  await this.guildNftStaking.claimReward(staker, {from: staker});
 
 
-	  const finalMonaBalance = await this.decoToken.balanceOf(staker);
+	  const finalDecoBalance = await this.decoToken.balanceOf(staker);
 
-	  expect(finalMonaBalance.sub(initialMonaBalance)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+	  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
 
-	  console.log(finalMonaBalance.sub(initialMonaBalance).toString());
+	  console.log(finalDecoBalance.sub(initialDecoBalance).toString());
 	});
 
 	it('successfully claims reward  NFT', async () => {
@@ -301,22 +300,22 @@ const {
 	  await this.guildNftStaking.stake(TOKEN_1,{from: staker});
 	  await time.increase(time.duration.seconds(120));
 
-	  await this.digitalaxRewards.setNowOverride('1209601'); // next week
+	  await this.guildNFTRewards.setNowOverride('1209601'); // next week
 	  await this.guildNftStaking.setNowOverride('1209601'); // next week
 	  await this.stakingWeight.setNowOverride('1209601'); // next week
 	  console.log('balance of staker before and after:');
 
-	  const initialMonaBalance = await this.decoToken.balanceOf(staker);
+	  const initialDecoBalance = await this.decoToken.balanceOf(staker);
 
 	  await time.increase(time.duration.seconds(1000000));
 	  await this.guildNftStaking.claimReward(staker, {from: staker});
 
 
-	  const finalMonaBalance = await this.decoToken.balanceOf(staker);
+	  const finalDecoBalance = await this.decoToken.balanceOf(staker);
 
-	  expect(finalMonaBalance.sub(initialMonaBalance)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+	  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
 
-	  console.log(finalMonaBalance.sub(initialMonaBalance).toString());
+	  console.log(finalDecoBalance.sub(initialDecoBalance).toString());
 	});
 
 	it('successfully emergency unstakes  NFT', async () => {
@@ -326,22 +325,22 @@ const {
 	  await this.guildNftStaking.stake(TOKEN_1,{from: staker});
 	  await time.increase(time.duration.seconds(120));
 
-	  await this.digitalaxRewards.setNowOverride('1209601'); // next week
+	  await this.guildNFTRewards.setNowOverride('1209601'); // next week
 	  await this.guildNftStaking.setNowOverride('1209601'); // next week
 	  await this.stakingWeight.setNowOverride('1209601'); // next week
 	  console.log('balance of staker before and after:');
 
-	  const initialMonaBalance = await this.decoToken.balanceOf(staker);
+	  const initialDecoBalance = await this.decoToken.balanceOf(staker);
 
 	  await time.increase(time.duration.seconds(1000000));
 	  await this.guildNftStaking.emergencyUnstake(TOKEN_1, {from: staker});
 
 
-	  const finalMonaBalance = await this.decoToken.balanceOf(staker);
+	  const finalDecoBalance = await this.decoToken.balanceOf(staker);
 
-	  expect(finalMonaBalance.sub(initialMonaBalance)).to.be.bignumber.equal(new BN('0'));
+	  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.equal(new BN('0'));
 
-	  console.log(finalMonaBalance.sub(initialMonaBalance).toString());
+	  console.log(finalDecoBalance.sub(initialDecoBalance).toString());
 	});
 
 	it('successfully deposits many NFT and batch with multiple users multiple weeks', async () => {
@@ -363,15 +362,15 @@ const {
 	await time.increase(time.duration.seconds(120));
 
 	// // Make sure we can withdraw and deposit the same amount back in.
-	// await this.digitalaxRewards.setRewards([3], [FIFTY_TOKENS], {from: admin});
+	// await this.guildNFTRewards.setRewards([3], [FIFTY_TOKENS], {from: admin});
 
-	await this.digitalaxRewards.setNowOverride('2420000'); // final week
+	await this.guildNFTRewards.setNowOverride('2420000'); // final week
 	await this.guildNftStaking.setNowOverride('2420000'); // final week
 	await this.stakingWeight.setNowOverride('2420000'); // final week
 	console.log('balance of staker before and after:');
 
-	const initialMonaBalance = await this.decoToken.balanceOf(staker);
-	const initialMonaBalance2 = await this.decoToken.balanceOf(staker2);
+	const initialDecoBalance = await this.decoToken.balanceOf(staker);
+	const initialDecoBalance2 = await this.decoToken.balanceOf(staker2);
 
 	console.log("Unclaimed rewards");
 	console.log(await this.guildNftStaking.unclaimedRewards(staker));
@@ -379,22 +378,22 @@ const {
 
 	await time.increase(time.duration.seconds(1000001));
 
-	console.log('await this.digitalaxRewards.getDecoDailyAPY()');
-	console.log(await this.digitalaxRewards.getDecoDailyAPY());
+	console.log('await this.guildNFTRewards.getDecoDailyAPY()');
+	console.log(await this.guildNFTRewards.getDecoDailyAPY());
 
 	await this.guildNftStaking.unstakeBatch([TOKEN_1,TOKEN_2], {from: staker});
 	await this.guildNftStaking.unstakeBatch([TOKEN_1,TOKEN_2], {from: staker2});
 
 
-	const finalMonaBalance = await this.decoToken.balanceOf(staker);
-	const finalMonaBalance2 = await this.decoToken.balanceOf(staker2);
+	const finalDecoBalance = await this.decoToken.balanceOf(staker);
+	const finalDecoBalance2 = await this.decoToken.balanceOf(staker2);
 
-	expect(finalMonaBalance.sub(initialMonaBalance)).to.be.bignumber.greaterThan(HUNDRED_TOKENS);
-	expect(finalMonaBalance2.sub(initialMonaBalance2)).to.be.bignumber.greaterThan(HUNDRED_TOKENS);
+	expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(HUNDRED_TOKENS);
+	expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(HUNDRED_TOKENS);
 
 	console.log('Staker 1 and 2');
-	console.log(finalMonaBalance.sub(initialMonaBalance).toString());
-	console.log(finalMonaBalance2.sub(initialMonaBalance2).toString());
+	console.log(finalDecoBalance.sub(initialDecoBalance).toString());
+	console.log(finalDecoBalance2.sub(initialDecoBalance2).toString());
 
 
   });
