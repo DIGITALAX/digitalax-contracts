@@ -55,6 +55,8 @@ contract GuildNFTStaking is BaseRelayRecipient {
         address indexed accessControls
     );
 
+    uint256 public balance;
+
     /// @notice mapping of a staker to its current properties
     mapping (address => Staker) public stakers;
 
@@ -66,10 +68,10 @@ contract GuildNFTStaking is BaseRelayRecipient {
     bool initialised;
 
     /// @notice event emitted when a user has staked a token
-    event Staked(address owner, uint256 amount);
+    event Staked(address owner, uint256 tokenId);
 
     /// @notice event emitted when a user has unstaked a token
-    event Unstaked(address owner, uint256 amount);
+    event Unstaked(address owner, uint256 tokenId);
 
     /// @notice event emitted when a user claims reward
     event RewardPaid(address indexed user, uint256 reward);
@@ -244,6 +246,8 @@ contract GuildNFTStaking is BaseRelayRecipient {
         staker.tokenIndex[_tokenId] = staker.tokenIds.length.sub(1);
         tokenOwner[_tokenId] = _user;
 
+        balance = balance.add(_primarySalePrice);
+
         parentNFT.safeTransferFrom(
             _user,
             address(this),
@@ -304,6 +308,8 @@ contract GuildNFTStaking is BaseRelayRecipient {
         }
         delete tokenOwner[_tokenId];
 
+        balance = balance.sub(amount);
+
         weightContract.unstake(_tokenId, _user);
         parentNFT.safeTransferFrom(address(this), _user, _tokenId);
 
@@ -323,6 +329,10 @@ contract GuildNFTStaking is BaseRelayRecipient {
 
     /// @dev Updates the amount of rewards owed for each user before any tokens are moved
     function updateReward(address _user) public {
+        if (balance == 0) {
+            lastUpdateTime = _getNow();
+            return;
+        }
         rewardsContract.updateRewards();
         uint256 newRewards = rewardsContract.DecoRewards(lastUpdateTime, _getNow());
         totalRewards = totalRewards.add(newRewards);
