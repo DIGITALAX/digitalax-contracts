@@ -312,6 +312,10 @@ contract GuildNFTStakingWeightV1 is BaseRelayRecipient {
 
     bool initialised;
 
+    constructor() public {
+        startTime = _getNow();
+    }
+
     function init(address _stakingContract) external {
         require(!initialised, "Already initialised");
         
@@ -336,7 +340,7 @@ contract GuildNFTStakingWeightV1 is BaseRelayRecipient {
     }
 
     function calcNewWeight() public view returns (uint256) {
-        if (_getNow() <= lastUpdateTime) {
+        if (_getNow() <= lastUpdateTime || balance == 0) {
             return totalGuildWeight;
         }
 
@@ -364,7 +368,7 @@ contract GuildNFTStakingWeightV1 is BaseRelayRecipient {
     function calcNewOwnerWeight(address _tokenOwner) public view returns (uint256) {
         OwnerWeight memory _owner = ownerWeight[_tokenOwner];
 
-        if (_getNow() <= _owner.lastUpdateTime) {
+        if (_getNow() <= _owner.lastUpdateTime || _owner.balance == 0) {
             return _owner.totalWeight;
         }
 
@@ -405,10 +409,6 @@ contract GuildNFTStakingWeightV1 is BaseRelayRecipient {
         require(_msgSender() == stakingContract, "Sender must be staking contract");
         require(tokenOwner[_tokenId] == address(0) || tokenOwner[_tokenId] == _tokenOwner);
 
-        if (balance == 0 && startTime == 0) {
-            startTime = _getNow();
-        }
-
         tokenPrice[_tokenId] = _primarySalePrice;
         tokenOwner[_tokenId] = _tokenOwner;
 
@@ -439,10 +439,6 @@ contract GuildNFTStakingWeightV1 is BaseRelayRecipient {
 
         delete tokenPrice[_tokenId];
         delete tokenOwner[_tokenId];
-
-        if (owner.balance == 0) {
-            delete ownerWeight[_tokenOwner];
-        }
     }
 
     function _getNow() internal virtual view returns (uint256) {
