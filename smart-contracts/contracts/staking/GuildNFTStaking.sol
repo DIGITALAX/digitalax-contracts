@@ -32,6 +32,7 @@ contract GuildNFTStaking is BaseRelayRecipient {
     uint256 public nftStakedTotal;
     uint256 public lastUpdateTime;
 
+    uint256 public totalRoundRewards;
     uint256 public totalRewards;
 
     uint256 constant pointMultiplier = 10e18;
@@ -303,10 +304,18 @@ contract GuildNFTStaking is BaseRelayRecipient {
             staker.tokenIds.pop();
             delete staker.tokenIndex[_tokenId];
         }
+
+        if (staker.tokenIds.length == 0) {
+            delete stakers[_user];
+        }
         
         delete tokenOwner[_tokenId];
 
         balance = balance.sub(amount);
+
+        if (balance == 0) {
+            totalRoundRewards = 0;
+        }
 
         weightContract.unstake(_tokenId, _user);
         parentNFT.safeTransferFrom(address(this), _user, _tokenId);
@@ -335,8 +344,9 @@ contract GuildNFTStaking is BaseRelayRecipient {
             lastUpdateTime = _getNow();
             return;
         }
-        
+
         totalRewards = totalRewards.add(newRewards);
+        totalRoundRewards = totalRoundRewards.add(newRewards);
 
         weightContract.updateOwnerWeight(_user);
         uint256 totalWeight = weightContract.getTotalWeight();
@@ -350,7 +360,7 @@ contract GuildNFTStaking is BaseRelayRecipient {
         lastUpdateTime = _getNow();
 
         Staker storage staker = stakers[_user];
-        uint256 _stakerRewards = totalRewards.mul(ownerWeight)
+        uint256 _stakerRewards = totalRoundRewards.mul(ownerWeight)
                                     .div(totalWeight);
 
         if (staker.rewardsReleased >= _stakerRewards) {
@@ -367,7 +377,7 @@ contract GuildNFTStaking is BaseRelayRecipient {
         }
 
         uint256 _newRewards = rewardsContract.DecoRewards(lastUpdateTime, _getNow());
-        uint256 _totalRewards = totalRewards.add(_newRewards);
+        uint256 _totalRoundRewards = totalRoundRewards.add(_newRewards);
 
         uint256 _totalWeight = weightContract.calcNewWeight();
 
@@ -376,7 +386,7 @@ contract GuildNFTStaking is BaseRelayRecipient {
         }
 
         uint256 _ownerWeight = weightContract.calcNewOwnerWeight(_user);
-        uint256 _ownerTotalRewards = _totalRewards.mul(_ownerWeight)
+        uint256 _ownerTotalRewards = _totalRoundRewards.mul(_ownerWeight)
                         .div(_totalWeight);
 
         uint256 _payableAmount = 0;
