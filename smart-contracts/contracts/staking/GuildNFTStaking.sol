@@ -56,6 +56,7 @@ contract GuildNFTStaking is BaseRelayRecipient {
     );
 
     uint256 public balance;
+    uint256 public accumulatedRewards;
 
     /// @notice mapping of a staker to its current properties
     mapping (address => Staker) public stakers;
@@ -302,10 +303,7 @@ contract GuildNFTStaking is BaseRelayRecipient {
             staker.tokenIds.pop();
             delete staker.tokenIndex[_tokenId];
         }
-
-        if (staker.tokenIds.length == 0) {
-            delete stakers[_user];
-        }
+        
         delete tokenOwner[_tokenId];
 
         balance = balance.sub(amount);
@@ -329,12 +327,15 @@ contract GuildNFTStaking is BaseRelayRecipient {
 
     /// @dev Updates the amount of rewards owed for each user before any tokens are moved
     function updateReward(address _user) public {
+        rewardsContract.updateRewards();
+        uint256 newRewards = rewardsContract.DecoRewards(lastUpdateTime, _getNow());
+
         if (balance == 0) {
+            accumulatedRewards = accumulatedRewards.add(newRewards);
             lastUpdateTime = _getNow();
             return;
         }
-        rewardsContract.updateRewards();
-        uint256 newRewards = rewardsContract.DecoRewards(lastUpdateTime, _getNow());
+        
         totalRewards = totalRewards.add(newRewards);
 
         weightContract.updateOwnerWeight(_user);
