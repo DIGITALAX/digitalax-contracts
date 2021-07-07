@@ -200,6 +200,90 @@ const {
 	  expect(owner1_Weight).to.be.bignumber.equal(SIX_ETH);
 	  expect(owner2_Weight).to.be.bignumber.equal(SEVEN_ETH);
 	  expect(totalWeight).to.be.bignumber.equal(THIRTEEN_ETH);
+
+
+		await this.stakingWeight.unstake('100001', staker);
+		await this.stakingWeight.unstake('100002', staker);
+		await this.stakingWeight.unstake('100004', staker2);
+
+
+
+
+
+
+
+		// --------------------- after 6 sec (owner1 stakes his token) ---------------------
+	  await this.stakingWeight.setNowOverride('6');
+		await this.stakingWeight.stake('100001', staker, ONE_ETH);
+		stakedBalance = await this.stakingWeight.balance();
+	  expect(stakedBalance).to.be.bignumber.equal(ONE_ETH);
+
+		// --------------------- after 7 secs (owner2 stakes his token & update total weight) ---------------------
+		await time.increase(time.duration.seconds(120));
+	  await this.stakingWeight.setNowOverride('7');
+
+		await this.stakingWeight.stake('100003', staker2, ONE_ETH);
+		stakedBalance = await this.stakingWeight.balance();
+	  expect(stakedBalance).to.be.bignumber.equal(TWO_ETH);
+
+		await this.stakingWeight.updateWeight();
+		owner1_Weight = await this.stakingWeight.getOwnerWeight(staker);
+		owner2_Weight = await this.stakingWeight.getOwnerWeight(staker2);
+		totalWeight = await this.stakingWeight.getTotalWeight();
+	  expect(owner1_Weight).to.be.bignumber.equal("0");
+	  expect(owner2_Weight).to.be.bignumber.equal("0");
+	  expect(totalWeight).to.be.bignumber.equal(ONE_ETH);
+
+		// --------------------- after 8 secs (owner1 & owner2 stake new tokens) ---------------------
+		await time.increase(time.duration.seconds(120));
+	  await this.stakingWeight.setNowOverride('8');
+
+		await this.stakingWeight.stake('100002', staker, ONE_ETH);
+		await this.stakingWeight.stake('100004', staker2, TWO_ETH);
+		stakedBalance = await this.stakingWeight.balance();
+	  expect(stakedBalance).to.be.bignumber.equal(FIVE_ETH);
+
+		owner1_Weight = await this.stakingWeight.getOwnerWeight(staker);
+		owner2_Weight = await this.stakingWeight.getOwnerWeight(staker2);
+		totalWeight = await this.stakingWeight.getTotalWeight();
+	  expect(owner1_Weight).to.be.bignumber.equal(TWO_ETH); // updateOwnerWeight has been called in stake
+	  expect(owner2_Weight).to.be.bignumber.equal(ONE_ETH);	// updateOwnerWeight has been called in stake
+	  expect(totalWeight).to.be.bignumber.equal(THREE_ETH);
+
+		// --------------------- after 9 secs (owner2 updateOwnerWeight) ---------------------
+		await time.increase(time.duration.seconds(120));
+	  await this.stakingWeight.setNowOverride('9');
+
+		await this.stakingWeight.updateOwnerWeight(staker2);
+		owner1_Weight = await this.stakingWeight.getOwnerWeight(staker);
+		owner2_Weight = await this.stakingWeight.getOwnerWeight(staker2);
+		totalWeight = await this.stakingWeight.getTotalWeight();
+	  expect(owner1_Weight).to.be.bignumber.equal(TWO_ETH);
+	  expect(owner2_Weight).to.be.bignumber.equal(FOUR_ETH);
+	  expect(totalWeight).to.be.bignumber.equal(EIGHT_ETH);
+
+		// --------------------- after 10 secs (owner2 unstakes 1ETH token) ---------------------
+		await time.increase(time.duration.seconds(120));
+	  await this.stakingWeight.setNowOverride('10');
+
+		await this.stakingWeight.unstake('100003', staker2);
+		stakedBalance = await this.stakingWeight.balance();
+	  expect(stakedBalance).to.be.bignumber.equal(FOUR_ETH);
+
+		owner1_Weight = await this.stakingWeight.getOwnerWeight(staker);
+		owner2_Weight = await this.stakingWeight.getOwnerWeight(staker2);
+		totalWeight = await this.stakingWeight.getTotalWeight();
+	  expect(owner1_Weight).to.be.bignumber.equal(TWO_ETH);
+	  expect(owner2_Weight).to.be.bignumber.equal(SEVEN_ETH);
+	  expect(totalWeight).to.be.bignumber.equal(THIRTEEN_ETH);
+
+		await this.stakingWeight.updateOwnerWeight(staker);
+		owner1_Weight = await this.stakingWeight.getOwnerWeight(staker);
+		owner2_Weight = await this.stakingWeight.getOwnerWeight(staker2);
+		totalWeight = await this.stakingWeight.getTotalWeight();
+	  expect(owner1_Weight).to.be.bignumber.equal(SIX_ETH);
+	  expect(owner2_Weight).to.be.bignumber.equal(SEVEN_ETH);
+	  expect(totalWeight).to.be.bignumber.equal(THIRTEEN_ETH);
 	});
 
 	async function getGasCosts(receipt) {

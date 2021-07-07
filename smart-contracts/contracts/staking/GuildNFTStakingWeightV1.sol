@@ -157,8 +157,16 @@ contract GuildNFTStakingWeightV1 is BaseRelayRecipient {
         owner.currentStakedNFTCount = owner.currentStakedNFTCount.sub(1);
         owner.balance = owner.balance.sub(tokenPrice[_tokenId]);
 
+        if (owner.balance == 0) {
+            delete ownerWeight[_tokenOwner];
+        }
+
         currentStakedNFTCount = currentStakedNFTCount.sub(1);
         balance = balance.sub(tokenPrice[_tokenId]);
+
+        if (balance == 0) {
+            totalGuildWeight = 0;
+        }
 
         delete tokenPrice[_tokenId];
         delete tokenOwner[_tokenId];
