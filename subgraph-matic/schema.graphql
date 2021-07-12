@@ -118,6 +118,18 @@ type DigitalaxGarmentV2 @entity {
   children: [DigitalaxGarmentChildV2!]!
 }
 
+type PodeNFTv2 @entity {
+  id: ID!
+  ogHolder: String!
+  owner: Bytes!
+  primarySalePrice: BigInt!
+  tokenUri: String!
+  animation: String!
+  name: String!
+  description: String!
+  attributes: [GarmentAttribute!]!
+}
+
 type DigitalaxSubscription @entity {
   id: ID!
   designer: String!
@@ -220,6 +232,11 @@ type DigitalaxSubscriptionCollector @entity {
   childrenOwned: [DigitalaxBundleOwner!]! # only given children when a parent is burnt
 }
 
+type PodeNFTv2Collector @entity {
+  id: ID!
+  parentsOwned: [PodeNFTv2!]! # only parents owned by the
+}
+
 type DigitalaxGarmentDesigner @entity {
   id: ID!
   garments: [DigitalaxGarment!]!
@@ -239,6 +256,11 @@ type DigitalaxSubscriptionDesigner @entity {
   garments: [DigitalaxSubscription!]!
   ## listings: [DigitalaxGarmentAuction!]!
   # sold
+}
+
+type PodeNFTv2OGHolder @entity {
+  id: ID!
+  garments: [PodeNFTv2!]!
 }
 
 type DigitalaxAuctionContract @entity {
@@ -493,4 +515,10 @@ type DigitalaxSubscriptionDesignerIndex @entity {
   id: ID!
   garments: [DigitalaxSubscription!]!
   infoUrl: String!
+}
+
+type PodeNFTv2Staker @entity {
+  id: ID!
+  garments: [PodeNFTv2!]!
+  rewardsClaimed: BigInt!
 }

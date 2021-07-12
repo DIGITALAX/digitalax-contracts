@@ -118,32 +118,34 @@ export function handleTransfer(event: Transfer): void {
     else {
         // Update garment info
         let garment = DigitalaxGarmentV2.load(event.params.tokenId.toString());
-        let owner = contract.try_ownerOf(event.params.tokenId);
-        if (!owner.reverted) {
-            garment.owner = owner.value;
-        }
-        garment.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
-        garment.save();
-
-        // Update garments owned on the `from` and `to` address collectors
-        let fromCollector = loadOrCreateDigitalaxCollectorV2(event.params.from);
-        let fromGarmentsOwned = fromCollector.parentsOwned;
-
-        let updatedGarmentsOwned = new Array<string>();
-        for (let i = 0; i < fromGarmentsOwned.length; i += 1) {
-            if (fromGarmentsOwned[i] !== event.params.tokenId.toString()) {
-                updatedGarmentsOwned.push(fromGarmentsOwned[i]);
+        if (garment) {
+            let owner = contract.try_ownerOf(event.params.tokenId);
+            if (!owner.reverted) {
+                garment.owner = owner.value;
             }
+            garment.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
+            garment.save();
+    
+            // Update garments owned on the `from` and `to` address collectors
+            let fromCollector = loadOrCreateDigitalaxCollectorV2(event.params.from);
+            let fromGarmentsOwned = fromCollector.parentsOwned;
+    
+            let updatedGarmentsOwned = new Array<string>();
+            for (let i = 0; i < fromGarmentsOwned.length; i += 1) {
+                if (fromGarmentsOwned[i] !== event.params.tokenId.toString()) {
+                    updatedGarmentsOwned.push(fromGarmentsOwned[i]);
+                }
+            }
+    
+            fromCollector.parentsOwned = updatedGarmentsOwned;
+            fromCollector.save();
+    
+            let toCollector = loadOrCreateDigitalaxCollectorV2(event.params.to);
+            let parentsOwned = toCollector.parentsOwned;
+            parentsOwned.push(event.params.tokenId.toString());
+            toCollector.parentsOwned = parentsOwned;
+            toCollector.save();
         }
-
-        fromCollector.parentsOwned = updatedGarmentsOwned;
-        fromCollector.save();
-
-        let toCollector = loadOrCreateDigitalaxCollectorV2(event.params.to);
-        let parentsOwned = toCollector.parentsOwned;
-        parentsOwned.push(event.params.tokenId.toString());
-        toCollector.parentsOwned = parentsOwned;
-        toCollector.save();
     }
 }
 

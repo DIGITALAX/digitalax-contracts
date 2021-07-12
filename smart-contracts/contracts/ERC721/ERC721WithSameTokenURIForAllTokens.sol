@@ -31,7 +31,7 @@ contract ERC721WithSameTokenURIForAllTokens is Context, ERC165, IERC721, IERC721
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
 
     // Mapping from holder address to their (enumerable) set of owned tokens
-    mapping (address => EnumerableSet.UintSet) private _holderTokens;
+    mapping (address => EnumerableSet.UintSet) _holderTokens;
 
     // Enumerable mapping from token ids to their owners
     EnumerableMap.UintToAddressMap private _tokenOwners;

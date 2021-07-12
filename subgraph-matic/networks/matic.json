@@ -14,7 +14,7 @@
     "DigitalaxMarketplaceStartBlock": 12297984,
     "DigitalaxPodePortalAddress": "0x87c3C6B9C917B1732f13d36d6938E4f8802f7c7E",
     "DigitalaxPodePortalStartBlock": 12000000,
-    "DigitalaxIndexAddress": "0x6c1ce174c1b447cacf0df5986aacb952bd4e550a",
+    "DigitalaxIndexAddress": "0x5394A69A126f3067A988906b57440A25E029Abef",
     "DigitalaxIndexStartBlock": 12000000,
     "DigitalaxSubscriptionNFTAddress": "0xCED3335378896671C71D6d632a16A474A70A2F38",
     "DigitalaxSubscriptionNFTStartBlock": 12000000,
@@ -35,5 +35,9 @@
     "DigitalaxMarketplaceV2Address": "0x8F235A04cC541efF19Fd42EFBfF0FCACAdd09DBC",
     "DigitalaxMarketplaceV2StartBlock": 11709635,
     "DigitalaxNFTStakingAddress": "0xa7cf890C70817D57ea355C2F4B4BF23B064D91F7",
-    "DigitalaxNFTStakingStartBlock": 12000000
+    "DigitalaxNFTStakingStartBlock": 12000000,
+    "GuildNFTStakingAddress": "0xf0815348F626B0f4f434CAF9C5984694D85B50A1",
+    "GuildNFTStakingStartBlock": 12000000,
+    "PodeNFTv2Address": "0x6d4d0b9EaCd6197B31Bec250C0aD6ceC98f8b83f",
+    "PodeNFTv2StartBlock": 12000000
 }
