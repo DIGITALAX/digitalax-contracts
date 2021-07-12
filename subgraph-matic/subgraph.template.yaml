@@ -6,9 +6,9 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DigitalaxGarmentNFT
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxGarmentNFTAddress}}'
+      address: "{{DigitalaxGarmentNFTAddress}}"
       abi: DigitalaxGarmentNFT
       startBlock: {{DigitalaxGarmentNFTStartBlock}}
     mapping:
@@ -34,9 +34,9 @@ dataSources:
       file: ./src/DigitalaxGarmentNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterials
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxMaterialsAddress}}'
+      address: "{{DigitalaxMaterialsAddress}}"
       abi: DigitalaxMaterials
       startBlock: {{DigitalaxMaterialsStartBlock}}
     mapping:
@@ -63,9 +63,9 @@ dataSources:
       file: ./src/DigitalaxMaterials.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentNFTv2
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxGarmentNFTv2Address}}'
+      address: "{{DigitalaxGarmentNFTv2Address}}"
       abi: DigitalaxGarmentNFTv2
       startBlock: {{DigitalaxGarmentNFTv2StartBlock}}
     mapping:
@@ -91,9 +91,9 @@ dataSources:
       file: ./src/DigitalaxGarmentNFTv2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterialsV2
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxMaterialsV2Address}}'
+      address: "{{DigitalaxMaterialsV2Address}}"
       abi: DigitalaxMaterialsV2
       startBlock: {{DigitalaxMaterialsV2StartBlock}}
     mapping:
@@ -120,9 +120,9 @@ dataSources:
       file: ./src/DigitalaxMaterialsV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxSubscriptionNFT
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxSubscriptionNFTAddress}}'
+      address: "{{DigitalaxSubscriptionNFTAddress}}"
       abi: DigitalaxSubscriptionNFT
       startBlock: {{DigitalaxSubscriptionNFTStartBlock}}
     mapping:
@@ -148,9 +148,9 @@ dataSources:
       file: ./src/DigitalaxSubscriptionNFT.mapping.ts
   - kind: ethereum/contract
     name: DFBundle
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DFBundleAddress}}'
+      address: "{{DFBundleAddress}}"
       abi: DFBundle
       startBlock: {{DFBundleStartBlock}}
     mapping:
@@ -177,9 +177,9 @@ dataSources:
       file: ./src/DFBundle.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuction
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxAuctionAddress}}'
+      address: "{{DigitalaxAuctionAddress}}"
       abi: DigitalaxAuction
       startBlock: {{DigitalaxAuctionStartBlock}}
     mapping:
@@ -226,9 +226,9 @@ dataSources:
       file: ./src/DigitalaxAuction.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuctionV2
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxAuctionV2Address}}'
+      address: "{{DigitalaxAuctionV2Address}}"
       abi: DigitalaxAuctionV2
       startBlock: {{DigitalaxAuctionV2StartBlock}}
     mapping:
@@ -275,9 +275,9 @@ dataSources:
       file: ./src/DigitalaxAuctionV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAccessControls
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxAccessControlsAddress}}'
+      address: "{{DigitalaxAccessControlsAddress}}"
       abi: DigitalaxAccessControls
       startBlock: {{DigitalaxAccessControlsStartBlock}}
     mapping:
@@ -316,9 +316,9 @@ dataSources:
       file: ./src/DigitalaxAccessControls.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentCollection
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxGarmentCollectionAddress}}'
+      address: "{{DigitalaxGarmentCollectionAddress}}"
       abi: DigitalaxGarmentCollection
       startBlock: {{DigitalaxGarmentCollectionStartBlock}}
     mapping:
@@ -339,9 +339,9 @@ dataSources:
       file: ./src/DigitalaxGarmentCollection.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentCollectionV2
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxGarmentCollectionV2Address}}'
+      address: "{{DigitalaxGarmentCollectionV2Address}}"
       abi: DigitalaxGarmentCollectionV2
       startBlock: {{DigitalaxGarmentCollectionV2StartBlock}}
     mapping:
@@ -362,9 +362,9 @@ dataSources:
       file: ./src/DigitalaxGarmentCollectionV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMarketplace
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxMarketplaceAddress}}'
+      address: "{{DigitalaxMarketplaceAddress}}"
       abi: DigitalaxMarketplace
       startBlock: {{DigitalaxMarketplaceStartBlock}}
     mapping:
@@ -400,9 +400,9 @@ dataSources:
       file: ./src/DigitalaxMarketplace.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMarketplaceV2
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxMarketplaceV2Address}}'
+      address: "{{DigitalaxMarketplaceV2Address}}"
       abi: DigitalaxMarketplaceV2
       startBlock: {{DigitalaxMarketplaceV2StartBlock}}
     mapping:
@@ -438,9 +438,9 @@ dataSources:
       file: ./src/DigitalaxMarketplaceV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxSubscriptionCollection
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxSubscriptionCollectionAddress}}'
+      address: "{{DigitalaxSubscriptionCollectionAddress}}"
       abi: DigitalaxSubscriptionCollection
       startBlock: {{DigitalaxSubscriptionCollectionStartBlock}}
     mapping:
@@ -461,9 +461,9 @@ dataSources:
       file: ./src/DigitalaxSubscriptionCollection.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxSubscriptionMarketplace
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxSubscriptionMarketplaceAddress}}'
+      address: "{{DigitalaxSubscriptionMarketplaceAddress}}"
       abi: DigitalaxSubscriptionMarketplace
       startBlock: {{DigitalaxSubscriptionMarketplaceStartBlock}}
     mapping:
@@ -502,9 +502,9 @@ dataSources:
       file: ./src/DigitalaxSubscriptionMarketplace.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxPodePortal
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxPodePortalAddress}}'
+      address: "{{DigitalaxPodePortalAddress}}"
       abi: DigitalaxPodePortal
       startBlock: {{DigitalaxPodePortalStartBlock}}
     mapping:
@@ -522,9 +522,9 @@ dataSources:
       file: ./src/DigitalaxPodePortal.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxIndex
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxIndexAddress}}'
+      address: "{{DigitalaxIndexAddress}}"
       abi: DigitalaxIndex
       startBlock: {{DigitalaxIndexStartBlock}}
     mapping:
@@ -560,9 +560,9 @@ dataSources:
       file: ./src/DigitalaxIndex.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxNFTStaking
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxNFTStakingAddress}}'
+      address: "{{DigitalaxNFTStakingAddress}}"
       abi: DigitalaxNFTStaking
       startBlock: {{DigitalaxNFTStakingStartBlock}}
     mapping:
@@ -589,9 +589,9 @@ dataSources:
       file: ./src/DigitalaxNFTStaking.mapping.ts
   - kind: ethereum/contract
     name: GuildNFTStaking
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{GuildNFTStakingAddress}}'
+      address: "{{GuildNFTStakingAddress}}"
       abi: GuildNFTStaking
       startBlock: {{GuildNFTStakingStartBlock}}
     mapping:
@@ -618,9 +618,9 @@ dataSources:
       file: ./src/GuildNFTStaking.mapping.ts
   - kind: ethereum/contract
     name: PodeNFTv2
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{PodeNFTv2Address}}'
+      address: "{{PodeNFTv2Address}}"
       abi: PodeNFTv2
       startBlock: {{PodeNFTv2StartBlock}}
     mapping:
@@ -638,3 +638,23 @@ dataSources:
         - event: TokenPrimarySalePriceSet(indexed uint256,uint256)
           handler: handleTokenPriceSaleUpdated
       file: ./src/PodeNFTv2.mapping.ts
+  - kind: ethereum/contract
+    name: DripOracle
+    network: "{{network}}"
+    source:
+      address: "{{DripOracleAddress}}"
+      abi: DripOracle
+      startBlock: {{DripOracleStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - ProviderReportsPushed
+      abis:
+        - name: DripOracle
+          file: ./abis/DripOracle.json
+      eventHandlers:
+        - event: ProviderReportsPushed(address[],uint256[],uint256)
+          handler: handleProviderReportsPushed
+      file: ./src/DripOracle.mapping.ts
