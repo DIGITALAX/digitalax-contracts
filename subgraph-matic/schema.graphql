@@ -522,3 +522,9 @@ type PodeNFTv2Staker @entity {
   garments: [PodeNFTv2!]!
   rewardsClaimed: BigInt!
 }
+
+type PayableTokenReport @entity {
+  id: ID!
+  payload: BigInt!
+  timestamp: BigInt!
+}
