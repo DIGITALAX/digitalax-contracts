@@ -266,11 +266,11 @@ contract('DripMarketplace', (accounts) => {
       })
     });
 
-    describe('toggleFreezeMonaERC20Payment()', () => {
+    describe('toggleFreezeERC20Payment()', () => {
       it('can successfully toggle as admin', async () => {
         expect(await this.marketplace.freezeMonaERC20Payment()).to.be.false;
 
-        const {receipt} = await this.marketplace.toggleFreezeMonaERC20Payment({from: admin});
+        const {receipt} = await this.marketplace.toggleFreezeERC20Payment({from: admin});
         await expectEvent(receipt, 'FreezeMonaERC20PaymentToggled', {
           freezeMonaERC20Payment: true
         });
@@ -280,8 +280,8 @@ contract('DripMarketplace', (accounts) => {
 
       it('reverts when not admin', async () => {
         await expectRevert(
-          this.marketplace.toggleFreezeMonaERC20Payment({from: tokenBuyer}),
-          "DigitalaxMarketplace.toggleFreezeMonaERC20Payment: Sender must be admin"
+          this.marketplace.toggleFreezeERC20Payment({from: tokenBuyer}),
+          "DigitalaxMarketplace.toggleFreezeERC20Payment: Sender must be admin"
         );
       })
     });
@@ -453,11 +453,11 @@ contract('DripMarketplace', (accounts) => {
 
       it('will fail if mona payments are frozen', async () => {
         await this.marketplace.setNowOverride('120');
-        await this.marketplace.toggleFreezeMonaERC20Payment({from: admin});
+        await this.marketplace.toggleFreezeERC20Payment({from: admin});
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await expectRevert(
             this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer}),
-            "DigitalaxMarketplace.buyOffer: mona erc20 payments currently frozen"
+            "DigitalaxMarketplace.buyOffer: erc20 payments currently frozen"
         );
       });
 
@@ -474,15 +474,15 @@ contract('DripMarketplace', (accounts) => {
         );
       });
 
-      it('will fail if mona erc20 payments are frozen', async () => {
+      it('will fail if erc20 payments are frozen', async () => {
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await this.marketplace.setNowOverride('120');
-        await this.marketplace.toggleFreezeMonaERC20Payment({from: admin});
+        await this.marketplace.toggleFreezeERC20Payment({from: admin});
         await expectRevert(
             this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer}),
-            "DigitalaxMarketplace.buyOffer: mona erc20 payments currently frozen"
+            "DigitalaxMarketplace.buyOffer: erc20 payments currently frozen"
         );
-        await this.marketplace.toggleFreezeMonaERC20Payment({from: admin});
+        await this.marketplace.toggleFreezeERC20Payment({from: admin});
       });
 
       it('records primary sale price on garment NFT', async () => {
