@@ -35,5 +35,9 @@
     "DigitalaxMarketplaceV2Address": "0x18a38C3EB196671d702017C323a562D00a6eD003",
     "DigitalaxMarketplaceV2StartBlock": 11709635,
     "DigitalaxNFTStakingAddress": "0x8bE9b1343C56d43f1e13Cf7c79232401632A0573",
-    "DigitalaxNFTStakingStartBlock": 12000000
+    "DigitalaxNFTStakingStartBlock": 12000000,
+    "GuildNFTStakingAddress": "0x665bF9Ea8E3036088a6C767b0184cA4A4f13AD67",
+    "GuildNFTStakingStartBlock": 12000000,
+    "PodeNFTv2Address": "0x2b319564aB130C8fd0e8C996ba806323fE3b7880",
+    "PodeNFTv2StartBlock": 12000000
 }

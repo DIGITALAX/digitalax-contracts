@@ -587,3 +587,54 @@ dataSources:
         - event: RewardPaid(indexed address,uint256)
           handler: handleRewardPaid
       file: ./src/DigitalaxNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: GuildNFTStaking
+    network: 'mumbai'
+    source:
+      address: '0x665bF9Ea8E3036088a6C767b0184cA4A4f13AD67'
+      abi: GuildNFTStaking
+      startBlock: 12000000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+      abis:
+        - name: GuildNFTStaking
+          file: ./abis/GuildNFTStaking.json
+      eventHandlers:
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+      file: ./src/GuildNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: PodeNFTv2
+    network: 'mumbai'
+    source:
+      address: '0x2b319564aB130C8fd0e8C996ba806323fE3b7880'
+      abi: PodeNFTv2
+      startBlock: 12000000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: PodeNFTv2
+          file: ./abis/PodeNFTv2.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: TokenPrimarySalePriceSet(indexed uint256,uint256)
+          handler: handleTokenPriceSaleUpdated
+      file: ./src/PodeNFTv2.mapping.ts
