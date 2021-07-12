@@ -84,8 +84,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         uint256 primarySalePrice,
         uint256 tokenTransferredAmount,
         address paymentToken,
-        uint256 platformFee,
-        uint256 discountToPayInERC20
+        uint256 platformFee
     );
     event OfferCancelled(
         uint256 indexed bundleTokenId
@@ -129,7 +128,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
     /// @notice for storing information from oracle
     mapping (address => uint256) public lastOracleQuote;
 
-    address public maticToken = 0x0000000000000000000000000000000000001010;
+    address public MATIC_TOKEN = 0x0000000000000000000000000000000000001010;
 
     modifier whenNotPaused() {
         require(!isPaused, "Function is currently paused");
@@ -300,6 +299,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         require(_msgSender().isContract() == false, "DigitalaxMarketplace.buyOffer: No contracts permitted");
         require(_isFinished(_garmentCollectionId) == false, "DigitalaxMarketplace.buyOffer: Sale has been finished");
         require(lastPurchasedTime[_garmentCollectionId][_msgSender()] <= _getNow().sub(cooldown), "DigitalaxMarketplace.buyOffer: Cooldown not reached");
+        require(_paymentToken != address(0), "DripMarketplace.buyOffer: Payment token cannot be zero address");
         require(oracle.checkValidToken(_paymentToken), "DripMarketplace.buyOffer: Not valid payment erc20");
 
         Offer storage offer = offers[_garmentCollectionId];
@@ -316,23 +316,41 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         // Ensure this contract is still approved to move the token
         require(garmentNft.isApproved(bundleTokenId, address(this)), "DigitalaxMarketplace.buyOffer: offer not approved");
         require(_getNow() >= offer.startTime, "DigitalaxMarketplace.buyOffer: Purchase outside of the offer window");
-
-        uint256 feeInUSD = offer.primarySalePrice.mul(offer.platformFee).div(maxShare);
-
         require(!freezeERC20Payment, "DigitalaxMarketplace.buyOffer: erc20 payments currently frozen");
 
+        uint256 priceInPaymentToken = _estimateTokenAmount(_paymentToken, offer.primarySalePrice);
+        uint256 feeInPaymentToken = priceInPaymentToken.mul(offer.platformFee).div(maxShare);
+
         // Designer receives (Primary Sale Price minus Protocol Fee)
-        uint256 amountOfUSDToTransferToDesigner = offer.primarySalePrice.sub(feeInUSD);
+        uint256 amountOfPaymentTokenToTransferToDesigner = priceInPaymentToken.sub(feeInPaymentToken);
 
         // There is a discount on Fees paying in USD
-        uint256 amountOfDiscountOnUSDPrice = offer.primarySalePrice.mul(offer.discountToPayERC20).div(maxShare);
-        uint256 amountOfUSDToTransferAsFees = feeInUSD.sub(amountOfDiscountOnUSDPrice);
+        uint256 amountOfDiscountOnPaymentTokenPrice = priceInPaymentToken.mul(offer.discountToPayERC20).div(maxShare);
+        uint256 amountOfPaymentTokenToTransferAsFees = feeInPaymentToken.sub(amountOfDiscountOnPaymentTokenPrice);
 
-        // Check that there is enough ERC20 to cover the rest of the value (minus the discount already taken)
-        require(IERC20(_paymentToken).allowance(_msgSender(), address(this)) >= offer.primarySalePrice, "DigitalaxMarketplace.buyOffer: Failed to supply ERC20 Allowance");
-        // Transfer ERC20 token from user to contract(this) escrow
-        IERC20(_paymentToken).transferFrom(_msgSender(), garmentNft.garmentDesigners(bundleTokenId), amountOfUSDToTransferToDesigner);
-        IERC20(_paymentToken).transferFrom(_msgSender(), platformFeeRecipient, amountOfUSDToTransferAsFees);
+        // If it is MATIC, needs to be send as msg.value
+        if (_paymentToken == MATIC_TOKEN) {
+            require(msg.value >= priceInPaymentToken, "DigitalaxMarketplace.buyOffer: Failed to supply funds");
+
+            // Send platform fee in ETH to the platform fee recipient, there is a discount that is subtracted from this
+            (bool platformTransferSuccess,) = platformFeeRecipient.call{value : feeInPaymentToken}("");
+            require(platformTransferSuccess, "DigitalaxMarketplace.buyOffer: Failed to send platform fee");
+            // Send remaining to designer in ETH, the discount does not effect the amount designers receive
+            (bool designerTransferSuccess,) = garmentNft.garmentDesigners(bundleTokenId).call{value : priceInPaymentToken.sub(feeInPaymentToken)}("");
+            require(designerTransferSuccess, "DigitalaxMarketplace.buyOffer: Failed to send the designer their royalties");
+        } else {
+            // Check that there is enough ERC20 to cover the rest of the value (minus the discount already taken)
+            require(IERC20(_paymentToken).allowance(_msgSender(), address(this)) >= priceInPaymentToken, "DigitalaxMarketplace.buyOffer: Failed to supply ERC20 Allowance");
+            // Transfer ERC20 token from user to contract(this) escrow
+            IERC20(_paymentToken).transferFrom(
+                _msgSender(),
+                garmentNft.garmentDesigners(bundleTokenId),
+                amountOfPaymentTokenToTransferToDesigner);
+            IERC20(_paymentToken).transferFrom(
+                _msgSender(),
+                platformFeeRecipient,
+                amountOfPaymentTokenToTransferAsFees);
+        }
 
         offer.availableIndex = offer.availableIndex.add(1);
         // Record the primary sale price for the garment
@@ -341,7 +359,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         garmentNft.safeTransferFrom(garmentNft.ownerOf(bundleTokenId), _msgSender(), bundleTokenId);
         lastPurchasedTime[_garmentCollectionId][_msgSender()] = _getNow();
 
-        emit OfferPurchased(bundleTokenId, _garmentCollectionId, _msgSender(), offer.primarySalePrice, offer.primarySalePrice, _paymentToken, offer.platformFee, offer.discountToPayERC20);
+        emit OfferPurchased(bundleTokenId, _garmentCollectionId, _msgSender(), offer.primarySalePrice, priceInPaymentToken, _paymentToken, offer.platformFee);
     }
     /**
      @notice Cancels an inflight and un-resulted offer
