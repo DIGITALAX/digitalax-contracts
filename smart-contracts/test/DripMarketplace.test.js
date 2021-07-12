@@ -401,7 +401,7 @@ contract('DripMarketplace', (accounts) => {
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await this.marketplace.toggleIsPaused({from: admin});
         await expectRevert(
-          this.marketplace.buyOffer(TOKEN_ONE_ID, {from: tokenBuyer}),
+          this.marketplace.buyOffer(TOKEN_ONE_ID, this.monaToken.address, {from: tokenBuyer}),
           "Function is currently paused"
         );
       });
@@ -431,7 +431,7 @@ contract('DripMarketplace', (accounts) => {
       it('buys the offer', async () => {
         await this.marketplace.setNowOverride('120');
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
-        await this.marketplace.buyOffer(0, {from: tokenBuyer});
+        await this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer});
         const {_primarySalePrice, _startTime, _availableAmount, _platformFee, _discountToPayERC20} = await this.marketplace.getOffer(0);
         expect(_primarySalePrice).to.be.bignumber.equal(ether('0.1'));
         expect(_startTime).to.be.bignumber.equal('120');
@@ -444,9 +444,9 @@ contract('DripMarketplace', (accounts) => {
       it('will fail when cooldown not reached', async () => {
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await this.marketplace.setNowOverride('120');
-        await this.marketplace.buyOffer(0, {from: tokenBuyer});
+        await this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer});
         await expectRevert(
-            this.marketplace.buyOffer(0, {from: tokenBuyer}),
+            this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer}),
             "DigitalaxMarketplace.buyOffer: Cooldown not reached"
         );
       })
@@ -456,7 +456,7 @@ contract('DripMarketplace', (accounts) => {
         await this.marketplace.toggleFreezeMonaERC20Payment({from: admin});
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await expectRevert(
-            this.marketplace.buyOffer(0, {from: tokenBuyer}),
+            this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer}),
             "DigitalaxMarketplace.buyOffer: mona erc20 payments currently frozen"
         );
       });
@@ -469,7 +469,7 @@ contract('DripMarketplace', (accounts) => {
         expect(_endTime).to.be.bignumber.equal('1000');
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await expectRevert(
-            this.marketplace.buyOffer(0, {from: tokenBuyer}),
+            this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer}),
             "DigitalaxMarketplace.buyOffer: Purchase outside of the offer window"
         );
       });
@@ -479,7 +479,7 @@ contract('DripMarketplace', (accounts) => {
         await this.marketplace.setNowOverride('120');
         await this.marketplace.toggleFreezeMonaERC20Payment({from: admin});
         await expectRevert(
-            this.marketplace.buyOffer(0, {from: tokenBuyer}),
+            this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer}),
             "DigitalaxMarketplace.buyOffer: mona erc20 payments currently frozen"
         );
         await this.marketplace.toggleFreezeMonaERC20Payment({from: admin});
@@ -488,7 +488,7 @@ contract('DripMarketplace', (accounts) => {
       it('records primary sale price on garment NFT', async () => {
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await this.marketplace.setNowOverride('121');
-        await this.marketplace.buyOffer(0, {from: tokenBuyer});
+        await this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer});
 
         const primarySalePrice = await this.token.primarySalePrice(100001);
         expect(primarySalePrice).to.be.bignumber.equal(ether('0.1'));
@@ -506,7 +506,7 @@ contract('DripMarketplace', (accounts) => {
 
 
         await this.marketplace.setNowOverride('121');
-        await this.marketplace.buyOffer(0, {from: tokenBuyer});
+        await this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer});
 
         // Platform gets 12%
         const platformChanges = await platformFeeTracker.delta('wei');

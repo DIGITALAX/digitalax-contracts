@@ -113,6 +113,7 @@ contract DripOracle is IDripOracle, Context, Initializable {
     function getData(address _payableToken)
         external
         override
+        view
         returns (uint256, bool)
     {
         if(
@@ -194,6 +195,18 @@ contract DripOracle is IDripOracle, Context, Initializable {
 
     function checkInPayableTokens(address _payableToken) public view returns (bool isAddress) {
         if(payableTokens.length == 0) return false;
+        return (payableTokens[payableTokensIndex[_payableToken]] == _payableToken);
+    }
+
+    function checkValidToken(address _payableToken) external override view returns (bool isValid) {
+        if(
+            (payableTokens.length == 0)
+            || !checkInPayableTokens(_payableToken)
+            || (tokenReports[_payableToken].payload == 0)
+            || now.sub(tokenReports[_payableToken].timestamp) > reportExpirationTimeSec
+        ) {
+            return false;
+        }
         return (payableTokens[payableTokensIndex[_payableToken]] == _payableToken);
     }
 
