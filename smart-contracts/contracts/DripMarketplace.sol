@@ -613,7 +613,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
     }
 
     /**
-    * @notice Reclaims ERC20 Compatible tokens for entire balance
+    * @notice Reclaims ERC20 Compatible tokens for entire balance - can be used for MATIC MRC20
     * @dev Only access controls admin
     * @param _tokenContract The address of the token contract
     */
@@ -626,18 +626,5 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         IERC20 token = IERC20(_tokenContract);
         uint256 balance = token.balanceOf(address(this));
         require(token.transfer(_msgSender(), balance), "Transfer failed");
-    }
-
-    /**
-     * @notice Reclaims ETH, drains all ETH sitting on the smart contract
-     * @dev The instant buy feature means technically, ETH should never sit on contract.
-     * @dev Only access controls admin can access
-     */
-    function reclaimETH() external {
-        require(
-            accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxMarketplace.reclaimETH: Sender must be admin"
-        );
-        _msgSender().transfer(address(this).balance);
     }
 }

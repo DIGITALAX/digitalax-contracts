@@ -268,14 +268,14 @@ contract('DripMarketplace', (accounts) => {
 
     describe('toggleFreezeERC20Payment()', () => {
       it('can successfully toggle as admin', async () => {
-        expect(await this.marketplace.freezeMonaERC20Payment()).to.be.false;
+        expect(await this.marketplace.freezeERC20Payment()).to.be.false;
 
         const {receipt} = await this.marketplace.toggleFreezeERC20Payment({from: admin});
-        await expectEvent(receipt, 'FreezeMonaERC20PaymentToggled', {
-          freezeMonaERC20Payment: true
+        await expectEvent(receipt, 'FreezeERC20PaymentToggled', {
+          freezeERC20Payment: true
         });
 
-        expect(await this.marketplace.freezeMonaERC20Payment()).to.be.true;
+        expect(await this.marketplace.freezeERC20Payment()).to.be.true;
       })
 
       it('reverts when not admin', async () => {
@@ -580,23 +580,6 @@ contract('DripMarketplace', (accounts) => {
           this.marketplace.reclaimETH( {from: tokenBuyer}),
           'DigitalaxMarketplace.reclaimETH: Sender must be admin'
         );
-      });
-
-      it('can reclaim Eth', async () => {
-        await send.ether(tokenBuyer, this.marketplace.address, TWO_ETH); // Token buyer sends 2 random eth into contract
-        const marketplaceBalanceTracker = await balance.tracker(this.marketplace.address, 'ether');
-        const adminBalanceTracker = await balance.tracker(admin, 'ether');
-
-        const adminBalanceBeforeReclaim = await adminBalanceTracker.get('ether');
-
-        // Reclaim eth from contract
-        await this.marketplace.reclaimETH({from: admin});
-
-        expect(await marketplaceBalanceTracker.delta('ether')).to.be.bignumber.equal('-2');
-        expect((await marketplaceBalanceTracker.get('ether')).toString()).to.be.equal('0');
-
-        // Admin receives eth minus gas fees.
-        expect(await adminBalanceTracker.get('ether')).to.be.bignumber.greaterThan(adminBalanceBeforeReclaim);
       });
     });
   });
