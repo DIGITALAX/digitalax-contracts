@@ -28,11 +28,8 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
     event PauseToggled(
         bool isPaused
     );
-    event FreezeMonaERC20PaymentToggled(
-        bool freezeMonaERC20Payment
-    );
-    event FreezeETHPaymentToggled(
-        bool freezeETHPayment
+    event FreezeERC20PaymentToggled(
+        bool freezeERC20Payment
     );
     event OfferCreated(
         uint256 indexed garmentCollectionId,
@@ -125,8 +122,8 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
     bool public isPaused;
     /// @notice the erc20 token
     address public wethERC20Token;
-    /// @notice for freezing mona payment option
-    bool public freezeMonaERC20Payment;
+    /// @notice for freezing erc20 payment option
+    bool public freezeERC20Payment;
     /// @notice Cool down period
     uint256 public cooldown = 60;
     /// @notice for storing information from oracle
@@ -249,7 +246,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
      @param _startTimestamp when the sale starts
      @param _endTimestamp when the sale ends
      @param _platformFee Percentage to pay out to the platformFeeRecipient, 1 decimal place (i.e. 40% is 400)
-     @param _discountToPayERC20 Percentage to discount from overall purchase price if Mona (ERC20) used, 1 decimal place (i.e. 5% is 50)
+     @param _discountToPayERC20 Percentage to discount from overall purchase price if USDT (ERC20) used, 1 decimal place (i.e. 5% is 50)
      @param _maxAmount Max number of products from this collection that someone can buy
      */
     function createOffer(
@@ -320,22 +317,22 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         require(garmentNft.isApproved(bundleTokenId, address(this)), "DigitalaxMarketplace.buyOffer: offer not approved");
         require(_getNow() >= offer.startTime, "DigitalaxMarketplace.buyOffer: Purchase outside of the offer window");
 
-        uint256 feeInMona = offer.primarySalePrice.mul(offer.platformFee).div(maxShare);
+        uint256 feeInUSD = offer.primarySalePrice.mul(offer.platformFee).div(maxShare);
 
-        require(!freezeMonaERC20Payment, "DigitalaxMarketplace.buyOffer: mona erc20 payments currently frozen");
+        require(!freezeERC20Payment, "DigitalaxMarketplace.buyOffer: erc20 payments currently frozen");
 
         // Designer receives (Primary Sale Price minus Protocol Fee)
-        uint256 amountOfMonaToTransferToDesigner = offer.primarySalePrice.sub(feeInMona);
+        uint256 amountOfUSDToTransferToDesigner = offer.primarySalePrice.sub(feeInUSD);
 
-        // There is a discount on Fees paying in Mona
-        uint256 amountOfDiscountOnMonaPrice = offer.primarySalePrice.mul(offer.discountToPayERC20).div(maxShare);
-        uint256 amountOfMonaToTransferAsFees = feeInMona.sub(amountOfDiscountOnMonaPrice);
+        // There is a discount on Fees paying in USD
+        uint256 amountOfDiscountOnUSDPrice = offer.primarySalePrice.mul(offer.discountToPayERC20).div(maxShare);
+        uint256 amountOfUSDToTransferAsFees = feeInUSD.sub(amountOfDiscountOnUSDPrice);
 
         // Check that there is enough ERC20 to cover the rest of the value (minus the discount already taken)
         require(IERC20(_paymentToken).allowance(_msgSender(), address(this)) >= offer.primarySalePrice, "DigitalaxMarketplace.buyOffer: Failed to supply ERC20 Allowance");
         // Transfer ERC20 token from user to contract(this) escrow
-        IERC20(_paymentToken).transferFrom(_msgSender(), garmentNft.garmentDesigners(bundleTokenId), amountOfMonaToTransferToDesigner);
-        IERC20(_paymentToken).transferFrom(_msgSender(), platformFeeRecipient, amountOfMonaToTransferAsFees);
+        IERC20(_paymentToken).transferFrom(_msgSender(), garmentNft.garmentDesigners(bundleTokenId), amountOfUSDToTransferToDesigner);
+        IERC20(_paymentToken).transferFrom(_msgSender(), platformFeeRecipient, amountOfUSDToTransferAsFees);
 
         offer.availableIndex = offer.availableIndex.add(1);
         // Record the primary sale price for the garment
@@ -387,13 +384,13 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
     }
 
     /**
-     @notice Toggle freeze Mona ERC20
+     @notice Toggle freeze ERC20
      @dev Only admin
      */
-    function toggleFreezeMonaERC20Payment() external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.toggleFreezeMonaERC20Payment: Sender must be admin");
-        freezeMonaERC20Payment = !freezeMonaERC20Payment;
-        emit FreezeMonaERC20PaymentToggled(freezeMonaERC20Payment);
+    function toggleFreezeERC20Payment() external {
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.toggleFreezeERC20Payment: Sender must be admin");
+        freezeERC20Payment = !freezeERC20Payment;
+        emit FreezeERC20PaymentToggled(freezeERC20Payment);
     }
 
     /**
@@ -585,7 +582,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
      @param _primarySalePrice Garment cannot be sold for less than this
      @param _startTimestamp Unix epoch in seconds for the offer start time
      @param _platformFee Percentage to pay out to the platformFeeRecipient, 1 decimal place (i.e. 40% is 400)
-     @param _discountToPayERC20 Percentage to discount from overall purchase price if Mona (ERC20) used, 1 decimal place (i.e. 5% is 50)
+     @param _discountToPayERC20 Percentage to discount from overall purchase price if USDT (ERC20) used, 1 decimal place (i.e. 5% is 50)
      */
     function _createOffer(
         uint256 _garmentCollectionId,
