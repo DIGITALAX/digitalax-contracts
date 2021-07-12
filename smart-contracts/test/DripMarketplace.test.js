@@ -572,18 +572,7 @@ contract('DripMarketplace', (accounts) => {
       });
   });
   });
-
-  describe('reclaimETH()', async () => {
-    describe('validation', async () => {
-      it('cannot reclaim eth if it is not Admin', async () => {
-        await expectRevert(
-          this.marketplace.reclaimETH( {from: tokenBuyer}),
-          'DigitalaxMarketplace.reclaimETH: Sender must be admin'
-        );
-      });
-    });
-  });
-
+  
   describe('reclaimERC20()', async () => {
     describe('validation', async () => {
       it('cannot reclaim erc20 if it is not Admin', async () => {
