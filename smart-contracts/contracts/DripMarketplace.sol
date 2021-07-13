@@ -330,17 +330,17 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
 
         // If it is MATIC, needs to be send as msg.value
         if (_paymentToken == MATIC_TOKEN) {
-            require(msg.value >= priceInPaymentToken, "DigitalaxMarketplace.buyOffer: Failed to supply funds");
+            require(msg.value >= priceInPaymentToken.sub(amountOfPaymentTokenToTransferAsFees), "DigitalaxMarketplace.buyOffer: Failed to supply funds");
 
             // Send platform fee in ETH to the platform fee recipient, there is a discount that is subtracted from this
-            (bool platformTransferSuccess,) = platformFeeRecipient.call{value : feeInPaymentToken}("");
+            (bool platformTransferSuccess,) = platformFeeRecipient.call{value : amountOfPaymentTokenToTransferAsFees}("");
             require(platformTransferSuccess, "DigitalaxMarketplace.buyOffer: Failed to send platform fee");
             // Send remaining to designer in ETH, the discount does not effect the amount designers receive
-            (bool designerTransferSuccess,) = garmentNft.garmentDesigners(bundleTokenId).call{value : priceInPaymentToken.sub(feeInPaymentToken)}("");
+            (bool designerTransferSuccess,) = garmentNft.garmentDesigners(bundleTokenId).call{value : amountOfPaymentTokenToTransferToDesigner}("");
             require(designerTransferSuccess, "DigitalaxMarketplace.buyOffer: Failed to send the designer their royalties");
         } else {
             // Check that there is enough ERC20 to cover the rest of the value (minus the discount already taken)
-            require(IERC20(_paymentToken).allowance(_msgSender(), address(this)) >= priceInPaymentToken, "DigitalaxMarketplace.buyOffer: Failed to supply ERC20 Allowance");
+            require(IERC20(_paymentToken).allowance(_msgSender(), address(this)) >= priceInPaymentToken.sub(amountOfPaymentTokenToTransferAsFees), "DigitalaxMarketplace.buyOffer: Failed to supply ERC20 Allowance");
             // Transfer ERC20 token from user to contract(this) escrow
             IERC20(_paymentToken).transferFrom(
                 _msgSender(),
