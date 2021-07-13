@@ -21,6 +21,11 @@ type SubscriptionDay @entity {
   totalMarketplaceVolumeInMona: BigInt!
 }
 
+type DripDay @entity {
+  id: ID!
+  totalMarketplaceVolumeInUSD: BigInt!
+}
+
 type DigitalaxGarmentNFTGlobalStat @entity {
   id: ID!
   totalSalesValue: BigInt! # Eth value in WEI accross all successful auctions
@@ -42,6 +47,12 @@ type DigitalaxSubscriptionNFTGlobalStat @entity {
   id: ID!
   totalSalesValue: BigInt! # Eth value in WEI accross all successful auctions
   totalMarketplaceSalesInMona: BigInt! # Mona value collected in WEI across all marketplace
+}
+
+type DripGlobalStat @entity {
+  id: ID!
+  totalMarketplaceSalesInUSD: BigInt! # USD value collected in WEI across all marketplace
+  usdETHConversion: BigInt! # USD FOR ETH IN WEI
 }
 
 type DigitalaxGarmentChild @entity {
@@ -70,7 +81,6 @@ type DigitalaxCollectionGroup @entity {
   collections: [DigitalaxGarmentV2Collection!]!
   digiBundle: DigitalaxGarmentV2Collection!
 }
-
 
 type DigitalaxSubscriptionChild @entity {
   id: ID! # {parent-token-id}-{child-token-id}
@@ -423,6 +433,17 @@ type DigitalaxSubscriptionMarketplaceOffer @entity {
   discountToPayMona: BigInt!
 }
 
+type DripMarketplaceOffer @entity {
+  id: ID!
+  garmentCollection: DigitalaxGarmentV2Collection!
+  primarySalePrice: BigInt!
+  startTime: BigInt!
+  endTime: BigInt!
+  amountSold: BigInt!
+  marketplacePlatformFee: BigInt!
+  discountToPayERC20: BigInt!
+}
+
 type DigitalaxMarketplacePurchaseHistory @entity {
   id: ID!
   eventName: String!
@@ -470,6 +491,24 @@ type DigitalaxSubscriptionPurchaseHistory @entity {
   platformFee: BigInt!
   discountToPayMona: BigInt!
   rarity: String!
+}
+
+type DripMarketplacePurchaseHistory @entity {
+  id: ID!
+  eventName: String!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  token: DigitalaxGarmentV2!
+  buyer: Bytes!
+  value: BigInt! # USD Value
+  paymentTokenTransferredAmount: BigInt!
+  paymentToken: String!
+  garmentCollectionId: BigInt!
+  platformFee: BigInt!
+  discountToPayERC20: BigInt!
+  rarity: String!
+  usdEthExchange: BigInt! # Eth for every USD in wei at the time of the tx
+  usdPaymentTokenExchange: BigInt! # Payment Token for every USD in wei at the time of the tx
 }
 
 type DigitalaxPodePortalMetadata @entity {
