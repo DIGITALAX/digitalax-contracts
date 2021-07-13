@@ -141,7 +141,7 @@ contract('DripMarketplace', (accounts) => {
       this.garmentCollection.address,
         this.dripOracle.address,
       platformFeeAddress,
-      this.monaToken.address,
+      this.weth.address,
         constants.ZERO_ADDRESS,
       {from: admin}
     );
@@ -156,7 +156,9 @@ contract('DripMarketplace', (accounts) => {
 
     await this.dripOracle.addProvider(provider, {from: admin})
 
-    await this.dripOracle.addPayableTokensWithReports([this.monaToken.address],[EXCHANGE_RATE], {from: provider});
+    await this.dripOracle.addPayableTokensWithReports(
+        [this.monaToken.address, "0x0000000000000000000000000000000000001010", this.weth.address],
+        [EXCHANGE_RATE, EXCHANGE_RATE, EXCHANGE_RATE], {from: provider});
     await time.increase(time.duration.seconds(120));
   });
 
@@ -171,7 +173,7 @@ contract('DripMarketplace', (accounts) => {
       await this.marketplace.setNowOverride('120');
       await this.marketplace.createOffer(
         0,
-        ether('0.1'),  // Price of 1 eth
+        ether('0.1'),  // Price of 0.1 eth
         '120',
         '1000000',
         '120',
@@ -522,7 +524,150 @@ contract('DripMarketplace', (accounts) => {
         // Validate that the treasury wallet (platformFeeRecipient) received platformFee minus discount for paying in Mona
         // (so 12-2, is 10% of final fee is given to the platform recipient)
         expect(await this.monaToken.balanceOf(platformFeeAddress)).to.be.bignumber.equal(new BN('10000000000000000'));
+      });
 
+      it('transfer MATIC (ETH) only to the token designer and platform', async () => {
+        const platformFeeTracker = await balance.tracker(platformFeeAddress);
+        const designerTracker = await balance.tracker(designer);
+
+        // We get a discount, so we only need 100 - 2 % of the MONA
+        await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS.mul(new BN('0.98')), {from: tokenBuyer});
+
+
+        await this.marketplace.setNowOverride('121');
+        await this.marketplace.buyOffer(0,
+            "0x0000000000000000000000000000000000001010",
+            {value: new BN('98000000000000000'), from: tokenBuyer});
+
+        // Platform gets 12%
+        const platformChanges = await platformFeeTracker.delta('wei');
+        expect(platformChanges).to.be.bignumber.equal(new BN('10000000000000000')); // But no change in eth
+
+        // Designer gets 88%
+        const designerChanges = await designerTracker.delta('wei');
+        expect(designerChanges).to.be.bignumber.equal(new BN('88000000000000000')); // But no change in eth
+
+        // No change in MONA
+        // Validate that the garment owner/designer received FEE * (100% minus platformFEE of 12%)
+        expect(await this.monaToken.balanceOf(designer)).to.be.bignumber.equal(new BN('0'));
+
+        // Validate that the treasury wallet (platformFeeRecipient) received platformFee minus discount for paying in Mona
+        // (so 12-2, is 10% of final fee is given to the platform recipient)
+        expect(await this.monaToken.balanceOf(platformFeeAddress)).to.be.bignumber.equal(new BN('0'));
+      });
+    });
+  });
+
+  describe('buyOffer() real values', async () => {
+    describe('try to buy offer', () => {
+
+      beforeEach(async () => {
+        await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, bundleID, 'Common', [], [], {from: minter});
+        const garmentIds = await this.garmentCollection.getTokenIds(0);
+        for (let i = 0; i < garmentIds.length; i ++) {
+          await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
+        }
+        await this.marketplace.setNowOverride('100');
+
+        // 400$ mona, 1$ matic, 2000$ eth
+        await this.dripOracle.pushReports(
+            [this.monaToken.address, "0x0000000000000000000000000000000000001010", this.weth.address],
+            [ether('0.0025'), EXCHANGE_RATE, ether('0.0005')], {from: provider});
+
+        await this.marketplace.createOffer(
+          0, // ID
+          ether('10'), //10$
+          '120',
+          '1000000',
+          '120',
+          '20',
+          MAX_SIZE,
+          {from: minter}
+        );
+
+      });
+
+      it('buys the offer', async () => {
+        await this.marketplace.setNowOverride('120');
+        await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
+        await this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer});
+        const {_primarySalePrice, _startTime, _availableAmount, _platformFee, _discountToPayERC20} = await this.marketplace.getOffer(0);
+        expect(_primarySalePrice).to.be.bignumber.equal(ether('10'));
+        expect(_startTime).to.be.bignumber.equal('120');
+        expect(_startTime).to.be.bignumber.equal('120');
+        expect(_availableAmount).to.be.bignumber.equal('9');
+        expect(_platformFee).to.be.bignumber.equal('120');
+        expect(_discountToPayERC20).to.be.bignumber.equal('20');
+      });
+
+      it('records primary sale price on garment NFT', async () => {
+
+        await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
+        await this.marketplace.setNowOverride('121');
+        await this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer});
+
+        // 100$ * (1 eth/2000$)
+        const primarySalePrice = await this.token.primarySalePrice(100001);
+        expect(primarySalePrice).to.be.bignumber.equal(ether('0.005'));
+      });
+
+      it('transfer Mona only to the token creator and platform', async () => {
+        const platformFeeTracker = await balance.tracker(platformFeeAddress);
+        const designerTracker = await balance.tracker(designer);
+
+        await this.weth.deposit({from: tokenBuyer, value: ether('20')})
+
+        // We get a discount, so we only need 100 - 2 % of the MONA
+        await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS.mul(new BN('0.98')), {from: tokenBuyer});
+
+
+        await this.marketplace.setNowOverride('121');
+        await this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer});
+
+        // Platform gets 12%
+        const platformChanges = await platformFeeTracker.delta('wei');
+        expect(platformChanges).to.be.bignumber.equal(ether('0')); // But no change in eth
+
+
+        const designerChanges = await designerTracker.delta('wei');
+        expect(designerChanges).to.be.bignumber.equal(ether('0')); // But no change in eth
+
+        // Validate that the garment owner/designer received FEE * (100% minus platformFEE of 12%)
+        expect(await this.monaToken.balanceOf(designer)).to.be.bignumber.equal(new BN('22000000000000000'));
+
+        // Validate that the treasury wallet (platformFeeRecipient) received platformFee minus discount for paying in Mona
+        // (so 12-2, is 10% of final fee is given to the platform recipient)
+        expect(await this.monaToken.balanceOf(platformFeeAddress)).to.be.bignumber.equal(new BN('2500000000000000'));
+      });
+
+      it('transfer MATIC (ETH) only to the token designer and platform', async () => {
+        const platformFeeTracker = await balance.tracker(platformFeeAddress);
+        const designerTracker = await balance.tracker(designer);
+
+        // We get a discount, so we only need 100 - 2 % of the MONA
+        await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS.mul(new BN('0.98')), {from: tokenBuyer});
+
+
+        await this.marketplace.setNowOverride('121');
+        await this.marketplace.buyOffer(0,
+            "0x0000000000000000000000000000000000001010",
+            {value: new BN('9800000000000000000'), from: tokenBuyer});
+
+        // Platform gets 12%
+        const platformChanges = await platformFeeTracker.delta('wei');
+        expect(platformChanges).to.be.bignumber.equal(new BN('1000000000000000000')); // But no change in eth
+
+        // Designer gets 88%
+        const designerChanges = await designerTracker.delta('wei');
+        expect(designerChanges).to.be.bignumber.equal(new BN('8800000000000000000')); // But no change in eth
+
+        // No change in MONA
+        // Validate that the garment owner/designer received FEE * (100% minus platformFEE of 12%)
+        expect(await this.monaToken.balanceOf(designer)).to.be.bignumber.equal(new BN('0'));
+
+        // Validate that the treasury wallet (platformFeeRecipient) received platformFee minus discount for paying in Mona
+        // (so 12-2, is 10% of final fee is given to the platform recipient)
+        expect(await this.monaToken.balanceOf(platformFeeAddress)).to.be.bignumber.equal(new BN('0'));
       });
     });
   });
@@ -572,7 +717,7 @@ contract('DripMarketplace', (accounts) => {
       });
   });
   });
-  
+
   describe('reclaimERC20()', async () => {
     describe('validation', async () => {
       it('cannot reclaim erc20 if it is not Admin', async () => {
