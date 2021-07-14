@@ -1,4 +1,4 @@
-d## Digitalax Smart Contracts
+## Digitalax Smart Contracts
 
 ### Genesis NFT Metadata scripts
 
