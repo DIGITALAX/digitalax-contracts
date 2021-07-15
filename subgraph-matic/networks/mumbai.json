@@ -42,6 +42,6 @@
   "PodeNFTv2StartBlock": 12000000,
   "DripOracleAddress": "0x81d6794c7a36b66630ca251cea2f8601edad586b",
   "DripOracleStartBlock": 12000000,
-  "DripMarketplaceAddress": "0x2CBfDE694F6Bae47b7d08BEBF9eC5FF642BA06C9",
+  "DripMarketplaceAddress": "0x39063224d8BF0b7f1cE012E246F0d951E337FC46",
   "DripMarketplaceStartBlock": 12000000
 }
