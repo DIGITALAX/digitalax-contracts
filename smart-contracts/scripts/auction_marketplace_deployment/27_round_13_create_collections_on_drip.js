@@ -169,21 +169,11 @@ async function main() {
         mainnet_startTime, // Marketplace buy offer available after start time
         mainnet_endTime, // Marketplace buy offer available after start time
         0,
-        0,
         10
     );
 
     await createOfferTx.wait();
     console.log(`--Marketplace created for collection--`);
-
-      // Create a marketplace offer for this exclusive parent nft
-      const platformFee = await marketplace.updateMarketplacePlatformFee(
-          createCollectionId, // Collection id
-          1000
-      );
-
-      await platformFee.wait();
-      console.log(`-Platform fee set to 100%--`);
     console.log(`----------------------`);
   }
 
