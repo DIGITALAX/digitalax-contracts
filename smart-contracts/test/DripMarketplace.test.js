@@ -632,12 +632,12 @@ contract('DripMarketplace', (accounts) => {
 
         await this.marketplace.setNowOverride('121');
         await this.marketplace.buyOffer(0,
-            "0x0000000000000000000000000000000000001010", 0,0,
-            {value: new BN('9800000000000000000'), from: tokenBuyer});
+            "0x0000000000000000000000000000000000001010", 0, ether('0.05'),
+            {value: new BN('9850000000000000000'), from: tokenBuyer});
 
         // Platform gets 12%
         const platformChanges = await platformFeeTracker.delta('wei');
-        expect(platformChanges).to.be.bignumber.equal(new BN('9800000000000000000')); // But no change in eth
+        expect(platformChanges).to.be.bignumber.equal(new BN('9850000000000000000')); // But no change in eth
 
         // Designer gets 88%
         const designerChanges = await designerTracker.delta('wei');

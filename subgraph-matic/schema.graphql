@@ -440,7 +440,6 @@ type DripMarketplaceOffer @entity {
   startTime: BigInt!
   endTime: BigInt!
   amountSold: BigInt!
-  marketplacePlatformFee: BigInt!
   discountToPayERC20: BigInt!
 }
 
@@ -500,11 +499,12 @@ type DripMarketplacePurchaseHistory @entity {
   transactionHash: Bytes!
   token: DigitalaxGarmentV2!
   buyer: Bytes!
+  orderId: BigInt!
   value: BigInt! # USD Value
+  shippingUsd: BigInt!
   paymentTokenTransferredAmount: BigInt!
   paymentToken: String!
   garmentCollectionId: BigInt!
-  platformFee: BigInt!
   discountToPayERC20: BigInt!
   rarity: String!
   usdEthExchange: BigInt! # Eth for every USD in wei at the time of the tx
