@@ -176,7 +176,6 @@ contract('DripMarketplace', (accounts) => {
         ether('0.1'),  // Price of 0.1 eth
         '120',
         '1000000',
-        '120',
         '20',
         MAX_SIZE,
         {from: minter}
@@ -304,22 +303,12 @@ contract('DripMarketplace', (accounts) => {
       it('fails if token already has marketplace in play', async () => {
         await this.marketplace.setNowOverride('120');
         await this.marketplace.createOffer(0,  ether('0.1'), '120',
-            '1000000', '120', '20', MAX_SIZE, {from: minter});
+            '1000000', '20', MAX_SIZE, {from: minter});
 
         await expectRevert(
           this.marketplace.createOffer(0,  ether('0.1'), '120',
-              '1000000', '120', '20', MAX_SIZE, {from: minter}),
+              '1000000', '20', MAX_SIZE, {from: minter}),
           'DigitalaxMarketplace.createOffer: Cannot duplicate current offer'
-        );
-      });
-
-      it('fails if discount to pay mona is more then platform fee', async () => {
-        await this.marketplace.setNowOverride('120');
-
-        await expectRevert(
-          this.marketplace.createOffer(0,  ether('0.1'), '120',
-              '1000000', '120', '121', MAX_SIZE, {from: minter}),
-            'DigitalaxMarketplace.createOffer: The discount is taken out of platform fee, discount cannot be greater'
         );
       });
 
@@ -327,7 +316,7 @@ contract('DripMarketplace', (accounts) => {
         await this.marketplace.setNowOverride('120');
         await expectRevert(
            this.marketplace.createOffer('98', ether('0.05'), '120',
-               '1000000', '120', '20', MAX_SIZE, {from: tokenBuyer}),
+               '1000000', '20', MAX_SIZE, {from: tokenBuyer}),
           "DigitalaxMarketplace.createOffer: Sender must have the minter or admin role"
         );
       });
@@ -342,7 +331,7 @@ contract('DripMarketplace', (accounts) => {
           await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
         }
         await this.marketplace.createOffer(0, ether('0.1'), '120',
-            '1000000', '120', '20', MAX_SIZE, {from: minter});
+            '1000000', '20', MAX_SIZE, {from: minter});
 
         const owner = await this.token.ownerOf(TOKEN_ONE_ID);
         expect(owner).to.be.equal(minter);
@@ -369,7 +358,7 @@ contract('DripMarketplace', (accounts) => {
           await this.token.approve(marketplaceNew.address, garmentIds[i], {from: minter});
         }
         await marketplaceNew.createOffer(0, ether('0.1'), '120',
-            '1000000', '120', '20', MAX_SIZE, {from: minter});
+            '1000000', '20', MAX_SIZE, {from: minter});
 
         const owner = await this.token.ownerOf(TOKEN_ONE_ID);
         expect(owner).to.be.equal(minter);
@@ -392,7 +381,6 @@ contract('DripMarketplace', (accounts) => {
           ether('0.1'),
           '120',
             '1000000',
-          '120',
           '20',
           MAX_SIZE,
           {from: minter}
@@ -403,7 +391,7 @@ contract('DripMarketplace', (accounts) => {
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await this.marketplace.toggleIsPaused({from: admin});
         await expectRevert(
-          this.marketplace.buyOffer(TOKEN_ONE_ID, this.monaToken.address, {from: tokenBuyer}),
+          this.marketplace.buyOffer(TOKEN_ONE_ID, this.monaToken.address, 0,0, {from: tokenBuyer}),
           "Function is currently paused"
         );
       });
@@ -423,7 +411,6 @@ contract('DripMarketplace', (accounts) => {
           ether('0.1'),
           '120',
             '1000000',
-          '120',
           '20',
           MAX_SIZE,
           {from: minter}
@@ -433,22 +420,21 @@ contract('DripMarketplace', (accounts) => {
       it('buys the offer', async () => {
         await this.marketplace.setNowOverride('120');
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
-        await this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer});
-        const {_primarySalePrice, _startTime, _availableAmount, _platformFee, _discountToPayERC20} = await this.marketplace.getOffer(0);
+        await this.marketplace.buyOffer(0, this.monaToken.address, 0,0, {from: tokenBuyer});
+        const {_primarySalePrice, _startTime, _availableAmount, _discountToPayERC20} = await this.marketplace.getOffer(0);
         expect(_primarySalePrice).to.be.bignumber.equal(ether('0.1'));
         expect(_startTime).to.be.bignumber.equal('120');
         expect(_startTime).to.be.bignumber.equal('120');
         expect(_availableAmount).to.be.bignumber.equal('9');
-        expect(_platformFee).to.be.bignumber.equal('120');
         expect(_discountToPayERC20).to.be.bignumber.equal('20');
       });
 
       it('will fail when cooldown not reached', async () => {
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await this.marketplace.setNowOverride('120');
-        await this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer});
+        await this.marketplace.buyOffer(0, this.monaToken.address, 0,0, {from: tokenBuyer});
         await expectRevert(
-            this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer}),
+            this.marketplace.buyOffer(0, this.monaToken.address, 0,0, {from: tokenBuyer}),
             "DigitalaxMarketplace.buyOffer: Cooldown not reached"
         );
       })
@@ -458,7 +444,7 @@ contract('DripMarketplace', (accounts) => {
         await this.marketplace.toggleFreezeERC20Payment({from: admin});
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await expectRevert(
-            this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer}),
+            this.marketplace.buyOffer(0, this.monaToken.address, 0,0, {from: tokenBuyer}),
             "DigitalaxMarketplace.buyOffer: erc20 payments currently frozen"
         );
       });
@@ -466,12 +452,12 @@ contract('DripMarketplace', (accounts) => {
       it('will fail if we have not reached start time', async () => {
         await this.marketplace.setNowOverride('120');
         await this.marketplace.updateOfferStartEndTime(0, '150', '1000', {from: admin});
-        const {_primarySalePrice, _startTime, _endTime, _availableAmount, _platformFee, _discountToPayERC20} = await this.marketplace.getOffer(0);
+        const {_primarySalePrice, _startTime, _endTime, _availableAmount, _discountToPayERC20} = await this.marketplace.getOffer(0);
         expect(_startTime).to.be.bignumber.equal('150');
         expect(_endTime).to.be.bignumber.equal('1000');
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await expectRevert(
-            this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer}),
+            this.marketplace.buyOffer(0, this.monaToken.address, 0,0, {from: tokenBuyer}),
             "DigitalaxMarketplace.buyOffer: Purchase outside of the offer window"
         );
       });
@@ -481,7 +467,7 @@ contract('DripMarketplace', (accounts) => {
         await this.marketplace.setNowOverride('120');
         await this.marketplace.toggleFreezeERC20Payment({from: admin});
         await expectRevert(
-            this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer}),
+            this.marketplace.buyOffer(0, this.monaToken.address, 0,0, {from: tokenBuyer}),
             "DigitalaxMarketplace.buyOffer: erc20 payments currently frozen"
         );
         await this.marketplace.toggleFreezeERC20Payment({from: admin});
@@ -490,7 +476,7 @@ contract('DripMarketplace', (accounts) => {
       it('records primary sale price on garment NFT', async () => {
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await this.marketplace.setNowOverride('121');
-        await this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer});
+        await this.marketplace.buyOffer(0, this.monaToken.address, 0,0, {from: tokenBuyer});
 
         const primarySalePrice = await this.token.primarySalePrice(100001);
         expect(primarySalePrice).to.be.bignumber.equal(ether('0.1'));
@@ -508,7 +494,7 @@ contract('DripMarketplace', (accounts) => {
 
 
         await this.marketplace.setNowOverride('121');
-        await this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer});
+        await this.marketplace.buyOffer(0, this.monaToken.address, 0,0, {from: tokenBuyer});
 
         // Platform gets 12%
         const platformChanges = await platformFeeTracker.delta('wei');
@@ -518,12 +504,11 @@ contract('DripMarketplace', (accounts) => {
         const designerChanges = await designerTracker.delta('wei');
         expect(designerChanges).to.be.bignumber.equal(ether('0')); // But no change in eth
 
-        // Validate that the garment owner/designer received FEE * (100% minus platformFEE of 12%)
-        expect(await this.monaToken.balanceOf(designer)).to.be.bignumber.equal(new BN('88000000000000000'));
+        expect(await this.monaToken.balanceOf(designer)).to.be.bignumber.equal(new BN('0'));
 
         // Validate that the treasury wallet (platformFeeRecipient) received platformFee minus discount for paying in Mona
         // (so 12-2, is 10% of final fee is given to the platform recipient)
-        expect(await this.monaToken.balanceOf(platformFeeAddress)).to.be.bignumber.equal(new BN('10000000000000000'));
+        expect(await this.monaToken.balanceOf(platformFeeAddress)).to.be.bignumber.equal(new BN('98000000000000000'));
       });
 
       it('transfer MATIC (ETH) only to the token designer and platform', async () => {
@@ -536,19 +521,18 @@ contract('DripMarketplace', (accounts) => {
 
         await this.marketplace.setNowOverride('121');
         await this.marketplace.buyOffer(0,
-            "0x0000000000000000000000000000000000001010",
+            "0x0000000000000000000000000000000000001010", 0,0,
             {value: new BN('98000000000000000'), from: tokenBuyer});
 
         // Platform gets 12%
         const platformChanges = await platformFeeTracker.delta('wei');
-        expect(platformChanges).to.be.bignumber.equal(new BN('10000000000000000')); // But no change in eth
+        expect(platformChanges).to.be.bignumber.equal(new BN('98000000000000000')); // But no change in eth
 
         // Designer gets 88%
         const designerChanges = await designerTracker.delta('wei');
-        expect(designerChanges).to.be.bignumber.equal(new BN('88000000000000000')); // But no change in eth
+        expect(designerChanges).to.be.bignumber.equal(new BN('0')); // But no change in eth
 
         // No change in MONA
-        // Validate that the garment owner/designer received FEE * (100% minus platformFEE of 12%)
         expect(await this.monaToken.balanceOf(designer)).to.be.bignumber.equal(new BN('0'));
 
         // Validate that the treasury wallet (platformFeeRecipient) received platformFee minus discount for paying in Mona
@@ -579,7 +563,6 @@ contract('DripMarketplace', (accounts) => {
           ether('10'), //10$
           '120',
           '1000000',
-          '120',
           '20',
           MAX_SIZE,
           {from: minter}
@@ -590,13 +573,12 @@ contract('DripMarketplace', (accounts) => {
       it('buys the offer', async () => {
         await this.marketplace.setNowOverride('120');
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
-        await this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer});
-        const {_primarySalePrice, _startTime, _availableAmount, _platformFee, _discountToPayERC20} = await this.marketplace.getOffer(0);
+        await this.marketplace.buyOffer(0, this.monaToken.address, 0,0, {from: tokenBuyer});
+        const {_primarySalePrice, _startTime, _availableAmount, _discountToPayERC20} = await this.marketplace.getOffer(0);
         expect(_primarySalePrice).to.be.bignumber.equal(ether('10'));
         expect(_startTime).to.be.bignumber.equal('120');
         expect(_startTime).to.be.bignumber.equal('120');
         expect(_availableAmount).to.be.bignumber.equal('9');
-        expect(_platformFee).to.be.bignumber.equal('120');
         expect(_discountToPayERC20).to.be.bignumber.equal('20');
       });
 
@@ -604,7 +586,7 @@ contract('DripMarketplace', (accounts) => {
 
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await this.marketplace.setNowOverride('121');
-        await this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer});
+        await this.marketplace.buyOffer(0, this.monaToken.address, 0,0, {from: tokenBuyer});
 
         // 100$ * (1 eth/2000$)
         const primarySalePrice = await this.token.primarySalePrice(100001);
@@ -622,7 +604,7 @@ contract('DripMarketplace', (accounts) => {
 
 
         await this.marketplace.setNowOverride('121');
-        await this.marketplace.buyOffer(0, this.monaToken.address, {from: tokenBuyer});
+        await this.marketplace.buyOffer(0, this.monaToken.address, 0,0, {from: tokenBuyer});
 
         // Platform gets 12%
         const platformChanges = await platformFeeTracker.delta('wei');
@@ -633,11 +615,11 @@ contract('DripMarketplace', (accounts) => {
         expect(designerChanges).to.be.bignumber.equal(ether('0')); // But no change in eth
 
         // Validate that the garment owner/designer received FEE * (100% minus platformFEE of 12%)
-        expect(await this.monaToken.balanceOf(designer)).to.be.bignumber.equal(new BN('22000000000000000'));
+        expect(await this.monaToken.balanceOf(designer)).to.be.bignumber.equal(new BN('0'));
 
         // Validate that the treasury wallet (platformFeeRecipient) received platformFee minus discount for paying in Mona
         // (so 12-2, is 10% of final fee is given to the platform recipient)
-        expect(await this.monaToken.balanceOf(platformFeeAddress)).to.be.bignumber.equal(new BN('2500000000000000'));
+        expect(await this.monaToken.balanceOf(platformFeeAddress)).to.be.bignumber.equal(new BN('24500000000000000'));
       });
 
       it('transfer MATIC (ETH) only to the token designer and platform', async () => {
@@ -650,16 +632,16 @@ contract('DripMarketplace', (accounts) => {
 
         await this.marketplace.setNowOverride('121');
         await this.marketplace.buyOffer(0,
-            "0x0000000000000000000000000000000000001010",
+            "0x0000000000000000000000000000000000001010", 0,0,
             {value: new BN('9800000000000000000'), from: tokenBuyer});
 
         // Platform gets 12%
         const platformChanges = await platformFeeTracker.delta('wei');
-        expect(platformChanges).to.be.bignumber.equal(new BN('1000000000000000000')); // But no change in eth
+        expect(platformChanges).to.be.bignumber.equal(new BN('9800000000000000000')); // But no change in eth
 
         // Designer gets 88%
         const designerChanges = await designerTracker.delta('wei');
-        expect(designerChanges).to.be.bignumber.equal(new BN('8800000000000000000')); // But no change in eth
+        expect(designerChanges).to.be.bignumber.equal(new BN('0')); // But no change in eth
 
         // No change in MONA
         // Validate that the garment owner/designer received FEE * (100% minus platformFEE of 12%)
@@ -686,7 +668,6 @@ contract('DripMarketplace', (accounts) => {
         ether('0.1'),
         '120',
           '1000000',
-        '120',
         '20',
         MAX_SIZE,
         {from: minter},
@@ -759,7 +740,6 @@ contract('DripMarketplace', (accounts) => {
         ether('0.1'),
         '120',
           '1000000',
-        '120',
         '20',
         MAX_SIZE,
         {from: minter}
@@ -785,50 +765,6 @@ contract('DripMarketplace', (accounts) => {
     });
   });
 
-  describe('updateMarketplacePlatformFee()', async () => {
-    beforeEach(async () => {
-      await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, bundleID, 'Common', [], [], {from: minter});
-      const garmentIds = await this.garmentCollection.getTokenIds(0);
-      for (let i = 0; i < garmentIds.length; i ++) {
-        await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
-      }
-      await this.marketplace.setNowOverride('120');
-      await this.marketplace.createOffer(
-          0,
-          ether('0.1'),
-          '120',
-          '1000000',
-          '120',
-          '20',
-          MAX_SIZE,
-          {from: minter}
-      );
-    });
-
-    describe('updateMarketplacePlatformFee()', () => {
-      it('fails when not admin', async () => {
-        await expectRevert(
-            this.marketplace.updateMarketplacePlatformFee(0, '100', {from: tokenBuyer}),
-            'DigitalaxMarketplace.updateMarketplacePlatformFee: Sender must be admin'
-        );
-      });
-      it('fails when less than the discount', async () => {
-        const {_primarySalePrice, _startTime, _endTime, _availableAmount, _platformFee, _discountToPayERC20} = await this.marketplace.getOffer(0);
-        expect(_discountToPayERC20).to.be.bignumber.equal('20');
-        await expectRevert(
-            this.marketplace.updateMarketplacePlatformFee(0, '1', {from: admin}),
-            'DigitalaxMarketplace.updateMarketplacePlatformFee: Discount cannot be greater then fee'
-        );
-      });
-      it('successfully updates platform fee', async () => {
-        await this.marketplace.updateMarketplacePlatformFee(0, '200', {from: admin});
-        const {_primarySalePrice, _startTime, _endTime, _availableAmount, _platformFee, _discountToPayERC20} = await this.marketplace.getOffer(0);
-        expect(_platformFee).to.be.bignumber.equal('200');
-      });
-    });
-  });
-
-
   describe('updateMarketplaceDiscountToPayInErc20()', async () => {
     beforeEach(async () => {
       await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, bundleID, 'Common', [], [], {from: minter});
@@ -842,7 +778,6 @@ contract('DripMarketplace', (accounts) => {
           ether('0.1'),
           '120',
           '1000000',
-          '120',
           '20',
           MAX_SIZE,
           {from: minter}
@@ -856,17 +791,15 @@ contract('DripMarketplace', (accounts) => {
             'DigitalaxMarketplace.updateMarketplaceDiscountToPayInErc20: Sender must be admin'
         );
       });
-      it('fails when more than the platform fee', async () => {
-        const {_primarySalePrice, _startTime, _availableAmount, _platformFee, _discountToPayERC20} = await this.marketplace.getOffer(0);
-        expect(_platformFee).to.be.bignumber.equal('120');
+      it('fails when more than the 1000', async () => {
         await expectRevert(
-            this.marketplace.updateMarketplaceDiscountToPayInErc20(0, '200', {from: admin}),
+            this.marketplace.updateMarketplaceDiscountToPayInErc20(0, '1200', {from: admin}),
             'DigitalaxMarketplace.updateMarketplaceDiscountToPayInErc20: Discount cannot be greater then fee'
         );
       });
       it('successfully updates discount', async () => {
         await this.marketplace.updateMarketplaceDiscountToPayInErc20(0, '30', {from: admin});
-        const {_primarySalePrice, _startTime, _availableAmount, _platformFee, _discountToPayERC20} = await this.marketplace.getOffer(0);
+        const {_primarySalePrice, _startTime, _availableAmount, _discountToPayERC20} = await this.marketplace.getOffer(0);
         expect(_discountToPayERC20).to.be.bignumber.equal('30');
       });
     });
