@@ -36,16 +36,11 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         uint256 primarySalePrice,
         uint256 startTime,
         uint256 endTime,
-        uint256 platformFee,
         uint256 discountToPayERC20,
         uint256 maxAmount
     );
     event UpdateAccessControls(
         address indexed accessControls
-    );
-    event UpdateMarketplacePlatformFee(
-        uint256 indexed garmentCollectionId,
-        uint256 platformFee
     );
     event UpdateMarketplaceDiscountToPayInErc20(
         uint256 indexed garmentCollectionId,
@@ -78,14 +73,13 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         uint256 cooldown
     );
     event OfferPurchased(
-        uint256 indexed bundleTokenId,
-        uint256 indexed garmentCollectionId,
-        address indexed buyer,
-        uint256 primarySalePrice,
+        uint256 bundleTokenId,
+        uint256 garmentCollectionId,
+        uint256 shippingAmount,
         uint256 tokenTransferredAmount,
-        address paymentToken,
-        uint256 platformFee
+        uint256 offerId
     );
+
     event OfferCancelled(
         uint256 indexed bundleTokenId
     );
@@ -95,7 +89,6 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         uint256 startTime;
         uint256 endTime;
         uint256 availableIndex;
-        uint256 platformFee;
         uint256 discountToPayERC20;
         uint256 maxAmount;
         bool paused;
@@ -103,6 +96,8 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
 
     /// @notice Garment ERC721 Collection ID -> Offer Parameters
     mapping(uint256 => Offer) public offers;
+    /// Map token id to payment address
+    mapping(uint256 => address) public paymentTokenHistory;
     /// @notice KYC Garment Designers -> Number of times they have sold in this marketplace (To set fee accordingly)
     mapping(address => uint256) public numberOfTimesSold;
     /// @notice Garment Collection ID -> Buyer -> Last purhcased time
@@ -244,7 +239,6 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
      @param _primarySalePrice Garment cannot be sold for less than this
      @param _startTimestamp when the sale starts
      @param _endTimestamp when the sale ends
-     @param _platformFee Percentage to pay out to the platformFeeRecipient, 1 decimal place (i.e. 40% is 400)
      @param _discountToPayERC20 Percentage to discount from overall purchase price if USDT (ERC20) used, 1 decimal place (i.e. 5% is 50)
      @param _maxAmount Max number of products from this collection that someone can buy
      */
@@ -253,7 +247,6 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         uint256 _primarySalePrice,
         uint256 _startTimestamp,
         uint256 _endTimestamp,
-        uint256 _platformFee,
         uint256 _discountToPayERC20,
         uint256 _maxAmount
     ) external {
@@ -279,7 +272,6 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
             _primarySalePrice,
             _startTimestamp,
             _endTimestamp,
-            _platformFee,
             _discountToPayERC20,
             _maxAmount,
             false
@@ -294,7 +286,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
      @dev The sale must have started (start time) to make a successful buy
      @param _garmentCollectionId Collection ID of the garment being offered
      */
-    function buyOffer(uint256 _garmentCollectionId, address _paymentToken) external payable whenNotPaused nonReentrant {
+    function buyOffer(uint256 _garmentCollectionId, address _paymentToken, uint256 _orderId, uint256 _shippingUSD) external payable whenNotPaused nonReentrant {
         // Check the offers to see if this is a valid
         require(_msgSender().isContract() == false, "DigitalaxMarketplace.buyOffer: No contracts permitted");
         require(_isFinished(_garmentCollectionId) == false, "DigitalaxMarketplace.buyOffer: Sale has been finished");
@@ -318,38 +310,26 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         require(_getNow() >= offer.startTime, "DigitalaxMarketplace.buyOffer: Purchase outside of the offer window");
         require(!freezeERC20Payment, "DigitalaxMarketplace.buyOffer: erc20 payments currently frozen");
 
-        uint256 priceInPaymentToken = _estimateTokenAmount(_paymentToken, offer.primarySalePrice);
-        uint256 feeInPaymentToken = priceInPaymentToken.mul(offer.platformFee).div(maxShare);
+        uint256 amountOfDiscountOnPaymentTokenPrice = offer.primarySalePrice.mul(offer.discountToPayERC20).div(maxShare);
 
-        // Designer receives (Primary Sale Price minus Protocol Fee)
-        uint256 amountOfPaymentTokenToTransferToDesigner = priceInPaymentToken.sub(feeInPaymentToken);
-
-        // There is a discount on Fees paying in USD
-        uint256 amountOfDiscountOnPaymentTokenPrice = priceInPaymentToken.mul(offer.discountToPayERC20).div(maxShare);
-        uint256 amountOfPaymentTokenToTransferAsFees = feeInPaymentToken.sub(amountOfDiscountOnPaymentTokenPrice);
+        uint256 priceInPaymentToken = _estimateTokenAmount(_paymentToken, offer.primarySalePrice.add(_shippingUSD).sub(amountOfDiscountOnPaymentTokenPrice));
 
         // If it is MATIC, needs to be send as msg.value
         if (_paymentToken == MATIC_TOKEN) {
-            require(msg.value >= priceInPaymentToken.sub(amountOfPaymentTokenToTransferAsFees), "DigitalaxMarketplace.buyOffer: Failed to supply funds");
+            require(msg.value >= priceInPaymentToken, "DigitalaxMarketplace.buyOffer: Failed to supply funds");
 
             // Send platform fee in ETH to the platform fee recipient, there is a discount that is subtracted from this
-            (bool platformTransferSuccess,) = platformFeeRecipient.call{value : amountOfPaymentTokenToTransferAsFees}("");
+            (bool platformTransferSuccess,) = platformFeeRecipient.call{value : priceInPaymentToken}("");
             require(platformTransferSuccess, "DigitalaxMarketplace.buyOffer: Failed to send platform fee");
-            // Send remaining to designer in ETH, the discount does not effect the amount designers receive
-            (bool designerTransferSuccess,) = garmentNft.garmentDesigners(bundleTokenId).call{value : amountOfPaymentTokenToTransferToDesigner}("");
-            require(designerTransferSuccess, "DigitalaxMarketplace.buyOffer: Failed to send the designer their royalties");
+
         } else {
             // Check that there is enough ERC20 to cover the rest of the value (minus the discount already taken)
-            require(IERC20(_paymentToken).allowance(_msgSender(), address(this)) >= priceInPaymentToken.sub(amountOfPaymentTokenToTransferAsFees), "DigitalaxMarketplace.buyOffer: Failed to supply ERC20 Allowance");
-            // Transfer ERC20 token from user to contract(this) escrow
-            IERC20(_paymentToken).transferFrom(
-                _msgSender(),
-                garmentNft.garmentDesigners(bundleTokenId),
-                amountOfPaymentTokenToTransferToDesigner);
+            require(IERC20(_paymentToken).allowance(_msgSender(), address(this)) >= priceInPaymentToken, "DigitalaxMarketplace.buyOffer: Failed to supply ERC20 Allowance");
+
             IERC20(_paymentToken).transferFrom(
                 _msgSender(),
                 platformFeeRecipient,
-                amountOfPaymentTokenToTransferAsFees);
+                priceInPaymentToken);
         }
 
         offer.availableIndex = offer.availableIndex.add(1);
@@ -359,7 +339,9 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         garmentNft.safeTransferFrom(garmentNft.ownerOf(bundleTokenId), _msgSender(), bundleTokenId);
         lastPurchasedTime[_garmentCollectionId][_msgSender()] = _getNow();
 
-        emit OfferPurchased(bundleTokenId, _garmentCollectionId, _msgSender(), offer.primarySalePrice, priceInPaymentToken, _paymentToken, offer.platformFee);
+        paymentTokenHistory[bundleTokenId] = _paymentToken;
+
+        emit OfferPurchased(bundleTokenId, _garmentCollectionId, _shippingUSD, priceInPaymentToken, _orderId);
     }
     /**
      @notice Cancels an inflight and un-resulted offer
@@ -420,23 +402,9 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
      */
     function updateMarketplaceDiscountToPayInErc20(uint256 _garmentCollectionId, uint256 _marketplaceDiscount) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.updateMarketplaceDiscountToPayInErc20: Sender must be admin");
-        require(_marketplaceDiscount <= offers[_garmentCollectionId].platformFee, "DigitalaxMarketplace.updateMarketplaceDiscountToPayInErc20: Discount cannot be greater then fee");
+        require(_marketplaceDiscount < 1000, "DigitalaxMarketplace.updateMarketplaceDiscountToPayInErc20: Discount cannot be greater then fee");
         offers[_garmentCollectionId].discountToPayERC20 = _marketplaceDiscount;
         emit UpdateMarketplaceDiscountToPayInErc20(_garmentCollectionId, _marketplaceDiscount);
-    }
-
-    /**
-     @notice Update the marketplace fee
-     @dev Only admin
-     @dev There is a discount that can be taken away from received fees, so that discount cannot exceed the platform fee
-     @param _garmentCollectionId Collection ID of the garment being offered
-     @param _platformFee New marketplace fee
-     */
-    function updateMarketplacePlatformFee(uint256 _garmentCollectionId, uint256 _platformFee) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.updateMarketplacePlatformFee: Sender must be admin");
-        require(_platformFee >= offers[_garmentCollectionId].discountToPayERC20, "DigitalaxMarketplace.updateMarketplacePlatformFee: Discount cannot be greater then fee");
-        offers[_garmentCollectionId].platformFee = _platformFee;
-        emit UpdateMarketplacePlatformFee(_garmentCollectionId, _platformFee);
     }
 
     /**
@@ -532,7 +500,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
     function getOffer(uint256 _garmentCollectionId)
     external
     view
-    returns (uint256 _primarySalePrice, uint256 _startTime, uint256 _endTime, uint256 _availableAmount, uint _platformFee, uint256 _discountToPayERC20) {
+    returns (uint256 _primarySalePrice, uint256 _startTime, uint256 _endTime, uint256 _availableAmount, uint256 _discountToPayERC20) {
         Offer storage offer = offers[_garmentCollectionId];
         uint256 availableAmount = garmentCollection.getSupply(_garmentCollectionId).sub(offer.availableIndex);
         return (
@@ -540,7 +508,6 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
             offer.startTime,
             offer.endTime,
             availableAmount,
-            offer.platformFee,
             offer.discountToPayERC20
         );
     }
@@ -599,7 +566,6 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
      @param _garmentCollectionId Collection ID of the garment being offered
      @param _primarySalePrice Garment cannot be sold for less than this
      @param _startTimestamp Unix epoch in seconds for the offer start time
-     @param _platformFee Percentage to pay out to the platformFeeRecipient, 1 decimal place (i.e. 40% is 400)
      @param _discountToPayERC20 Percentage to discount from overall purchase price if USDT (ERC20) used, 1 decimal place (i.e. 5% is 50)
      */
     function _createOffer(
@@ -607,13 +573,12 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         uint256 _primarySalePrice,
         uint256 _startTimestamp,
         uint256 _endTimestamp,
-        uint256 _platformFee,
         uint256 _discountToPayERC20,
         uint256 _maxAmount,
         bool _paused
     ) private {
         // The discount cannot be greater than the platform fee
-        require(_platformFee >= _discountToPayERC20 , "DigitalaxMarketplace.createOffer: The discount is taken out of platform fee, discount cannot be greater");
+        require(1000 > _discountToPayERC20 , "DigitalaxMarketplace.createOffer: The discount is taken out of platform fee, discount cannot be greater");
         // Ensure a token cannot be re-listed if previously successfully sold
         require(offers[_garmentCollectionId].startTime == 0, "DigitalaxMarketplace.createOffer: Cannot duplicate current offer");
         // Setup the new offer
@@ -622,12 +587,11 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
             startTime : _startTimestamp,
             endTime: _endTimestamp,
             availableIndex : 0,
-            platformFee: _platformFee,
             discountToPayERC20: _discountToPayERC20,
             maxAmount: _maxAmount,
             paused: _paused
         });
-        emit OfferCreated(_garmentCollectionId, _primarySalePrice, _startTimestamp, _endTimestamp, _platformFee, _discountToPayERC20, _maxAmount);
+        emit OfferCreated(_garmentCollectionId, _primarySalePrice, _startTimestamp, _endTimestamp, _discountToPayERC20, _maxAmount);
     }
 
     /**
