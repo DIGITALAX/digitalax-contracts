@@ -620,49 +620,49 @@ async function main() {
     //     100031
     //   ],
     // },
-    {
-      // Hoodie 3 Common
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Pickle/Hoodie3/hash.json').uri,
-      price: reservePrice_hoodie,
-      collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 200,
-      auctionIdToLink: 1,
-      rarity: 'Common',
-      tokendIds: [
-        100095,
-        100108,
-        100089,
-        100068
-      ],
-    },
-    {
-      // Instadapp ****
-      // Cap 1 Common
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Instadapp/Cap1/hash.json').uri,
-      price: reservePrice_cap,
-      collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 200,
-      auctionIdToLink: 1,
-      rarity: 'Common',
-      tokendIds: [
-        100050,
-        100091,
-        100060
-      ],
-    },
-    {
-      // Cap 2 Common
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Instadapp/Cap2/hash.json').uri,
-      price: reservePrice_cap,
-      collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 200,
-      auctionIdToLink: 1,
-      rarity: 'Common',
-      tokendIds: [
-        100022,
-        100105
-      ],
-    },
+    // {
+    //   // Hoodie 3 Common
+    //   uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Pickle/Hoodie3/hash.json').uri,
+    //   price: reservePrice_hoodie,
+    //   collectionDesigner: FUND_MULTISIG_ADDRESS,
+    //   amountToMintInCollection: 200,
+    //   auctionIdToLink: 1,
+    //   rarity: 'Common',
+    //   tokendIds: [
+    //     100095,
+    //     100108,
+    //     100089,
+    //     100068
+    //   ],
+    // },
+    // {
+    //   // Instadapp ****
+    //   // Cap 1 Common
+    //   uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Instadapp/Cap1/hash.json').uri,
+    //   price: reservePrice_cap,
+    //   collectionDesigner: FUND_MULTISIG_ADDRESS,
+    //   amountToMintInCollection: 200,
+    //   auctionIdToLink: 1,
+    //   rarity: 'Common',
+    //   tokendIds: [
+    //     100050,
+    //     100091,
+    //     100060
+    //   ],
+    // },
+    // {
+    //   // Cap 2 Common
+    //   uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Instadapp/Cap2/hash.json').uri,
+    //   price: reservePrice_cap,
+    //   collectionDesigner: FUND_MULTISIG_ADDRESS,
+    //   amountToMintInCollection: 200,
+    //   auctionIdToLink: 1,
+    //   rarity: 'Common',
+    //   tokendIds: [
+    //     100022,
+    //     100105
+    //   ],
+    // },
     {
       // Cap 3 Common
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Instadapp/Cap3/hash.json').uri,
