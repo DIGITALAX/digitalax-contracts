@@ -50,8 +50,8 @@ async function main() {
   );
   //
   // //Optional TODO decide if needed
-  const acr = await accessControls.addSmartContractRole(DRIP_MARKETPLACE_ADDRESS);
-  await acr.wait();
+  // const acr = await accessControls.addSmartContractRole(DRIP_MARKETPLACE_ADDRESS);
+  // await acr.wait();
 
   // const scr =  await accessControls.addSmartContractRole(GARMENT_COLLECTION_ADDRESS);
   // await scr.wait();
@@ -94,23 +94,23 @@ async function main() {
     //     100064
     //   ],
     // },
-     {
-      // Cap 2 Common
-      uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Aave/Cap2/hash.json').uri,
-      price: reservePrice_cap,
-      collectionDesigner: FUND_MULTISIG_ADDRESS,
-      amountToMintInCollection: 200,
-      auctionIdToLink: 1,
-      rarity: 'Common',
-      tokendIds: [
-          100140,
-        100162,
-        100178,
-        100192,
-        100185,
-        100170
-      ],
-    },
+    //  {
+    //   // Cap 2 Common
+    //   uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Aave/Cap2/hash.json').uri,
+    //   price: reservePrice_cap,
+    //   collectionDesigner: FUND_MULTISIG_ADDRESS,
+    //   amountToMintInCollection: 200,
+    //   auctionIdToLink: 1,
+    //   rarity: 'Common',
+    //   tokendIds: [
+    //       100140,
+    //     100162,
+    //     100178,
+    //     100192,
+    //     100185,
+    //     100170
+    //   ],
+    // },
      {
       // Cap 3 Common
       uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/Aave/Cap3/hash.json').uri,
