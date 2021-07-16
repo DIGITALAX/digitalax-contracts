@@ -60,46 +60,46 @@ async function main() {
   const reservePrice2_semirare = '1000000000000000000';
   const reservePrice2_exclusive = '2000000000000000000';
 
-  const mainnet_startTime = '1626314453';
+  const mainnet_startTime = '1626376072';
   const mainnet_endTime = '1655308800';
 
   // Use the single auction id processed in the last script to build auction id specific collections in this script
 
   // Next step is mint collections and open buy offers, run 1 at a time in production in case something drops
   const collectionUris = [
-      // {
-      //     // Collection 1 Common
-      //     uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/DigiFizzyV3/digifizzy_1_common/hash.json').uri,
-      //     price: reservePrice_common,
-      //     collectionDesigner: FUND_MULTISIG_ADDRESS,
-      //     amountToMintInCollection: 700,
-      //     collectionId: 9,
-      //     rarity: 'Common',
-      //     tokendIds: [100100,100101,100102,100103],
-      //     tokenAmounts: [1,1,1,1],
-      // },
-      // {
-      //     // Collection 2 Semirare
-      //     uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/DigiFizzyV3/digifizzy_2_semirare/hash.json').uri,
-      //     price: reservePrice2_semirare,
-      //     collectionDesigner: FUND_MULTISIG_ADDRESS,
-      //     amountToMintInCollection: 320,
-      //     collectionId: 10,
-      //     rarity: 'Semi-Rare',
-      //     tokendIds: [100104,100105,100106,100107],
-      //     tokenAmounts: [1,1,1,1],
-      // },
-      // {
-      //     // Collection 3 Exclusive
-      //     uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/DigiFizzyV3/digifizzy_3_exclusive/hash.json').uri,
-      //     price: reservePrice2_exclusive,
-      //     collectionDesigner: FUND_MULTISIG_ADDRESS,
-      //     amountToMintInCollection: 50,
-      //     collectionId: 11,
-      //     rarity: 'Exclusive',
-      //     tokendIds: [100108,100109,100110,100111,100112,100113,100114,100115],
-      //     tokenAmounts: [1,1,1,1,1,1,1,1],
-      // },
+      {
+          // Collection 1 Common
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/DigiFizzyV3/digifizzy_1_common/hash.json').uri,
+          price: reservePrice_common,
+          collectionDesigner: FUND_MULTISIG_ADDRESS,
+          amountToMintInCollection: 700,
+          collectionId: 9,
+          rarity: 'Common',
+          tokendIds: [100066,100067,100068,100069],
+          tokenAmounts: [1,1,1,1],
+      },
+      {
+          // Collection 2 Semirare
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/DigiFizzyV3/digifizzy_2_semirare/hash.json').uri,
+          price: reservePrice2_semirare,
+          collectionDesigner: FUND_MULTISIG_ADDRESS,
+          amountToMintInCollection: 320,
+          collectionId: 10,
+          rarity: 'Semi-Rare',
+          tokendIds: [100070,100071,100072,100073],
+          tokenAmounts: [1,1,1,1],
+      },
+      {
+          // Collection 3 Exclusive
+          uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/DigiFizzyV3/digifizzy_3_exclusive/hash.json').uri,
+          price: reservePrice2_exclusive,
+          collectionDesigner: FUND_MULTISIG_ADDRESS,
+          amountToMintInCollection: 50,
+          collectionId: 11,
+          rarity: 'Exclusive',
+          tokendIds: [100074,100075,100076,100077,100078,100079,100080,100081],
+          tokenAmounts: [1,1,1,1,1,1,1,1],
+      },
     {
         // Collection 2 Semirare
         uri: require('../../../../nft-minting-scripts/auction-metadata/token-data/parents/DigiFizzyV3/digifizzy_2_semirare/hash.json').uri,
@@ -108,7 +108,7 @@ async function main() {
         amountToMintInCollection: 10,
         collectionId: 10,
         rarity: 'Semi-Rare',
-        tokendIds: [100104,100105,100106,100107],
+        tokendIds: [100070,100071,100072,100073],
         tokenAmounts: [1,1,1,1],
     },
   ]
@@ -194,6 +194,15 @@ async function main() {
     console.log(`--Marketplace created for collection--`);
     console.log(createCollectionId);
     console.log(`----------------------`);
+
+      // Create a marketplace offer for this exclusive parent nft
+      const platformFee = await marketplace.updateMarketplacePlatformFee(
+          createCollectionId, // Collection id
+          1000
+      );
+
+      await platformFee.wait();
+      console.log(`-Platform fee set to 100%--`);
   }
 
   console.log('The parent nfts with collections created for them are as follows: ');
