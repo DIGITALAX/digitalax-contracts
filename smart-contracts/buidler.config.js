@@ -45,12 +45,19 @@ module.exports = {
       accounts: [`0x${PRIVATE_KEY}`]
     },
     mumbai: {
-      url: `https://matic-testnet-archive-rpc.bwarelabs.com`,
-      accounts: [`0x${PRIVATE_KEY}`]
+      url: `https://polygon-mumbai.infura.io/v3/6e9690131f584ee0a8b445ebb4740f8b`,
+      accounts: [`0x${PRIVATE_KEY}`],
+      gasPrice: 1000000000
     },
     matic: {
-      url: `https://matic-mainnet-full-rpc.bwarelabs.com`,
-      accounts: [`0x${PRIVATE_KEY}`]
+     // url: `https://polygon-mainnet.infura.io/v3/6e9690131f584ee0a8b445ebb4740f8b`,
+     //url: `https://matic-mainnet-full-rpc.bwarelabs.com`,
+      //url: `https://rpc-mainnet.matic.network`,
+     url: `https://matic-mainnet.chainstacklabs.com`,
+      //url: `https://matic-mainnet.chainstacklabs.com`,
+      //url: `https://rpc-mainnet.maticvigil.com/v1/293c0f4455f0a5933014c66d2fb84f7ca257d16b`,
+      accounts: [`0x${PRIVATE_KEY}`],
+      gasPrice: 10000000000
     },
     coverage: {
       url: 'http://localhost:8555',
