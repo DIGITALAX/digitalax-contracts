@@ -18,6 +18,7 @@ import {
 import {loadOrCreateDripGlobalStats} from "./factory/DripGlobalStats.factory";
 import { ZERO } from "./constants";
 import { loadDayFromEvent } from "./factory/DripDay.factory";
+import {store} from "@graphprotocol/graph-ts/index";
 //
 export function handleMarketplaceDeployed(event: DigitalaxMarketplaceContractDeployed): void {
     let contract = DripMarketplaceContract.bind(event.address);
@@ -98,7 +99,6 @@ export function handleOfferPurchased(event: OfferPurchased): void {
 
 export function handleOfferCancelled(event: OfferCancelled): void {
     let offer = DripMarketplaceOffer.load(event.params.bundleTokenId.toString());
-    offer.primarySalePrice = null;
-    offer.garmentCollection = null;
+    store.remove('DripMarketplaceOffer', event.params.bundleTokenId.toString());
     offer.save();
 }
