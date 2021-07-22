@@ -73,8 +73,8 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         uint256 cooldown
     );
     event OfferPurchased(
-        uint256[] bundleTokenIds,
-        uint256[] garmentCollectionIds,
+        uint256 bundleTokenId,
+        uint256 garmentCollectionId,
         uint256 shippingAmount,
         uint256 tokenTransferredAmount,
         uint256 offerId
@@ -283,17 +283,10 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         require(_paymentToken != address(0), "DripMarketplace.buyOffer: Payment token cannot be zero address");
 
         uint256[] memory collectionIds = _garmentCollectionIds;
-        uint256 totalPrice = 0;
-        uint256 price;
-        uint256 tokenId;
-        uint256[] memory tokenIds;
-
+        
         for(uint i = 0; i < collectionIds.length; i += 1) {
-            (price, tokenId) = buyOffer(collectionIds[i], _paymentToken, _orderId, _shippingUSD);
-            totalPrice += price;
-            tokenIds[i] = tokenId;
+            buyOffer(collectionIds[i], _paymentToken, _orderId, _shippingUSD);
         }
-        emit OfferPurchased(tokenIds, _garmentCollectionIds, _shippingUSD, totalPrice, _orderId);
     }
 
     /**
@@ -304,7 +297,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
      @dev The sale must have started (start time) to make a successful buy
      @param _garmentCollectionId Collection ID of the garment being offered
      */
-    function buyOffer(uint256 _garmentCollectionId, address _paymentToken, uint256 _orderId, uint256 _shippingUSD) internal returns(uint256, uint256) {
+    function buyOffer(uint256 _garmentCollectionId, address _paymentToken, uint256 _orderId, uint256 _shippingUSD) internal {
         // Check the offers to see if this is a valid
         require(_msgSender().isContract() == false, "DigitalaxMarketplace.buyOffer: No contracts permitted");
         require(_isFinished(_garmentCollectionId) == false, "DigitalaxMarketplace.buyOffer: Sale has been finished");
@@ -359,7 +352,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
 
         paymentTokenHistory[bundleTokenId] = _paymentToken;
 
-        return (priceInPaymentToken, bundleTokenId);
+        emit OfferPurchased(bundleTokenId, _garmentCollectionId, _shippingUSD, priceInPaymentToken, _orderId);
     }
     /**
      @notice Cancels an inflight and un-resulted offer
