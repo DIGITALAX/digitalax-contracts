@@ -463,7 +463,7 @@ contract('DripMarketplace', (accounts) => {
         await createOffer(bundleID21);
       });
 
-      it('buys the offers', async () => {
+      it('buys the offers for different offers', async () => {
         await this.marketplace.setNowOverride('120');
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await this.marketplace.batchBuyOffer([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], this.monaToken.address, 0,0, {from: tokenBuyer});
@@ -474,15 +474,17 @@ contract('DripMarketplace', (accounts) => {
         expect(_discountToPayERC20).to.be.bignumber.equal('20');
       });
 
-      it('will fail when cooldown not reached', async () => {
-        await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
+      it('buys the offers for same offer', async () => {
         await this.marketplace.setNowOverride('120');
-        await this.marketplace.batchBuyOffer([0], this.monaToken.address, 0,0, {from: tokenBuyer});
-        await expectRevert(
-            this.marketplace.batchBuyOffer([0], this.monaToken.address, 0,0, {from: tokenBuyer}),
-            "DigitalaxMarketplace.buyOffer: Cooldown not reached"
-        );
-      })
+        await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
+        await this.marketplace.updateOfferMaxAmount(0,200, {from: admin});
+        await this.marketplace.batchBuyOffer([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], this.monaToken.address, 0,0, {from: tokenBuyer});
+        const {_primarySalePrice, _startTime, _availableAmount, _discountToPayERC20} = await this.marketplace.getOffer(0);
+        expect(_primarySalePrice).to.be.bignumber.equal(ether('0.1'));
+        expect(_startTime).to.be.bignumber.equal('120');
+        expect(_availableAmount).to.be.bignumber.equal('0');
+        expect(_discountToPayERC20).to.be.bignumber.equal('20');
+      });
 
       it('will fail if mona payments are frozen', async () => {
         await this.marketplace.setNowOverride('120');
@@ -625,6 +627,36 @@ contract('DripMarketplace', (accounts) => {
         expect(_startTime).to.be.bignumber.equal('120');
         expect(_availableAmount).to.be.bignumber.equal('9');
         expect(_discountToPayERC20).to.be.bignumber.equal('20');
+      });
+
+      it('buys the offer and can update the availableIndex', async () => {
+        await this.marketplace.setNowOverride('120');
+        await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
+        await this.marketplace.batchBuyOffer([0], this.monaToken.address, 0,0, {from: tokenBuyer});
+        const {_primarySalePrice, _startTime, _availableAmount, _discountToPayERC20} = await this.marketplace.getOffer(0);
+        expect(_primarySalePrice).to.be.bignumber.equal(ether('10'));
+        expect(_startTime).to.be.bignumber.equal('120');
+        expect(_startTime).to.be.bignumber.equal('120');
+        expect(_availableAmount).to.be.bignumber.equal('9');
+        expect(_discountToPayERC20).to.be.bignumber.equal('20');
+
+        const allGarmentCollectionIds = await this.garmentCollection.getTokenIds(0);
+        const owner = await this.token.ownerOf(allGarmentCollectionIds[0]);
+        expect(owner).to.be.equal(tokenBuyer);
+
+        expect(await this.marketplace.getOfferAvailableIndex(0)).to.be.bignumber.equal('1');
+
+        await this.marketplace.updateOfferAvailableIndex(0, 5);
+
+        expect(await this.marketplace.getOfferAvailableIndex(0)).to.be.bignumber.equal('5');
+
+        await this.marketplace.batchBuyOffer([0], this.monaToken.address, 0,0, {from: tokenBuyer});
+
+        const owner2 = await this.token.ownerOf(allGarmentCollectionIds[4]);
+        expect(owner2).to.be.equal(minter);
+
+        const owner3 = await this.token.ownerOf(allGarmentCollectionIds[5]);
+        expect(owner3).to.be.equal(tokenBuyer);
       });
 
       it('records primary sale price on garment NFT', async () => {
