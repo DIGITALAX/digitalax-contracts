@@ -8,7 +8,7 @@ import "../EIP2771/BaseRelayRecipient.sol";
  * @title Digitalax Guild NFT Staking Weight
  * @dev Calculates the weight for staking on the PODE system
  * @author DIGITALAX CORE TEAM
- * @author 
+ * @author
  */
 
 contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
@@ -16,15 +16,18 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
     IERC20 public guildNativeERC20Token;
     address public stakingContract;
+    // TODO another token and another struct
+
+    address public whitelistingStakingContract; // This contract will have to be responsible for whitelisted nfts and deco staked on them.
 
     uint256 constant MULTIPLIER = 100000;
 
     uint256 constant SECONDS_PER_DAY = 24 * 60 * 60;
-    uint256 constant DAILY_NFT_WEIGHT_DEFAULT = 10; // 
+    uint256 constant DAILY_NFT_WEIGHT_DEFAULT = 10; //
 
     uint256 constant DEFAULT_POINT_WITHOUT_DECAY_RATE = 1000;
-    uint256 constant DECAY_POINT_DEFAULT = 75;
-    uint256 constant DECAY_POINT_WITH_APPRAISAL = 25;
+    uint256 constant DECAY_POINT_DEFAULT = 75; // TODO make configurable
+    uint256 constant DECAY_POINT_WITH_APPRAISAL = 25; // TODO make configurable
 
     mapping (string => uint256) reactionPoint;
 
@@ -34,7 +37,6 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         uint256 shareCount;
         uint256 followCount;
         uint256 favoriteCount;
-        uint256 skipCount;
         mapping (string => uint256) appraisalCount;
         uint256 stakedERC20Balance;
         bool stakeERC20ButtonClicked;
@@ -43,7 +45,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
     struct TokenWeight {
         uint256 lastWeight;
         mapping (uint256 => uint256) dailyWeight;
-        
+
         mapping (uint256 => TokenReaction) dailyTokenReaction;
 
         uint256 stakedERC20Balance;
@@ -111,13 +113,11 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         reactionPoint["Follow"] = 10;
         reactionPoint["Share"] = 20;
         reactionPoint["Favorite"] = 15;
-
-        reactionPoint["Skip"] = 1;
     }
 
     function init(address _stakingContract, IERC20 _guildNativeERC20Token) external {
         require(!initialised, "Already initialised");
-        
+
         stakingContract = _stakingContract;
         guildNativeERC20Token = _guildNativeERC20Token;
         initialised = true;
@@ -149,7 +149,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
     function _getClapLimit(uint256 _totalSupply, uint256 _balance) internal view returns (uint256) {
         uint256 _percentage = _balance.mul(MULTIPLIER).div(_totalSupply);
 
-        if (_percentage > 1000) {           // 1+% held 
+        if (_percentage > 1000) {           // 1+% held
             return 270;
         } else if (_percentage > 500) {     // 0.5% > 1% held
             return 240;
@@ -180,13 +180,12 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         TokenReaction storage _reaction = tokenWeight[_tokenId].dailyTokenReaction[_currentDay];
 
         uint256 result = 0;
-        
+
         result = result.add(_reaction.metaverseCount.mul(reactionPoint["Metaverse"]));
 
         result = result.add(_reaction.shareCount.mul(reactionPoint["Share"]));
         result = result.add(_reaction.favoriteCount.mul(reactionPoint["Favorite"]));
         result = result.add(_reaction.followCount.mul(reactionPoint["Follow"]));
-        result = result.add(_reaction.skipCount.mul(reactionPoint["Skip"]));
 
         uint256 _totalSupply = guildNativeERC20Token.totalSupply();
         uint256 _clapLimit = _getClapLimit(_totalSupply, _reaction.stakedERC20Balance);
@@ -254,7 +253,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
             _newWeight = _newWeight.add(DAILY_NFT_WEIGHT_DEFAULT * MULTIPLIER * _owner.stakedNFTCount)
                                     .mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT)        // decay rate: 7.5%
                                     .div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
-            
+
         }
 
         return _newWeight;
@@ -270,13 +269,13 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
             return false;
         }
 
-        owner.lastWeight = calcNewOwnerWeight(_tokenOwner);        
+        owner.lastWeight = calcNewOwnerWeight(_tokenOwner);
 
         owner.lastUpdateDay = _currentDay;
 
         return true;
     }
-    
+
     /**
      * @dev Get yesterday token weight
      */
@@ -330,7 +329,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
         TokenWeight storage token = tokenWeight[_tokenId];
 
-        token.dailyWeight[_currentDay] = _calcTokenWeight(_tokenId);    
+        token.dailyWeight[_currentDay] = _calcTokenWeight(_tokenId);
         token.lastUpdateDay = _currentDay;
 
         // Owner
@@ -355,7 +354,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         AppraiserWeight storage appraiser = appraiserWeight[_appraiser];
 
         require(
-            appraiser.dailyTokenReaction[_currentDay][_tokenId].favoriteCount == 0, 
+            appraiser.dailyTokenReaction[_currentDay][_tokenId].favoriteCount == 0,
             "WeightingContract.favorite: Members can fevorite an NFT once per day."
         );
 
@@ -377,7 +376,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         AppraiserWeight storage appraiser = appraiserWeight[_appraiser];
 
         require(
-            appraiser.dailyTokenReaction[_currentDay][_tokenId].followCount == 0, 
+            appraiser.dailyTokenReaction[_currentDay][_tokenId].followCount == 0,
             "WeightingContract.follow: Members can follow an NFT once per day."
         );
 
@@ -399,7 +398,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         AppraiserWeight storage appraiser = appraiserWeight[_appraiser];
 
         require(
-            appraiser.dailyTokenReaction[_currentDay][_tokenId].shareCount == 0, 
+            appraiser.dailyTokenReaction[_currentDay][_tokenId].shareCount == 0,
             "WeightingContract.share: Members can share an NFT once per day."
         );
 
@@ -421,7 +420,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         AppraiserWeight storage appraiser = appraiserWeight[_appraiser];
 
         require(
-            appraiser.dailyTokenReaction[_currentDay][_tokenId].metaverseCount == 0, 
+            appraiser.dailyTokenReaction[_currentDay][_tokenId].metaverseCount == 0,
             "WeightingContract.metaverse: Members can do this an NFT once per day."
         );
 
@@ -463,7 +462,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
         uint256 _currentDay = getCurrentDay();
         AppraiserWeight storage appraiser = appraiserWeight[_appraiser];
-        
+
         require(
             appraiser.dailyReactionCount[_currentDay] < _limitAppraisalCount,
             "WeightingContract.appraise: Limit appraisal count per day"
