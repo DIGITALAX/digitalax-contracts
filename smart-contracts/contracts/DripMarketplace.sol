@@ -69,9 +69,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
     event UpdatePlatformFeeRecipient(
         address payable platformFeeRecipient
     );
-    event UpdateCoolDownDuration(
-        uint256 cooldown
-    );
+
     event OfferPurchased(
         uint256 bundleTokenId,
         uint256 garmentCollectionId,
@@ -123,8 +121,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
     address public wethERC20Token;
     /// @notice for freezing erc20 payment option
     bool public freezeERC20Payment;
-    /// @notice Cool down period
-    uint256 public cooldown = 60;
+
     /// @notice for storing information from oracle
     mapping (address => uint256) public lastOracleQuote;
 
@@ -288,7 +285,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         require(_paymentToken != address(0), "DripMarketplace.buyOffer: Payment token cannot be zero address");
 
         uint256[] memory collectionIds = _garmentCollectionIds;
-        
+
         for(uint i = 0; i < collectionIds.length; i += 1) {
             buyOffer(collectionIds[i], _paymentToken, _orderId, _shippingUSD);
         }
@@ -306,7 +303,6 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         // Check the offers to see if this is a valid
         require(_msgSender().isContract() == false, "DigitalaxMarketplace.buyOffer: No contracts permitted");
         require(_isFinished(_garmentCollectionId) == false, "DigitalaxMarketplace.buyOffer: Sale has been finished");
-        require(lastPurchasedTime[_garmentCollectionId][_msgSender()] <= _getNow().sub(cooldown), "DigitalaxMarketplace.buyOffer: Cooldown not reached");
         require(_paymentToken != address(0), "DripMarketplace.buyOffer: Payment token cannot be zero address");
         require(oracle.checkValidToken(_paymentToken), "DripMarketplace.buyOffer: Not valid payment erc20");
 
@@ -462,18 +458,6 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         offers[_garmentCollectionId].startTime = _startTime;
         offers[_garmentCollectionId].endTime = _endTime;
         emit UpdateOfferStartEnd(_garmentCollectionId, _startTime, _endTime);
-    }
-
-    /**
-     @notice Update cool down duration
-     @dev Only admin
-     @param _cooldown New cool down duration
-     */
-    function updateCoolDownDuration(uint256 _cooldown) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.updateCoolDownDuration: Sender must be admin");
-
-        cooldown = _cooldown;
-        emit UpdateCoolDownDuration(_cooldown);
     }
 
     /**
