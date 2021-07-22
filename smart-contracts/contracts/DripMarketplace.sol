@@ -83,6 +83,11 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
     event OfferCancelled(
         uint256 indexed bundleTokenId
     );
+
+    event UpdateOfferAvailableIndex(
+        uint256 indexed garmentCollectionId,
+        uint256 availableIndex
+    );
     /// @notice Parameters of a marketplace offer
     struct Offer {
         uint256 primarySalePrice;
@@ -619,5 +624,28 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         IERC20 token = IERC20(_tokenContract);
         uint256 balance = token.balanceOf(address(this));
         require(token.transfer(_msgSender(), balance), "Transfer failed");
+    }
+
+    /**
+     @notice Method for getting all info about the offer
+     @param _garmentCollectionId Token ID of the garment being offered
+     */
+    function getOfferAvailableIndex(uint256 _garmentCollectionId)
+    external
+    view
+    returns (uint256 _availableIndex) {
+        Offer storage offer = offers[_garmentCollectionId];
+        return (
+            offer.availableIndex
+        );
+    }
+
+    function updateOfferAvailableIndex(uint256 _garmentCollectionId, uint256 _availableIndex) external
+    {
+        require(accessControls.hasAdminRole(_msgSender()), "DripMarketplace.updateOfferAvailableIndex: Sender must be admin");
+
+        Offer storage offer = offers[_garmentCollectionId];
+        offer.availableIndex = _availableIndex;
+        emit UpdateOfferAvailableIndex(_garmentCollectionId, _availableIndex);
     }
 }
