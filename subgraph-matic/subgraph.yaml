@@ -6,9 +6,9 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DigitalaxGarmentNFT
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0x4CB61C672ff26c187394a9aA59360FbB6F23e83f'
+      address: "0x4CB61C672ff26c187394a9aA59360FbB6F23e83f"
       abi: DigitalaxGarmentNFT
       startBlock: 11680196
     mapping:
@@ -34,9 +34,9 @@ dataSources:
       file: ./src/DigitalaxGarmentNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterials
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0xACe5A62D509aA947ffFfF55043b317bFc8316bc2'
+      address: "0xACe5A62D509aA947ffFfF55043b317bFc8316bc2"
       abi: DigitalaxMaterials
       startBlock: 11675933
     mapping:
@@ -63,9 +63,9 @@ dataSources:
       file: ./src/DigitalaxMaterials.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentNFTv2
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0x1Bc6D640710759Be37E5DCD1b23B322250353751'
+      address: "0x1Bc6D640710759Be37E5DCD1b23B322250353751"
       abi: DigitalaxGarmentNFTv2
       startBlock: 12000000
     mapping:
@@ -91,9 +91,9 @@ dataSources:
       file: ./src/DigitalaxGarmentNFTv2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterialsV2
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0x632914B69B11DCa3b391B62FB2812f5Eee36A626'
+      address: "0x632914B69B11DCa3b391B62FB2812f5Eee36A626"
       abi: DigitalaxMaterialsV2
       startBlock: 12000000
     mapping:
@@ -120,9 +120,9 @@ dataSources:
       file: ./src/DigitalaxMaterialsV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxSubscriptionNFT
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0xD309F477dbA416E5C123Bd0215e6d1eA0a6A81A6'
+      address: "0xD309F477dbA416E5C123Bd0215e6d1eA0a6A81A6"
       abi: DigitalaxSubscriptionNFT
       startBlock: 12000000
     mapping:
@@ -148,9 +148,9 @@ dataSources:
       file: ./src/DigitalaxSubscriptionNFT.mapping.ts
   - kind: ethereum/contract
     name: DFBundle
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0x67Bd2D7d361fA0C4BC89E4D2cf758A4C0CbFd7D7'
+      address: "0x67Bd2D7d361fA0C4BC89E4D2cf758A4C0CbFd7D7"
       abi: DFBundle
       startBlock: 12000000
     mapping:
@@ -177,9 +177,9 @@ dataSources:
       file: ./src/DFBundle.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuction
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0x5890F309265870D508556E654FDf5903e51c3f37'
+      address: "0x5890F309265870D508556E654FDf5903e51c3f37"
       abi: DigitalaxAuction
       startBlock: 11686431
     mapping:
@@ -226,9 +226,9 @@ dataSources:
       file: ./src/DigitalaxAuction.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuctionV2
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0x1e345D7bdd9eF4E0b2dAc1A3dEf26A841B1b12f6'
+      address: "0x1e345D7bdd9eF4E0b2dAc1A3dEf26A841B1b12f6"
       abi: DigitalaxAuctionV2
       startBlock: 12000000
     mapping:
@@ -275,9 +275,9 @@ dataSources:
       file: ./src/DigitalaxAuctionV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAccessControls
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0xf7580d46080E1ce832aC44cF7224b906D44110B4'
+      address: "0xf7580d46080E1ce832aC44cF7224b906D44110B4"
       abi: DigitalaxAccessControls
       startBlock: 11673871
     mapping:
@@ -316,9 +316,9 @@ dataSources:
       file: ./src/DigitalaxAccessControls.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentCollection
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0x1A785E4F4c7561Fb9495734B418D4f001266ec6b'
+      address: "0x1A785E4F4c7561Fb9495734B418D4f001266ec6b"
       abi: DigitalaxGarmentCollection
       startBlock: 11829825
     mapping:
@@ -339,9 +339,9 @@ dataSources:
       file: ./src/DigitalaxGarmentCollection.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentCollectionV2
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0x3E9F4f4E542Dcf984EaF35BC1B900E0bdC2Cc04D'
+      address: "0x3E9F4f4E542Dcf984EaF35BC1B900E0bdC2Cc04D"
       abi: DigitalaxGarmentCollectionV2
       startBlock: 12000000
     mapping:
@@ -362,9 +362,9 @@ dataSources:
       file: ./src/DigitalaxGarmentCollectionV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMarketplace
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0x1c6976911FdcBF6BaAEa17c80051525c41681Dae'
+      address: "0x1c6976911FdcBF6BaAEa17c80051525c41681Dae"
       abi: DigitalaxMarketplace
       startBlock: 11709635
     mapping:
@@ -400,9 +400,9 @@ dataSources:
       file: ./src/DigitalaxMarketplace.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMarketplaceV2
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0x18a38C3EB196671d702017C323a562D00a6eD003'
+      address: "0x18a38C3EB196671d702017C323a562D00a6eD003"
       abi: DigitalaxMarketplaceV2
       startBlock: 11709635
     mapping:
@@ -438,9 +438,9 @@ dataSources:
       file: ./src/DigitalaxMarketplaceV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxSubscriptionCollection
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0x2147f0D108D366ECF33aa332247BED7095B0231A'
+      address: "0x2147f0D108D366ECF33aa332247BED7095B0231A"
       abi: DigitalaxSubscriptionCollection
       startBlock: 12000000
     mapping:
@@ -461,9 +461,9 @@ dataSources:
       file: ./src/DigitalaxSubscriptionCollection.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxSubscriptionMarketplace
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0xb7e04a24934bFfEbB2687e3015fA4F00B858A543'
+      address: "0xb7e04a24934bFfEbB2687e3015fA4F00B858A543"
       abi: DigitalaxSubscriptionMarketplace
       startBlock: 12000000
     mapping:
@@ -502,9 +502,9 @@ dataSources:
       file: ./src/DigitalaxSubscriptionMarketplace.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxPodePortal
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0x87c3C6B9C917B1732f13d36d6938E4f8802f7c7E'
+      address: "0x87c3C6B9C917B1732f13d36d6938E4f8802f7c7E"
       abi: DigitalaxPodePortal
       startBlock: 11740618
     mapping:
@@ -522,9 +522,9 @@ dataSources:
       file: ./src/DigitalaxPodePortal.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxIndex
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0x26698A1F2B2bbc6991221489e8E658cFe658BD41'
+      address: "0x26698A1F2B2bbc6991221489e8E658cFe658BD41"
       abi: DigitalaxIndex
       startBlock: 11709635
     mapping:
@@ -560,9 +560,9 @@ dataSources:
       file: ./src/DigitalaxIndex.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxNFTStaking
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0x8bE9b1343C56d43f1e13Cf7c79232401632A0573'
+      address: "0x8bE9b1343C56d43f1e13Cf7c79232401632A0573"
       abi: DigitalaxNFTStaking
       startBlock: 12000000
     mapping:
@@ -589,9 +589,9 @@ dataSources:
       file: ./src/DigitalaxNFTStaking.mapping.ts
   - kind: ethereum/contract
     name: GuildNFTStaking
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0x665bF9Ea8E3036088a6C767b0184cA4A4f13AD67'
+      address: "0x665bF9Ea8E3036088a6C767b0184cA4A4f13AD67"
       abi: GuildNFTStaking
       startBlock: 12000000
     mapping:
@@ -618,9 +618,9 @@ dataSources:
       file: ./src/GuildNFTStaking.mapping.ts
   - kind: ethereum/contract
     name: PodeNFTv2
-    network: 'mumbai'
+    network: "mumbai"
     source:
-      address: '0x2b319564aB130C8fd0e8C996ba806323fE3b7880'
+      address: "0x2b319564aB130C8fd0e8C996ba806323fE3b7880"
       abi: PodeNFTv2
       startBlock: 12000000
     mapping:
@@ -638,3 +638,58 @@ dataSources:
         - event: TokenPrimarySalePriceSet(indexed uint256,uint256)
           handler: handleTokenPriceSaleUpdated
       file: ./src/PodeNFTv2.mapping.ts
+  - kind: ethereum/contract
+    name: DripOracle
+    network: "mumbai"
+    source:
+      address: "0x81d6794c7a36b66630ca251cea2f8601edad586b"
+      abi: DripOracle
+      startBlock: 12000000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - ProviderReportsPushed
+      abis:
+        - name: DripOracle
+          file: ./abis/DripOracle.json
+      eventHandlers:
+        - event: ProviderReportsPushed(address[],uint256[],uint256)
+          handler: handleProviderReportsPushed
+      file: ./src/DripOracle.mapping.ts
+  - kind: ethereum/contract
+    name: DripMarketplace
+    network: "mumbai"
+    source:
+      address: "0x39063224d8BF0b7f1cE012E246F0d951E337FC46"
+      abi: DripMarketplace
+      startBlock: 12000000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - DigitalaxMarketplaceContractDeployed
+        - UpdateMarketplaceDiscountToPayInErc20
+        - OfferCreated
+        - UpdateOfferPrimarySalePrice
+        - OfferPurchased
+        - OfferCancelled
+      abis:
+        - name: DripMarketplace
+          file: ./abis/DripMarketplace.json
+      eventHandlers:
+        - event: DigitalaxMarketplaceContractDeployed()
+          handler: handleMarketplaceDeployed
+        - event: UpdateMarketplaceDiscountToPayInErc20(indexed uint256,uint256)
+          handler: handleUpdateMarketplaceDiscountToPayInErc20
+        - event: OfferCreated(indexed uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleOfferCreated
+        - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
+          handler: handleOfferPrimarySalePriceUpdated
+        - event: OfferPurchased(uint256,uint256,uint256,uint256,uint256)
+          handler: handleOfferPurchased
+        - event: OfferCancelled(indexed uint256)
+          handler: handleOfferCancelled
+      file: ./src/DripMarketplace.mapping.ts

@@ -39,5 +39,9 @@
     "GuildNFTStakingAddress": "0xf0815348F626B0f4f434CAF9C5984694D85B50A1",
     "GuildNFTStakingStartBlock": 12000000,
     "PodeNFTv2Address": "0x6d4d0b9EaCd6197B31Bec250C0aD6ceC98f8b83f",
-    "PodeNFTv2StartBlock": 12000000
+    "PodeNFTv2StartBlock": 12000000,
+    "DripOracleAddress": "0x850068534c72317a762f0340500dee727ea85e29",
+    "DripOracleStartBlock": 12000000,
+    "DripMarketplaceAddress": "0x89b83f3e40ce76a104550fbd35b8a417631b9232",
+    "DripMarketplaceStartBlock": 12000000
 }
