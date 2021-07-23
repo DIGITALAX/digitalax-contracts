@@ -3,6 +3,7 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
+import "../DigitalaxAccessControls.sol";
 
 /**
  * @title Digitalax Guild NFT Staking Weight
@@ -14,10 +15,11 @@ import "../EIP2771/BaseRelayRecipient.sol";
 contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
     using SafeMath for uint256;
 
+    DigitalaxAccessControls public accessControls;
+
     IERC20 public guildNativeERC20Token;
     address public stakingContract;
-    // TODO another token and another struct
-
+    // TODO work on other staking contract
     address public whitelistingStakingContract; // This contract will have to be responsible for whitelisted nfts and deco staked on them.
 
     uint256 constant MULTIPLIER = 100000;
@@ -30,6 +32,10 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
     uint256 constant DECAY_POINT_WITH_APPRAISAL = 25; // TODO make configurable
 
     mapping (string => uint256) reactionPoint;
+
+    event UpdateAccessControls(
+        address indexed accessControls
+    );
 
     struct TokenReaction {
         uint256 metaverseCount;
@@ -115,16 +121,36 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         reactionPoint["Favorite"] = 15;
     }
 
-    function init(address _stakingContract, IERC20 _guildNativeERC20Token) external {
+    function init(address _stakingContract, address _whitelistedStakingContract, IERC20 _guildNativeERC20Token, DigitalaxAccessControls _accessControls) external {
         require(!initialised, "Already initialised");
 
+        accessControls = _accessControls;
         stakingContract = _stakingContract;
+        whitelistingStakingContract = _whitelistedStakingContract;
         guildNativeERC20Token = _guildNativeERC20Token;
         initialised = true;
     }
 
+    /**
+     @notice Method for updating the access controls contract used by the NFT
+     @dev Only admin
+     @param _accessControls Address of the new access controls contract (Cannot be zero address)
+     */
+    function updateAccessControls(DigitalaxAccessControls _accessControls) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "GuildNFTStaking.updateAccessControls: Sender must be admin"
+        );
+        require(address(_accessControls) != address(0), "GuildNFTStakingWeightV2.updateAccessControls: Zero Address");
+        accessControls = _accessControls;
+        emit UpdateAccessControls(address(_accessControls));
+    }
+
     function updateReactionPoint(string memory _reaction, uint256 _point) external {
-        require(_msgSender() == stakingContract, "Sender must be staking contract");
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "GuildNFTStakingWeightV2.updateReactionPoint: Sender must be admin"
+        );
 
         reactionPoint[_reaction] = _point;
     }

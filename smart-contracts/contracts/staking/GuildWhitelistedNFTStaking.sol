@@ -12,24 +12,37 @@ import "../EIP2771/BaseRelayRecipient.sol";
 import "./interfaces/IGuildNFTStakingWeight.sol";
 
 /**
- * @title Digitalax Staking
- * @dev Stake NFTs, earn tokens on the Digitalax platform
- * @author Digitalax Team
+ * @title Digitalax whitelisted Staking
+ * @dev Stake whitelisted nfts and stake membership guild tokens upon them
+ * @author DLTA Team
  */
 
-contract GuildNFTStaking is BaseRelayRecipient {
+contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     using SafeMath for uint256;
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
 
     IERC20 public rewardsToken;
-    IERC721 public parentNFT;
+
+    mapping(address => uint256) whitelistedTokensIndex;
+    address[] whitelistedTokens;
+
+    event AddWhitelistedTokens(
+        address[] whitelistedTokens
+    );
+
+    event RemoveWhitelistedTokens(
+        address[] whitelistedTokens
+    );
+
+    event UpdateAccessControls(
+        address indexed accessControls
+    );
+
     DigitalaxAccessControls public accessControls;
     IGuildNFTRewards public rewardsContract;
     IGuildNFTStakingWeight public weightContract;
 
-    /// @notice total ethereum staked currently in the guild nft staking contract
-    uint256 public stakedEthTotal;
-    uint256 public nftStakedTotal;
+    uint256 public whitelistedNFTStakedTotal;
     uint256 public lastUpdateTime;
 
     uint256 public totalRoundRewards;
@@ -45,25 +58,35 @@ contract GuildNFTStaking is BaseRelayRecipient {
     @dev rewardsReleased is how much reward has been paid to the staker
     */
     struct Staker {
-        uint256[] tokenIds;
-        mapping (uint256 => uint256) tokenIndex;
-        uint256 balance;
+        mapping (address => GuildERC20TokenStakes[]) guildERC20Stakes;
+        mapping (address => uint256) guildERC20StakesIndex;
+        mapping (address => uint256[]) tokenIds;
+        mapping (address => mapping(uint256 => uint256)) tokenIndex;
+        // uint256 balance;
+        uint256 numberNftStaked;
         uint256 rewardsEarned;
         uint256 rewardsReleased;
     }
 
-    event UpdateAccessControls(
-        address indexed accessControls
-    );
+    struct GuildERC20TokenStakes {
+        uint256[] tokenIds;
+        mapping (uint256 => uint256) tokenIndex;
+        mapping (uint256 => uint256) guildErc20AmountStaked;
+    }
+
+    // Address of nft -> maps to token id of nft -> matches to characteristic
+    mapping (address => mapping(uint256 => uint256)) nftStakeTime;
+    mapping (address => mapping(uint256 => uint256)) nftUnstakeTime;
+    // Mapping from address, token ID to owner address
+    mapping (address => mapping(uint256 => address)) tokenOwner;
+    // Mapping erc20 guild token amount staked on a whitelisted token
+    mapping (address => mapping(uint256 => uint256)) guildERC20StakedOnWhitelistedNFT;
 
     uint256 public balance;
     uint256 public accumulatedRewards;
 
     /// @notice mapping of a staker to its current properties
     mapping (address => Staker) public stakers;
-
-    // Mapping from token ID to owner address
-    mapping (uint256 => address) public tokenOwner;
 
     /// @notice sets the token to be claimable or not, cannot claim if it set to false
     bool public tokensClaimable;
@@ -98,7 +121,6 @@ contract GuildNFTStaking is BaseRelayRecipient {
      */
     function initStaking(
         IERC20 _rewardsToken,
-        IERC721 _parentNFT,
         DigitalaxAccessControls _accessControls,
         IGuildNFTStakingWeight _weightContract,
         address _trustedForwarder
@@ -107,12 +129,55 @@ contract GuildNFTStaking is BaseRelayRecipient {
     {
         require(!initialised, "Already initialised");
         rewardsToken = _rewardsToken;
-        parentNFT = _parentNFT;
         accessControls = _accessControls;
         weightContract = _weightContract;
         lastUpdateTime = _getNow();
         trustedForwarder = _trustedForwarder;
         initialised = true;
+    }
+
+    function addWhitelistedTokens(address[] memory _whitelistedTokens) public onlyWhitelisted{
+        require((_whitelistedTokens.length) > 0, "GuildWhitelistedNFTStaking.addWhitelistedTokens: Empty array not supported");
+        for (uint i = 0; i < _whitelistedTokens.length; i++) {
+            if(!checkInWhitelistedTokens(_whitelistedTokens[i])) {
+                uint256 index = whitelistedTokens.length;
+                whitelistedTokens.push(_whitelistedTokens[i]);
+                whitelistedTokensIndex[_whitelistedTokens[i]] = index;
+            }
+        }
+        emit AddWhitelistedTokens(_whitelistedTokens);
+    }
+
+    function removeWhitelistedTokens(address[] memory _whitelistedTokens) public onlyWhitelisted{
+        require((whitelistedTokens.length) > 0, "GuildWhitelistedNFTStaking.removeWhitelistedTokens: No whitelisted tokens instantiated");
+        require((_whitelistedTokens.length) > 0, "GuildWhitelistedNFTStaking.removeWhitelistedTokens: Empty array not supported");
+
+        for (uint i = 0; i < _whitelistedTokens.length; i++) {
+            if(checkInWhitelistedTokens(_whitelistedTokens[i])) {
+                uint256 rowToDelete = whitelistedTokensIndex[_whitelistedTokens[i]];
+                address keyToMove = whitelistedTokens[whitelistedTokens.length-1];
+                whitelistedTokens[rowToDelete] = keyToMove;
+                whitelistedTokensIndex[keyToMove] = rowToDelete;
+                whitelistedTokens.pop();
+                delete(whitelistedTokensIndex[_whitelistedTokens[i]]);
+                delete(tokenReports[_whitelistedTokens[i]]);
+            }
+        }
+
+        emit RemoveWhitelistedTokens(_whitelistedTokens);
+    }
+
+    function checkInWhitelistedTokens(address _whitelistedToken) public view returns (bool isAddress) {
+        if(whitelistedTokens.length == 0) return false;
+        return (whitelistedTokens[whitelistedTokensIndex[_whitelistedToken]] == _whitelistedToken);
+    }
+
+    function getWhitelistedTokens() public view returns (address[] memory returnWhitelistedTokens){
+        address[] memory a = new address[](whitelistedTokens.length);
+        for (uint i=0; i< whitelistedTokens.length; i++) {
+            a[i] = whitelistedTokens[i];
+        }
+        return a;
     }
 
     function setTrustedForwarder(address _trustedForwarder) external  {
@@ -188,8 +253,8 @@ contract GuildNFTStaking is BaseRelayRecipient {
 
     /// @dev Getter functions for Staking contract
     /// @dev Get the tokens staked by a user
-    function getStakedTokens(address _user) external view returns (uint256[] memory tokenIds) {
-        return stakers[_user].tokenIds;
+    function getStakedTokens(address _user, address _whitelistedNFTToken) external view returns (uint256[] memory tokenIds) {
+        return stakers[_user].tokenIds[_whitelistedNFTToken];
     }
 
     /// @dev Get the amount a staked nft is valued at ie bought at
@@ -218,15 +283,15 @@ contract GuildNFTStaking is BaseRelayRecipient {
     }
 
     /// @notice Stake NFT and earn reward tokens.
-    function stake(uint256 tokenId) external {
+    function stake(address _whitelistedNFT, uint256 _tokenId) external {
         // require();
-        _stake(_msgSender(), tokenId);
+        _stake(_msgSender(), _whitelistedNFT, _tokenId);
     }
 
     /// @notice Stake multiple NFTs and earn reward tokens.
-    function stakeBatch(uint256[] memory tokenIds) external {
+    function stakeBatch(address[] memory _whitelistedNFTs,uint256[] memory _tokenIds) external {
         for (uint i = 0; i < tokenIds.length; i++) {
-            _stake(_msgSender(), tokenIds[i]);
+            _stake(_msgSender(), _whitelistedNFTs[i], tokenIds[i]);
         }
     }
 
@@ -235,22 +300,22 @@ contract GuildNFTStaking is BaseRelayRecipient {
      * @dev Rewards to be given out is calculated
      * @dev Balance of stakers are updated as they stake the nfts based on ether price
     */
-    function _stake(address _user, uint256 _tokenId) internal {
+    function _stake(address _user, address _whitelistedNFT, uint256 _tokenId) internal {
 
         Staker storage staker = stakers[_user];
 
         updateReward(_user);
         uint256 _primarySalePrice = getContribution(_tokenId);
-        staker.balance = staker.balance.add(_primarySalePrice);
-        stakedEthTotal = stakedEthTotal.add(_primarySalePrice);
-        nftStakedTotal = nftStakedTotal.add(1);
-        staker.tokenIds.push(_tokenId);
-        staker.tokenIndex[_tokenId] = staker.tokenIds.length.sub(1);
+        staker.numberNftStaked = staker.numberNftStaked.add(1);
+        // staker.balance = staker.balance.add(_primarySalePrice);
+        whitelistedNFTStakedTotal = whitelistedNFTStakedTotal.add(1);
+        staker.tokenIds[_whitelistedNFT].push(_tokenId);
+        staker.tokenIndex[_whitelistedNFT][_tokenId] = staker.tokenIds[_whitelistedNFT].length.sub(1);
         tokenOwner[_tokenId] = _user;
 
         balance = balance.add(_primarySalePrice);
 
-        parentNFT.safeTransferFrom(
+        IERC721(_whitelistedNFT).safeTransferFrom(
             _user,
             address(this),
             _tokenId
@@ -265,7 +330,7 @@ contract GuildNFTStaking is BaseRelayRecipient {
     function unstake(uint256 _tokenId) external {
         require(
             tokenOwner[_tokenId] == _msgSender(),
-            "DigitalaxParentStaking._unstake: Sender must have staked tokenID"
+            "GuildWhitelistedNFTStaking._unstake: Sender must have staked tokenID"
         );
         claimReward(_msgSender());
         _unstake(_msgSender(), _tokenId);
@@ -290,9 +355,8 @@ contract GuildNFTStaking is BaseRelayRecipient {
         Staker storage staker = stakers[_user];
 
         uint256 amount = getContribution(_tokenId);
-        staker.balance = staker.balance.sub(amount);
-        stakedEthTotal = stakedEthTotal.sub(amount);
-        nftStakedTotal = nftStakedTotal.sub(1);
+        // staker.balance = staker.balance.sub(amount);
+        whitelistedNFTStakedTotal = whitelistedNFTStakedTotal.sub(1);
 
         uint256 lastIndex = staker.tokenIds.length - 1;
         uint256 lastIndexKey = staker.tokenIds[lastIndex];
@@ -308,7 +372,7 @@ contract GuildNFTStaking is BaseRelayRecipient {
         if (staker.tokenIds.length == 0) {
             delete stakers[_user];
         }
-        
+
         delete tokenOwner[_tokenId];
 
         balance = balance.sub(amount);
@@ -318,18 +382,18 @@ contract GuildNFTStaking is BaseRelayRecipient {
         }
 
         weightContract.unstake(_tokenId, _user);
-        parentNFT.safeTransferFrom(address(this), _user, _tokenId);
+        IERC721(_whitelistedNFT).safeTransferFrom(address(this), _user, _tokenId);
 
         emit Unstaked(_user, _tokenId);
     }
 
     // Unstake without caring about rewards. EMERGENCY ONLY.
-    function emergencyUnstake(uint256 _tokenId) public {
+    function emergencyUnstake(address _whitelistedNFT, uint256 _tokenId) public {
         require(
             tokenOwner[_tokenId] == _msgSender(),
-            "DigitalaxParentStaking._unstake: Sender must have staked tokenID"
+            "GuildWhitelistedNFTStaking._unstake: Sender must have staked tokenID"
         );
-        _unstake(_msgSender(), _tokenId);
+        _unstake(_msgSender(),_whitelistedNFT, _tokenId);
         emit EmergencyUnstake(_msgSender(), _tokenId);
     }
 
@@ -372,9 +436,6 @@ contract GuildNFTStaking is BaseRelayRecipient {
 
     /// @notice Returns the about of rewards yet to be claimed
     function unclaimedRewards(address _user) external view returns(uint256) {
-        if (stakedEthTotal == 0) {
-            return 0;
-        }
 
         uint256 _newRewards = rewardsContract.DecoRewards(lastUpdateTime, _getNow());
         uint256 _totalRoundRewards = totalRoundRewards.add(_newRewards);
