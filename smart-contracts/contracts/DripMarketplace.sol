@@ -259,11 +259,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         );
         // Ensure the collection does exists
         require(garmentCollection.getSupply(_garmentCollectionId) > 0, "DigitalaxMarketplace.createOffer: Collection does not exist");
-        // Check owner of the collection is the owner and approved
-        require(
-            garmentCollection.hasOwnedOf(_garmentCollectionId, _msgSender()) && _isCollectionApproved(_garmentCollectionId, address(this)),
-            "DigitalaxMarketplace.createOffer: Not owner and or contract not approved"
-        );
+
         // Ensure the maximum purchaseable amount is less than collection supply
         require(_maxAmount <= garmentCollection.getSupply(_garmentCollectionId), "DigitalaxMarketplace.createOffer: Invalid Maximum amount");
         // Ensure the end time stamp is valid
