@@ -69,9 +69,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
     event UpdatePlatformFeeRecipient(
         address payable platformFeeRecipient
     );
-    event UpdateCoolDownDuration(
-        uint256 cooldown
-    );
+
     event OfferPurchased(
         uint256 bundleTokenId,
         uint256 garmentCollectionId,
@@ -82,6 +80,11 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
 
     event OfferCancelled(
         uint256 indexed bundleTokenId
+    );
+
+    event UpdateOfferAvailableIndex(
+        uint256 indexed garmentCollectionId,
+        uint256 availableIndex
     );
     /// @notice Parameters of a marketplace offer
     struct Offer {
@@ -118,8 +121,7 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
     address public wethERC20Token;
     /// @notice for freezing erc20 payment option
     bool public freezeERC20Payment;
-    /// @notice Cool down period
-    uint256 public cooldown = 60;
+
     /// @notice for storing information from oracle
     mapping (address => uint256) public lastOracleQuote;
 
@@ -278,6 +280,17 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         );
     }
 
+    function batchBuyOffer(uint256[] memory _garmentCollectionIds, address _paymentToken, uint256 _orderId, uint256 _shippingUSD) external payable whenNotPaused nonReentrant {
+        require(_msgSender().isContract() == false, "DripMarketplace.buyOffer: No contracts permitted");
+        require(_paymentToken != address(0), "DripMarketplace.buyOffer: Payment token cannot be zero address");
+
+        uint256[] memory collectionIds = _garmentCollectionIds;
+
+        for(uint i = 0; i < collectionIds.length; i += 1) {
+            buyOffer(collectionIds[i], _paymentToken, _orderId, _shippingUSD);
+        }
+    }
+
     /**
      @notice Buys an open offer with eth or erc20
      @dev Only callable when the offer is open
@@ -286,11 +299,10 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
      @dev The sale must have started (start time) to make a successful buy
      @param _garmentCollectionId Collection ID of the garment being offered
      */
-    function buyOffer(uint256 _garmentCollectionId, address _paymentToken, uint256 _orderId, uint256 _shippingUSD) external payable whenNotPaused nonReentrant {
+    function buyOffer(uint256 _garmentCollectionId, address _paymentToken, uint256 _orderId, uint256 _shippingUSD) internal {
         // Check the offers to see if this is a valid
         require(_msgSender().isContract() == false, "DigitalaxMarketplace.buyOffer: No contracts permitted");
         require(_isFinished(_garmentCollectionId) == false, "DigitalaxMarketplace.buyOffer: Sale has been finished");
-        require(lastPurchasedTime[_garmentCollectionId][_msgSender()] <= _getNow().sub(cooldown), "DigitalaxMarketplace.buyOffer: Cooldown not reached");
         require(_paymentToken != address(0), "DripMarketplace.buyOffer: Payment token cannot be zero address");
         require(oracle.checkValidToken(_paymentToken), "DripMarketplace.buyOffer: Not valid payment erc20");
 
@@ -449,18 +461,6 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
     }
 
     /**
-     @notice Update cool down duration
-     @dev Only admin
-     @param _cooldown New cool down duration
-     */
-    function updateCoolDownDuration(uint256 _cooldown) external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.updateCoolDownDuration: Sender must be admin");
-
-        cooldown = _cooldown;
-        emit UpdateCoolDownDuration(_cooldown);
-    }
-
-    /**
      @notice Method for updating the access controls contract used by the NFT
      @dev Only admin
      @param _accessControls Address of the new access controls contract (Cannot be zero address)
@@ -608,5 +608,28 @@ contract DripMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
         IERC20 token = IERC20(_tokenContract);
         uint256 balance = token.balanceOf(address(this));
         require(token.transfer(_msgSender(), balance), "Transfer failed");
+    }
+
+    /**
+     @notice Method for getting all info about the offer
+     @param _garmentCollectionId Token ID of the garment being offered
+     */
+    function getOfferAvailableIndex(uint256 _garmentCollectionId)
+    external
+    view
+    returns (uint256 _availableIndex) {
+        Offer storage offer = offers[_garmentCollectionId];
+        return (
+            offer.availableIndex
+        );
+    }
+
+    function updateOfferAvailableIndex(uint256 _garmentCollectionId, uint256 _availableIndex) external
+    {
+        require(accessControls.hasAdminRole(_msgSender()), "DripMarketplace.updateOfferAvailableIndex: Sender must be admin");
+
+        Offer storage offer = offers[_garmentCollectionId];
+        offer.availableIndex = _availableIndex;
+        emit UpdateOfferAvailableIndex(_garmentCollectionId, _availableIndex);
     }
 }
