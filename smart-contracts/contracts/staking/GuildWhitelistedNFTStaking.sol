@@ -254,10 +254,6 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         return stakers[_user].tokenIds[_whitelistedNFTToken];
     }
 
-    /// @dev Get the amount a staked nft is valued at ie bought at
-    function getContribution (uint256 _tokenId) public view returns (uint256) {
-        return 1 ether;
-    }
 
     /// @notice Appraise NFT.
     function appraise(address _whitelistedNFT, uint256 _tokenId, string memory _reaction) external {
@@ -299,7 +295,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         Staker storage staker = stakers[_user];
 
         updateReward(_user);
-        uint256 _primarySalePrice = getContribution(_tokenId);
+
         staker.numberNftStaked = staker.numberNftStaked.add(1);
         whitelistedNFTStakedTotal = whitelistedNFTStakedTotal.add(1);
         staker.tokenIds[_whitelistedNFT].push(_tokenId);
@@ -313,7 +309,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
             _tokenId
         );
 
-        weightContract.stake(_tokenId, _msgSender(), _primarySalePrice);
+        weightContract.stake(_tokenId, _msgSender(), 1 ether);
 
         emit Staked(_user, _whitelistedNFT, _tokenId);
     }
@@ -393,7 +389,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     /// @dev Updates the amount of rewards owed for each user before any tokens are moved
     function updateReward(address _user) public {
         rewardsContract.updateRewards();
-        uint256 newRewards = rewardsContract.DecoRewards(lastUpdateTime, _getNow());
+        uint256 newRewards = rewardsContract.DecoRewards(lastUpdateTime, _getNow()); // TODO the rewards contract needs another type of rewards for the new
 
         if (balance == 0) {
             accumulatedRewards = accumulatedRewards.add(newRewards);
