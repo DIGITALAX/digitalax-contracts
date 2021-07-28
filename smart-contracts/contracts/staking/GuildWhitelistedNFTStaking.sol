@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "../DigitalaxAccessControls.sol";
 import "./interfaces/IERC20.sol";
 import "./interfaces/IGuildNFTRewards.sol";
-import "./interfaces/IGuildNFTStakingWeightAppraisal.sol";
+import "./interfaces/IGuildNFTStakingWeightWhitelisted.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "./interfaces/IGuildNFTStakingWeight.sol";
 
@@ -259,7 +259,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     function appraise(address _whitelistedNFT, uint256 _tokenId, string memory _reaction) external {
         uint256 _appraisalLimit = getAppraisalLimit(_msgSender());
 
-        IGuildNFTStakingWeightAppraisal(address(weightContract)).appraiseNFT(_whitelistedNFT, _tokenId, _msgSender(), _reaction);
+        IGuildNFTStakingWeightWhitelisted(address(weightContract)).appraiseWhitelistedNFT(_whitelistedNFT, _tokenId, _msgSender(), _reaction);
     }
 
     /// @notice Appraise multiple NFTs.
@@ -267,7 +267,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         uint256 _appraisalLimit = getAppraisalLimit(_msgSender());
 
         for (uint i = 0; i < _tokenIds.length; i++) {
-            IGuildNFTStakingWeightAppraisal(address(weightContract)).appraiseNFT(_whitelistedNFTs[i], _tokenIds[i], _msgSender(), _reactions[i]);
+            IGuildNFTStakingWeightWhitelisted(address(weightContract)).appraiseWhitelistedNFT(_whitelistedNFTs[i], _tokenIds[i], _msgSender(), _reactions[i]);
         }
     }
 
@@ -300,7 +300,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         whitelistedNFTStakedTotal = whitelistedNFTStakedTotal.add(1);
         staker.tokenIds[_whitelistedNFT].push(_tokenId);
         staker.tokenIndex[_whitelistedNFT][_tokenId] = staker.tokenIds[_whitelistedNFT].length.sub(1);
-        tokenOwner[_tokenId] = _user;
+        tokenOwner[_whitelistedNFT][_tokenId] = _user;
 
 
         IERC721(_whitelistedNFT).safeTransferFrom(
@@ -309,7 +309,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
             _tokenId
         );
 
-        weightContract.stake(_tokenId, _msgSender(), 1 ether);
+        IGuildNFTStakingWeightWhitelisted(address(weightContract)).stake(_whitelistedNFT, _tokenId, _msgSender());
 
         emit Staked(_user, _whitelistedNFT, _tokenId);
     }
@@ -339,7 +339,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
      * @dev Rewards to be given out is calculated
      * @dev Balance of stakers are updated as they unstake the nfts based on ether price
     */
-    function _unstake(address _user, address _whitelistedNFT, uint256 _tokenId) internal {
+    function _unstake(address _whitelistedNFT, address _user, uint256 _tokenId) internal {
         Staker storage staker = stakers[_user];
 
         uint256 amount = getContribution(_tokenId);
@@ -369,7 +369,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
             totalRoundRewards = 0;
         }
 
-        weightContract.unstake(_tokenId, _user);
+        IGuildNFTStakingWeightWhitelisted(address(weightContract)).unstake(_whitelistedNFT, _tokenId, _msgSender());
         IERC721(_whitelistedNFT).safeTransferFrom(address(this), _user, _tokenId);
 
         emit Unstaked(_user, _whitelistedNFT, _tokenId);
