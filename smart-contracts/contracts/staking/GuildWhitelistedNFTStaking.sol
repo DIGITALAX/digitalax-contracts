@@ -167,7 +167,6 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
                 whitelistedTokensIndex[keyToMove] = rowToDelete;
                 whitelistedTokens.pop();
                 delete(whitelistedTokensIndex[_whitelistedTokens[i]]);
-                delete(tokenReports[_whitelistedTokens[i]]);
             }
         }
 
@@ -267,15 +266,11 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
 
     /// @notice Appraise NFT.
     function appraise(address _whitelistedNFT, uint256 _tokenId, string memory _reaction) external {
-        uint256 _appraisalLimit = getAppraisalLimit(_msgSender());
-
         IGuildNFTStakingWeightWhitelisted(address(weightContract)).appraiseWhitelistedNFT(_whitelistedNFT, _tokenId, _msgSender(), _reaction);
     }
 
     /// @notice Appraise multiple NFTs.
     function appraiseBatch(address _whitelistedNFTs, uint256[] calldata _tokenIds, string[] calldata _reactions) external {
-        uint256 _appraisalLimit = getAppraisalLimit(_msgSender());
-
         for (uint i = 0; i < _tokenIds.length; i++) {
             IGuildNFTStakingWeightWhitelisted(address(weightContract)).appraiseWhitelistedNFT(_whitelistedNFTs[i], _tokenIds[i], _msgSender(), _reactions[i]);
         }
@@ -289,8 +284,8 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
 
     /// @notice Stake multiple NFTs and earn reward tokens.
     function stakeBatch(address[] memory _whitelistedNFTs,uint256[] memory _tokenIds) external {
-        for (uint i = 0; i < tokenIds.length; i++) {
-            _stake(_msgSender(), _whitelistedNFTs[i], tokenIds[i]);
+        for (uint i = 0; i < _tokenIds.length; i++) {
+            _stake(_msgSender(), _whitelistedNFTs[i], _tokenIds[i]);
         }
     }
 
@@ -299,7 +294,6 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
      * @dev Rewards to be given out is calculated
      * @dev Balance of stakers are updated as they stake the nfts based on ether price
     */
-
     function _stake(address _user, address _whitelistedNFT, uint256 _tokenId) internal {
 
         Staker storage staker = stakers[_user];
@@ -444,7 +438,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     function unclaimedRewards(address _user) external view returns(uint256) {
 
         uint256 newRewards = IGuildNFTRewardsWhitelisted(address(rewardsContract)).WhitelistedNFTRewards(lastUpdateTime, _getNow());
-        uint256 _totalRoundRewards = totalRoundRewards.add(_newRewards);
+        uint256 _totalRoundRewards = totalRoundRewards.add(newRewards);
 
         uint256 _totalWeight = weightContract.calcNewWeight();
 
@@ -551,7 +545,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         // mapping (address => mapping(uint256 => uint256)) public numberOfTimesNFTWasStaked;
         // mapping (address => mapping(uint256 => mapping(uint256 => StakeRecord))) public nftStakeRecords;
         require(_endTime > _startTime, "GuildWhitelistedNFTStaking.getDurationStaked: End time must be greater than start time");
-        const index = numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId];
+        uint256 index = numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId];
         return index; // temporary.
 
         // If there are optional indexes, we can use that as a guide.
