@@ -134,7 +134,11 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         initialised = true;
     }
 
-    function addWhitelistedTokens(address[] memory _whitelistedTokens) public onlyWhitelisted{
+    function addWhitelistedTokens(address[] memory _whitelistedTokens) public {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "GuildWhitelistedNFTStaking.addWhitelistedTokens: Sender must be admin"
+        );
         require((_whitelistedTokens.length) > 0, "GuildWhitelistedNFTStaking.addWhitelistedTokens: Empty array not supported");
         for (uint i = 0; i < _whitelistedTokens.length; i++) {
             if(!checkInWhitelistedTokens(_whitelistedTokens[i])) {
@@ -146,7 +150,12 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         emit AddWhitelistedTokens(_whitelistedTokens);
     }
 
-    function removeWhitelistedTokens(address[] memory _whitelistedTokens) public onlyWhitelisted{
+    function removeWhitelistedTokens(address[] memory _whitelistedTokens) public {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "GuildWhitelistedNFTStaking.removeWhitelistedTokens: Sender must be admin"
+        );
+
         require((whitelistedTokens.length) > 0, "GuildWhitelistedNFTStaking.removeWhitelistedTokens: No whitelisted tokens instantiated");
         require((_whitelistedTokens.length) > 0, "GuildWhitelistedNFTStaking.removeWhitelistedTokens: Empty array not supported");
 
@@ -181,7 +190,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     function setTrustedForwarder(address _trustedForwarder) external  {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxRewardsV2.setTrustedForwarder: Sender must be admin"
+            "GuildWhitelistedNFTStaking.setTrustedForwarder: Sender must be admin"
         );
         trustedForwarder = _trustedForwarder;
     }
@@ -208,7 +217,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     function updateAccessControls(DigitalaxAccessControls _accessControls) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "GuildNFTStaking.updateAccessControls: Sender must be admin"
+            "GuildWhitelistedNFTStaking.updateAccessControls: Sender must be admin"
         );
         require(address(_accessControls) != address(0), "GuildNFTStaking.updateAccessControls: Zero Address");
         accessControls = _accessControls;
@@ -219,7 +228,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     function setRewardsContract(address _addr) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "GuildNFTStaking.setRewardsContract: Sender must be admin"
+            "GuildWhitelistedNFTStaking.setRewardsContract: Sender must be admin"
         );
         require(_addr != address(0));
         address oldAddr = address(rewardsContract);
@@ -231,7 +240,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     function setWeightingContract(address _addr) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "GuildNFTStaking.setWeightingContract: Sender must be admin"
+            "GuildWhitelistedNFTStaking.setWeightingContract: Sender must be admin"
         );
         require(_addr != address(0));
         address oldAddr = address(weightContract);
@@ -243,7 +252,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     function setTokensClaimable(bool _enabled) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "GuildNFTStaking.setTokensClaimable: Sender must be admin"
+            "GuildWhitelistedNFTStaking.setTokensClaimable: Sender must be admin"
         );
         tokensClaimable = _enabled;
         emit ClaimableStatusUpdated(_enabled);
@@ -290,7 +299,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
      * @dev Rewards to be given out is calculated
      * @dev Balance of stakers are updated as they stake the nfts based on ether price
     */
-    // TODO start from here
+
     function _stake(address _user, address _whitelistedNFT, uint256 _tokenId) internal {
 
         Staker storage staker = stakers[_user];
@@ -345,7 +354,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
      * @dev Rewards to be given out is calculated
      * @dev Balance of stakers are updated as they unstake the nfts based on ether price
     */
-// TODO start here
+
     function _unstake(address _user, address _whitelistedNFT, uint256 _tokenId) internal {
         Staker storage staker = stakers[_user];
 
@@ -497,4 +506,69 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     function _getNow() internal virtual view returns (uint256) {
         return block.timestamp;
     }
+
+    function getStakerStakedTokens(address _staker, address _whitelistedNFT) external view returns (uint256[]){
+        return stakers[_staker].tokenIds[_whitelistedNFT];
+    }
+
+    function getStakerNumberStakedTokens(address _staker) external view returns (uint256){
+        return stakers[_staker].numberNFTStaked;
+    }
+
+    function getStakerNumberStakedTokensForWhitelistedNFT(address _staker, address _whitelistedNFT) external view returns (uint256){
+        return stakers[_staker].numberNftStakedPerToken[_whitelistedNFT];
+    }
+
+    function getStakerRewardsEarned(address _staker) external view returns (uint256){
+        return stakers[_staker].rewardsEarned;
+    }
+
+    function getStakerRewardsReleased(address _staker) external view returns (uint256){
+        return stakers[_staker].rewardsReleased;
+    }
+
+    function getTokenOwner(address _whitelistedNFT, uint256 _tokenId) external view returns (address){
+        return tokenOwner[_whitelistedNFT][_tokenId];
+    }
+
+    function getIsNFTStaked(address _whitelistedNFT, uint256 _tokenId) external view returns (bool){
+        return nftIsStaked[_whitelistedNFT][_tokenId];
+    }
+
+    function getIsNFTStaked(address _whitelistedNFT, uint256 _tokenId) external view returns (bool){
+        return nftIsStaked[_whitelistedNFT][_tokenId];
+    }
+
+    function getNumberTimesNFTStaked(address _whitelistedNFT, uint256 _tokenId) external view returns (bool){
+        return numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId];
+    }
+
+    function getNFTStakedRecord(address _whitelistedNFT, uint256 _tokenId, uint256 _recordIndex) external view returns (uint256, uint256){
+        return (nftStakeRecords[_whitelistedNFT][_tokenId][_recordIndex].nftStakeTime, nftStakeRecords[_whitelistedNFT][_tokenId][_recordIndex].nftUnstakeTime);
+    }
+
+    function getDurationStaked(address _whitelistedNFT, uint256 _tokenId, uint256 _startTime, uint256 _endTime, uint256 _optionalIndexStart, uint256 _optionalIndexEnd) external view returns (uint256){
+        // mapping (address => mapping(uint256 => uint256)) public numberOfTimesNFTWasStaked;
+        // mapping (address => mapping(uint256 => mapping(uint256 => StakeRecord))) public nftStakeRecords;
+        require(_endTime > _startTime, "GuildWhitelistedNFTStaking.getDurationStaked: End time must be greater than start time");
+        const index = numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId];
+        return index; // temporary.
+
+        // If there are optional indexes, we can use that as a guide.
+        // Start at the optional index for start.
+        // Loop through and say
+        // Is the start time in this index?, if so record the index, if not move on through indexes
+
+        // We identified the start index, so we can find the duration of stake within that index. If the duration is more so then that index, move accessControls
+
+        // start looking for the end index, if the optional index end is ok use that and move on
+
+        // sample to find the end of the index, and record that
+
+        // For each index between the start and end index, we need to keep track of how much quantity of time was included in those indexes
+        // Return the summation of this amount of time.
+
+    }
+
+
 }
