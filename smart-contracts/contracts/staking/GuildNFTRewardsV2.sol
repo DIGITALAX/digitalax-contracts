@@ -8,6 +8,8 @@ import "./interfaces/IERC20.sol";
 import "../oracle/IOracle.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "./interfaces/IGuildNFTRewards.sol";
+
 
 /**
  * @title Digitalax Rewards
@@ -24,7 +26,7 @@ interface DECO is IERC20 {
     function mint(address tokenOwner, uint tokens) external returns (bool);
 }
 
-contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard {
+abstract contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard, IGuildNFTRewards {
     using SafeMath for uint256;
 
     /* ========== Variables ========== */
@@ -244,6 +246,7 @@ contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard {
      */
     function updateRewards()
         external
+        override
         returns(bool)
     {
         if (_getNow() <= pool.lastRewardsTime) {
@@ -300,6 +303,7 @@ contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard {
      */
     function lastRewardsTime()
         external
+        override
         view
         returns(uint256)
     {
@@ -309,7 +313,7 @@ contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard {
     /* @notice Return deco revenue rewards over the given _from to _to timestamp.
      * @dev A fraction of the start, multiples of the middle weeks, fraction of the end
      */
-    function DecoRewards(uint256 _from, uint256 _to) public view returns (uint256 rewards) {
+    function DecoRewards(uint256 _from, uint256 _to) public override view returns (uint256 rewards) {
         if (_to <= startTime) {
             return 0;
         }
