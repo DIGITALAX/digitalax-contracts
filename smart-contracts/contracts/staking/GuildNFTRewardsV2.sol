@@ -9,6 +9,7 @@ import "../oracle/IOracle.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./interfaces/IGuildNFTRewards.sol";
+import "./interfaces/IGuildNFTRewardsWhitelisted.sol";
 
 
 /**
@@ -26,7 +27,7 @@ interface DECO is IERC20 {
     function mint(address tokenOwner, uint tokens) external returns (bool);
 }
 
-abstract contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard, IGuildNFTRewards {
+abstract contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard, IGuildNFTRewards, IGuildNFTRewardsWhitelisted {
     using SafeMath for uint256;
 
     /* ========== Variables ========== */
@@ -297,6 +298,15 @@ abstract contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard, IGuild
         return lRewards;
     }
 
+//TODO
+    /*
+     * @notice Gets the total rewards outstanding from last reward time
+     */
+    function totalNewWhitelistedNFTRewards() external override view returns (uint256) {
+        uint256 lRewards = DecoRewards(pool.lastRewardsTime, _getNow());
+        return lRewards;
+    }
+
     /*
      * @notice Get the last rewards time for a pool
      * @return last rewards time for a pool
@@ -314,6 +324,41 @@ abstract contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard, IGuild
      * @dev A fraction of the start, multiples of the middle weeks, fraction of the end
      */
     function DecoRewards(uint256 _from, uint256 _to) public override view returns (uint256 rewards) {
+        if (_to <= startTime) {
+            return 0;
+        }
+        if (_from < startTime) {
+            _from = startTime;
+        }
+        uint256 fromWeek = diffDays(startTime, _from) / 7;
+        uint256 toWeek = diffDays(startTime, _to) / 7;
+
+        if (fromWeek == toWeek) {
+            return _rewardsFromPoints(weeklyRewardsPerSecond[fromWeek],
+                                    _to.sub(_from));
+        }
+        /// @dev First count remainder of first week
+        uint256 initialRemander = startTime.add((fromWeek+1).mul(SECONDS_PER_WEEK)).sub(_from);
+        rewards = _rewardsFromPoints(weeklyRewardsPerSecond[fromWeek],
+                                    initialRemander);
+
+        /// @dev add multiples of the week
+        for (uint256 i = fromWeek+1; i < toWeek; i++) {
+            rewards = rewards.add(_rewardsFromPoints(weeklyRewardsPerSecond[i],
+                                    SECONDS_PER_WEEK));
+        }
+        /// @dev Adds any remaining time in the most recent week till _to
+        uint256 finalRemander = _to.sub(toWeek.mul(SECONDS_PER_WEEK).add(startTime));
+        rewards = rewards.add(_rewardsFromPoints(weeklyRewardsPerSecond[toWeek],
+                                    finalRemander));
+        return rewards;
+    }
+
+//TODO
+ /* @notice Return deco revenue rewards over the given _from to _to timestamp.
+     * @dev A fraction of the start, multiples of the middle weeks, fraction of the end
+     */
+    function WhitelistedNFTRewards(uint256 _from, uint256 _to) public override view returns (uint256 rewards) {
         if (_to <= startTime) {
             return 0;
         }
