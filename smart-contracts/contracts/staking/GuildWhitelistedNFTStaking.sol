@@ -62,8 +62,8 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     struct Staker {
         mapping (address => uint256[]) tokenIds;
         mapping (address => mapping(uint256 => uint256)) tokenIndex;
-        uint256 numberNftStaked;
-        mapping (address => uint256) numberNftStakedPerToken; //continue here
+        uint256 numberNFTStaked;
+        mapping (address => uint256) numberNFTStakedPerToken; //continue here
         uint256 rewardsEarned;
         uint256 rewardsReleased;
     } // TODO add some more getters to access this information
@@ -270,7 +270,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     }
 
     /// @notice Appraise multiple NFTs.
-    function appraiseBatch(address _whitelistedNFTs, uint256[] calldata _tokenIds, string[] calldata _reactions) external {
+    function appraiseBatch(address[] memory _whitelistedNFTs, uint256[] calldata _tokenIds, string[] calldata _reactions) external {
         for (uint i = 0; i < _tokenIds.length; i++) {
             IGuildNFTStakingWeightWhitelisted(address(weightContract)).appraiseWhitelistedNFT(_whitelistedNFTs[i], _tokenIds[i], _msgSender(), _reactions[i]);
         }
@@ -300,8 +300,8 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
 
         updateReward(_user);
 
-        staker.numberNftStaked = staker.numberNftStaked.add(1);
-        staker.numberNftStakedPerToken[_whitelistedNFT] = staker.numberNftStakedPerToken[_whitelistedNFT].add(1);
+        staker.numberNFTStaked = staker.numberNFTStaked.add(1);
+        staker.numberNFTStakedPerToken[_whitelistedNFT] = staker.numberNFTStakedPerToken[_whitelistedNFT].add(1);
         whitelistedNFTStakedTotal = whitelistedNFTStakedTotal.add(1);
         staker.tokenIds[_whitelistedNFT].push(_tokenId);
         staker.tokenIndex[_whitelistedNFT][_tokenId] = staker.tokenIds[_whitelistedNFT].length.sub(1);
@@ -333,7 +333,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     }
 
     /// @notice Stake multiple DECO NFTs and claim reward tokens.
-    function unstakeBatch(address[] _whitelistedNFTs, uint256[] memory _tokenIds) external {
+    function unstakeBatch(address[] memory _whitelistedNFTs, uint256[] memory _tokenIds) external {
         require(_whitelistedNFTs.length == _tokenIds.length, "GuildWhitelistedNFTStaking.unstakeBatch: Please pass equal length arrays");
         claimReward(_msgSender());
         for (uint i = 0; i < _tokenIds.length; i++) {
@@ -365,9 +365,9 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
             delete staker.tokenIndex[_whitelistedNFT][_tokenId];
         }
 
-        staker.numberNftStakedPerToken[_whitelistedNFT] = staker.numberNftStakedPerToken[_whitelistedNFT].sub(1);
+        staker.numberNFTStakedPerToken[_whitelistedNFT] = staker.numberNFTStakedPerToken[_whitelistedNFT].sub(1);
 
-        if (staker.numberNftStaked == 0) {
+        if (staker.numberNFTStaked == 0) {
             delete stakers[_user];
         }
 
@@ -501,7 +501,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         return block.timestamp;
     }
 
-    function getStakerStakedTokens(address _staker, address _whitelistedNFT) external view returns (uint256[]){
+    function getStakerStakedTokens(address _staker, address _whitelistedNFT) external view returns (uint256[] memory){
         return stakers[_staker].tokenIds[_whitelistedNFT];
     }
 
@@ -510,7 +510,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     }
 
     function getStakerNumberStakedTokensForWhitelistedNFT(address _staker, address _whitelistedNFT) external view returns (uint256){
-        return stakers[_staker].numberNftStakedPerToken[_whitelistedNFT];
+        return stakers[_staker].numberNFTStakedPerToken[_whitelistedNFT];
     }
 
     function getStakerRewardsEarned(address _staker) external view returns (uint256){
@@ -529,11 +529,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         return nftIsStaked[_whitelistedNFT][_tokenId];
     }
 
-    function getIsNFTStaked(address _whitelistedNFT, uint256 _tokenId) external view returns (bool){
-        return nftIsStaked[_whitelistedNFT][_tokenId];
-    }
-
-    function getNumberTimesNFTStaked(address _whitelistedNFT, uint256 _tokenId) external view returns (bool){
+    function getNumberTimesNFTStaked(address _whitelistedNFT, uint256 _tokenId) external view returns (uint256){
         return numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId];
     }
 
