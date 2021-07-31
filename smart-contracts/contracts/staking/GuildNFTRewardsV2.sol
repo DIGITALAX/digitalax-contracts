@@ -40,7 +40,7 @@ abstract contract GuildNFTRewards is Initializable, BaseRelayRecipient, Reentran
     IOracle public oracle;
     DigitalaxAccessControls public accessControls;
     DigitalaxStaking public nftStaking;
-    DigitalaxStaking public whitelistedNFTStaking;
+    WhitelistedNFTStaking public whitelistedNFTStaking;
 
     uint256 constant pointMultiplier = 10e18;
     uint256 constant SECONDS_PER_DAY = 24 * 60 * 60;
@@ -91,8 +91,6 @@ abstract contract GuildNFTRewards is Initializable, BaseRelayRecipient, Reentran
     event UpdateOracle(address indexed oracle);
 
     /* ========== Admin Functions ========== */
-    constructor(){}
-
     function initialize(
         DECO _decoToken,
         DigitalaxAccessControls _accessControls,
@@ -167,12 +165,12 @@ abstract contract GuildNFTRewards is Initializable, BaseRelayRecipient, Reentran
     /// @dev Setter functions for contract config
     function setWeightPoints(
     uint256 _podeTokenWtPoints,
-    uint256 _membershipNFTWtPoints,
+    uint256 _membershipNFTWtPoints
     )
     external
     {
         require(
-            accessControls.hasAdminRole(_msgSender),
+            accessControls.hasAdminRole(_msgSender()),
             "GuildNFTRewardsV2.setWeightPoints: Sender must be admin"
             );
         podeTokenWtPoints = _podeTokenWtPoints;
