@@ -303,7 +303,7 @@ abstract contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard, IGuild
      * @notice Gets the total rewards outstanding from last reward time
      */
     function totalNewWhitelistedNFTRewards() external override view returns (uint256) {
-        uint256 lRewards = DecoRewards(pool.lastRewardsTime, _getNow());
+        uint256 lRewards = WhitelistedNFTRewards(pool.lastRewardsTime, _getNow());
         return lRewards;
     }
 
