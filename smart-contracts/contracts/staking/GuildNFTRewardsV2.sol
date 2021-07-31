@@ -10,7 +10,7 @@ import "../EIP2771/BaseRelayRecipient.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./interfaces/IGuildNFTRewards.sol";
 import "./interfaces/IGuildNFTRewardsWhitelisted.sol";
-
+import "@openzeppelin/contracts/proxy/Initializable.sol";
 
 /**
  * @title Digitalax Rewards
@@ -23,11 +23,15 @@ interface DigitalaxStaking {
     function stakedEthTotal() external view returns (uint256);
 }
 
+interface WhitelistedNFTStaking {
+    function whitelistedNFTStakedTotal() external view returns (uint256);
+}
+
 interface DECO is IERC20 {
     function mint(address tokenOwner, uint tokens) external returns (bool);
 }
 
-abstract contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard, IGuildNFTRewards, IGuildNFTRewardsWhitelisted {
+abstract contract GuildNFTRewards is Initializable, BaseRelayRecipient, ReentrancyGuard, IGuildNFTRewards, IGuildNFTRewardsWhitelisted {
     using SafeMath for uint256;
 
     /* ========== Variables ========== */
@@ -36,6 +40,7 @@ abstract contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard, IGuild
     IOracle public oracle;
     DigitalaxAccessControls public accessControls;
     DigitalaxStaking public nftStaking;
+    DigitalaxStaking public whitelistedNFTStaking;
 
     uint256 constant pointMultiplier = 10e18;
     uint256 constant SECONDS_PER_DAY = 24 * 60 * 60;
@@ -46,6 +51,10 @@ abstract contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard, IGuild
 
     uint256 public startTime;
     uint256 public decoRewardsPaidTotal;
+    uint256 public decoRewardsWhitelistedNFTsPaidTotal;
+
+    uint256 podeTokenWtPoints;
+    uint256 membershipNFTWtPoints;
 
     /// @notice for storing information from oracle
     uint256 public lastOracleQuote = 1e18;
@@ -57,6 +66,7 @@ abstract contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard, IGuild
     /* @notice staking pool id to staking pool reward mapping
     */
     StakingPoolRewards public pool;
+    StakingPoolRewards public whitelistedNFTPool;
 
     /* ========== Structs ========== */
     /**
@@ -81,16 +91,18 @@ abstract contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard, IGuild
     event UpdateOracle(address indexed oracle);
 
     /* ========== Admin Functions ========== */
-    constructor(
+    constructor(){}
+
+    function initialize(
         DECO _decoToken,
         DigitalaxAccessControls _accessControls,
         DigitalaxStaking _nftStaking,
+        WhitelistedNFTStaking _whitelistedNFTStaking,
         IOracle _oracle,
         address _trustedForwarder,
-        uint256 _startTime,
         uint256 _decoRewardsPaidTotal
     )
-        public
+        public initializer
     {
         require(
             address(_decoToken) != address(0),
@@ -105,17 +117,23 @@ abstract contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard, IGuild
             "DigitalaxRewardsV2: Invalid Deco Staking"
         );
         require(
+            address(_whitelistedNFTStaking) != address(0),
+            "DigitalaxRewardsV2: Invalid Deco Staking"
+        );
+        require(
             address(_oracle) != address(0),
             "DigitalaxRewardsV2: Invalid Deco Oracle"
         );
         decoToken = _decoToken;
         accessControls = _accessControls;
         nftStaking = _nftStaking;
+        whitelistedNFTStaking = _whitelistedNFTStaking;
         oracle = _oracle;
-        startTime = _startTime;
+        startTime = _getNow();
         decoRewardsPaidTotal = _decoRewardsPaidTotal;
         trustedForwarder = _trustedForwarder;
     }
+
     receive() external payable {
     }
 
@@ -146,6 +164,20 @@ abstract contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard, IGuild
         return "1";
     }
 
+    /// @dev Setter functions for contract config
+    function setWeightPoints(
+    uint256 _podeTokenWtPoints,
+    uint256 _membershipNFTWtPoints,
+    )
+    external
+    {
+        require(
+            accessControls.hasAdminRole(_msgSender),
+            "GuildNFTRewardsV2.setWeightPoints: Sender must be admin"
+            );
+        podeTokenWtPoints = _podeTokenWtPoints;
+        membershipNFTWtPoints = _membershipNFTWtPoints;
+    }
 
 /*
  * @notice Set the start time
@@ -199,7 +231,7 @@ abstract contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard, IGuild
      @dev Only admin
      @param _addr Address of the deco staking contract
     */
-    function setNftStaking(address _addr)
+    function setPodeNftStaking(address _addr)
         external
         {
             require(
@@ -207,6 +239,20 @@ abstract contract GuildNFTRewards is BaseRelayRecipient, ReentrancyGuard, IGuild
                 "DigitalaxRewardsV2.setNftStaking: Sender must be admin"
             );
             nftStaking = DigitalaxStaking(_addr);
+    }
+    /**
+     @notice Method for updating the address of the deco staking contract
+     @dev Only admin
+     @param _addr Address of the deco staking contract
+    */
+    function setWhitelistedNftStaking(address _addr)
+        external
+        {
+            require(
+                accessControls.hasAdminRole(_msgSender()),
+                "DigitalaxRewardsV2.setNftStaking: Sender must be admin"
+            );
+            whitelistedNFTStaking = WhitelistedNFTStaking(_addr);
     }
 
     /* From BokkyPooBah's DateTime Library v1.01

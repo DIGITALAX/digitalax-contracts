@@ -537,6 +537,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         return (nftStakeRecords[_whitelistedNFT][_tokenId][_recordIndex].nftStakeTime, nftStakeRecords[_whitelistedNFT][_tokenId][_recordIndex].nftUnstakeTime);
     }
 
+    // Big todo
     function getDurationStaked(address _whitelistedNFT, uint256 _tokenId, uint256 _startTime, uint256 _endTime, uint256 _optionalIndexStart, uint256 _optionalIndexEnd) external view returns (uint256){
         // mapping (address => mapping(uint256 => uint256)) public numberOfTimesNFTWasStaked;
         // mapping (address => mapping(uint256 => mapping(uint256 => StakeRecord))) public nftStakeRecords;
