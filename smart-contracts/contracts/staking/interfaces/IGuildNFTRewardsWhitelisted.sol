@@ -6,4 +6,5 @@ pragma solidity 0.6.12;
 interface IGuildNFTRewardsWhitelisted {
     function totalNewWhitelistedNFTRewards() external view returns(uint256);
     function WhitelistedNFTRewards(uint256 _from, uint256 _to) external view returns(uint256);
+    function whitelistedNFTLastRewardsTime() external view returns (uint256);
 }
