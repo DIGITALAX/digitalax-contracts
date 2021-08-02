@@ -373,7 +373,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
     }
 
     function favorite(address _appraiser, uint256 _tokenId) external {
-        require(_msgSender() == stakingContract, "Sender must be staking contract");
+        require(canAppraise(_msgSender()), "GuildNGTStakingWeightV2.favorite: Sender must stake PODE");
 
         uint256 _currentDay = getCurrentDay();
 
@@ -395,7 +395,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
     }
 
     function follow(address _appraiser, uint256 _tokenId) external {
-        require(_msgSender() == stakingContract, "Sender must be staking contract");
+        require(canAppraise(_msgSender()), "GuildNGTStakingWeightV2.follow: Sender must stake PODE");
 
         uint256 _currentDay = getCurrentDay();
 
@@ -417,7 +417,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
     }
 
     function share(address _appraiser, uint256 _tokenId) external {
-        require(_msgSender() == stakingContract, "Sender must be staking contract");
+        require(canAppraise(_msgSender()), "GuildNGTStakingWeightV2.share: Sender must stake PODE");
 
         uint256 _currentDay = getCurrentDay();
 
@@ -439,7 +439,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
     }
 
     function metaverse(address _appraiser, uint256 _tokenId) external {
-        require(_msgSender() == stakingContract, "Sender must be staking contract");
+        require(canAppraise(_msgSender()), "GuildNGTStakingWeightV2.metaverse: Sender must stake PODE");
 
         uint256 _currentDay = getCurrentDay();
 
@@ -460,31 +460,32 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         _updateTodayWeightByReaction(_appraiser, _tokenId, tokenOwner[_tokenId]);
     }
 
-    function stakeERC20(address _appraiser, uint256 _amount, uint256 _tokenId) external {
-        require(_msgSender() == stakingContract, "Sender must be staking contract");
-
-        uint256 _currentDay = getCurrentDay();
-
-        TokenWeight storage token = tokenWeight[_tokenId];
-        token.dailyTokenReaction[_currentDay].stakedERC20Balance = token.dailyTokenReaction[_currentDay].stakedERC20Balance.add(_amount);
-        token.dailyTokenReaction[_currentDay].stakeERC20ButtonClicked = true;
-
-        _updateTodayWeightByReaction(_appraiser, _tokenId, tokenOwner[_tokenId]);
-    }
-
-    function unstakeERC20(address _appraiser, uint256 _amount, uint256 _tokenId) external {
-        require(_msgSender() == stakingContract, "Sender must be staking contract");
-
-        uint256 _currentDay = getCurrentDay();
-
-        TokenWeight storage token = tokenWeight[_tokenId];
-        token.dailyTokenReaction[_currentDay].stakedERC20Balance = token.dailyTokenReaction[_currentDay].stakedERC20Balance.sub(_amount);
-
-        _updateTodayWeightByReaction(_appraiser, _tokenId, tokenOwner[_tokenId]);
-    }
+//    function stakeERC20(address _appraiser, uint256 _amount, uint256 _tokenId) external {
+//        require(_msgSender() == stakingContract, "Sender must stake PODE");
+//
+//        uint256 _currentDay = getCurrentDay();
+//
+//        TokenWeight storage token = tokenWeight[_tokenId];
+//        token.dailyTokenReaction[_currentDay].stakedERC20Balance = token.dailyTokenReaction[_currentDay].stakedERC20Balance.add(_amount);
+//        token.dailyTokenReaction[_currentDay].stakeERC20ButtonClicked = true;
+//
+//        _updateTodayWeightByReaction(_appraiser, _tokenId, tokenOwner[_tokenId]);
+//    }
+//
+//    function unstakeERC20(address _appraiser, uint256 _amount, uint256 _tokenId) external {
+//        require(_msgSender() == stakingContract, "Sender must stake PODE");
+//
+//        uint256 _currentDay = getCurrentDay();
+//
+//        TokenWeight storage token = tokenWeight[_tokenId];
+//        token.dailyTokenReaction[_currentDay].stakedERC20Balance = token.dailyTokenReaction[_currentDay].stakedERC20Balance.sub(_amount);
+//
+//        _updateTodayWeightByReaction(_appraiser, _tokenId, tokenOwner[_tokenId]);
+//    }
 
     function appraise(address _appraiser, uint256 _limitAppraisalCount, uint256 _tokenId, string memory _reaction) external {
-        require(_msgSender() == stakingContract, "Sender must be staking contract");
+        require(canAppraise(_msgSender()), "GuildNGTStakingWeightV2.appraise: Sender must stake PODE");
+
 
         uint256 _currentDay = getCurrentDay();
         AppraiserWeight storage appraiser = appraiserWeight[_appraiser];
@@ -594,5 +595,9 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
     function _getNow() internal virtual view returns (uint256) {
         return block.timestamp;
+    }
+
+    function canAppraise(address _owner){
+        return balanceOf(_owner) > 0;
     }
 }
