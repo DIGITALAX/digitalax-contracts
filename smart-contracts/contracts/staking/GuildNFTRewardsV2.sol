@@ -51,7 +51,6 @@ abstract contract GuildNFTRewards is Initializable, BaseRelayRecipient, Reentran
 
     uint256 public startTime;
     uint256 public decoRewardsPaidTotal;
-    uint256 public decoRewardsWhitelistedNFTsPaidTotal;
 
     uint256 podeTokenWtPoints;
     uint256 membershipNFTWtPoints;
@@ -294,13 +293,14 @@ abstract contract GuildNFTRewards is Initializable, BaseRelayRecipient, Reentran
         override
         returns(bool)
     {
-        if (_getNow() <= pool.lastRewardsTime) {
+        if (_getNow() <= pool.lastRewardsTime && _getNow() <= whitelistedNFTPool.lastRewardsTime) {
             return false;
         }
 
         /// @dev check that the staking pool has contributions, and rewards have started
         if (_getNow() <= startTime) {
             pool.lastRewardsTime = _getNow();
+            whitelistedNFTPool.lastRewardsTime = _getNow();
             return false;
         }
 
@@ -312,8 +312,10 @@ abstract contract GuildNFTRewards is Initializable, BaseRelayRecipient, Reentran
 
         /// @dev This sends rewards (Deco from revenue sharing)
         _updateDecoRewards();
+        _updateWhitelistedNFTRewards();
         /// @dev update accumulated reward
         pool.lastRewardsTime = _getNow();
+        whitelistedNFTPool.lastRewardsTime = _getNow();
         return true;
     }
 
@@ -331,23 +333,51 @@ abstract contract GuildNFTRewards is Initializable, BaseRelayRecipient, Reentran
         pool.lastRewardsTime = _lastRewardsTime;
     }
 
+    /*
+     * @dev Setter functions for contract config custom last rewards time for a pool
+     */
+    function setWhitelistedNFTLastRewardsTime(uint256 _lastRewardsTime) external
+    {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxRewardsV2.setLastRewardsTime: Sender must be admin"
+        );
+
+        whitelistedNFTPool.lastRewardsTime = _lastRewardsTime;
+    }
+
 
     /* ========== View Functions ========== */
 
     /*
      * @notice Gets the total rewards outstanding from last reward time
      */
-    function totalNewDecoRewards() external view returns (uint256) {
-        uint256 lRewards = DecoRewards(pool.lastRewardsTime, _getNow());
-        return lRewards;
+    function totalDecoRewards() external override view returns (uint256) {
+        return _totalDecoRewards();
     }
 
-//TODO
+
     /*
      * @notice Gets the total rewards outstanding from last reward time
      */
     function totalNewWhitelistedNFTRewards() external override view returns (uint256) {
-        uint256 lRewards = WhitelistedNFTRewards(pool.lastRewardsTime, _getNow());
+        return _totalNewWhitelistedNFTRewards();
+    }
+
+     /*
+     * @notice Gets the total rewards outstanding from last reward time
+     */
+    function _totalDecoRewards() internal view returns (uint256) {
+        uint256 lRewards = DecoRewards(pool.lastRewardsTime, _getNow());
+        return lRewards;
+    }
+
+
+    /*
+     * @notice Gets the total rewards outstanding from last reward time
+     */
+    function _totalNewWhitelistedNFTRewards() internal view returns (uint256) {
+        uint256 lRewards = WhitelistedNFTRewards(whitelistedNFTPool.lastRewardsTime, _getNow());
         return lRewards;
     }
 
@@ -362,6 +392,19 @@ abstract contract GuildNFTRewards is Initializable, BaseRelayRecipient, Reentran
         returns(uint256)
     {
         return pool.lastRewardsTime;
+    }
+
+    /*
+     * @notice Get the last rewards time for a pool
+     * @return last rewards time for a pool
+     */
+    function whitelistedNFTLastRewardsTime()
+        external
+        override
+        view
+        returns(uint256)
+    {
+        return whitelistedNFTPool.lastRewardsTime;
     }
 
     /* @notice Return deco revenue rewards over the given _from to _to timestamp.
@@ -379,26 +422,25 @@ abstract contract GuildNFTRewards is Initializable, BaseRelayRecipient, Reentran
 
         if (fromWeek == toWeek) {
             return _rewardsFromPoints(weeklyRewardsPerSecond[fromWeek],
-                                    _to.sub(_from));
+                                    _to.sub(_from), podeTokenWtPoints);
         }
         /// @dev First count remainder of first week
         uint256 initialRemander = startTime.add((fromWeek+1).mul(SECONDS_PER_WEEK)).sub(_from);
         rewards = _rewardsFromPoints(weeklyRewardsPerSecond[fromWeek],
-                                    initialRemander);
+                                    initialRemander, podeTokenWtPoints);
 
         /// @dev add multiples of the week
         for (uint256 i = fromWeek+1; i < toWeek; i++) {
             rewards = rewards.add(_rewardsFromPoints(weeklyRewardsPerSecond[i],
-                                    SECONDS_PER_WEEK));
+                                    SECONDS_PER_WEEK, podeTokenWtPoints));
         }
         /// @dev Adds any remaining time in the most recent week till _to
         uint256 finalRemander = _to.sub(toWeek.mul(SECONDS_PER_WEEK).add(startTime));
         rewards = rewards.add(_rewardsFromPoints(weeklyRewardsPerSecond[toWeek],
-                                    finalRemander));
+                                    finalRemander, podeTokenWtPoints));
         return rewards;
     }
 
-//TODO
  /* @notice Return deco revenue rewards over the given _from to _to timestamp.
      * @dev A fraction of the start, multiples of the middle weeks, fraction of the end
      */
@@ -414,22 +456,22 @@ abstract contract GuildNFTRewards is Initializable, BaseRelayRecipient, Reentran
 
         if (fromWeek == toWeek) {
             return _rewardsFromPoints(weeklyRewardsPerSecond[fromWeek],
-                                    _to.sub(_from));
+                                    _to.sub(_from), membershipNFTWtPoints);
         }
         /// @dev First count remainder of first week
         uint256 initialRemander = startTime.add((fromWeek+1).mul(SECONDS_PER_WEEK)).sub(_from);
         rewards = _rewardsFromPoints(weeklyRewardsPerSecond[fromWeek],
-                                    initialRemander);
+                                    initialRemander,membershipNFTWtPoints);
 
         /// @dev add multiples of the week
         for (uint256 i = fromWeek+1; i < toWeek; i++) {
             rewards = rewards.add(_rewardsFromPoints(weeklyRewardsPerSecond[i],
-                                    SECONDS_PER_WEEK));
+                                    SECONDS_PER_WEEK,membershipNFTWtPoints));
         }
         /// @dev Adds any remaining time in the most recent week till _to
         uint256 finalRemander = _to.sub(toWeek.mul(SECONDS_PER_WEEK).add(startTime));
         rewards = rewards.add(_rewardsFromPoints(weeklyRewardsPerSecond[toWeek],
-                                    finalRemander));
+                                    finalRemander,membershipNFTWtPoints));
         return rewards;
     }
 
@@ -446,20 +488,37 @@ abstract contract GuildNFTRewards is Initializable, BaseRelayRecipient, Reentran
             decoRewardsPaidTotal = decoRewardsPaidTotal.add(rewards);
 
             // Mint this amount of DECO to the staking contract
+            require(decoToken.mint(address(nftStaking), rewards));
+        }
+    }
 
+    function _updateWhitelistedNFTRewards()
+        internal
+        returns(uint256 rewards)
+    {
+        rewards = WhitelistedNFTRewards(pool.lastRewardsTime, _getNow());
+        if ( rewards > 0 ) {
+            whitelistedNFTPool.decoRewardsPaid = whitelistedNFTPool.decoRewardsPaid.add(rewards);
+            decoRewardsPaidTotal = decoRewardsPaidTotal.add(rewards);
+
+            // Mint this amount of DECO to the staking contract
             require(decoToken.mint(address(nftStaking), rewards));
         }
     }
 
     function _rewardsFromPoints(
         uint256 rate,
-        uint256 duration
+        uint256 duration,
+        uint256 weight
     )
         internal
         pure
         returns(uint256)
     {
-        return rate.mul(duration);
+        return rate.mul(duration)
+            .mul(weight)
+            .div(1e18)
+            .div(pointMultiplier);
     }
 
 
@@ -558,5 +617,9 @@ abstract contract GuildNFTRewards is Initializable, BaseRelayRecipient, Reentran
 
     function _getNow() internal virtual view returns (uint256) {
         return block.timestamp;
+    }
+
+    function totalRewards() external view returns (uint256) {
+        return _totalDecoRewards().add(_totalNewWhitelistedNFTRewards());
     }
 }
