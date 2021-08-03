@@ -43,7 +43,6 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         uint256 followCount;
         uint256 favoriteCount;
         mapping (string => uint256) appraisalCount;
-        bool stakeERC20ButtonClicked;
     }
 
     struct TokenWeight {
@@ -148,11 +147,20 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         reactionPoint[_reaction] = _point;
     }
 
+    function updateStartTime(uint256 _startTime) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "GuildNFTStakingWeightV2.updateStartTime: Sender must be admin"
+        );
+
+        startTime = _startTime;
+    }
+
     // Note needs to be 10x higher then the percentage you are interested in.
     function updateDecayPoints(uint256 decayPointDefault, uint256 decayPointWithAppraisal) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "GuildNFTStakingWeightV2.updateReactionPoint: Sender must be admin"
+            "GuildNFTStakingWeightV2.updateDecayPoints: Sender must be admin"
         );
 
         DECAY_POINT_DEFAULT = decayPointDefault;
