@@ -44,7 +44,6 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         uint256 followCount;
         uint256 favoriteCount;
         mapping (string => uint256) appraisalCount;
-        uint256 stakedERC20Balance;
         bool stakeERC20ButtonClicked;
     }
 
@@ -53,8 +52,6 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         mapping (uint256 => uint256) dailyWeight;
 
         mapping (uint256 => TokenReaction) dailyTokenReaction;
-
-        uint256 stakedERC20Balance;
 
         uint256 lastUpdateDay;
     }
@@ -72,12 +69,10 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
     struct AppraiserWeight {
         uint256 totalReactionCount;
-        uint256 stakedERC20Balance;
         mapping (uint256 => uint256) dailyReactionCount;
         mapping (uint256 => uint256) dailyWeight;
         mapping (uint256 => uint256) dailyClapCount;
         mapping (uint256 => uint256) dailyClapLimit;
-        mapping (uint256 => uint256) dailyStakedERC20Balance;
 
         mapping (uint256 => mapping (uint256 => TokenReaction)) dailyTokenReaction;
     }
@@ -89,12 +84,11 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
     uint256 public startTime;
     uint256 public stakedNFTCount;
-    uint256 public stakedERC20Balance;
     uint256 public totalTokenWeight;
     uint256 public totalAppraiserWeight;
     uint256 public totalGuildWeight;
 
-    mapping (uint256 => address) public tokenOwner;
+    mapping (uint256 => address) public tokenOwner;//
     mapping (uint256 => TokenWeight) public tokenWeight;
     mapping (address => OwnerWeight) public ownerWeight;
     mapping (address => AppraiserWeight) public appraiserWeight;
@@ -214,7 +208,8 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         result = result.add(_reaction.followCount.mul(reactionPoint["Follow"]));
 
         uint256 _totalSupply = guildNativeERC20Token.totalSupply();
-        uint256 _clapLimit = _getClapLimit(_totalSupply, _reaction.stakedERC20Balance);
+        uint256 erc20Balance = guildNativeERC20Token.balanceOf(_msgSender());
+        uint256 _clapLimit = _getClapLimit(_totalSupply, erc20Balance);
         result = result.add(_reaction.clapCount.mul(_getPowerLevelByClapLimit(_clapLimit)));
 
         result = result.add(_reaction.clapCount);       // stake points = clap limit per day
@@ -466,8 +461,6 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 //        uint256 _currentDay = getCurrentDay();
 //
 //        TokenWeight storage token = tokenWeight[_tokenId];
-//        token.dailyTokenReaction[_currentDay].stakedERC20Balance = token.dailyTokenReaction[_currentDay].stakedERC20Balance.add(_amount);
-//        token.dailyTokenReaction[_currentDay].stakeERC20ButtonClicked = true;
 //
 //        _updateTodayWeightByReaction(_appraiser, _tokenId, tokenOwner[_tokenId]);
 //    }
@@ -478,8 +471,6 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 //        uint256 _currentDay = getCurrentDay();
 //
 //        TokenWeight storage token = tokenWeight[_tokenId];
-//        token.dailyTokenReaction[_currentDay].stakedERC20Balance = token.dailyTokenReaction[_currentDay].stakedERC20Balance.sub(_amount);
-//
 //        _updateTodayWeightByReaction(_appraiser, _tokenId, tokenOwner[_tokenId]);
 //    }
 
@@ -543,6 +534,71 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
     function unstake(uint256 _tokenId, address _tokenOwner) external {
         require(_msgSender() == stakingContract, "Sender must be staking contract");
+        require(tokenOwner[_tokenId] == _tokenOwner);
+
+        uint256 _currentDay = getCurrentDay();
+
+        TokenWeight storage token = tokenWeight[_tokenId];
+        OwnerWeight storage owner = ownerWeight[_tokenOwner];
+
+        updateOwnerWeight(_tokenOwner);
+
+        owner.stakedNFTCount = owner.stakedNFTCount.sub(1);
+
+        if (owner.stakedNFTCount == 0) {
+            delete ownerWeight[_tokenOwner];
+        }
+
+        stakedNFTCount = stakedNFTCount.sub(1);
+
+        // need appraiser rewards logic here if there is staked erc20 tokens
+        // need appraiser rewards logic here if there is staked erc20 tokens
+
+        if (stakedNFTCount == 0) {
+            totalTokenWeight = 0;
+        }
+
+        delete tokenWeight[_tokenId];
+        delete tokenOwner[_tokenId];
+    }
+
+    function stakeWhitelistedNFT(address _whitelistedNFT, uint256 _tokenId, address _tokenOwner, uint256 _primarySalePrice) external {
+        require(_msgSender() == whitelistingStakingContract, "Sender must be staking contract");
+        require(tokenOwner[_tokenId] == address(0) || tokenOwner[_tokenId] == _tokenOwner);
+
+        uint256 _currentDay = getCurrentDay();
+
+        // TokenWeight
+        TokenWeight storage token = tokenWeight[_tokenId];
+        token.lastWeight = MULTIPLIER;
+        token.lastUpdateDay = _currentDay;
+
+        tokenOwner[_tokenId] = _tokenOwner;
+
+        // OwnerWeight
+        OwnerWeight storage owner = ownerWeight[_tokenOwner];
+
+        if (owner.stakedNFTCount == 0) {
+            owner.startDay = _currentDay;
+        }
+
+        updateOwnerWeight(_tokenOwner);
+
+        owner.stakedNFTCount = owner.stakedNFTCount.add(1);
+        owner.lastWeight = owner.lastWeight.add(token.lastWeight);
+        owner.lastUpdateDay = _currentDay;
+
+        // GuildWeight
+        updateWeight();
+
+        stakedNFTCount = stakedNFTCount.add(1);
+        totalTokenWeight = totalTokenWeight.add(token.lastWeight);
+        totalGuildWeight = totalGuildWeight.add(token.lastWeight);
+        lastUpdateDay = _currentDay;
+    }
+
+    function unstakeWhitelistedNFT(address _whitelistedNFT,uint256 _tokenId, address _tokenOwner) external {
+        require(_msgSender() == whitelistedStakingContract, "Sender must be staking contract");
         require(tokenOwner[_tokenId] == _tokenOwner);
 
         uint256 _currentDay = getCurrentDay();
