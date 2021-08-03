@@ -211,8 +211,8 @@ export function handleDeveloperGroupAdded(event: DesignerGroupAdded): void {
         if (data.isOk) {
             if (data.value.kind === JSONValueKind.OBJECT) {
                 let res = data.value.toObject();
-                if (res.get('Developer ID').kind === JSONValueKind.STRING) {
-                    developer.name = res.get('Developer ID').toString();
+                if (res.get('name').kind === JSONValueKind.STRING) {
+                    developer.name = res.get('name').toString();
                 }
                 if (res.get('description').kind === JSONValueKind.STRING) {
                     developer.description = res.get('description').toString();
