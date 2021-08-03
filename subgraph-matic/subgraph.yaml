@@ -6,9 +6,9 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DigitalaxGarmentNFT
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0x728Af879c3212cEf7a51D7fC296b5e9b7c14dbf6'
+      address: "0x728Af879c3212cEf7a51D7fC296b5e9b7c14dbf6"
       abi: DigitalaxGarmentNFT
       startBlock: 12226596
     mapping:
@@ -34,9 +34,9 @@ dataSources:
       file: ./src/DigitalaxGarmentNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterials
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0x9f0A468AeA1e0F080fB7C9f3E1F9774D1bFAf821'
+      address: "0x9f0A468AeA1e0F080fB7C9f3E1F9774D1bFAf821"
       abi: DigitalaxMaterials
       startBlock: 12187339
     mapping:
@@ -63,9 +63,9 @@ dataSources:
       file: ./src/DigitalaxMaterials.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentNFTv2
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0x7B2a989c4D1AD1B79a84CE2EB79dA5D8d9C2b7a7'
+      address: "0x7B2a989c4D1AD1B79a84CE2EB79dA5D8d9C2b7a7"
       abi: DigitalaxGarmentNFTv2
       startBlock: 12000000
     mapping:
@@ -91,9 +91,9 @@ dataSources:
       file: ./src/DigitalaxGarmentNFTv2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterialsV2
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0x567c7b3364ba2903a80ecbad6c54ba8c0e1a069e'
+      address: "0x567c7b3364ba2903a80ecbad6c54ba8c0e1a069e"
       abi: DigitalaxMaterialsV2
       startBlock: 12000000
     mapping:
@@ -120,9 +120,9 @@ dataSources:
       file: ./src/DigitalaxMaterialsV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxSubscriptionNFT
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0xCED3335378896671C71D6d632a16A474A70A2F38'
+      address: "0xCED3335378896671C71D6d632a16A474A70A2F38"
       abi: DigitalaxSubscriptionNFT
       startBlock: 12000000
     mapping:
@@ -148,9 +148,9 @@ dataSources:
       file: ./src/DigitalaxSubscriptionNFT.mapping.ts
   - kind: ethereum/contract
     name: DFBundle
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0xdd43Fd6f72d0a35abDb6194E97e7b330822e2263'
+      address: "0xdd43Fd6f72d0a35abDb6194E97e7b330822e2263"
       abi: DFBundle
       startBlock: 12000000
     mapping:
@@ -177,9 +177,9 @@ dataSources:
       file: ./src/DFBundle.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuction
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0x196Fd570D49dE7cF8AaB245F63330D6957A9223a'
+      address: "0x196Fd570D49dE7cF8AaB245F63330D6957A9223a"
       abi: DigitalaxAuction
       startBlock: 12296647
     mapping:
@@ -226,9 +226,9 @@ dataSources:
       file: ./src/DigitalaxAuction.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuctionV2
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0x991C2Dc47AB12eF5020876219625A64C422B30d3'
+      address: "0x991C2Dc47AB12eF5020876219625A64C422B30d3"
       abi: DigitalaxAuctionV2
       startBlock: 12000000
     mapping:
@@ -275,9 +275,9 @@ dataSources:
       file: ./src/DigitalaxAuctionV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAccessControls
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0xBe5C84E6B036cB41a7a6b5008B9427A5F4f1C9f5'
+      address: "0xBe5C84E6B036cB41a7a6b5008B9427A5F4f1C9f5"
       abi: DigitalaxAccessControls
       startBlock: 12186276
     mapping:
@@ -316,9 +316,9 @@ dataSources:
       file: ./src/DigitalaxAccessControls.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentCollection
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0x73D0995D5603C76119db0a801B9e2c1A78e04aDF'
+      address: "0x73D0995D5603C76119db0a801B9e2c1A78e04aDF"
       abi: DigitalaxGarmentCollection
       startBlock: 12297721
     mapping:
@@ -339,9 +339,9 @@ dataSources:
       file: ./src/DigitalaxGarmentCollection.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentCollectionV2
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0x721f7c76e447174141a761Ce3e80Ad88e5E07047'
+      address: "0x721f7c76e447174141a761Ce3e80Ad88e5E07047"
       abi: DigitalaxGarmentCollectionV2
       startBlock: 12000000
     mapping:
@@ -362,9 +362,9 @@ dataSources:
       file: ./src/DigitalaxGarmentCollectionV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMarketplace
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0xB0b0859117512410Ec1a6Da6E012Ff35E65543D7'
+      address: "0xB0b0859117512410Ec1a6Da6E012Ff35E65543D7"
       abi: DigitalaxMarketplace
       startBlock: 12297984
     mapping:
@@ -400,9 +400,9 @@ dataSources:
       file: ./src/DigitalaxMarketplace.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMarketplaceV2
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0x8F235A04cC541efF19Fd42EFBfF0FCACAdd09DBC'
+      address: "0x8F235A04cC541efF19Fd42EFBfF0FCACAdd09DBC"
       abi: DigitalaxMarketplaceV2
       startBlock: 11709635
     mapping:
@@ -438,9 +438,9 @@ dataSources:
       file: ./src/DigitalaxMarketplaceV2.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxSubscriptionCollection
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0x8896E908f942bb293b9B76a3A0cAf2Ff004859c4'
+      address: "0x8896E908f942bb293b9B76a3A0cAf2Ff004859c4"
       abi: DigitalaxSubscriptionCollection
       startBlock: 12000000
     mapping:
@@ -461,9 +461,9 @@ dataSources:
       file: ./src/DigitalaxSubscriptionCollection.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxSubscriptionMarketplace
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0x3E11cA9933D1236710d4606aEC4a5e3da28aeBcB'
+      address: "0x3E11cA9933D1236710d4606aEC4a5e3da28aeBcB"
       abi: DigitalaxSubscriptionMarketplace
       startBlock: 12000000
     mapping:
@@ -502,9 +502,9 @@ dataSources:
       file: ./src/DigitalaxSubscriptionMarketplace.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxPodePortal
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0x87c3C6B9C917B1732f13d36d6938E4f8802f7c7E'
+      address: "0x87c3C6B9C917B1732f13d36d6938E4f8802f7c7E"
       abi: DigitalaxPodePortal
       startBlock: 12000000
     mapping:
@@ -522,9 +522,9 @@ dataSources:
       file: ./src/DigitalaxPodePortal.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxIndex
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0x5394A69A126f3067A988906b57440A25E029Abef'
+      address: "0x5394A69A126f3067A988906b57440A25E029Abef"
       abi: DigitalaxIndex
       startBlock: 12000000
     mapping:
@@ -560,9 +560,9 @@ dataSources:
       file: ./src/DigitalaxIndex.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxNFTStaking
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0xa7cf890C70817D57ea355C2F4B4BF23B064D91F7'
+      address: "0xa7cf890C70817D57ea355C2F4B4BF23B064D91F7"
       abi: DigitalaxNFTStaking
       startBlock: 12000000
     mapping:
@@ -589,9 +589,9 @@ dataSources:
       file: ./src/DigitalaxNFTStaking.mapping.ts
   - kind: ethereum/contract
     name: GuildNFTStaking
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0xf0815348F626B0f4f434CAF9C5984694D85B50A1'
+      address: "0xf0815348F626B0f4f434CAF9C5984694D85B50A1"
       abi: GuildNFTStaking
       startBlock: 12000000
     mapping:
@@ -618,9 +618,9 @@ dataSources:
       file: ./src/GuildNFTStaking.mapping.ts
   - kind: ethereum/contract
     name: PodeNFTv2
-    network: 'matic'
+    network: "matic"
     source:
-      address: '0x6d4d0b9EaCd6197B31Bec250C0aD6ceC98f8b83f'
+      address: "0x6d4d0b9EaCd6197B31Bec250C0aD6ceC98f8b83f"
       abi: PodeNFTv2
       startBlock: 12000000
     mapping:
@@ -638,3 +638,58 @@ dataSources:
         - event: TokenPrimarySalePriceSet(indexed uint256,uint256)
           handler: handleTokenPriceSaleUpdated
       file: ./src/PodeNFTv2.mapping.ts
+  - kind: ethereum/contract
+    name: DripOracle
+    network: "matic"
+    source:
+      address: "0x850068534c72317a762f0340500dee727ea85e29"
+      abi: DripOracle
+      startBlock: 12000000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - ProviderReportsPushed
+      abis:
+        - name: DripOracle
+          file: ./abis/DripOracle.json
+      eventHandlers:
+        - event: ProviderReportsPushed(address[],uint256[],uint256)
+          handler: handleProviderReportsPushed
+      file: ./src/DripOracle.mapping.ts
+  - kind: ethereum/contract
+    name: DripMarketplace
+    network: "matic"
+    source:
+      address: "0xb79f4cae758813cf5a661e68bcadca216912f6e7"
+      abi: DripMarketplace
+      startBlock: 12000000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - DigitalaxMarketplaceContractDeployed
+        - UpdateMarketplaceDiscountToPayInErc20
+        - OfferCreated
+        - UpdateOfferPrimarySalePrice
+        - OfferPurchased
+        - OfferCancelled
+      abis:
+        - name: DripMarketplace
+          file: ./abis/DripMarketplace.json
+      eventHandlers:
+        - event: DigitalaxMarketplaceContractDeployed()
+          handler: handleMarketplaceDeployed
+        - event: UpdateMarketplaceDiscountToPayInErc20(indexed uint256,uint256)
+          handler: handleUpdateMarketplaceDiscountToPayInErc20
+        - event: OfferCreated(indexed uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleOfferCreated
+        - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
+          handler: handleOfferPrimarySalePriceUpdated
+        - event: OfferPurchased(uint256,uint256,uint256,uint256,uint256)
+          handler: handleOfferPurchased
+        - event: OfferCancelled(indexed uint256)
+          handler: handleOfferCancelled
+      file: ./src/DripMarketplace.mapping.ts
