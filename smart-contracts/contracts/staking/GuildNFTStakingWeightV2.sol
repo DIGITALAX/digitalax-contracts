@@ -19,17 +19,16 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
     IERC20 public guildNativeERC20Token;
     address public stakingContract;
-    // TODO work on other staking contract
     address public whitelistingStakingContract; // This contract will have to be responsible for whitelisted nfts and deco staked on them.
 
     uint256 constant MULTIPLIER = 100000;
 
     uint256 constant SECONDS_PER_DAY = 24 * 60 * 60;
-    uint256 constant DAILY_NFT_WEIGHT_DEFAULT = 10; //
+    uint256 constant DAILY_NFT_WEIGHT_DEFAULT = 10; // 1
 
-    uint256 constant DEFAULT_POINT_WITHOUT_DECAY_RATE = 1000;
-    uint256 constant DECAY_POINT_DEFAULT = 75; // TODO make configurable
-    uint256 constant DECAY_POINT_WITH_APPRAISAL = 25; // TODO make configurable
+    uint256 constant DEFAULT_POINT_WITHOUT_DECAY_RATE = 1000; // 100%
+    uint256 public DECAY_POINT_DEFAULT = 75; // 7.5%
+    uint256 public DECAY_POINT_WITH_APPRAISAL = 25; // 2.5%
 
     mapping (string => uint256) reactionPoint;
 
@@ -147,6 +146,17 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         );
 
         reactionPoint[_reaction] = _point;
+    }
+
+    // Note needs to be 10x higher then the percentage you are interested in.
+    function updateDecayPoints(uint256 decayPointDefault, uint256 decayPointWithAppraisal) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "GuildNFTStakingWeightV2.updateReactionPoint: Sender must be admin"
+        );
+
+        DECAY_POINT_DEFAULT = decayPointDefault;
+        DECAY_POINT_WITH_APPRAISAL = decayPointWithAppraisal;
     }
 
     function balanceOf(address _owner) external view returns (uint256) {
