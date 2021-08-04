@@ -105,6 +105,35 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
     bool initialised;
 
+    event StakedMembershipToken(
+        address owner,
+        uint256 tokenId
+    );
+
+    event UnstakedMembershipToken(
+        address owner,
+        uint256 tokenId
+    );
+
+    event StakedWhitelistedNFTToken(
+        address owner,
+        address whitelistedNFT,
+        uint256 tokenId
+    );
+    event UnstakedWhitelistedNFTToken(
+        address owner,
+        address whitelistedNFT,
+        uint256 tokenId
+    );
+
+    event WhitelistedNFTAppraisal(
+        address appraiser,
+        uint256 timestamp,
+        string reaction,
+        address whitelistedNFT,
+        uint256 tokenId
+    );
+
     constructor() public {
         startTime = _getNow();
         reactionPoint["Love"] = 30;
@@ -203,6 +232,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         return 1;
     }
 
+    // TODO make these values dynamic
     function _getClapLimit(uint256 _totalSupply, uint256 _balance) internal view returns (uint256) {
         uint256 _percentage = _balance.mul(MULTIPLIER).div(_totalSupply);
 
@@ -492,24 +522,6 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         _updateTodayWeightByReaction(_appraiser, _whitelistedNFT, _tokenId, whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId]);
     }
 
-//    function stakeERC20(address _appraiser, uint256 _amount, uint256 _tokenId) external {
-//        require(_msgSender() == stakingContract, "Sender must stake PODE");
-//
-//        uint256 _currentDay = getCurrentDay();
-//
-//        TokenWeight storage token = tokenWeight[_tokenId];
-//
-//        _updateTodayWeightByReaction(_appraiser, _tokenId, tokenOwner[_tokenId]);
-//    }
-//
-//    function unstakeERC20(address _appraiser, uint256 _amount, uint256 _tokenId) external {
-//        require(_msgSender() == stakingContract, "Sender must stake PODE");
-//
-//        uint256 _currentDay = getCurrentDay();
-//
-//        TokenWeight storage token = tokenWeight[_tokenId];
-//        _updateTodayWeightByReaction(_appraiser, _tokenId, tokenOwner[_tokenId]);
-//    }
 
     function appraise(address _appraiser, uint256 _limitAppraisalCount, address _whitelistedNFT, uint256 _tokenId, string memory _reaction) external {
         require(canAppraise(_msgSender()), "GuildNGTStakingWeightV2.appraise: Sender must stake PODE");
@@ -534,9 +546,45 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         _updateTodayWeightByReaction(_appraiser, _whitelistedNFT, _tokenId, whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId]);
     }
 
-    // TODO
-    // function migrateCurrentStake(uint256 _tokenId, address _tokenOwner, uint256 _primarySalePrice, uint256 stakeTime){
-    //}
+    // TODO unit test this very thoroughly
+     function migrateCurrentStake(uint256 _tokenId, address _tokenOwner, uint256 _primarySalePrice, uint256 stakeDate, uint256 stakeWeight) external {
+         require(
+             accessControls.hasAdminRole(_msgSender()),
+             "GuildNFTStakingWeightV2.migrateCurrentStake: Sender must be admin"
+         );
+         require(tokenOwner[_tokenId] == address(0) || tokenOwner[_tokenId] == _tokenOwner);
+
+         uint256 _currentDay = getCurrentDay();
+
+         // TokenWeight
+         TokenWeight storage token = podeTokenWeight[_tokenId];
+         token.lastWeight = stakeWeight; //  TODO figure this out, because it seems tokens need to carry over alue
+         token.lastUpdateDay = stakeDate;
+
+         tokenOwner[_tokenId] = _tokenOwner;
+
+         // OwnerWeight
+         OwnerWeight storage owner = ownerWeight[_tokenOwner];
+
+         if (owner.stakedNFTCount == 0) {
+             owner.startDay = stakeDate;
+         }
+
+         updateOwnerWeight(_tokenOwner);
+
+         owner.stakedNFTCount = owner.stakedNFTCount.add(1);
+         owner.lastWeight = owner.lastWeight.add(token.lastWeight);
+         owner.lastUpdateDay = _currentDay;
+
+         // GuildWeight
+         updateWeight();
+
+         stakedNFTCount = stakedNFTCount.add(1);
+         totalPodeTokenWeight = totalPodeTokenWeight.add(token.lastWeight);
+         totalGuildWeight = totalGuildWeight.add(token.lastWeight);
+         lastUpdateDay = _currentDay;
+         emit StakedMembershipToken(_tokenOwner, _tokenId);
+    }
 
     function stake(uint256 _tokenId, address _tokenOwner, uint256 _primarySalePrice) external {
         require(_msgSender() == stakingContract, "Sender must be staking contract");
@@ -571,6 +619,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         totalPodeTokenWeight = totalPodeTokenWeight.add(token.lastWeight);
         totalGuildWeight = totalGuildWeight.add(token.lastWeight);
         lastUpdateDay = _currentDay;
+        emit StakedMembershipToken(_tokenOwner, _tokenId);
     }
 
     function unstake(uint256 _tokenId, address _tokenOwner) external {
@@ -601,6 +650,8 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
         delete podeTokenWeight[_tokenId]; // TODO look at this dont think its right action
         delete tokenOwner[_tokenId];
+
+        emit UnstakedMembershipToken(_tokenOwner, _tokenId);
     }
 
     function stakeWhitelistedNFT(address _whitelistedNFT, uint256 _tokenId, address _tokenOwner, uint256 _primarySalePrice) external {
@@ -636,6 +687,8 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         totalWhitelistedNFTTokenWeight = totalWhitelistedNFTTokenWeight.add(token.lastWeight);
         totalGuildWeight = totalGuildWeight.add(token.lastWeight);
         lastUpdateDay = _currentDay;
+
+        emit StakedWhitelistedNFTToken(_tokenOwner, _whitelistedNFT, _tokenId);
     }
 
     function unstakeWhitelistedNFT(address _whitelistedNFT,uint256 _tokenId, address _tokenOwner) external {
@@ -666,6 +719,8 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
         delete whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
         delete whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId];
+
+        emit UnstakedWhitelistedNFTToken(_tokenOwner, _whitelistedNFT, _tokenId);
     }
 
     function _msgSender() internal view returns (address payable sender) {
