@@ -12,6 +12,8 @@ import "./interfaces/IGuildNFTRewards.sol";
 import "./interfaces/IGuildNFTRewardsWhitelisted.sol";
 import "@openzeppelin/contracts/proxy/Initializable.sol";
 
+import "@nomiclabs/buidler/console.sol";
+
 /**
  * @title Digitalax Rewards
  * @dev Calculates the rewards for staking on the Digitalax platform
@@ -483,6 +485,8 @@ abstract contract GuildNFTRewardsV2 is Initializable, BaseRelayRecipient, Reentr
         returns(uint256 rewards)
     {
         rewards = DecoRewards(pool.lastRewardsTime, _getNow());
+        console.log("updating deco rewards");
+        console.log("the rewards are %s", rewards);
         if ( rewards > 0 ) {
             pool.decoRewardsPaid = pool.decoRewardsPaid.add(rewards);
             decoRewardsPaidTotal = decoRewardsPaidTotal.add(rewards);
@@ -496,7 +500,7 @@ abstract contract GuildNFTRewardsV2 is Initializable, BaseRelayRecipient, Reentr
         internal
         returns(uint256 rewards)
     {
-        rewards = WhitelistedNFTRewards(pool.lastRewardsTime, _getNow());
+        rewards = WhitelistedNFTRewards(whitelistedNFTPool.lastRewardsTime, _getNow());
         if ( rewards > 0 ) {
             whitelistedNFTPool.decoRewardsPaid = whitelistedNFTPool.decoRewardsPaid.add(rewards);
             decoRewardsPaidTotal = decoRewardsPaidTotal.add(rewards);

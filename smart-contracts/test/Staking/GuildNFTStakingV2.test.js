@@ -140,7 +140,7 @@ const {
 	  await this.guildNFTRewards.setRewards([3], [FIFTY_TOKENS], {from: admin});
 	  await this.guildNFTRewards.setRewards([4], [TEN_TOKENS], {from: admin});
 	  // The pode rewards and whitelisted rewards are currently 50:50
-	  await this.guildNFTRewards.setWeightPoints(ether('5000000000000000000'), ether('5000000000000000000'), {from: admin});
+	  await this.guildNFTRewards.setWeightPoints(ether('10000000000000000000'), ether('000000000000000000'), {from: admin});
 
 	  await this.guildNftStaking.setRewardsContract(this.guildNFTRewards.address, { from: admin });
 	  await this.guildNftStaking.setTokensClaimable(true, {from: admin});
@@ -240,7 +240,7 @@ const {
 		const ownerWeight1 = await this.stakingWeight.getOwnerWeight(staker);
 		const totalWeight1 = await this.stakingWeight.getTotalWeight();
 		expect(ownerWeight1).to.be.bignumber.equal("100000");
-		expect(totalWeight1).to.be.bignumber.equal("0");
+		expect(totalWeight1).to.be.bignumber.equal("100000");
 
 		// await time.increase(time.duration.seconds(1000000));
 	  await this.guildNftStaking.unstake(TOKEN_1, {from: staker});
@@ -407,12 +407,38 @@ const {
 	console.log('await this.guildNFTRewards.getDecoDailyAPY()');
 	console.log(await this.guildNFTRewards.getDecoDailyAPY());
 
+	console.log("staker1");
+	console.log(staker);
+	console.log("staker2");
+	console.log(staker2);
+	console.log("weights");
+	console.log((await this.stakingWeight.getOwnerWeight(staker)).toString());
+	console.log((await this.stakingWeight.getOwnerWeight(staker2)).toString());
+	console.log((await this.stakingWeight.getTotalWeight()).toString());
+
 	await this.guildNftStaking.unstakeBatch([TOKEN_1,TOKEN_2], {from: staker});
-	await this.guildNftStaking.unstakeBatch([TOKEN_1,TOKEN_2], {from: staker2});
+
+		console.log("weights");
+		console.log((await this.stakingWeight.getOwnerWeight(staker)).toString());
+		console.log((await this.stakingWeight.getOwnerWeight(staker2)).toString());
+		console.log((await this.stakingWeight.getTotalWeight()).toString());
+
+	await this.guildNftStaking.unstakeBatch([TOKEN_3, TOKEN_4], {from: staker2});
 
 
 	const finalDecoBalance = await this.decoToken.balanceOf(staker);
 	const finalDecoBalance2 = await this.decoToken.balanceOf(staker2);
+
+
+	console.log('initial deco balance 1');
+	console.log(initialDecoBalance);
+	console.log('initial deco balance 2');
+	console.log(initialDecoBalance2);
+
+	console.log('final deco balance 1');
+	console.log(finalDecoBalance);
+	console.log('final deco balance 2');
+	console.log(finalDecoBalance2);
 
 	expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(HUNDRED_TOKENS);
 	expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(HUNDRED_TOKENS);
