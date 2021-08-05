@@ -130,7 +130,8 @@ const {
 
 	  await this.accessControls.addMinterRole(this.guildNFTRewards.address, {from: admin});
 
-	  await this.guildNFTRewards.setNftStaking(this.guildNftStaking.address, {from: admin});
+	  await this.guildNFTRewards.setPodeNftStaking(this.guildNftStaking.address, {from: admin});
+	  await this.guildNFTRewards.setWhitelistedNftStaking(this.guildNftStaking.address, {from: admin});
 
 	  await this.decoToken.approve(this.guildNFTRewards.address, TWO_THOUSAND_TOKENS, {from: admin});
 
@@ -138,7 +139,8 @@ const {
 	  await this.guildNFTRewards.setRewards([2], [HUNDRED_TOKENS], {from: admin});
 	  await this.guildNFTRewards.setRewards([3], [FIFTY_TOKENS], {from: admin});
 	  await this.guildNFTRewards.setRewards([4], [TEN_TOKENS], {from: admin});
-	  await this.guildNFTRewards.setWeightPoints(ether(5000000000000000000), ether(5000000000000000000), {from: admin});
+	  // The pode rewards and whitelisted rewards are currently 50:50
+	  await this.guildNFTRewards.setWeightPoints(ether('5000000000000000000'), ether('5000000000000000000'), {from: admin});
 
 	  await this.guildNftStaking.setRewardsContract(this.guildNFTRewards.address, { from: admin });
 	  await this.guildNftStaking.setTokensClaimable(true, {from: admin});
