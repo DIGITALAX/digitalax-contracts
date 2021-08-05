@@ -14,8 +14,9 @@ const {
   const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
   const MockDECO = artifacts.require('MockDECO');
   const WethToken = artifacts.require('WethToken');
-  const GuildNFTRewardsMock = artifacts.require('GuildNFTRewardsMock');
+  const GuildNFTRewardsMock = artifacts.require('GuildNFTRewardsV2Mock');
   const GuildNFTStaking = artifacts.require('GuildNFTStakingMock');
+  const GuildWhitelistedNFTStaking = artifacts.require('GuildWhitelistedNFTStakingMock');
   const GuildNFTStakingWeight = artifacts.require('GuildNFTStakingWeightV2Mock');
   const DecoOracle = artifacts.require('DecoOracle');
   const PodeNFTv2 = artifacts.require('PodeNFTv2');
@@ -102,18 +103,28 @@ const {
 		  constants.ZERO_ADDRESS
 	  );
 
-	  await this.stakingWeight.init(this.guildNftStaking.address, this.decoToken.address);
+	  this.guildWhitelistedNftStaking = await GuildWhitelistedNFTStaking.new();
+	  await this.guildWhitelistedNftStaking.initStaking(
+		  this.decoToken.address,
+		  this.accessControls.address,
+		  this.stakingWeight.address,
+		  constants.ZERO_ADDRESS
+	  );
+
+	  await this.stakingWeight.init(this.guildNftStaking.address, this.guildWhitelistedNftStaking.address, this.decoToken.address, this.accessControls.address);
 
 	  await this.guildNftStaking.setTokensClaimable(true, {from: admin});
 
-	  this.guildNFTRewards = await GuildNFTRewardsMock.new(
+	  this.guildNFTRewards = await GuildNFTRewardsMock.new();
+
+	  await this.guildNFTRewards.initialize(
 		  this.decoToken.address,
 		  this.accessControls.address,
 		  this.guildNftStaking.address,
+		  this.guildWhitelistedNftStaking.address,
 		  this.oracle.address,
 		  constants.ZERO_ADDRESS,
-		  0,
-		  0,
+		  0
 	  );
 
 
@@ -127,9 +138,15 @@ const {
 	  await this.guildNFTRewards.setRewards([2], [HUNDRED_TOKENS], {from: admin});
 	  await this.guildNFTRewards.setRewards([3], [FIFTY_TOKENS], {from: admin});
 	  await this.guildNFTRewards.setRewards([4], [TEN_TOKENS], {from: admin});
+	  await this.guildNFTRewards.setWeightPoints(ether(5000000000000000000), ether(5000000000000000000), {from: admin});
 
 	  await this.guildNftStaking.setRewardsContract(this.guildNFTRewards.address, { from: admin });
 	  await this.guildNftStaking.setTokensClaimable(true, {from: admin});
+
+	  await this.guildWhitelistedNftStaking.setRewardsContract(this.guildNFTRewards.address, { from: admin });
+	  await this.guildWhitelistedNftStaking.setTokensClaimable(true, {from: admin});
+
+	  // what is this?
 	  await this.decoToken.approve(this.guildNftStaking.address, ONE_THOUSAND_TOKENS, { from: staker });
 	  await this.decoToken.approve(this.guildNftStaking.address, ONE_THOUSAND_TOKENS, { from: staker2 });
 	});
