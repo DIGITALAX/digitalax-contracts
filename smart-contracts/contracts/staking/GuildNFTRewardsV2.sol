@@ -31,7 +31,7 @@ interface DECO is IERC20 {
     function mint(address tokenOwner, uint tokens) external returns (bool);
 }
 
-abstract contract GuildNFTRewards is Initializable, BaseRelayRecipient, ReentrancyGuard, IGuildNFTRewards, IGuildNFTRewardsWhitelisted {
+abstract contract GuildNFTRewardsV2 is Initializable, BaseRelayRecipient, ReentrancyGuard, IGuildNFTRewards, IGuildNFTRewardsWhitelisted {
     using SafeMath for uint256;
 
     /* ========== Variables ========== */
