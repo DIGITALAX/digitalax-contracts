@@ -4,6 +4,8 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "../DigitalaxAccessControls.sol";
+//import "./interfaces/IGuildNFTStakingWeight.sol";
+//import "./interfaces/IGuildNFTStakingWeightWhitelisted.sol";
 
 /**
  * @title Digitalax Guild NFT Staking Weight
@@ -220,7 +222,8 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         return totalWhitelistedNFTTokenWeight;
     }
 
-    function getTotalPodeTokenWeight() external view returns (uint256) {
+    // getTotalPodeTokenWeight
+    function getTotalWeight() external view returns (uint256) {
         return totalPodeTokenWeight;
     }
 
