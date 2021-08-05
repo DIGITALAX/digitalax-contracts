@@ -5,7 +5,7 @@ pragma solidity 0.6.12;
 import "../oracle/IDigitalaxMonaOracle.sol";
 import "../staking/GuildNFTRewardsV2.sol";
 
-contract GuildNFTRewardsMock is GuildNFTRewardsV2 {
+contract GuildNFTRewardsV2Mock is GuildNFTRewardsV2 {
     uint256 public nowOverride;
 
     constructor(
