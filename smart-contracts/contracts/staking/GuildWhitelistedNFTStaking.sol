@@ -81,6 +81,8 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     // Mapping from address, token ID to owner address
     mapping (address => mapping(uint256 => address)) public tokenOwner;
 
+    mapping (address => mapping(uint256 => address)) public approvedParty;
+
     uint256 public accumulatedRewards;
 
     /// @notice mapping of a staker to its current properties
@@ -322,14 +324,26 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         emit Staked(_user, _whitelistedNFT, _tokenId);
     }
 
-    /// @notice Unstake NFTs.
-    function unstake(address _whitelistedNFT, uint256 _tokenId) external {
+    /// @notice This is to set an external approved party who can unstake the nft in case the original address is broken.
+    /// @notice To unset, set again with own address or 0x000...000
+    function setApprovedParty(address _whitelistedNFT, uint256 _tokenId, address _approvedParty) external {
         require(
             tokenOwner[_whitelistedNFT][_tokenId] == _msgSender(),
-            "GuildWhitelistedNFTStaking._unstake: Sender must have staked tokenID"
+            "GuildWhitelistedNFTStaking.setApprovedParty: Sender must have staked tokenID"
+        );
+
+        approvedParty[_whitelistedNFT][_tokenId] = _approvedParty;
+    }
+
+    /// @notice Unstake NFTs.
+    function unstake(address _whitelistedNFT, uint256 _tokenId) external {
+        bool isApprovedParty = approvedParty[_whitelistedNFT][_tokenId] == _msgSender();
+        require(
+            (tokenOwner[_whitelistedNFT][_tokenId] == _msgSender()) || isApprovedParty,
+            "GuildWhitelistedNFTStaking._unstake: Sender must have staked tokenID or be approved party"
         );
         claimReward(_msgSender());
-        _unstake(_msgSender(), _whitelistedNFT, _tokenId);
+        _unstake(_msgSender(), _whitelistedNFT, _tokenId, isApprovedParty);
     }
 
     /// @notice Stake multiple DECO NFTs and claim reward tokens.
@@ -337,8 +351,11 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         require(_whitelistedNFTs.length == _tokenIds.length, "GuildWhitelistedNFTStaking.unstakeBatch: Please pass equal length arrays");
         claimReward(_msgSender());
         for (uint i = 0; i < _tokenIds.length; i++) {
-            if (tokenOwner[_whitelistedNFTs[i]][_tokenIds[i]] == _msgSender()) {
-                _unstake(_msgSender(), _whitelistedNFTs[i], _tokenIds[i]);
+            bool isApprovedParty = approvedParty[_whitelistedNFT][_tokenId] == _msgSender();
+            if (
+                (tokenOwner[_whitelistedNFT][_tokenId] == _msgSender())
+                || isApprovedParty) {
+                _unstake(_msgSender(), _whitelistedNFTs[i], _tokenIds[i], isApprovedParty);
             }
         }
     }
@@ -349,7 +366,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
      * @dev Balance of stakers are updated as they unstake the nfts based on ether price
     */
 
-    function _unstake(address _user, address _whitelistedNFT, uint256 _tokenId) internal {
+    function _unstake(address _user, address _whitelistedNFT, uint256 _tokenId, bool _isApprovedParty) internal {
         Staker storage staker = stakers[_user];
 
         whitelistedNFTStakedTotal = whitelistedNFTStakedTotal.sub(1);
@@ -381,20 +398,45 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         nftStakeRecords[_whitelistedNFT][_tokenId][numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId].sub(1)].nftUnstakeTime = _getNow();
 
         IGuildNFTStakingWeightWhitelisted(address(weightContract)).unstake(_whitelistedNFT, _tokenId, _msgSender());
-        IERC721(_whitelistedNFT).safeTransferFrom(address(this), _user, _tokenId);
 
+        if(_isApprovedParty){
+            IERC721(_whitelistedNFT).safeTransferFrom(address(this), approvedParty[_whitelistedNFT][_tokenId], _tokenId);
+        } else {
+            IERC721(_whitelistedNFT).safeTransferFrom(address(this), _user, _tokenId);
+        }
 
         emit Unstaked(_user, _whitelistedNFT, _tokenId);
     }
 
     // Unstake without caring about rewards. EMERGENCY ONLY.
     function emergencyUnstake(address _whitelistedNFT, uint256 _tokenId) public {
+        bool isApprovedParty = approvedParty[_whitelistedNFT][_tokenId] == _msgSender();
         require(
-            tokenOwner[_whitelistedNFT][_tokenId] == _msgSender(),
-            "GuildWhitelistedNFTStaking._unstake: Sender must have staked tokenID"
+            (tokenOwner[_whitelistedNFT][_tokenId] == _msgSender()) || isApprovedParty,
+            "GuildWhitelistedNFTStaking.emergencyUnstake: Sender must have staked tokenID or be approved party"
         );
-        _unstake(_msgSender(),_whitelistedNFT, _tokenId);
+        _unstake(_msgSender(),_whitelistedNFT, _tokenId, isApprovedParty);
         emit EmergencyUnstake(_msgSender(), _whitelistedNFT, _tokenId);
+    }
+
+    // Only to be used in the maximum emergency case where an NFT is completely stuck, this could break the rest of the contract.
+    // If this is used, should likely just refund every user their NFT as rewards will not be accurate.
+    function adminEmergencySafeUnstake(address _whitelistedNFT, uint256 _tokenId) public {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "GuildWhitelistedNFTStaking.adminEmergencyUnstake: Sender must be admin"
+        );
+        IERC721(_whitelistedNFT).safeTransferFrom(address(this), tokenOwner[_whitelistedNFT][_tokenId], _tokenId);
+    }
+
+    // Only to be used in the maximum emergency case where an NFT is completely stuck, this could break the rest of the contract.
+    // If this is used, should likely just refund every user their NFT as rewards will not be accurate.
+    function adminEmergencyUnstake(address _whitelistedNFT, uint256 _tokenId) public {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "GuildWhitelistedNFTStaking.adminEmergencyUnstake: Sender must be admin"
+        );
+        IERC721(_whitelistedNFT).transferFrom(address(this), tokenOwner[_whitelistedNFT][_tokenId], _tokenId);
     }
 
 
