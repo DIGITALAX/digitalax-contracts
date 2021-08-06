@@ -319,7 +319,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         nftStakeRecords[_whitelistedNFT][_tokenId][numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId]].nftStakeTime = _getNow();
         numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId] = numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId].add(1);
 
-        IGuildNFTStakingWeightWhitelisted(address(weightContract)).stake(_whitelistedNFT, _tokenId, _msgSender());
+        IGuildNFTStakingWeightWhitelisted(address(weightContract)).stakeWhitelistedNFT(_whitelistedNFT, _tokenId, _msgSender());
 
         emit Staked(_user, _whitelistedNFT, _tokenId);
     }
@@ -397,7 +397,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         nftIsStaked[_whitelistedNFT][_tokenId] = false;
         nftStakeRecords[_whitelistedNFT][_tokenId][numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId].sub(1)].nftUnstakeTime = _getNow();
 
-        IGuildNFTStakingWeightWhitelisted(address(weightContract)).unstake(_whitelistedNFT, _tokenId, _msgSender());
+        IGuildNFTStakingWeightWhitelisted(address(weightContract)).unstakeWhitelistedNFT(_whitelistedNFT, _tokenId, _msgSender());
 
         if(_isApprovedParty){
             IERC721(_whitelistedNFT).safeTransferFrom(address(this), approvedParty[_whitelistedNFT][_tokenId], _tokenId);
@@ -454,14 +454,15 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         totalRewards = totalRewards.add(newRewards);
         totalRoundRewards = totalRoundRewards.add(newRewards);
 
-        weightContract.updateOwnerWeight(_user);
-        uint256 totalWeight = weightContract.getTotalWeight();
+        IGuildNFTStakingWeightWhitelisted(address(weightContract)).updateWhitelistedNFTOwnerWeight(_user);
+        // weightContract.updateOwnerWeight(_user); // TODO figure out if I need to do something here
+        uint256 totalWeight = IGuildNFTStakingWeightWhitelisted(address(weightContract)).getTotalWhitelistedNFTTokenWeight();
 
         if (totalWeight == 0) {
             return;
         }
 
-        uint256 ownerWeight = weightContract.getOwnerWeight(_user);
+        uint256 ownerWeight = IGuildNFTStakingWeightWhitelisted(address(weightContract)).getWhitelistedNFTOwnerWeight(_user);
 
         lastUpdateTime = _getNow();
 
