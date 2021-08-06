@@ -351,9 +351,9 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         require(_whitelistedNFTs.length == _tokenIds.length, "GuildWhitelistedNFTStaking.unstakeBatch: Please pass equal length arrays");
         claimReward(_msgSender());
         for (uint i = 0; i < _tokenIds.length; i++) {
-            bool isApprovedParty = approvedParty[_whitelistedNFT][_tokenId] == _msgSender();
+            bool isApprovedParty = approvedParty[_whitelistedNFTs[i]][_tokenIds[i]] == _msgSender();
             if (
-                (tokenOwner[_whitelistedNFT][_tokenId] == _msgSender())
+                (tokenOwner[_whitelistedNFTs[i]][_tokenIds[i]] == _msgSender())
                 || isApprovedParty) {
                 _unstake(_msgSender(), _whitelistedNFTs[i], _tokenIds[i], isApprovedParty);
             }
