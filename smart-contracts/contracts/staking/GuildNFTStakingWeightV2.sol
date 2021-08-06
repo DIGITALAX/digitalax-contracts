@@ -58,24 +58,33 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
     struct OwnerWeight {
         uint256 lastWeight;
-        uint256 totalAppraisals;
+        uint256 lastGuildMemberWeight; // TODO
+
+        uint256 totalAppraisals; // TODO
+
         uint256 stakedNFTCount;
         uint256 stakedWhitelistedNFTCount;
-        mapping (uint256 => uint256) dailyClapPowerLevel;
-        mapping (uint256 => uint256) dailyWeight;
-        mapping (uint256 => uint256) dailyAppraisedTokenCount;
+
+        mapping (uint256 => uint256) dailyWeight; // whitelisted nfts
+        mapping (uint256 => uint256) dailyGuildMemberWeight; // guild member weight
+
         uint256 startDay;
         uint256 lastUpdateDay;
     }
 
-    struct AppraiserWeight {
+    struct AppraiserStats {
+        uint256 totalTimesAppraisedOn; // TODO
+
         uint256 totalReactionCount;
         mapping (uint256 => uint256) dailyReactionCount;
-        mapping (uint256 => uint256) dailyWeight;
         mapping (uint256 => uint256) dailyClapCount;
         mapping (uint256 => uint256) dailyClapLimit;
 
-        mapping (uint256 => mapping (uint256 => TokenReaction)) dailyTokenReaction;
+        mapping (uint256 => mapping (address => mapping(uint256 => TokenReaction))) dailyTokenReaction;
+
+        uint256 totalGuildMemberReactionCount;
+        mapping (uint256 => uint256) dailyGuildMemberReactionCount;
+        mapping (uint256 => mapping (address => TokenReaction)) dailyGuildMemberReaction;
     }
 
 //    struct DailyReaction {
@@ -86,20 +95,22 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
     uint256 public startTime;
 
     uint256 public stakedNFTCount;
-    uint256 public totalPodeTokenWeight;
 
     uint256 public stakedWhitelistedNFTCount;
     uint256 public totalWhitelistedNFTTokenWeight;
 
-    uint256 public totalAppraiserWeight;
     uint256 public totalGuildWeight;
 
     mapping (uint256 => address) public tokenOwner;
     mapping (address => mapping(uint256 => address)) public whitelistedNFTTokenOwner;
+
     mapping (address => mapping(uint256 => TokenWeight)) public whitelistedNFTTokenWeight;
     mapping(uint256 => TokenWeight) public podeTokenWeight;
+    mapping(address => TokenWeight) public guildMemberWeight;
+
     mapping (address => OwnerWeight) public ownerWeight;
-    mapping (address => AppraiserWeight) public appraiserWeight;
+
+    mapping (address => AppraiserStats) public appraiserStats;
     mapping (uint256 => uint256) dailyWeight;
 
 
@@ -222,12 +233,15 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         return totalWhitelistedNFTTokenWeight;
     }
 
-    // getTotalPodeTokenWeight
     function getTotalWeight() external view returns (uint256) {
-        return totalPodeTokenWeight;
+        return totalGuildWeight;
     }
 
     function getOwnerWeight(address _tokenOwner) external view returns (uint256) {
+        return ownerWeight[_tokenOwner].lastGuildMemberWeight;
+    }
+
+    function getWhitelistedNFTOwnerWeight(address _tokenOwner) external view returns (uint256) {
         return ownerWeight[_tokenOwner].lastWeight;
     }
 
@@ -294,26 +308,44 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         return result;
     }
 
-    function calcNewTotalNFTWeight() internal view returns (uint256) {
-        return 0;
+    function _getGuildMemberReactionPoints(address _guildMember, uint256 _currentDay) internal view returns (uint256) {
+        TokenReaction storage _reaction = guildMemberWeight[_guildMember].dailyTokenReaction[_currentDay];
+
+        uint256 result = 0;
+
+//        result = result.add(_reaction.metaverseCount.mul(reactionPoint["Metaverse"]));
+//        result = result.add(_reaction.shareCount.mul(reactionPoint["Share"]));
+//        result = result.add(_reaction.favoriteCount.mul(reactionPoint["Favorite"]));
+//        result = result.add(_reaction.followCount.mul(reactionPoint["Follow"]));
+//        uint256 _totalSupply = guildNativeERC20Token.totalSupply();
+//        uint256 erc20Balance = guildNativeERC20Token.balanceOf(_msgSender());
+//        uint256 _clapLimit = _getClapLimit(_totalSupply, erc20Balance);
+//        result = result.add(_reaction.clapCount.mul(_getPowerLevelByClapLimit(_clapLimit)));
+//        result = result.add(_reaction.clapCount);       // stake points = clap limit per day
+
+        result = result.add(_reaction.appraisalCount["Love"].mul(reactionPoint["Love"]));
+        result = result.add(_reaction.appraisalCount["Like"].mul(reactionPoint["Like"]));
+        result = result.add(_reaction.appraisalCount["Fire"].mul(reactionPoint["Fire"]));
+        result = result.add(_reaction.appraisalCount["Sad"].mul(reactionPoint["Sad"]));
+        result = result.add(_reaction.appraisalCount["Angry"].mul(reactionPoint["Angry"]));
+        result = result.add(_reaction.appraisalCount["Novel"].mul(reactionPoint["Novel"]));
+
+        return result;
     }
 
-    function calcNewTotalAppraiserWeight() internal view returns (uint256) {
-        return 0;
-    }
+//    function calcNewTotalNFTWeight() internal view returns (uint256) {
+//        uint256 _currentDay = getCurrentDay();
+//
+//        return totalWhitelistedNFTTokenWeight;
+//    }
+
 
     function calcNewWeight() public view returns (uint256) {
         uint256 _currentDay = getCurrentDay();
 
-        if (_currentDay <= lastUpdateDay || stakedNFTCount == 0) {
-            return totalGuildWeight;
-        }
-
-        uint256 _nft = calcNewTotalNFTWeight();
-        uint256 _appraiser = calcNewTotalAppraiserWeight();
-
-        return _nft.add(_appraiser);
+        return totalGuildWeight; // Todo analyze if there is anything here more complex
     }
+
 
     function updateWeight() public returns (bool) {
         uint256 _currentDay = getCurrentDay();
@@ -322,7 +354,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
             return false;
         }
 
-        totalGuildWeight = calcNewWeight();
+       // totalGuildWeight = calcNewWeight();
 
         lastUpdateDay = _currentDay;
 
@@ -341,7 +373,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         uint256 _newWeight = _owner.dailyWeight[_owner.lastUpdateDay];
 
         for (uint256 i = _owner.lastUpdateDay + 1; i < _currentDay; i++) {
-            _newWeight = _newWeight.add(DAILY_NFT_WEIGHT_DEFAULT * MULTIPLIER * _owner.stakedNFTCount)
+            _newWeight = _newWeight.add(DAILY_NFT_WEIGHT_DEFAULT * MULTIPLIER * _owner.stakedWhitelistedNFTCount)
                                     .mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT)        // decay rate: 7.5%
                                     .div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
 
@@ -360,7 +392,45 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
             return false;
         }
 
-        owner.lastWeight = calcNewOwnerWeight(_tokenOwner);
+        owner.lastWeight = calcNewOwnerWeight(_tokenOwner); // total weight?
+
+        owner.lastUpdateDay = _currentDay;
+
+        return true;
+    }
+
+    function calcNewGuildMemberWeight(address _tokenOwner) public view returns (uint256) {
+        uint256 _currentDay = getCurrentDay();
+
+        OwnerWeight storage _owner = ownerWeight[_tokenOwner];
+
+        if (_owner.lastUpdateDay >= _currentDay) {
+            return _owner.lastWeight;
+        }
+
+        uint256 _newWeight = _owner.dailyGuildMemberWeight[_owner.lastUpdateDay];
+
+        for (uint256 i = _owner.lastUpdateDay + 1; i < _currentDay; i++) {
+            _newWeight = _newWeight.add(DAILY_NFT_WEIGHT_DEFAULT * MULTIPLIER * _owner.stakedNFTCount)
+                                    .mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT)        // decay rate: 7.5%
+                                    .div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
+
+        }
+
+        return _newWeight;
+    }
+
+    function updateGuildMemberWeight(address _tokenOwner) public returns (bool) {
+        updateWeight();
+        OwnerWeight storage owner = ownerWeight[_tokenOwner];
+
+        uint256 _currentDay = getCurrentDay();
+
+        if (_currentDay <= owner.lastUpdateDay) {
+            return false;
+        }
+
+        owner.lastWeight = calcNewGuildMemberWeight(_tokenOwner); // total weight?
 
         owner.lastUpdateDay = _currentDay;
 
@@ -382,6 +452,29 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         uint256 _newWeight = _token.dailyWeight[_token.lastUpdateDay];
 
         for (uint256 i = _token.lastUpdateDay + 1; i < _currentDay; i++) {
+            _newWeight = _newWeight.add(DAILY_NFT_WEIGHT_DEFAULT * MULTIPLIER)
+                                    .mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT)        // decay rate: 7.5%
+                                    .div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
+        }
+
+        return _newWeight;
+    }
+
+    /**
+     * @dev Get yesterday token weight
+     */
+    function _initGuildMemberWeight(address _guildMember) internal view returns (uint256) {
+        uint256 _currentDay = getCurrentDay();
+
+        TokenWeight storage _guildMemberWeight = guildMemberWeight[_guildMember];
+
+        if (_guildMemberWeight.lastUpdateDay >= _currentDay) {
+            return _guildMemberWeight.lastWeight;
+        }
+
+        uint256 _newWeight = _guildMemberWeight.dailyWeight[_guildMemberWeight.lastUpdateDay];
+
+        for (uint256 i = _guildMemberWeight.lastUpdateDay + 1; i < _currentDay; i++) {
             _newWeight = _newWeight.add(DAILY_NFT_WEIGHT_DEFAULT * MULTIPLIER)
                                     .mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT)        // decay rate: 7.5%
                                     .div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
@@ -415,6 +508,31 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         }
     }
 
+    /**
+     * @dev Calc today token weight by yesterday weight & today reactions
+     */
+    function _calcGuildMemberWeight(address _guildMember) internal returns (uint256) {
+        uint256 _currentDay = getCurrentDay();
+        TokenWeight memory _guildMemberWeight = guildMemberWeight[_guildMember];
+
+        if (_currentDay < _guildMemberWeight.lastUpdateDay) {
+            return _guildMemberWeight.lastWeight;
+        }
+
+        uint256 _yesterdayWeight = _initGuildMemberWeight(_guildMember);
+
+        uint256 _currentDayReactionPoint = _getGuildMemberReactionPoints(_guildMember, _currentDay);
+
+        if (_currentDayReactionPoint > 0) {     // 2.5%
+            return _yesterdayWeight.add(_currentDayReactionPoint.mul(MULTIPLIER))
+                                    .mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_WITH_APPRAISAL)
+                                    .div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
+        } else {                                // 7.5%
+            return _yesterdayWeight.mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT)
+                                    .div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
+        }
+    }
+
     function _updateTodayWeightByReaction(address _appraiser, address _whitelistedNFT, uint256 _tokenId, address _tokenOwner) internal {
         uint256 _currentDay = getCurrentDay();
 
@@ -437,20 +555,42 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         lastUpdateDay = _currentDay;
     }
 
+    function _updateTodayGuildMemberWeightByReaction(address _appraiser, address _guildMember) internal {
+        uint256 _currentDay = getCurrentDay();
+
+        TokenWeight storage _guildMemberWeight = guildMemberWeight[_guildMember];
+
+        _guildMemberWeight.dailyWeight[_currentDay] = _calcGuildMemberWeight(_guildMember);
+        _guildMemberWeight.lastUpdateDay = _currentDay;
+
+        // Owner
+        OwnerWeight storage owner = ownerWeight[_guildMember];
+        owner.dailyGuildMemberWeight[_currentDay] = owner.dailyGuildMemberWeight[_currentDay].sub(owner.lastGuildMemberWeight)
+                                                                    .add(_guildMemberWeight.dailyWeight[_currentDay]);
+
+        totalGuildWeight = totalGuildWeight.sub(owner.lastGuildMemberWeight)
+                                        .add(owner.dailyGuildMemberWeight[_currentDay]);
+
+        _guildMemberWeight.lastWeight = _guildMemberWeight.dailyWeight[_currentDay];
+        owner.lastGuildMemberWeight = owner.dailyGuildMemberWeight[_currentDay];
+        owner.lastUpdateDay = _currentDay;
+        lastUpdateDay = _currentDay;
+    }
+
     function favorite(address _appraiser, address _whitelistedNFT, uint256 _tokenId) external {
-        require(canAppraise(_msgSender()), "GuildNGTStakingWeightV2.favorite: Sender must stake PODE");
+        require(canAppraise(_msgSender()), "GuildNFTStakingWeightV2.favorite: Sender must stake PODE");
 
         uint256 _currentDay = getCurrentDay();
 
-        AppraiserWeight storage appraiser = appraiserWeight[_appraiser];
+        AppraiserStats storage appraiser = appraiserStats[_appraiser];
 
         require(
-            appraiser.dailyTokenReaction[_currentDay][_tokenId].favoriteCount == 0,
+            appraiser.dailyTokenReaction[_currentDay][_whitelistedNFT][_tokenId].favoriteCount == 0,
             "WeightingContract.favorite: Members can fevorite an NFT once per day."
         );
 
         // Appraiser
-        appraiser.dailyTokenReaction[_currentDay][_tokenId].favoriteCount = 1;
+        appraiser.dailyTokenReaction[_currentDay][_whitelistedNFT][_tokenId].favoriteCount = 1;
 
         // Token
         TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
@@ -460,19 +600,19 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
     }
 
     function follow(address _appraiser, address _whitelistedNFT, uint256 _tokenId) external {
-        require(canAppraise(_msgSender()), "GuildNGTStakingWeightV2.follow: Sender must stake PODE");
+        require(canAppraise(_msgSender()), "GuildNFTStakingWeightV2.follow: Sender must stake PODE");
 
         uint256 _currentDay = getCurrentDay();
 
-        AppraiserWeight storage appraiser = appraiserWeight[_appraiser];
+        AppraiserStats storage appraiser = appraiserStats[_appraiser];
 
         require(
-            appraiser.dailyTokenReaction[_currentDay][_tokenId].followCount == 0,
+            appraiser.dailyTokenReaction[_currentDay][_whitelistedNFT][_tokenId].followCount == 0,
             "WeightingContract.follow: Members can follow an NFT once per day."
         );
 
         // Appraiser
-        appraiser.dailyTokenReaction[_currentDay][_tokenId].followCount = 1;
+        appraiser.dailyTokenReaction[_currentDay][_whitelistedNFT][_tokenId].followCount = 1;
 
         // Token
         TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
@@ -482,19 +622,19 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
     }
 
     function share(address _appraiser, address _whitelistedNFT, uint256 _tokenId) external {
-        require(canAppraise(_msgSender()), "GuildNGTStakingWeightV2.share: Sender must stake PODE");
+        require(canAppraise(_msgSender()), "GuildNFTStakingWeightV2.share: Sender must stake PODE");
 
         uint256 _currentDay = getCurrentDay();
 
-        AppraiserWeight storage appraiser = appraiserWeight[_appraiser];
+        AppraiserStats storage appraiser = appraiserStats[_appraiser];
 
         require(
-            appraiser.dailyTokenReaction[_currentDay][_tokenId].shareCount == 0,
+            appraiser.dailyTokenReaction[_currentDay][_whitelistedNFT][_tokenId].shareCount == 0,
             "WeightingContract.share: Members can share an NFT once per day."
         );
 
         // Appraiser
-        appraiser.dailyTokenReaction[_currentDay][_tokenId].shareCount = 1;
+        appraiser.dailyTokenReaction[_currentDay][_whitelistedNFT][_tokenId].shareCount = 1;
 
         // Token
         TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
@@ -504,19 +644,19 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
     }
 
     function metaverse(address _appraiser, address _whitelistedNFT, uint256 _tokenId) external {
-        require(canAppraise(_msgSender()), "GuildNGTStakingWeightV2.metaverse: Sender must stake PODE");
+        require(canAppraise(_msgSender()), "GuildNFTStakingWeightV2.metaverse: Sender must stake PODE");
 
         uint256 _currentDay = getCurrentDay();
 
-        AppraiserWeight storage appraiser = appraiserWeight[_appraiser];
+        AppraiserStats storage appraiser = appraiserStats[_appraiser];
 
         require(
-            appraiser.dailyTokenReaction[_currentDay][_tokenId].metaverseCount == 0,
+            appraiser.dailyTokenReaction[_currentDay][_whitelistedNFT][_tokenId].metaverseCount == 0,
             "WeightingContract.metaverse: Members can do this an NFT once per day."
         );
 
         // Appraiser
-        appraiser.dailyTokenReaction[_currentDay][_tokenId].metaverseCount = 1;
+        appraiser.dailyTokenReaction[_currentDay][_whitelistedNFT][_tokenId].metaverseCount = 1;
 
         // Token
         TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
@@ -526,19 +666,19 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
     }
 
 
-    function appraise(address _appraiser, uint256 _limitAppraisalCount, address _whitelistedNFT, uint256 _tokenId, string memory _reaction) external {
-        require(canAppraise(_msgSender()), "GuildNGTStakingWeightV2.appraise: Sender must stake PODE");
+    function appraiseWhitelistedNFT(address _appraiser, uint256 _limitAppraisalCount, address _whitelistedNFT, uint256 _tokenId, string memory _reaction) external {
+        require(canAppraise(_msgSender()), "GuildNFTStakingWeightV2.appraise: Sender must stake PODE");
 
 
         uint256 _currentDay = getCurrentDay();
-        AppraiserWeight storage appraiser = appraiserWeight[_appraiser];
+        AppraiserStats storage appraiser = appraiserStats[_appraiser];
 
         require(
             appraiser.dailyReactionCount[_currentDay] < _limitAppraisalCount,
             "WeightingContract.appraise: Limit appraisal count per day"
         );
 
-        // AppraiserWeight
+        // AppraiserStats
         appraiser.dailyReactionCount[_currentDay] = appraiser.dailyReactionCount[_currentDay] + 1;
         appraiser.totalReactionCount = appraiser.totalReactionCount + 1;
 
@@ -549,20 +689,47 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         _updateTodayWeightByReaction(_appraiser, _whitelistedNFT, _tokenId, whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId]);
     }
 
+    function appraiseGuildMember(address _appraiser, uint256 _limitAppraisalCount, address _guildMember, string memory _reaction) external {
+        require(canAppraise(_msgSender()), "GuildNFTStakingWeightV2.appraise: Sender must stake PODE");
+
+
+        uint256 _currentDay = getCurrentDay();
+        AppraiserStats storage appraiser = appraiserStats[_appraiser];
+
+        require(
+            appraiser.dailyGuildMemberReactionCount[_currentDay] < _limitAppraisalCount,
+            "WeightingContract.appraise: Limit appraisal count per day"
+        );
+
+        // AppraiserStats
+        appraiser.dailyGuildMemberReactionCount[_currentDay] = appraiser.dailyGuildMemberReactionCount[_currentDay] + 1;
+        appraiser.totalGuildMemberReactionCount = appraiser.totalGuildMemberReactionCount + 1;
+
+        // Token
+        TokenWeight storage _guildMemberWeight = guildMemberWeight[_guildMember];
+        _guildMemberWeight.dailyTokenReaction[_currentDay].appraisalCount[_reaction] = _guildMemberWeight.dailyTokenReaction[_currentDay].appraisalCount[_reaction].add(1);
+
+        _updateTodayGuildMemberWeightByReaction(_appraiser, _guildMember);
+    }
+
     // TODO unit test this very thoroughly
      function migrateCurrentStake(uint256 _tokenId, address _tokenOwner, uint256 _primarySalePrice, uint256 stakeDate, uint256 stakeWeight) external {
          require(
              accessControls.hasAdminRole(_msgSender()),
              "GuildNFTStakingWeightV2.migrateCurrentStake: Sender must be admin"
          );
+
          require(tokenOwner[_tokenId] == address(0) || tokenOwner[_tokenId] == _tokenOwner);
 
          uint256 _currentDay = getCurrentDay();
 
          // TokenWeight
          TokenWeight storage token = podeTokenWeight[_tokenId];
-         token.lastWeight = stakeWeight; //  TODO figure this out, because it seems tokens need to carry over alue
-         token.lastUpdateDay = stakeDate;
+         token.lastWeight = stakeWeight;
+         if(token.lastWeight == 0){
+             token.lastWeight = MULTIPLIER; //  TODO figure this out, because it seems tokens need to carry over alue
+         }
+         token.lastUpdateDay = _currentDay;
 
          tokenOwner[_tokenId] = _tokenOwner;
 
@@ -570,10 +737,10 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
          OwnerWeight storage owner = ownerWeight[_tokenOwner];
 
          if (owner.stakedNFTCount == 0) {
-             owner.startDay = stakeDate;
+             owner.startDay = _currentDay;
          }
 
-         updateOwnerWeight(_tokenOwner);
+         updateGuildMemberWeight(_tokenOwner);
 
          owner.stakedNFTCount = owner.stakedNFTCount.add(1);
          owner.lastWeight = owner.lastWeight.add(token.lastWeight);
@@ -583,7 +750,6 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
          updateWeight();
 
          stakedNFTCount = stakedNFTCount.add(1);
-         totalPodeTokenWeight = totalPodeTokenWeight.add(token.lastWeight);
          totalGuildWeight = totalGuildWeight.add(token.lastWeight);
          lastUpdateDay = _currentDay;
          emit StakedMembershipToken(_tokenOwner, _tokenId);
@@ -597,7 +763,9 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
         // TokenWeight
         TokenWeight storage token = podeTokenWeight[_tokenId];
-        token.lastWeight = MULTIPLIER; //  TODO figure this out, because it seems tokens need to carry over alue
+        if(token.lastWeight == 0){
+            token.lastWeight = MULTIPLIER; //  TODO figure this out, because it seems tokens need to carry over alue
+        }
         token.lastUpdateDay = _currentDay;
 
         tokenOwner[_tokenId] = _tokenOwner;
@@ -609,7 +777,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
             owner.startDay = _currentDay;
         }
 
-        updateOwnerWeight(_tokenOwner);
+        updateGuildMemberWeight(_tokenOwner);
 
         owner.stakedNFTCount = owner.stakedNFTCount.add(1);
         owner.lastWeight = owner.lastWeight.add(token.lastWeight);
@@ -619,8 +787,10 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         updateWeight();
 
         stakedNFTCount = stakedNFTCount.add(1);
-        totalPodeTokenWeight = totalPodeTokenWeight.add(token.lastWeight);
         totalGuildWeight = totalGuildWeight.add(token.lastWeight);
+
+        owner.dailyGuildMemberWeight[_currentDay] =owner.dailyGuildMemberWeight[_currentDay].add(token.lastWeight);
+        owner.lastGuildMemberWeight = owner.lastGuildMemberWeight.add(token.lastWeight);
         lastUpdateDay = _currentDay;
         emit StakedMembershipToken(_tokenOwner, _tokenId);
     }
@@ -634,7 +804,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
        // TokenWeight storage token = tokenWeight[_tokenId];
         OwnerWeight storage owner = ownerWeight[_tokenOwner];
 
-        updateOwnerWeight(_tokenOwner);
+        updateGuildMemberWeight(_tokenOwner);
 
         owner.stakedNFTCount = owner.stakedNFTCount.sub(1);
 
@@ -648,11 +818,31 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         // need appraiser rewards logic here if there is staked erc20 tokens
 
         if (stakedNFTCount == 0) {
-            totalPodeTokenWeight = 0;
+            totalGuildWeight = 0;
         }
 
-        delete podeTokenWeight[_tokenId]; // TODO look at this dont think its right action
+        TokenWeight storage token = podeTokenWeight[_tokenId];
+
+        uint256 newWeight = owner.lastGuildMemberWeight.div(owner.stakedNFTCount.add(1));
+
+        totalGuildWeight = totalGuildWeight.sub(newWeight);
+        owner.lastGuildMemberWeight = owner.lastGuildMemberWeight.sub(newWeight);
+
+        // TODO figure out if logic like this is needed.
+        // owner.dailyGuildMemberWeight[_currentDay] = owner.dailyGuildMemberWeight[_currentDay].sub(newWeight);
+
+        token.lastWeight = newWeight;
+
+        TokenWeight storage guildMember = guildMemberWeight[_tokenOwner];
+
+        guildMember.dailyWeight[_currentDay] = owner.dailyGuildMemberWeight[_currentDay];
+        guildMember.lastWeight = owner.lastGuildMemberWeight;
+
+
+        // delete podeTokenWeight[_tokenId]; // TODO look at this dont think its right action
         delete tokenOwner[_tokenId];
+
+        // totalGuildWeight = totalGuildWeight.sub(token.lastWeight);
 
         emit UnstakedMembershipToken(_tokenOwner, _tokenId);
     }
@@ -688,7 +878,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
         stakedWhitelistedNFTCount = stakedWhitelistedNFTCount.add(1);
         totalWhitelistedNFTTokenWeight = totalWhitelistedNFTTokenWeight.add(token.lastWeight);
-        totalGuildWeight = totalGuildWeight.add(token.lastWeight);
+
         lastUpdateDay = _currentDay;
 
         emit StakedWhitelistedNFTToken(_tokenOwner, _whitelistedNFT, _tokenId);
@@ -720,7 +910,12 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
             totalWhitelistedNFTTokenWeight = 0;
         }
 
-        delete whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
+        // totalWhitelistedNFTTokenWeight = totalWhitelistedNFTTokenWeight.sub(token.lastWeight);
+        owner.lastWeight = owner.lastWeight.sub(token.lastWeight);
+
+        owner.dailyWeight[_currentDay] = owner.dailyWeight[_currentDay].sub(token.lastWeight);
+
+        delete whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId]; // TODO is this right? what happens with stake unstake
         delete whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId];
 
         emit UnstakedWhitelistedNFTToken(_tokenOwner, _whitelistedNFT, _tokenId);

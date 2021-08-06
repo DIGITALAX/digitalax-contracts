@@ -368,8 +368,7 @@ contract GuildNFTStaking is BaseRelayRecipient {
         console.log("newRewards %s", newRewards);
         console.log("totalRoundrewards %s", totalRoundRewards);
         console.log("accumulatedRewards %s", accumulatedRewards);
-        console.log("reached, staker rewards %s", _stakerRewards);
-        console.log("reached, staker rewards %s", _stakerRewards);
+
         uint256 _stakerRewards = totalRoundRewards.mul(ownerWeight)
                                     .div(totalWeight);
 
