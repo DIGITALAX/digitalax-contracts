@@ -501,12 +501,19 @@ abstract contract GuildNFTRewardsV2 is Initializable, BaseRelayRecipient, Reentr
         returns(uint256 rewards)
     {
         rewards = WhitelistedNFTRewards(whitelistedNFTPool.lastRewardsTime, _getNow());
+    console.log("_updateWhitelistedNFTRewards");
+    console.log("the rewards are %s", rewards);
         if ( rewards > 0 ) {
             whitelistedNFTPool.decoRewardsPaid = whitelistedNFTPool.decoRewardsPaid.add(rewards);
             decoRewardsPaidTotal = decoRewardsPaidTotal.add(rewards);
+    console.log("_updateWhitelistedNFTRewards");
+    console.log("the rewards are (whitelistedNFTPool) %s", whitelistedNFTPool.decoRewardsPaid);
+    console.log("_updateWhitelistedNFTRewards");
+    console.log("the rewards are (decoRewardsPaidTotal) %s", decoRewardsPaidTotal);
+
 
             // Mint this amount of DECO to the staking contract
-            require(decoToken.mint(address(nftStaking), rewards));
+            require(decoToken.mint(address(whitelistedNFTStaking), rewards));
         }
     }
 
