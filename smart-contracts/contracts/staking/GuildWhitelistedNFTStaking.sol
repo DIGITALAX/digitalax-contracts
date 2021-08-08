@@ -13,6 +13,7 @@ import "./interfaces/IGuildNFTStakingWeightWhitelisted.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "./interfaces/IGuildNFTStakingWeight.sol";
 
+import "@nomiclabs/buidler/console.sol";
 /**
  * @title Digitalax whitelisted Staking
  * @dev Stake whitelisted nfts and stake membership guild tokens upon them
@@ -444,7 +445,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     function updateReward(address _user) public {
         rewardsContract.updateRewards();
         uint256 newRewards = IGuildNFTRewardsWhitelisted(address(rewardsContract)).WhitelistedNFTRewards(lastUpdateTime, _getNow());
-
+        console.log("thenew rewards are %s", newRewards);
         if (whitelistedNFTStakedTotal == 0) {
             accumulatedRewards = accumulatedRewards.add(newRewards);
             lastUpdateTime = _getNow();
@@ -454,21 +455,28 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         totalRewards = totalRewards.add(newRewards);
         totalRoundRewards = totalRoundRewards.add(newRewards);
 
+        console.log("The Total round rewards are %s", totalRoundRewards);
+        console.log("The Total rewards are %s", totalRewards);
+
         IGuildNFTStakingWeightWhitelisted(address(weightContract)).updateWhitelistedNFTOwnerWeight(_user);
         // weightContract.updateOwnerWeight(_user); // TODO figure out if I need to do something here
         uint256 totalWeight = IGuildNFTStakingWeightWhitelisted(address(weightContract)).getTotalWhitelistedNFTTokenWeight();
 
+        console.log("the total weight is %s", totalWeight);
         if (totalWeight == 0) {
             return;
         }
 
         uint256 ownerWeight = IGuildNFTStakingWeightWhitelisted(address(weightContract)).getWhitelistedNFTOwnerWeight(_user);
 
+        console.log("the owner weight is %s", ownerWeight);
         lastUpdateTime = _getNow();
 
         Staker storage staker = stakers[_user];
         uint256 _stakerRewards = totalRoundRewards.mul(ownerWeight)
                                     .div(totalWeight);
+
+        console.log("the rewards are %s", _stakerRewards);
 
         if (staker.rewardsReleased >= _stakerRewards) {
             staker.rewardsEarned = staker.rewardsReleased;
@@ -526,12 +534,17 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         uint256 _payableAmount = staker.rewardsEarned.sub(staker.rewardsReleased);
         staker.rewardsReleased = staker.rewardsReleased.add(_payableAmount);
 
+        console.log("_payableAmount bal %s", _payableAmount);
         /// @dev accounts for dust
         uint256 rewardBal = rewardsToken.balanceOf(address(this));
         if (_payableAmount > rewardBal) {
             _payableAmount = rewardBal;
         }
 
+        console.log("******************************* %s", staker.rewardsEarned);
+        console.log("rewards earned %s", staker.rewardsEarned);
+        console.log("reward bal %s", rewardBal);
+        console.log("_user %s", _user);
         rewardsToken.transfer(_user, _payableAmount);
         emit RewardPaid(_user, _payableAmount);
     }

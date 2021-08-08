@@ -7,6 +7,7 @@ import "../DigitalaxAccessControls.sol";
 //import "./interfaces/IGuildNFTStakingWeight.sol";
 //import "./interfaces/IGuildNFTStakingWeightWhitelisted.sol";
 
+import "@nomiclabs/buidler/console.sol";
 /**
  * @title Digitalax Guild NFT Staking Weight
  * @dev Calculates the weight for staking on the PODE system
@@ -537,14 +538,15 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         uint256 _currentDay = getCurrentDay();
 
         TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
-
+        console.log("update today weight by reactions %s", token.dailyWeight[_currentDay]);
         token.dailyWeight[_currentDay] = _calcTokenWeight(_whitelistedNFT, _tokenId);
+        console.log("update today weight by reactions 2 %s", token.dailyWeight[_currentDay]);
         token.lastUpdateDay = _currentDay;
 
         // Owner
         OwnerWeight storage owner = ownerWeight[_tokenOwner];
-        owner.dailyWeight[_currentDay] = owner.dailyWeight[_currentDay].sub(token.lastWeight)
-                                                                    .add(token.dailyWeight[_currentDay]);
+        owner.dailyWeight[_currentDay] = owner.dailyWeight[_currentDay]
+                                                                    .add(token.dailyWeight[_currentDay]).sub(token.lastWeight);
 
         totalWhitelistedNFTTokenWeight = totalWhitelistedNFTTokenWeight.sub(owner.lastWeight)
                                         .add(owner.dailyWeight[_currentDay]);
