@@ -173,6 +173,8 @@ const {
 			constants.ZERO_ADDRESS,
 			{from: admin}
 		);
+
+		await this.guildWhitelistedNftStaking.addWhitelistedTokens([this.skinsToken.address]);
 	});
 
 	describe('Rewards Contract', () => {
@@ -303,7 +305,7 @@ const {
 		  //await this.nftStaking.stakeAll({from: staker});
 
 		  // TODO Favorite one to get a better weight - subtraction overflow right now
-		  await this.stakingWeight.favorite(staker2, this.skinsToken.address, '100003', {from: staker2})
+		  await this.stakingWeight.favorite([this.skinsToken.address], ['100003'], {from: staker2})
 
 		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker, this.skinsToken.address));
 		  await time.increase(time.duration.seconds(120));
