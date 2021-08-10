@@ -266,19 +266,6 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         return stakers[_user].tokenIds[_whitelistedNFTToken];
     }
 
-
-    /// @notice Appraise NFT.
-    function appraise(address _whitelistedNFT, uint256 _tokenId, string memory _reaction) external {
-        IGuildNFTStakingWeightWhitelisted(address(weightContract)).appraiseWhitelistedNFT(_whitelistedNFT, _tokenId, _msgSender(), _reaction);
-    }
-
-    /// @notice Appraise multiple NFTs.
-    function appraiseBatch(address[] memory _whitelistedNFTs, uint256[] calldata _tokenIds, string[] calldata _reactions) external {
-        for (uint i = 0; i < _tokenIds.length; i++) {
-            IGuildNFTStakingWeightWhitelisted(address(weightContract)).appraiseWhitelistedNFT(_whitelistedNFTs[i], _tokenIds[i], _msgSender(), _reactions[i]);
-        }
-    }
-
     /// @notice Stake NFT and earn reward tokens.
     function stake(address _whitelistedNFT, uint256 _tokenId) external {
         // require();
@@ -298,7 +285,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
      * @dev Balance of stakers are updated as they stake the nfts based on ether price
     */
     function _stake(address _user, address _whitelistedNFT, uint256 _tokenId) internal {
-
+        require(checkInWhitelistedTokens(_whitelistedNFT), "GuildWhitelistedNFTStaking._stake: This token is not whitelisted");
         Staker storage staker = stakers[_user];
 
         updateReward(_user);

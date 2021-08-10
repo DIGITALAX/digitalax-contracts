@@ -1,4 +1,5 @@
 pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -77,6 +78,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         uint256 totalTimesAppraisedOn; // TODO
 
         uint256 totalReactionCount;
+        uint256 totalClapCount;
         mapping (uint256 => uint256) dailyReactionCount;
         mapping (uint256 => uint256) dailyClapCount;
         mapping (uint256 => uint256) dailyClapLimit;
@@ -579,139 +581,198 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         lastUpdateDay = _currentDay;
     }
 
-    function favorite(address _appraiser, address _whitelistedNFT, uint256 _tokenId) external {
-        require(canAppraise(_msgSender()), "GuildNFTStakingWeightV2.favorite: Sender must stake PODE");
+    function favorite(address[] memory _whitelistedNFTs, uint256[] memory _tokenIds) external {
+        address _appraiser = _msgSender();
+        require(canAppraise(_appraiser), "GuildNFTStakingWeightV2.favorite: Sender must stake PODE");
 
         uint256 _currentDay = getCurrentDay();
 
         AppraiserStats storage appraiser = appraiserStats[_appraiser];
 
-        require(
-            appraiser.dailyTokenReaction[_currentDay][_whitelistedNFT][_tokenId].favoriteCount == 0,
-            "WeightingContract.favorite: Members can fevorite an NFT once per day."
-        );
+        require(_whitelistedNFTs.length == _tokenIds.length, "Must be equal quantity of whitelisted and token ids");
+        for (uint256 i = 0; i < _whitelistedNFTs.length; i++) {
 
-        // Appraiser
-        appraiser.dailyTokenReaction[_currentDay][_whitelistedNFT][_tokenId].favoriteCount = 1;
+            console.log("update today weight by reactions %s", _whitelistedNFTs[i]);
+            require(
+                appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].favoriteCount == 0,
+                "WeightingContract.favorite: Members can favorite an NFT once per day."
+            );
 
-        // Token
-        TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
-        token.dailyTokenReaction[_currentDay].favoriteCount = token.dailyTokenReaction[_currentDay].favoriteCount.add(1);
+            // Appraiser
+            appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].favoriteCount = 1;
 
-        _updateTodayWeightByReaction(_appraiser, _whitelistedNFT, _tokenId, whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId]);
+            // Token
+            TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFTs[i]][_tokenIds[i]];
+            token.dailyTokenReaction[_currentDay].favoriteCount = token.dailyTokenReaction[_currentDay].favoriteCount.add(1);
+
+            _updateTodayWeightByReaction(_appraiser, _whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][_tokenIds[i]]);
+        }
     }
 
-    function follow(address _appraiser, address _whitelistedNFT, uint256 _tokenId) external {
-        require(canAppraise(_msgSender()), "GuildNFTStakingWeightV2.follow: Sender must stake PODE");
+    function follow(address[] memory _whitelistedNFTs, uint256[] memory _tokenIds) external {
+        address _appraiser = _msgSender();
+        require(canAppraise(_appraiser), "GuildNFTStakingWeightV2.follow: Sender must stake PODE");
 
         uint256 _currentDay = getCurrentDay();
 
         AppraiserStats storage appraiser = appraiserStats[_appraiser];
+        require(_whitelistedNFTs.length == _tokenIds.length, "Must be equal quantity of whitelisted and token ids");
+        for (uint256 i = 0; i < _whitelistedNFTs.length; i++) {
+            require(
+                appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].followCount == 0,
+                "WeightingContract.follow: Members can follow an NFT once per day."
+            );
 
-        require(
-            appraiser.dailyTokenReaction[_currentDay][_whitelistedNFT][_tokenId].followCount == 0,
-            "WeightingContract.follow: Members can follow an NFT once per day."
-        );
+            // Appraiser
+            appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].followCount = 1;
 
-        // Appraiser
-        appraiser.dailyTokenReaction[_currentDay][_whitelistedNFT][_tokenId].followCount = 1;
+            // Token
+            TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFTs[i]][_tokenIds[i]];
+            token.dailyTokenReaction[_currentDay].followCount = token.dailyTokenReaction[_currentDay].followCount.add(1);
 
-        // Token
-        TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
-        token.dailyTokenReaction[_currentDay].followCount = token.dailyTokenReaction[_currentDay].followCount.add(1);
-
-        _updateTodayWeightByReaction(_appraiser, _whitelistedNFT, _tokenId, whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId]);
+            _updateTodayWeightByReaction(_appraiser, _whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][_tokenIds[i]]);
+        }
     }
 
-    function share(address _appraiser, address _whitelistedNFT, uint256 _tokenId) external {
-        require(canAppraise(_msgSender()), "GuildNFTStakingWeightV2.share: Sender must stake PODE");
+    function share(address[] memory _whitelistedNFTs, uint256[] memory _tokenIds) external {
+        address _appraiser = _msgSender();
+        require(canAppraise(_appraiser), "GuildNFTStakingWeightV2.share: Sender must stake PODE");
 
         uint256 _currentDay = getCurrentDay();
 
         AppraiserStats storage appraiser = appraiserStats[_appraiser];
+        require(_whitelistedNFTs.length == _tokenIds.length, "Must be equal quantity of whitelisted and token ids");
+        for (uint256 i = 0; i < _whitelistedNFTs.length; i++) {
+            require(
+                appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].shareCount == 0,
+                "WeightingContract.share: Members can share an NFT once per day."
+            );
 
-        require(
-            appraiser.dailyTokenReaction[_currentDay][_whitelistedNFT][_tokenId].shareCount == 0,
-            "WeightingContract.share: Members can share an NFT once per day."
-        );
+            // Appraiser
+            appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].shareCount = 1;
 
-        // Appraiser
-        appraiser.dailyTokenReaction[_currentDay][_whitelistedNFT][_tokenId].shareCount = 1;
+            // Token
+            TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFTs[i]][_tokenIds[i]];
+            token.dailyTokenReaction[_currentDay].shareCount = token.dailyTokenReaction[_currentDay].shareCount.add(1);
 
-        // Token
-        TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
-        token.dailyTokenReaction[_currentDay].shareCount = token.dailyTokenReaction[_currentDay].shareCount.add(1);
-
-        _updateTodayWeightByReaction(_appraiser, _whitelistedNFT, _tokenId, whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId]);
+            _updateTodayWeightByReaction(_appraiser, _whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][_tokenIds[i]]);
+        }
     }
 
-    function metaverse(address _appraiser, address _whitelistedNFT, uint256 _tokenId) external {
-        require(canAppraise(_msgSender()), "GuildNFTStakingWeightV2.metaverse: Sender must stake PODE");
+    function metaverse(address[] memory _whitelistedNFTs, uint256[] memory _tokenIds) external {
+        address _appraiser = _msgSender();
+        require(canAppraise(_appraiser), "GuildNFTStakingWeightV2.metaverse: Sender must stake PODE");
 
         uint256 _currentDay = getCurrentDay();
 
         AppraiserStats storage appraiser = appraiserStats[_appraiser];
+        require(_whitelistedNFTs.length == _tokenIds.length, "Must be equal quantity of whitelisted and token ids");
+        for (uint256 i = 0; i < _whitelistedNFTs.length; i++) {
+            require(
+                appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].metaverseCount == 0,
+                "WeightingContract.metaverse: Members can do this an NFT once per day."
+            );
 
-        require(
-            appraiser.dailyTokenReaction[_currentDay][_whitelistedNFT][_tokenId].metaverseCount == 0,
-            "WeightingContract.metaverse: Members can do this an NFT once per day."
-        );
+            // Appraiser
+            appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].metaverseCount = 1;
 
-        // Appraiser
-        appraiser.dailyTokenReaction[_currentDay][_whitelistedNFT][_tokenId].metaverseCount = 1;
+            // Token
+            TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFTs[i]][_tokenIds[i]];
+            token.dailyTokenReaction[_currentDay].metaverseCount = token.dailyTokenReaction[_currentDay].metaverseCount.add(1);
 
-        // Token
-        TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
-        token.dailyTokenReaction[_currentDay].metaverseCount = token.dailyTokenReaction[_currentDay].metaverseCount.add(1);
-
-        _updateTodayWeightByReaction(_appraiser, _whitelistedNFT, _tokenId, whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId]);
+            _updateTodayWeightByReaction(_appraiser, _whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][_tokenIds[i]]);
+        }
     }
 
 
-    function appraiseWhitelistedNFT(address _appraiser, uint256 _limitAppraisalCount, address _whitelistedNFT, uint256 _tokenId, string memory _reaction) external {
+    function appraiseWhitelistedNFT( address[] memory _whitelistedNFTs, uint256[] memory _tokenIds, string[] memory _reactions) external {
         require(canAppraise(_msgSender()), "GuildNFTStakingWeightV2.appraise: Sender must stake PODE");
 
 
         uint256 _currentDay = getCurrentDay();
-        AppraiserStats storage appraiser = appraiserStats[_appraiser];
+        AppraiserStats storage appraiser = appraiserStats[_msgSender()];
 
-        require(
-            appraiser.dailyReactionCount[_currentDay] < _limitAppraisalCount,
-            "WeightingContract.appraise: Limit appraisal count per day"
-        );
+        require(_whitelistedNFTs.length == _tokenIds.length, "Must be equal quantity of whitelisted and token ids");
+        require(_whitelistedNFTs.length == _reactions.length, "Must be equal quantity of whitelisted and token ids");
+        uint256 _totalSupply = guildNativeERC20Token.totalSupply();
+        uint256 erc20Balance = guildNativeERC20Token.balanceOf(_msgSender());
+        uint256 _clapLimit = _getClapLimit(_totalSupply, erc20Balance);
+        for (uint256 i = 0; i < _whitelistedNFTs.length; i++) {
+            require(
+                appraiser.dailyReactionCount[_currentDay] < _clapLimit,
+                "WeightingContract.appraise: Limit appraisal count per day"
+            );
 
-        // AppraiserStats
-        appraiser.dailyReactionCount[_currentDay] = appraiser.dailyReactionCount[_currentDay] + 1;
-        appraiser.totalReactionCount = appraiser.totalReactionCount + 1;
+            // AppraiserStats
+            appraiser.dailyReactionCount[_currentDay] = appraiser.dailyReactionCount[_currentDay] + 1;
+            appraiser.totalReactionCount = appraiser.totalReactionCount + 1;
 
-        // Token
-        TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
-        token.dailyTokenReaction[_currentDay].appraisalCount[_reaction] = token.dailyTokenReaction[_currentDay].appraisalCount[_reaction].add(1);
+            // Token
+            TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFTs[i]][_tokenIds[i]];
+            token.dailyTokenReaction[_currentDay].appraisalCount[_reactions[i]] = token.dailyTokenReaction[_currentDay].appraisalCount[_reactions[i]].add(1);
 
-        _updateTodayWeightByReaction(_appraiser, _whitelistedNFT, _tokenId, whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId]);
+            _updateTodayWeightByReaction(_msgSender(), _whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][_tokenIds[i]]);
+        }
     }
 
-    function appraiseGuildMember(address _appraiser, uint256 _limitAppraisalCount, address _guildMember, string memory _reaction) external {
-        require(canAppraise(_msgSender()), "GuildNFTStakingWeightV2.appraise: Sender must stake PODE");
+
+    function clapWhitelistedNFT( address[] memory _whitelistedNFTs, uint256[] memory _tokenIds) external {
+        address _appraiser = _msgSender();
+        require(canAppraise(_appraiser), "GuildNFTStakingWeightV2.appraise: Sender must stake PODE");
+
+        uint256 _currentDay = getCurrentDay();
+        AppraiserStats storage appraiser = appraiserStats[_appraiser];
+
+        require(_whitelistedNFTs.length == _tokenIds.length, "Must be equal quantity of whitelisted and token ids");
+        uint256 _totalSupply = guildNativeERC20Token.totalSupply();
+        uint256 erc20Balance = guildNativeERC20Token.balanceOf(_msgSender());
+        uint256 _clapLimit = _getClapLimit(_totalSupply, erc20Balance);
+        for (uint256 i = 0; i < _whitelistedNFTs.length; i++) {
+            require(
+                appraiser.dailyClapCount[_currentDay] < _clapLimit,
+                "WeightingContract.appraise: Limit appraisal count per day"
+            );
+
+            // AppraiserStats
+            appraiser.dailyClapCount[_currentDay] = appraiser.dailyClapCount[_currentDay] + 1;
+            appraiser.totalClapCount = appraiser.totalClapCount + 1;
+
+            // Token
+            TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFTs[i]][_tokenIds[i]];
+            token.dailyTokenReaction[_currentDay].clapCount = token.dailyTokenReaction[_currentDay].clapCount.add(1);
+
+            _updateTodayWeightByReaction(_appraiser, _whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][_tokenIds[i]]);
+        }
+    }
+
+    function appraiseGuildMember(address[] memory _guildMembers, string[] memory _reactions) external {
+        address _appraiser = _msgSender();
+        require(canAppraise(_appraiser), "GuildNFTStakingWeightV2.appraise: Sender must stake PODE");
 
 
         uint256 _currentDay = getCurrentDay();
         AppraiserStats storage appraiser = appraiserStats[_appraiser];
 
-        require(
-            appraiser.dailyGuildMemberReactionCount[_currentDay] < _limitAppraisalCount,
-            "WeightingContract.appraise: Limit appraisal count per day"
-        );
+        uint256 _totalSupply = guildNativeERC20Token.totalSupply();
+        uint256 erc20Balance = guildNativeERC20Token.balanceOf(_msgSender());
+        uint256 _clapLimit = _getClapLimit(_totalSupply, erc20Balance);
+        require(_guildMembers.length == _reactions.length, "Must be equal quantity of whitelisted and token ids");
+        for (uint256 i = 0; i < _guildMembers.length; i++) {
+            require(
+                appraiser.dailyGuildMemberReactionCount[_currentDay] < _clapLimit,
+                "WeightingContract.appraise: Limit appraisal count per day"
+            );
 
-        // AppraiserStats
-        appraiser.dailyGuildMemberReactionCount[_currentDay] = appraiser.dailyGuildMemberReactionCount[_currentDay] + 1;
-        appraiser.totalGuildMemberReactionCount = appraiser.totalGuildMemberReactionCount + 1;
+            // AppraiserStats
+            appraiser.dailyGuildMemberReactionCount[_currentDay] = appraiser.dailyGuildMemberReactionCount[_currentDay] + 1;
+            appraiser.totalGuildMemberReactionCount = appraiser.totalGuildMemberReactionCount + 1;
 
-        // Token
-        TokenWeight storage _guildMemberWeight = guildMemberWeight[_guildMember];
-        _guildMemberWeight.dailyTokenReaction[_currentDay].appraisalCount[_reaction] = _guildMemberWeight.dailyTokenReaction[_currentDay].appraisalCount[_reaction].add(1);
+            // Token
+            TokenWeight storage _guildMemberWeight = guildMemberWeight[_guildMembers[i]];
+            _guildMemberWeight.dailyTokenReaction[_currentDay].appraisalCount[_reactions[i]] = _guildMemberWeight.dailyTokenReaction[_currentDay].appraisalCount[_reactions[i]].add(1);
 
-        _updateTodayGuildMemberWeightByReaction(_appraiser, _guildMember);
+            _updateTodayGuildMemberWeightByReaction(_appraiser, _guildMembers[i]);
+        }
     }
 
     // TODO unit test this very thoroughly
@@ -720,7 +781,6 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
              accessControls.hasAdminRole(_msgSender()),
              "GuildNFTStakingWeightV2.migrateCurrentStake: Sender must be admin"
          );
-
 
          require(tokenOwner[_tokenId] == address(0) || tokenOwner[_tokenId] == _tokenOwner);
 
@@ -754,6 +814,10 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
          stakedNFTCount = stakedNFTCount.add(1);
          totalGuildWeight = totalGuildWeight.add(token.lastWeight);
+
+         owner.dailyGuildMemberWeight[_currentDay] =owner.dailyGuildMemberWeight[_currentDay].add(token.lastWeight);
+         owner.lastGuildMemberWeight = owner.lastGuildMemberWeight.add(token.lastWeight);
+
          lastUpdateDay = _currentDay;
          emit StakedMembershipToken(_tokenOwner, _tokenId);
     }
