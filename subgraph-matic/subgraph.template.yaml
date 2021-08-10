@@ -617,6 +617,35 @@ dataSources:
           handler: handleRewardPaid
       file: ./src/GuildNFTStaking.mapping.ts
   - kind: ethereum/contract
+    name: GuildWhitelistedNFTStaking
+    network: "{{network}}"
+    source:
+      address: "{{GuildWhitelistedNFTStakingAddress}}"
+      abi: GuildWhitelistedNFTStaking
+      startBlock: {{GuildWhitelistedNFTStakingStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+      abis:
+        - name: GuildWhitelistedNFTStaking
+          file: ./abis/GuildWhitelistedNFTStaking.json
+      eventHandlers:
+        - event: Staked(address,address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+      file: ./src/GuildWhitelistedNFTStaking.mapping.ts
+  - kind: ethereum/contract
     name: PodeNFTv2
     network: "{{network}}"
     source:
