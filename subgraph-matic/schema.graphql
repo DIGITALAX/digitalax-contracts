@@ -565,7 +565,7 @@ type PodeNFTv2Staker @entity {
 type GuildWhitelistedNFT @entity {
   id: ID!   
   tokenAddress: String! 
-  owner: Bytes!
+  owner: String!
   tokenUri: String!
   animation: String!
   name: String!

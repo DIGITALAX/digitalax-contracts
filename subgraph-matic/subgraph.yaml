@@ -620,7 +620,7 @@ dataSources:
     name: GuildWhitelistedNFTStaking
     network: "mumbai"
     source:
-      address: "0x85782C3d58DD9A35A1d1e539ad32877Fc00DE920"
+      address: "0x2A0C6af6802DB35db210d182d4ba0a67b830eC90"
       abi: GuildWhitelistedNFTStaking
       startBlock: 12000000
     mapping:
@@ -635,6 +635,8 @@ dataSources:
       abis:
         - name: GuildWhitelistedNFTStaking
           file: ./abis/GuildWhitelistedNFTStaking.json
+        - name: ERC721
+          file: ./abis/ERC721.json
       eventHandlers:
         - event: Staked(address,address,uint256)
           handler: handleStaked
@@ -645,6 +647,7 @@ dataSources:
         - event: RewardPaid(indexed address,uint256)
           handler: handleRewardPaid
       file: ./src/GuildWhitelistedNFTStaking.mapping.ts
+
   - kind: ethereum/contract
     name: PodeNFTv2
     network: "mumbai"
