@@ -63,5 +63,8 @@ module.exports = {
     coverage: {
       url: 'http://localhost:8555',
     }
+  },
+  mocha: {
+    timeout: 2000000
   }
 };
