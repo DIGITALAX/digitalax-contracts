@@ -21,19 +21,19 @@ async function main() {
       deployer
   );
 
- // const metadata = require('./bancor-airdrop.json');
-  const metadata = require('./swordart-airdrop.json');
+  const metadata = require('./bancor-airdropV2.json');
+ // const metadata = require('./swordart-airdrop.json');
   //  Data length
   console.log(metadata.data.length)
   const datas = metadata.data;
 
-  let firstId = 130894;
+  let firstId = 130995;
 
   for(let i=0; i< datas.length ; i++){
-    console.log("now setting primary sale price");
-    await garment.setPrimarySalePrice(firstId, utils.parseEther('0.051771228'));
+  //  console.log("now setting primary sale price");
+  //  await garment.setPrimarySalePrice(firstId, utils.parseEther('0.051771228'));
 
-    console.log("set");
+  //  console.log("set");
 
     console.log("TRANSFERRING FROM");
     console.log(datas[i]);
