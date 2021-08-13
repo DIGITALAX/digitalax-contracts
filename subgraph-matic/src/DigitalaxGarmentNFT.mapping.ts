@@ -109,10 +109,12 @@ export function handleTransfer(event: Transfer): void {
         garmentDesigner.save();
     }
 
-    // handle burn
+    // // handle burn
     else if (event.params.to.equals(ZERO_ADDRESS)) {
         // TODO come back to this regarding collector vs artist / admin burning
-        store.remove('DigitalaxGarment', event.params.tokenId.toString());
+        if (parseInt(event.params.tokenId.toString()) > 4) {
+            store.remove('DigitalaxGarment', event.params.tokenId.toString());
+        }
     }
     // just a transfer
     else {
