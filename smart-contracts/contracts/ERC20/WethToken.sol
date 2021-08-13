@@ -1,6 +1,6 @@
 pragma solidity 0.6.12;
 
-import "../uniswapv2/interfaces/IWETH.sol";
+import "./IWETH.sol";
 
 contract WethToken is IWETH{
     string public name     = "Wrapped Ether";
