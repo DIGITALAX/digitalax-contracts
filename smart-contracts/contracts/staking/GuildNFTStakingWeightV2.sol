@@ -224,6 +224,10 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         return _balanceOf(_owner);
     }
 
+    function balanceOfWhitelistedNFT(address _owner) external view returns (uint256) {
+        return _balanceOfWhitelistedNFT(_owner);
+    }
+
     function _balanceOf(address _owner) internal view returns (uint256) {
         return ownerWeight[_owner].stakedNFTCount;
     }
@@ -241,10 +245,19 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
     }
 
     function getOwnerWeight(address _tokenOwner) external view returns (uint256) {
+       // return calcNewOwnerWeight(_tokenOwner);
         return ownerWeight[_tokenOwner].lastGuildMemberWeight;
     }
 
     function getWhitelistedNFTOwnerWeight(address _tokenOwner) external view returns (uint256) {
+        return calcNewWhitelistedNFTOwnerWeight(_tokenOwner);
+    }
+
+    function getOwnerLastGuildMemberWeight(address _tokenOwner) external view returns (uint256) {
+        return ownerWeight[_tokenOwner].lastGuildMemberWeight;
+    }
+
+    function getOwnerLastWhitelistedNFTWeight(address _tokenOwner) external view returns (uint256) {
         return ownerWeight[_tokenOwner].lastWeight;
     }
 
@@ -374,7 +387,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
             return false;
         }
 
-        owner.lastWeight = calcNewOwnerWeight(_tokenOwner); // total weight?
+        owner.lastWeight = calcNewWhitelistedNFTOwnerWeight(_tokenOwner); // total weight?
 
         owner.lastUpdateDay = _currentDay;
 
@@ -927,7 +940,6 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
         whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId] = _tokenOwner;
 
-        updateWhitelistedNFTOwnerWeight(_tokenOwner);
         // OwnerWeight
         OwnerWeight storage owner = ownerWeight[_tokenOwner];
 
@@ -935,7 +947,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
             owner.startDay = _currentDay;
         }
 
-        updateOwnerWeight(_tokenOwner);
+      //  updateOwnerWeight(_tokenOwner);
 
         owner.stakedWhitelistedNFTCount = owner.stakedWhitelistedNFTCount.add(1);
         owner.lastWeight = owner.lastWeight.add(token.lastWeight);
@@ -946,6 +958,8 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
         stakedWhitelistedNFTCount = stakedWhitelistedNFTCount.add(1);
         totalWhitelistedNFTTokenWeight = totalWhitelistedNFTTokenWeight.add(token.lastWeight);
+
+        updateWhitelistedNFTOwnerWeight(_tokenOwner);
 
         lastUpdateDay = _currentDay;
 
@@ -958,12 +972,10 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
         uint256 _currentDay = getCurrentDay();
 
-        updateWhitelistedNFTOwnerWeight(_tokenOwner);
-
         TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
         OwnerWeight storage owner = ownerWeight[_tokenOwner];
 
-        updateOwnerWeight(_tokenOwner);
+      //  updateOwnerWeight(_tokenOwner);
 
         owner.stakedWhitelistedNFTCount = owner.stakedWhitelistedNFTCount.sub(1);
 
@@ -983,6 +995,8 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         token.lastWeight = owner.lastWeight; // TODO ?
 
         token.dailyWeight[_currentDay] = owner.dailyWeight[_currentDay];  // TODO ?
+
+        updateWhitelistedNFTOwnerWeight(_tokenOwner);
 
         delete whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId]; // TODO is this right? what happens with stake unstake
         delete whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId];
