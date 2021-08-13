@@ -267,52 +267,6 @@
         "inputs": [
             {
                 "internalType": "address",
-                "name": "_whitelistedNFT",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "_tokenId",
-                "type": "uint256"
-            },
-            {
-                "internalType": "string",
-                "name": "_reaction",
-                "type": "string"
-            }
-        ],
-        "name": "appraise",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address[]",
-                "name": "_whitelistedNFTs",
-                "type": "address[]"
-            },
-            {
-                "internalType": "uint256[]",
-                "name": "_tokenIds",
-                "type": "uint256[]"
-            },
-            {
-                "internalType": "string[]",
-                "name": "_reactions",
-                "type": "string[]"
-            }
-        ],
-        "name": "appraiseBatch",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
                 "name": "",
                 "type": "address"
             },
