@@ -263,8 +263,8 @@ const {
 
 		const ownerWeight1 = await this.stakingWeight.getOwnerWeight(staker);
 		const totalWeight1 = await this.stakingWeight.getTotalWeight();
-		expect(ownerWeight1).to.be.bignumber.equal("100000");
-		expect(totalWeight1).to.be.bignumber.equal("100000");
+		expect(ownerWeight1).to.be.bignumber.equal("13025000");
+		expect(totalWeight1).to.be.bignumber.equal("15000000");
 
 		// await time.increase(time.duration.seconds(1000000));
 	  await this.guildNftStaking.unstake(TOKEN_1, {from: staker});
@@ -277,7 +277,7 @@ const {
 	  console.log(finalDecoBalance.sub(initialDecoBalance).toString());
 	});
 
-	  it('successfully deposits many NFT and batch', async () => {
+	  it('successfully deposits many NFT and batch skins', async () => {
 	  		// Pre req, staker 2 puts some tokens in.
 		  await this.token.mint(staker2, minter, {from: minter});
 		  await this.token.mint(staker2, minter, {from: minter});
@@ -296,10 +296,10 @@ const {
 		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
 		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
 		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
-		  await this.skinsToken.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
-		  await this.skinsToken.setPrimarySalePrice('100002', TWO_ETH, {from: admin});
-		  await this.skinsToken.setPrimarySalePrice('100003', TWO_ETH, {from: admin});
-		  await this.skinsToken.setPrimarySalePrice('100004', TWO_ETH, {from: admin});
+		  // await this.skinsToken.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
+		  // await this.skinsToken.setPrimarySalePrice('100002', TWO_ETH, {from: admin});
+		  // await this.skinsToken.setPrimarySalePrice('100003', TWO_ETH, {from: admin});
+		  // await this.skinsToken.setPrimarySalePrice('100004', TWO_ETH, {from: admin});
 		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker});
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100001','100002', '100003','100004'],{from: staker});
 		  //await this.nftStaking.stakeAll({from: staker});
@@ -511,9 +511,11 @@ const {
 	console.log(initialDecoBalance2);
 
 	console.log('final deco balance 1');
-	console.log(finalDecoBalance);
+	console.log(finalDecoBalance.toString());
 	console.log('final deco balance 2');
-	console.log(finalDecoBalance2);
+	console.log(finalDecoBalance2.toString());
+
+
 
 	expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(HUNDRED_TOKENS);
 	expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(HUNDRED_TOKENS);
