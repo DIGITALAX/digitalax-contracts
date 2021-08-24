@@ -325,23 +325,13 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         result = result.add(_reaction.appraisalCount["Angry"].mul(reactionPoint["Angry"]));
         result = result.add(_reaction.appraisalCount["Novel"].mul(reactionPoint["Novel"]));
 
-        return result;
+        return result.mul(MULTIPLIER);
     }
 
     function _getGuildMemberReactionPoints(address _guildMember, uint256 _currentDay) internal view returns (uint256) {
         TokenReaction storage _reaction = guildMemberWeight[_guildMember].dailyTokenReaction[_currentDay];
 
         uint256 result = 0;
-
-//        result = result.add(_reaction.metaverseCount.mul(reactionPoint["Metaverse"]));
-//        result = result.add(_reaction.shareCount.mul(reactionPoint["Share"]));
-//        result = result.add(_reaction.favoriteCount.mul(reactionPoint["Favorite"]));
-//        result = result.add(_reaction.followCount.mul(reactionPoint["Follow"]));
-//        uint256 _totalSupply = guildNativeERC20Token.totalSupply();
-//        uint256 erc20Balance = guildNativeERC20Token.balanceOf(_msgSender());
-//        uint256 _clapLimit = _getClapLimit(_totalSupply, erc20Balance);
-//        result = result.add(_reaction.clapCount.mul(_getPowerLevelByClapLimit(_clapLimit)));
-//        result = result.add(_reaction.clapCount);       // stake points = clap limit per day
 
         result = result.add(_reaction.appraisalCount["Love"].mul(reactionPoint["Love"]));
         result = result.add(_reaction.appraisalCount["Like"].mul(reactionPoint["Like"]));
@@ -350,7 +340,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         result = result.add(_reaction.appraisalCount["Angry"].mul(reactionPoint["Angry"]));
         result = result.add(_reaction.appraisalCount["Novel"].mul(reactionPoint["Novel"]));
 
-        return result;
+        return result.mul(MULTIPLIER);
     }
 
 //    function calcNewTotalNFTWeight() internal view returns (uint256) {
@@ -440,7 +430,6 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         console.log("The new weight is");
 
         for (uint256 i = _owner.lastGuildMemberUpdateDay + 1; i < _currentDay; i++) {
-            console.log("this many iterations ##");
             _newWeight = _newWeight.add((DAILY_NFT_WEIGHT_DEFAULT * MULTIPLIER * _owner.stakedNFTCount)
                                     .mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT)        // decay rate: 7.5%
                                     .div(DEFAULT_POINT_WITHOUT_DECAY_RATE));
@@ -480,12 +469,17 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         if (_currentDay <= owner.lastUpdateDay) {
             return false;
         }
+        uint256 newDays = _currentDay.sub(owner.lastUpdateDay);
         uint256 prevWeight = owner.lastWeight;
         owner.lastWeight = calcNewWhitelistedNFTOwnerWeight(_tokenOwner); // total weight?
         console.log("reached whitelisted nfts owner weight @@@@@ %s", totalWhitelistedNFTTokenWeight);
         console.log("reached whitelisted nfts owner weight @@@@@ %s", owner.lastWeight);
         console.log("reached whitelisted nfts owner weight @@@@@ %s", prevWeight);
-        totalWhitelistedNFTTokenWeight = totalWhitelistedNFTTokenWeight.add(owner.lastWeight).sub(prevWeight);
+        uint256 presumedIncreaseTokenWeight = newDays.mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT);
+        if(presumedIncreaseTokenWeight.add(prevWeight) <= totalWhitelistedNFTTokenWeight ) {
+            totalWhitelistedNFTTokenWeight = totalWhitelistedNFTTokenWeight.add(owner.lastWeight).sub(presumedIncreaseTokenWeight).sub(prevWeight);
+        }
+
         owner.lastUpdateDay = _currentDay;
 
         return true;
@@ -506,6 +500,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         console.log("total guild weight is %s", totalGuildWeight);
         console.log("last guild weight is %s", owner.lastGuildMemberWeight);
         console.log("prev guild weight is %s", prevGuildMemberWeight);
+
         uint256 presumedIncreaseGuildWeight = newDays.mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT).mul(owner.stakedNFTCount);
         console.log("removala guild weight is %s", presumedIncreaseGuildWeight);
 
@@ -534,9 +529,9 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         uint256 _newWeight = _token.dailyWeight[_token.lastUpdateDay];
 
         for (uint256 i = _token.lastUpdateDay + 1; i < _currentDay; i++) {
-            _newWeight = _newWeight.add(DAILY_NFT_WEIGHT_DEFAULT * MULTIPLIER)
+            _newWeight = _newWeight.add((DAILY_NFT_WEIGHT_DEFAULT * MULTIPLIER)
                                     .mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT)        // decay rate: 7.5%
-                                    .div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
+                                    .div(DEFAULT_POINT_WITHOUT_DECAY_RATE));
         }
 
         return _newWeight;
@@ -557,9 +552,9 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         uint256 _newWeight = _guildMemberWeight.dailyWeight[_guildMemberWeight.lastUpdateDay];
 
         for (uint256 i = _guildMemberWeight.lastUpdateDay + 1; i < _currentDay; i++) {
-            _newWeight = _newWeight.add(DAILY_NFT_WEIGHT_DEFAULT * MULTIPLIER)
+            _newWeight = _newWeight.add((DAILY_NFT_WEIGHT_DEFAULT * MULTIPLIER)
                                     .mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT)        // decay rate: 7.5%
-                                    .div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
+                                    .div(DEFAULT_POINT_WITHOUT_DECAY_RATE));
         }
 
         return _newWeight;
@@ -573,6 +568,8 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         TokenWeight memory _token = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
 
         if (_currentDay < _token.lastUpdateDay) {
+
+            console.log("did not hit reaction points ######################", _currentDay);
             return _token.lastWeight;
         }
 
@@ -580,13 +577,14 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
         uint256 _currentDayReactionPoint = _getReactionPoints(_whitelistedNFT, _tokenId, _currentDay);
 
+        console.log("the reaction points are %s ######################", _currentDayReactionPoint);
         if (_currentDayReactionPoint > 0) {     // 2.5%
-            return _yesterdayWeight.add(_currentDayReactionPoint.mul(MULTIPLIER))
+            return _yesterdayWeight.add((_currentDayReactionPoint.add((MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT)))
                                     .mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_WITH_APPRAISAL)
-                                    .div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
+                                    .div(DEFAULT_POINT_WITHOUT_DECAY_RATE));
         } else {                                // 7.5%
-            return _yesterdayWeight.mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT)
-                                    .div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
+            return _yesterdayWeight; //.mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT)
+                                    //.div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
         }
     }
 
@@ -606,22 +604,25 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         uint256 _currentDayReactionPoint = _getGuildMemberReactionPoints(_guildMember, _currentDay);
 
         if (_currentDayReactionPoint > 0) {     // 2.5%
-            return _yesterdayWeight.add(_currentDayReactionPoint.mul(MULTIPLIER))
+            return _yesterdayWeight.add((_currentDayReactionPoint.add((MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT)))
                                     .mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_WITH_APPRAISAL)
-                                    .div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
+                                    .div(DEFAULT_POINT_WITHOUT_DECAY_RATE));
         } else {                                // 7.5%
-            return _yesterdayWeight.mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT)
-                                    .div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
+            return _yesterdayWeight; //.mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT)
+                                    //.div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
         }
     }
 
     function _updateTodayWeightByReaction(address _appraiser, address _whitelistedNFT, uint256 _tokenId, address _tokenOwner) internal {
         uint256 _currentDay = getCurrentDay();
 
+     //   updateWhitelistedNFTOwnerWeight(whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId]);
+
         TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
         console.log("update today weight by reactions %s", token.dailyWeight[_currentDay]);
         token.dailyWeight[_currentDay] = _calcTokenWeight(_whitelistedNFT, _tokenId);
         console.log("update today weight by reactions 2 %s", token.dailyWeight[_currentDay]);
+        console.log("the last weight was %s", token.lastWeight);
         token.lastUpdateDay = _currentDay;
 
         // Owner
@@ -629,9 +630,11 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         owner.dailyWeight[_currentDay] = owner.dailyWeight[_currentDay]
                                                                     .add(token.dailyWeight[_currentDay]).sub(token.lastWeight);
 
+        console.log("nnew daily is", owner.dailyWeight[_currentDay]);
         totalWhitelistedNFTTokenWeight = totalWhitelistedNFTTokenWeight.sub(owner.lastWeight)
                                         .add(owner.dailyWeight[_currentDay]);
 
+        console.log("nnew whitelisted Total is", totalWhitelistedNFTTokenWeight);
         token.lastWeight = token.dailyWeight[_currentDay];
         owner.lastWeight = owner.dailyWeight[_currentDay];
         owner.lastUpdateDay = _currentDay;
@@ -640,6 +643,8 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
     function _updateTodayGuildMemberWeightByReaction(address _appraiser, address _guildMember) internal {
         uint256 _currentDay = getCurrentDay();
+
+     //   updateOwnerWeight(_guildMember);
 
         TokenWeight storage _guildMemberWeight = guildMemberWeight[_guildMember];
 
