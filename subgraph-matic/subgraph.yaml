@@ -646,6 +646,8 @@ dataSources:
           handler: handleEmergencyUnstake
         - event: RewardPaid(indexed address,uint256)
           handler: handleRewardPaid
+        - event: AddWhitelistedTokens(address[])
+          handler: handleAddWhitelistedTokens
       file: ./src/GuildWhitelistedNFTStaking.mapping.ts
 
   - kind: ethereum/contract
