@@ -572,6 +572,11 @@ type GuildWhitelistedNFT @entity {
   description: String!
 }
 
+type GuildWhitelistedToken @entity {
+  id: ID!
+  name: String!
+}
+
 type GuildWhitelistedNFTStaker @entity {
   id: ID!
   garments: [GuildWhitelistedNFT!]!

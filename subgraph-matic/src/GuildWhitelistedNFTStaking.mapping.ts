@@ -5,12 +5,14 @@ import {
     Unstaked,
     EmergencyUnstake,
     RewardPaid,
-    GuildWhitelistedNFTStaking as GuildWhitelistedNFTStakingContract
+    GuildWhitelistedNFTStaking as GuildWhitelistedNFTStakingContract,
+    AddWhitelistedTokens
 } from "../generated/GuildWhitelistedNFTStaking/GuildWhitelistedNFTStaking";
 
 import {
     GuildWhitelistedNFT,
     GuildWhitelistedNFTStaker,
+    GuildWhitelistedToken,
 } from "../generated/schema";
 import {ZERO} from "./constants";
 
@@ -103,4 +105,14 @@ export function handleEmergencyUnstake(event: EmergencyUnstake): void {
     }
     staker.garments = updatedGarmentsStaked;
     staker.save();
+}
+
+export function handleAddWhitelistedTokens(event: AddWhitelistedTokens): void {
+    let addresses = event.params.whitelistedTokens;
+    for (let i = 0; i < addresses.length; i += 1) {
+        let contract = ERC721.bind(addresses[i]);
+        const guildWhitelistedToken = new GuildWhitelistedToken(addresses[i].toHexString());
+        guildWhitelistedToken.name = contract.name();
+        guildWhitelistedToken.save();
+    }
 }
