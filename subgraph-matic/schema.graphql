@@ -531,6 +531,8 @@ type DigitalaxDesigner @entity {
   name: String!
   description: String!
   image: String!
+  instagram: String
+  twitter: String
   collections: [DigitalaxGarmentV2Collection!]!
   auctions: [DigitalaxGarmentV2Auction!]!
 }
