@@ -253,6 +253,7 @@ const {
 
 	  await this.guildNFTRewards.setNowOverride('1209601'); // next week
 	  await this.guildNftStaking.setNowOverride('1209601'); // next week
+	  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 	  await this.stakingWeight.setNowOverride('1209601'); // next week
 	  console.log('balance of staker before and after:');
 
@@ -304,14 +305,15 @@ const {
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100001','100002', '100003','100004'],{from: staker});
 		  //await this.nftStaking.stakeAll({from: staker});
 
-		  // TODO Favorite one to get a better weight - subtraction overflow right now
 		  await this.stakingWeight.favorite([this.skinsToken.address], ['100003'], {from: staker2})
 
 		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker, this.skinsToken.address));
 		  await time.increase(time.duration.seconds(120));
 
 		  await this.guildNFTRewards.setNowOverride('1209601'); // next week
+		  await this.guildNftStaking.setNowOverride('1209601'); // next week
 		  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
+		  await this.stakingWeight.setNowOverride('1209601'); // next week
 		  console.log('balance of staker before and after:');
 
 		  const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -326,9 +328,10 @@ const {
 		  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(new BN('0'));
 
 		  console.log(finalDecoBalance.sub(initialDecoBalance).toString());
+
 	  });
 
-	  it('successfully deposits many NFT and batch skins with different users', async () => {
+	  it('successfully deposits many NFT and batch skins with different users, 1 favorite', async () => {
 	  		// Pre req, staker 2 puts some tokens in.
 		  await this.token.mint(staker, minter, {from: minter});
 		  await this.token.mint(staker, minter, {from: minter});
@@ -349,17 +352,12 @@ const {
 		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
 		  await this.skinsToken.mint(staker2, randomURI, minter, {from: minter});
 		  await this.skinsToken.mint(staker2, randomURI, minter, {from: minter});
-		  // await this.skinsToken.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
-		  // await this.skinsToken.setPrimarySalePrice('100002', TWO_ETH, {from: admin});
-		  // await this.skinsToken.setPrimarySalePrice('100003', TWO_ETH, {from: admin});
-		  // await this.skinsToken.setPrimarySalePrice('100004', TWO_ETH, {from: admin});
+
 		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker});
 		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker2});
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100001','100002'],{from: staker});
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100003','100004'],{from: staker2});
-		  //await this.nftStaking.stakeAll({from: staker});
 
-		  // TODO Favorite one to get a better weight - subtraction overflow right now
 		  await this.stakingWeight.favorite([this.skinsToken.address], ['100002'], {from: staker2})
 		 // await this.stakingWeight.favorite([this.skinsToken.address], ['100004'], {from: staker}) // will they match up?
 
@@ -369,7 +367,9 @@ const {
 		  await time.increase(time.duration.seconds(120));
 
 		  await this.guildNFTRewards.setNowOverride('1209601'); // next week
+		  await this.guildNftStaking.setNowOverride('1209601'); // next week
 		  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
+		  await this.stakingWeight.setNowOverride('1209601'); // next week
 		  console.log('balance of staker before and after:');
 
 		  const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -390,6 +390,342 @@ const {
 		  console.log('FOR THE SKINS TEST THE BALANCES ARE **********');
 		  console.log(finalDecoBalance.sub(initialDecoBalance).toString());
 		  console.log(finalDecoBalance2.sub(initialDecoBalance2).toString());
+
+		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
+
+		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+
+		  expect(finalDecoBalance > finalDecoBalance2);
+
+	  });
+
+	  it('successfully deposits many NFT and batch skins with different users, 1 follow', async () => {
+	  		// Pre req, staker 2 puts some tokens in.
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.setPrimarySalePrice(TOKEN_1, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_2, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_3, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_4, ONE_ETH, {from: admin});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker2});
+		  expect(await this.guildNftStaking.nftStakedTotal()).to.be.bignumber.equal("0");
+		  await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2],{from: staker});
+		  await this.guildNftStaking.stakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
+
+		  // Mint staker 1 some skins tokens
+		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker2, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker2, randomURI, minter, {from: minter});
+
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker});
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker2});
+		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100001','100002'],{from: staker});
+		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100003','100004'],{from: staker2});
+
+		  await this.stakingWeight.follow([this.skinsToken.address], ['100002'], {from: staker2})
+
+		  console.log('The staked tokens are');
+		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker, this.skinsToken.address));
+		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker2, this.skinsToken.address));
+		  await time.increase(time.duration.seconds(120));
+
+		  await this.guildNFTRewards.setNowOverride('1209601'); // next week
+		  await this.guildNftStaking.setNowOverride('1209601'); // next week
+		  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
+		  await this.stakingWeight.setNowOverride('1209601'); // next week
+
+		  const initialDecoBalance = await this.decoToken.balanceOf(staker);
+		  const initialDecoBalance2 = await this.decoToken.balanceOf(staker2);
+
+		  await time.increase(time.duration.seconds(1000000));
+		  await this.guildWhitelistedNftStaking.unstakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'], {from: staker});
+		  await this.guildWhitelistedNftStaking.unstakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'], {from: staker2});
+
+		  const finalDecoBalance = await this.decoToken.balanceOf(staker);
+		  const finalDecoBalance2 = await this.decoToken.balanceOf(staker2);
+
+		  console.log('FOR THE SKINS TEST THE BALANCES ARE **********');
+		  console.log(finalDecoBalance.sub(initialDecoBalance).toString());
+		  console.log(finalDecoBalance2.sub(initialDecoBalance2).toString());
+
+		  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(new BN('0'));
+		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
+
+		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
+
+		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+
+		  expect(finalDecoBalance > finalDecoBalance2);
+
+
+	  });
+
+	  it('successfully deposits many NFT and batch skins with different users, 1 share', async () => {
+	  		// Pre req, staker 2 puts some tokens in.
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.setPrimarySalePrice(TOKEN_1, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_2, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_3, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_4, ONE_ETH, {from: admin});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker2});
+		  expect(await this.guildNftStaking.nftStakedTotal()).to.be.bignumber.equal("0");
+		  await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2],{from: staker});
+		  await this.guildNftStaking.stakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
+
+		  // Mint staker 1 some skins tokens
+		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker2, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker2, randomURI, minter, {from: minter});
+
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker});
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker2});
+		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100001','100002'],{from: staker});
+		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100003','100004'],{from: staker2});
+
+		  await this.stakingWeight.share([this.skinsToken.address], ['100002'], {from: staker2})
+
+		  console.log('The staked tokens are');
+		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker, this.skinsToken.address));
+		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker2, this.skinsToken.address));
+		  await time.increase(time.duration.seconds(120));
+
+		  await this.guildNFTRewards.setNowOverride('1209601'); // next week
+		  await this.guildNftStaking.setNowOverride('1209601'); // next week
+		  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
+		  await this.stakingWeight.setNowOverride('1209601'); // next week
+
+		  const initialDecoBalance = await this.decoToken.balanceOf(staker);
+		  const initialDecoBalance2 = await this.decoToken.balanceOf(staker2);
+
+		  await time.increase(time.duration.seconds(1000000));
+		  await this.guildWhitelistedNftStaking.unstakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'], {from: staker});
+		  await this.guildWhitelistedNftStaking.unstakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'], {from: staker2});
+
+		  const finalDecoBalance = await this.decoToken.balanceOf(staker);
+		  const finalDecoBalance2 = await this.decoToken.balanceOf(staker2);
+
+		  console.log('FOR THE SKINS TEST THE BALANCES ARE **********');
+		  console.log(finalDecoBalance.sub(initialDecoBalance).toString());
+		  console.log(finalDecoBalance2.sub(initialDecoBalance2).toString());
+
+		  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(new BN('0'));
+		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
+
+		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
+
+		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+
+		  expect(finalDecoBalance > finalDecoBalance2);
+
+	  });
+
+
+	  it('successfully deposits many NFT and batch skins with different users, 1 metaverse', async () => {
+	  		// Pre req, staker 2 puts some tokens in.
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.setPrimarySalePrice(TOKEN_1, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_2, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_3, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_4, ONE_ETH, {from: admin});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker2});
+		  expect(await this.guildNftStaking.nftStakedTotal()).to.be.bignumber.equal("0");
+		  await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2],{from: staker});
+		  await this.guildNftStaking.stakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
+
+		  // Mint staker 1 some skins tokens
+		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker2, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker2, randomURI, minter, {from: minter});
+
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker});
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker2});
+		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100001','100002'],{from: staker});
+		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100003','100004'],{from: staker2});
+
+		  await this.stakingWeight.metaverse([this.skinsToken.address], ['100002'], {from: staker2})
+
+		  console.log('The staked tokens are');
+		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker, this.skinsToken.address));
+		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker2, this.skinsToken.address));
+		  await time.increase(time.duration.seconds(120));
+
+		  await this.guildNFTRewards.setNowOverride('1209601'); // next week
+		  await this.guildNftStaking.setNowOverride('1209601'); // next week
+		  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
+		  await this.stakingWeight.setNowOverride('1209601'); // next week
+
+		  const initialDecoBalance = await this.decoToken.balanceOf(staker);
+		  const initialDecoBalance2 = await this.decoToken.balanceOf(staker2);
+
+		  await time.increase(time.duration.seconds(1000000));
+		  await this.guildWhitelistedNftStaking.unstakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'], {from: staker});
+		  await this.guildWhitelistedNftStaking.unstakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'], {from: staker2});
+
+		  const finalDecoBalance = await this.decoToken.balanceOf(staker);
+		  const finalDecoBalance2 = await this.decoToken.balanceOf(staker2);
+
+		  console.log('FOR THE SKINS TEST THE BALANCES ARE **********');
+		  console.log(finalDecoBalance.sub(initialDecoBalance).toString());
+		  console.log(finalDecoBalance2.sub(initialDecoBalance2).toString());
+
+		  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(new BN('0'));
+		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
+
+		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
+
+		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+
+		  expect(finalDecoBalance > finalDecoBalance2);
+
+	  });
+
+	  it('successfully deposits many NFT and batch skins with different users, 1 appraiseWhitelistedNFT', async () => {
+	  		// Pre req, staker 2 puts some tokens in.
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.setPrimarySalePrice(TOKEN_1, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_2, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_3, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_4, ONE_ETH, {from: admin});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker2});
+		  expect(await this.guildNftStaking.nftStakedTotal()).to.be.bignumber.equal("0");
+		  await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2],{from: staker});
+		  await this.guildNftStaking.stakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
+
+		  // Mint staker 1 some skins tokens
+		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker2, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker2, randomURI, minter, {from: minter});
+
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker});
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker2});
+		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100001','100002'],{from: staker});
+		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100003','100004'],{from: staker2});
+
+		  // reactionPoint["Love"] = 30;
+		  // reactionPoint["Like"] = 10;
+		  // reactionPoint["Fire"] = 25;
+		  // reactionPoint["Sad"] = 5;
+		  // reactionPoint["Angry"] = 15;
+		  // reactionPoint["Novel"] = 20;
+		  await this.stakingWeight.appraiseWhitelistedNFT([this.skinsToken.address], ['100002'], ['Sad'], {from: staker2})
+		// await this.stakingWeight.appraiseWhitelistedNFT([this.skinsToken.address], ['100003'], ['Fire'], {from: staker})
+
+		  console.log('The staked tokens are');
+		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker, this.skinsToken.address));
+		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker2, this.skinsToken.address));
+		  await time.increase(time.duration.seconds(120));
+
+		  await this.guildNFTRewards.setNowOverride('1209601'); // next week
+		  await this.guildNftStaking.setNowOverride('1209601'); // next week
+		  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
+		  await this.stakingWeight.setNowOverride('1209601'); // next week
+
+		  const initialDecoBalance = await this.decoToken.balanceOf(staker);
+		  const initialDecoBalance2 = await this.decoToken.balanceOf(staker2);
+
+		  await time.increase(time.duration.seconds(1000000));
+		  await this.guildWhitelistedNftStaking.unstakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'], {from: staker});
+		  await this.guildWhitelistedNftStaking.unstakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'], {from: staker2});
+
+		  const finalDecoBalance = await this.decoToken.balanceOf(staker);
+		  const finalDecoBalance2 = await this.decoToken.balanceOf(staker2);
+
+		  console.log('FOR THE SKINS TEST THE BALANCES ARE **********');
+		  console.log(finalDecoBalance.sub(initialDecoBalance).toString());
+		  console.log(finalDecoBalance2.sub(initialDecoBalance2).toString());
+
+		  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(new BN('0'));
+		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
+
+		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
+
+		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+
+		  expect(finalDecoBalance > finalDecoBalance2);
+
+	  });
+
+	  it('successfully deposits many NFT and batch skins with different users, 1 clapWhitelistedNFT', async () => {
+	  		// Pre req, staker 2 puts some tokens in.
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.setPrimarySalePrice(TOKEN_1, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_2, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_3, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_4, ONE_ETH, {from: admin});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker2});
+		  expect(await this.guildNftStaking.nftStakedTotal()).to.be.bignumber.equal("0");
+		  await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2],{from: staker});
+		  await this.guildNftStaking.stakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
+
+		  // Mint staker 1 some skins tokens
+		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker2, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker2, randomURI, minter, {from: minter});
+
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker});
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker2});
+		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100001','100002'],{from: staker});
+		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100003','100004'],{from: staker2});
+
+		  await this.stakingWeight.clapWhitelistedNFT([this.skinsToken.address], ['100002'], [30], {from: staker2})
+
+		  console.log('The staked tokens are');
+		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker, this.skinsToken.address));
+		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker2, this.skinsToken.address));
+		  await time.increase(time.duration.seconds(120));
+
+		  await this.guildNFTRewards.setNowOverride('1209601'); // next week
+		  await this.guildNftStaking.setNowOverride('1209601'); // next week
+		  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
+		  await this.stakingWeight.setNowOverride('1209601'); // next week
+
+		  const initialDecoBalance = await this.decoToken.balanceOf(staker);
+		  const initialDecoBalance2 = await this.decoToken.balanceOf(staker2);
+
+		  await time.increase(time.duration.seconds(1000000));
+		  await this.guildWhitelistedNftStaking.unstakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'], {from: staker});
+		  await this.guildWhitelistedNftStaking.unstakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'], {from: staker2});
+
+		  const finalDecoBalance = await this.decoToken.balanceOf(staker);
+		  const finalDecoBalance2 = await this.decoToken.balanceOf(staker2);
+
+
+		  console.log('FOR THE SKINS TEST THE BALANCES ARE **********');
+		  console.log(finalDecoBalance.sub(initialDecoBalance).toString());
+		  console.log(finalDecoBalance2.sub(initialDecoBalance2).toString());
+		  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(new BN('0'));
+		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
+
+		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
+
+		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+
+		  expect(finalDecoBalance > finalDecoBalance2);
+
 	  });
 
 	it('successfully deposits many NFT and batch', async () => {
@@ -413,9 +749,10 @@ const {
 	  console.log(await this.guildNftStaking.getStakedTokens(staker));
 	  await time.increase(time.duration.seconds(120));
 
-	  await this.guildNFTRewards.setNowOverride('1209601'); // next week
-	  await this.guildNftStaking.setNowOverride('1209601'); // next week
-	  await this.stakingWeight.setNowOverride('1209601'); // next week
+		await this.guildNFTRewards.setNowOverride('1209601'); // next week
+		await this.guildNftStaking.setNowOverride('1209601'); // next week
+		await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
+		await this.stakingWeight.setNowOverride('1209601'); // next week
 	  console.log('balance of staker before and after:');
 
 	  const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -427,10 +764,10 @@ const {
 
 	  const finalDecoBalance = await this.decoToken.balanceOf(staker);
 
+		console.log(finalDecoBalance.sub(initialDecoBalance).toString());
 	  // TODO !!
 	  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
 
-	  console.log(finalDecoBalance.sub(initialDecoBalance).toString());
 	});
 
 	it('successfully claims reward  NFT', async () => {
@@ -440,9 +777,10 @@ const {
 	  await this.guildNftStaking.stake(TOKEN_1,{from: staker});
 	  await time.increase(time.duration.seconds(120));
 
-	  await this.guildNFTRewards.setNowOverride('1209601'); // next week
-	  await this.guildNftStaking.setNowOverride('1209601'); // next week
-	  await this.stakingWeight.setNowOverride('1209601'); // next week
+		await this.guildNFTRewards.setNowOverride('1209601'); // next week
+		await this.guildNftStaking.setNowOverride('1209601'); // next week
+		await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
+		await this.stakingWeight.setNowOverride('1209601'); // next week
 	  console.log('balance of staker before and after:');
 
 	  const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -465,9 +803,10 @@ const {
 	  await this.guildNftStaking.stake(TOKEN_1,{from: staker});
 	  await time.increase(time.duration.seconds(120));
 
-	  await this.guildNFTRewards.setNowOverride('1209601'); // next week
-	  await this.guildNftStaking.setNowOverride('1209601'); // next week
-	  await this.stakingWeight.setNowOverride('1209601'); // next week
+		await this.guildNFTRewards.setNowOverride('1209601'); // next week
+		await this.guildNftStaking.setNowOverride('1209601'); // next week
+		await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
+		await this.stakingWeight.setNowOverride('1209601'); // next week
 	  console.log('balance of staker before and after:');
 
 	  const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -490,9 +829,10 @@ const {
 	  await this.guildNftStaking.stake(TOKEN_1,{from: staker});
 	  await time.increase(time.duration.seconds(120));
 
-	  await this.guildNFTRewards.setNowOverride('1209601'); // next week
-	  await this.guildNftStaking.setNowOverride('1209601'); // next week
-	  await this.stakingWeight.setNowOverride('1209601'); // next week
+		await this.guildNFTRewards.setNowOverride('1209601'); // next week
+		await this.guildNftStaking.setNowOverride('1209601'); // next week
+		await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
+		await this.stakingWeight.setNowOverride('1209601'); // next week
 	  console.log('balance of staker before and after:');
 
 	  const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -529,9 +869,10 @@ const {
 	// // Make sure we can withdraw and deposit the same amount back in.
 	// await this.guildNFTRewards.setRewards([3], [FIFTY_TOKENS], {from: admin});
 
-	await this.guildNFTRewards.setNowOverride('2420000'); // final week
-	await this.guildNftStaking.setNowOverride('2420000'); // final week
-	await this.stakingWeight.setNowOverride('2420000'); // final week
+		await this.guildNFTRewards.setNowOverride('1209601'); // next week
+		await this.guildNftStaking.setNowOverride('1209601'); // next week
+		await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
+		await this.stakingWeight.setNowOverride('1209601'); // next week
 	console.log('balance of staker before and after:');
 
 	const initialDecoBalance = await this.decoToken.balanceOf(staker);
