@@ -365,7 +365,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         console.log("The Total period to last update is: %s", _totalPeriodUpToLastUpdateDay);
         console.log("The Total period to start date is: %s", _totalPeriodUpToStartDate);
 
-        return totalGuildWeight.add(DAILY_NFT_WEIGHT_DEFAULT.mul(MULTIPLIER).mul(stakedNFTCount).mul(_totalPeriodUpToLastUpdateDay));
+        return totalGuildWeight.add(DAILY_NFT_WEIGHT_DEFAULT.mul(MULTIPLIER).mul(stakedNFTCount).mul(_totalPeriodUpToLastUpdateDay).mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT).div(DEFAULT_POINT_WITHOUT_DECAY_RATE));
        // uint256 _newWeight = totalGuildWeight.mul(_totalPeriodUpToStartDate).div(_totalPeriodUpToStartDate.sub(_totalPeriodUpToLastUpdateDay).add(1));
 
     }
@@ -383,7 +383,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         console.log("The Total period to last update is: %s", _totalPeriodUpToLastUpdateDay);
         console.log("The Total period to start date is: %s", _totalPeriodUpToStartDate);
 
-        return totalWhitelistedNFTTokenWeight.add(DAILY_NFT_WEIGHT_DEFAULT.mul(MULTIPLIER).mul(stakedWhitelistedNFTCount).mul(_totalPeriodUpToLastUpdateDay));
+        return totalWhitelistedNFTTokenWeight.add(DAILY_NFT_WEIGHT_DEFAULT.mul(MULTIPLIER).mul(stakedWhitelistedNFTCount).mul(_totalPeriodUpToLastUpdateDay).mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT).div(DEFAULT_POINT_WITHOUT_DECAY_RATE));
        // uint256 _newWeight = totalGuildWeight.mul(_totalPeriodUpToStartDate).div(_totalPeriodUpToStartDate.sub(_totalPeriodUpToLastUpdateDay).add(1));
 
     }
@@ -1033,7 +1033,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         // TokenWeight
         TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
         if(token.lastWeight == 0){
-            token.lastWeight = DAILY_NFT_WEIGHT_DEFAULT.mul(MULTIPLIER);
+            token.lastWeight = DAILY_NFT_WEIGHT_DEFAULT.mul(MULTIPLIER).mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT).div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
         }
 
         token.lastUpdateDay = _currentDay;
