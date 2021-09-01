@@ -1,4 +1,4 @@
-import { Bytes, ipfs, json, JSONValue, JSONValueKind } from '@graphprotocol/graph-ts';
+import { Bytes, ipfs, json, JSONValue, JSONValueKind, log } from '@graphprotocol/graph-ts';
 import { ERC721 } from '../generated/GuildWhitelistedNFTStaking/ERC721';
 import {
     Staked,
@@ -41,6 +41,7 @@ export function handleStaked(event: Staked): void {
     garment.owner = owner;
     garment.tokenUri = tokenUri;
     garment.tokenAddress = whitelistedNft;
+    log.info("this is test {}", ['test']);
     if (tokenUri) {
         if (tokenUri.includes('ipfs/')) {
             let tokenHash = tokenUri.split('ipfs/')[1];
@@ -79,31 +80,32 @@ export function handleStaked(event: Staked): void {
 }
 
 export function handleUnstaked(event: Unstaked): void {
-    let contract = GuildWhitelistedNFTStakingContract.bind(event.address);
     let owner = event.params.owner.toHexString()
     let staker = GuildWhitelistedNFTStaker.load(owner);
-    let currentStaked = contract.getStakedTokens(event.params.owner, event.params.whitelistedNFT);
-    // Find garment and remove it
-    let updatedGarmentsStaked = new Array<string>();
-    for (let i = 0; i < currentStaked.length; i += 1) {
-        updatedGarmentsStaked.push(currentStaked[i].toString())
+    
+    let oldGarments = staker.garments;
+    let newGarments = new Array<string>();
+    for (let i = 0; i < oldGarments.length; i += 1) {
+        if (oldGarments[i] !== event.params.tokenId.toString()) {
+            newGarments.push(oldGarments[i]);
+        }
     }
-    staker.garments = updatedGarmentsStaked;
+    staker.garments = newGarments;
     staker.save();
 }
 
 export function handleEmergencyUnstake(event: EmergencyUnstake): void {
-    let contract = GuildWhitelistedNFTStakingContract.bind(event.address);
     let owner = event.params.user.toHexString()
     let staker = GuildWhitelistedNFTStaker.load(owner);
 
-    let currentStaked = contract.getStakedTokens(event.params.user, event.params.whitelistedNFT);
-    // Find garment and remove it
-    let updatedGarmentsStaked = new Array<string>();
-    for (let i = 0; i < currentStaked.length; i += 1) {
-            updatedGarmentsStaked.push(currentStaked[i].toString())
+    let oldGarments = staker.garments;
+    let newGarments = new Array<string>();
+    for (let i = 0; i < oldGarments.length; i += 1) {
+        if (oldGarments[i] !== event.params.tokenId.toString()) {
+            newGarments.push(oldGarments[i]);
+        }
     }
-    staker.garments = updatedGarmentsStaked;
+    staker.garments = newGarments;
     staker.save();
 }
 
