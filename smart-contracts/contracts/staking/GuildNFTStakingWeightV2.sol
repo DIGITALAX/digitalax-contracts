@@ -91,8 +91,6 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
     }
 
     struct AppraiserStats {
-        uint256 totalTimesAppraisedOn; // TODO
-
         uint256 totalReactionCount;
         uint256 totalClapCount;
         mapping (uint256 => uint256) dailyReactionCount;
@@ -107,8 +105,12 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         mapping (uint256 => mapping (address => TokenReaction)) dailyGuildMemberReaction;
 
         uint256 lastReactionDay;
-        uint256 maxDecoPercentageOwned;
+        uint256 maxDecoBonus;
         uint256 maxAssetsPercentageAppraised;
+
+        uint256 uniqueWhitelistedNFTAppraisedLastBonus;
+        mapping (address => mapping(uint256 => bool)) hasAppraisedWhitelistedNFTBefore;
+        uint256 uniqueWhitelistedNFTsAppraised;
     }
 
 //    struct DailyReaction {
@@ -232,50 +234,6 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         initialised = true;
     }
 
-    /**
-     @notice Method for updating the access controls contract used by the NFT
-     @dev Only admin
-     @param _accessControls Address of the new access controls contract (Cannot be zero address)
-     */
-    function updateAccessControls(DigitalaxAccessControls _accessControls) external {
-        require(
-            accessControls.hasAdminRole(_msgSender()),
-            "GuildNFTStaking.updateAccessControls: Sender must be admin"
-        );
-        require(address(_accessControls) != address(0), "GuildNFTStakingWeightV2.updateAccessControls: Zero Address");
-        accessControls = _accessControls;
-        emit UpdateAccessControls(address(_accessControls));
-    }
-
-    function updateReactionPoint(string memory _reaction, uint256 _point) external {
-        require(
-            accessControls.hasAdminRole(_msgSender()),
-            "GuildNFTStakingWeightV2.updateReactionPoint: Sender must be admin"
-        );
-
-        reactionPoint[_reaction] = _point;
-    }
-
-    function updateStartTime(uint256 _startTime) external {
-        require(
-            accessControls.hasAdminRole(_msgSender()),
-            "GuildNFTStakingWeightV2.updateStartTime: Sender must be admin"
-        );
-
-        startTime = _startTime;
-    }
-
-    // Note needs to be 10x higher then the percentage you are interested in.
-    function updateDecayPoints(uint256 decayPointDefault, uint256 decayPointWithAppraisal) external {
-        require(
-            accessControls.hasAdminRole(_msgSender()),
-            "GuildNFTStakingWeightV2.updateDecayPoints: Sender must be admin"
-        );
-
-        DECAY_POINT_DEFAULT = decayPointDefault;
-        DECAY_POINT_WITH_APPRAISAL = decayPointWithAppraisal;
-    }
-
     function balanceOf(address _owner) external view returns (uint256) {
         return _balanceOf(_owner);
     }
@@ -319,9 +277,15 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         return ownerWeight[_tokenOwner].lastWeight;
     }
 
-    function getTokenPrice(uint256 _tokenId) external view returns (uint256) {
-        return 1;
-    }
+    // TODO FUNCTIONS THAT CANNOT GO IN DUE TO CONTRACT SIZE RIGHT NOW
+    //    function updateReactionPoint(string memory _reaction, uint256 _point) external {
+    //        require(
+    //            accessControls.hasAdminRole(_msgSender()),
+    //            "GuildNFTStakingWeightV2.updateReactionPoint: Sender must be admin"
+    //        );
+    //
+    //        reactionPoint[_reaction] = _point;
+    //    }
 //
 //    function setClapsMappingValue(uint256[] memory percentage, uint256[] memory mappingValue) external {
 //        require(percentage.length == 9, "GuildNFTStakingWeightV2.setClapsMappingValue: Must set all mapping values");
@@ -365,8 +329,38 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 //        return (percentage, mapValue);
 //    }
 
+    //    function updateAccessControls(DigitalaxAccessControls _accessControls) external {
+    //        require(
+    //            accessControls.hasAdminRole(_msgSender()),
+    //            "GuildNFTStaking.updateAccessControls: Sender must be admin"
+    //        );
+    //        require(address(_accessControls) != address(0), "GuildNFTStakingWeightV2.updateAccessControls: Zero Address");
+    //        accessControls = _accessControls;
+    //        emit UpdateAccessControls(address(_accessControls));
+    //    }
+    //
+    //    function updateStartTime(uint256 _startTime) external {
+    //        require(
+    //            accessControls.hasAdminRole(_msgSender()),
+    //            "GuildNFTStakingWeightV2.updateStartTime: Sender must be admin"
+    //        );
+    //
+    //        startTime = _startTime;
+    //    }
+    //
+    //    // Note needs to be 10x higher then the percentage you are interested in.
+    //    function updateDecayPoints(uint256 decayPointDefault, uint256 decayPointWithAppraisal) external {
+    //        require(
+    //            accessControls.hasAdminRole(_msgSender()),
+    //            "GuildNFTStakingWeightV2.updateDecayPoints: Sender must be admin"
+    //        );
+    //
+    //        DECAY_POINT_DEFAULT = decayPointDefault;
+    //        DECAY_POINT_WITH_APPRAISAL = decayPointWithAppraisal;
+    //    }
+
     function _getMappingValue(uint256 _totalSupply, uint256 _balance, PercentageMapping[9] storage _mapping) internal view returns (uint256) {
-        uint256 _percentage = _balance.mul(MULTIPLIER).div(_totalSupply);
+        uint256 _percentage = _balance.mul(MULTIPLIER) / _totalSupply;
 
         if (_percentage > _mapping[8].percentage) {           // 1+% held
             return _mapping[8].mapValue;
@@ -773,31 +767,51 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
             return _guildMemberWeight.lastWeight;
         }
 
-        //Bonus
-        uint256 daysPassedSinceLastGuildAppraisal = diffDays(_guildMemberWeight.lastUpdateDay, _currentDay);
         uint256 reactionActivityBonus = 0;
-        if(daysPassedSinceLastGuildAppraisal < 10) {
-            reactionActivityBonus = uint256(10).sub(daysPassedSinceLastGuildAppraisal).mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT);
+
+        // Set up appraisers info
+        AppraiserStats storage appraiser = appraiserStats[_msgSender()];
+
+        // 1 Deco extra
+        if(guildNativeERC20Token.totalSupply() > 0) {
+            uint256 _decoBonus = _getMappingValue(guildNativeERC20Token.totalSupply(), guildNativeERC20Token.balanceOf(_msgSender()), decoBonusMapping);
+            if( appraiser.maxDecoBonus < _decoBonus) {
+                reactionActivityBonus = reactionActivityBonus.add((_decoBonus.sub(appraiser.maxDecoBonus)).mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT));
+                appraiser.maxDecoBonus = _decoBonus;
+            }
         }
 
-        // Deco extra
-        // uint256 decototalowned percentage = 1 ETH.mul(totalowned/total). eth
+        // 2 Appraised nft extra
+        uint256 _appraisalMilestoneBonus = _getAppraisedBonusMappingValue(appraiser.uniqueWhitelistedNFTsAppraised, appraisalBonusMapping);
+        if( appraiser.uniqueWhitelistedNFTAppraisedLastBonus < _appraisalMilestoneBonus) {
+            reactionActivityBonus = reactionActivityBonus.add((_appraisalMilestoneBonus.sub(appraiser.uniqueWhitelistedNFTAppraisedLastBonus)).mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT));
+            appraiser.uniqueWhitelistedNFTAppraisedLastBonus = _appraisalMilestoneBonus;
+        }
 
-        // Appraised nft extra
-       // uint256 appraisedNFTsPercentage = 1 ETH .mul(// the number appraised / total number of
+        // 4 percentage of total assets consideration
+        if(stakedWhitelistedNFTCount > 0) {
+            uint256 percentageTotalAssets = uint256(1000000000000000000).mul(appraiser.uniqueWhitelistedNFTsAppraised).div(stakedWhitelistedNFTCount);
+            if( appraiser.maxAssetsPercentageAppraised < percentageTotalAssets) {
+                appraiser.maxAssetsPercentageAppraised = percentageTotalAssets;
+                reactionActivityBonus = reactionActivityBonus.add(percentageTotalAssets.mul(uint256(100)).mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT) / 1000000000000000000);
+            }
+        }
 
-        uint256 _yesterdayWeight = _initGuildMemberWeight(_guildMember);
+        // 5 Appraisal days Bonus
+        uint256 daysPassedSinceLastGuildAppraisal = diffDays(_guildMemberWeight.lastUpdateDay, _currentDay);
+        if(daysPassedSinceLastGuildAppraisal < 10) {
+            reactionActivityBonus = reactionActivityBonus.add(uint256(10).sub(daysPassedSinceLastGuildAppraisal).mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT));
+        }
 
         uint256 _currentDayReactionPoint = _getGuildMemberReactionPoints(_guildMember, _currentDay);
         // update current day reaction points with the other factors
 
-
         if (_currentDayReactionPoint > 0) {     // 2.5%
-            return _yesterdayWeight.add((reactionActivityBonus.add(_currentDayReactionPoint).add((MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT)))
+            return _initGuildMemberWeight(_guildMember).add((reactionActivityBonus.add(_currentDayReactionPoint).add((MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT)))
                                     .mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_WITH_APPRAISAL)
                                     .div(DEFAULT_POINT_WITHOUT_DECAY_RATE));
         } else {                                // 7.5%
-            return _yesterdayWeight; //.mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT)
+            return _initGuildMemberWeight(_guildMember); //.mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT)
                                     //.div(DEFAULT_POINT_WITHOUT_DECAY_RATE);
         }
     }
@@ -828,6 +842,13 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         token.lastWeight = token.dailyWeight[_currentDay];
         owner.lastWeight = owner.dailyWeight[_currentDay];
         owner.lastUpdateDay = _currentDay;
+
+
+        AppraiserStats storage appraiser = appraiserStats[_msgSender()];
+        if(!appraiser.hasAppraisedWhitelistedNFTBefore[_whitelistedNFT][_tokenId]){
+            appraiser.hasAppraisedWhitelistedNFTBefore[_whitelistedNFT][_tokenId] = true;
+            appraiser.uniqueWhitelistedNFTsAppraised = appraiser.uniqueWhitelistedNFTsAppraised.add(1);
+        }
 
      //   updateWhitelistedNFTOwnerWeight(whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId]);
 
