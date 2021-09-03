@@ -568,13 +568,50 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
             return _owner.lastGuildMemberWeight;
         }
 
+
+        uint256 reactionActivityBonus = 0;
+
+        // Set up appraisers info
+        AppraiserStats storage appraiser = appraiserStats[_tokenOwner];
+
+        // 1 Deco extra
+        if(guildNativeERC20Token.totalSupply() > 0) {
+            uint256 _decoBonus = _getMappingValue(guildNativeERC20Token.totalSupply(), guildNativeERC20Token.balanceOf(_tokenOwner), decoBonusMapping);
+            if( appraiser.maxDecoBonus < _decoBonus) {
+                reactionActivityBonus = reactionActivityBonus.add((_decoBonus.sub(appraiser.maxDecoBonus)).mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT));
+             //   appraiser.maxDecoBonus = _decoBonus;
+            }
+        }
+
+        // 2 Appraised nft extra
+        uint256 _appraisalMilestoneBonus = _getAppraisedBonusMappingValue(appraiser.uniqueWhitelistedNFTsAppraised, appraisalBonusMapping);
+        if( appraiser.uniqueWhitelistedNFTAppraisedLastBonus < _appraisalMilestoneBonus) {
+            reactionActivityBonus = reactionActivityBonus.add((_appraisalMilestoneBonus.sub(appraiser.uniqueWhitelistedNFTAppraisedLastBonus)).mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT));
+          //  appraiser.uniqueWhitelistedNFTAppraisedLastBonus = _appraisalMilestoneBonus;
+        }
+
+        // 4 percentage of total assets consideration
+        if(stakedWhitelistedNFTCount > 0) {
+            uint256 percentageTotalAssets = uint256(1000000000000000000).mul(appraiser.uniqueWhitelistedNFTsAppraised).div(stakedWhitelistedNFTCount);
+            if( appraiser.maxAssetsPercentageAppraised < percentageTotalAssets) {
+               // appraiser.maxAssetsPercentageAppraised = percentageTotalAssets;
+                reactionActivityBonus = reactionActivityBonus.add(percentageTotalAssets.mul(uint256(100)).mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT) / 1000000000000000000);
+            }
+        }
+
+        // 5 Appraisal days Bonus
+        uint256 daysPassedSinceLastGuildAppraisal = diffDays(_owner.lastGuildMemberUpdateDay, _currentDay);
+        if(daysPassedSinceLastGuildAppraisal < 10) {
+            reactionActivityBonus = reactionActivityBonus.add(uint256(10).sub(daysPassedSinceLastGuildAppraisal).mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT));
+        }
+
         uint256 _newWeight = _owner.dailyGuildMemberWeight[_owner.lastGuildMemberUpdateDay];
         console.log("The new weight is");
 
       //  for (uint256 i = _owner.lastGuildMemberUpdateDay + 1; i < _currentDay; i++) {
         // Need to also add the new factors
 
-            _newWeight = _newWeight.add((DAILY_NFT_WEIGHT_DEFAULT * MULTIPLIER * _owner.stakedNFTCount)
+            _newWeight = _newWeight.add((reactionActivityBonus.add(DAILY_NFT_WEIGHT_DEFAULT * MULTIPLIER * _owner.stakedNFTCount))
                                     .mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_DEFAULT)        // decay rate: 7.5%
                                     .div(DEFAULT_POINT_WITHOUT_DECAY_RATE).mul(_currentDay.sub(_owner.lastGuildMemberUpdateDay)));
 
@@ -653,7 +690,33 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         }
         uint256 newDays = _currentDay.sub(owner.lastGuildMemberUpdateDay);
         uint256 prevGuildMemberWeight = owner.lastGuildMemberWeight;
+
         owner.lastGuildMemberWeight = calcNewOwnerWeight(_tokenOwner);
+
+        // ** AFTER SETTING UP THE CALC NEW OWNER WEIGHT ABOVE, NEED TO UPDATE THE APPRAISER ACHIEVEMENT VALUES
+        // Set up appraisers info
+        AppraiserStats storage appraiser = appraiserStats[_tokenOwner];
+        // 1 Deco extra
+        if(guildNativeERC20Token.totalSupply() > 0) {
+            uint256 _decoBonus = _getMappingValue(guildNativeERC20Token.totalSupply(), guildNativeERC20Token.balanceOf(_tokenOwner), decoBonusMapping);
+            if( appraiser.maxDecoBonus < _decoBonus) {
+               appraiser.maxDecoBonus = _decoBonus;
+            }
+        }
+        // 2 Appraised nft extra
+        uint256 _appraisalMilestoneBonus = _getAppraisedBonusMappingValue(appraiser.uniqueWhitelistedNFTsAppraised, appraisalBonusMapping);
+        if( appraiser.uniqueWhitelistedNFTAppraisedLastBonus < _appraisalMilestoneBonus) {
+            appraiser.uniqueWhitelistedNFTAppraisedLastBonus = _appraisalMilestoneBonus;
+        }
+        // 4 percentage of total assets consideration
+        if(stakedWhitelistedNFTCount > 0) {
+            uint256 percentageTotalAssets = uint256(1000000000000000000).mul(appraiser.uniqueWhitelistedNFTsAppraised).div(stakedWhitelistedNFTCount);
+            if( appraiser.maxAssetsPercentageAppraised < percentageTotalAssets) {
+                appraiser.maxAssetsPercentageAppraised = percentageTotalAssets;
+             }
+        }
+        // ***
+
         //if(totalGuildWeight >= prevGuildMemberWeight) {
         console.log("total guild weight is %s", totalGuildWeight);
         console.log("last guild weight is %s", owner.lastGuildMemberWeight);
@@ -767,47 +830,11 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
             return _guildMemberWeight.lastWeight;
         }
 
-        uint256 reactionActivityBonus = 0;
-
-        // Set up appraisers info
-        AppraiserStats storage appraiser = appraiserStats[_msgSender()];
-
-        // 1 Deco extra
-        if(guildNativeERC20Token.totalSupply() > 0) {
-            uint256 _decoBonus = _getMappingValue(guildNativeERC20Token.totalSupply(), guildNativeERC20Token.balanceOf(_msgSender()), decoBonusMapping);
-            if( appraiser.maxDecoBonus < _decoBonus) {
-                reactionActivityBonus = reactionActivityBonus.add((_decoBonus.sub(appraiser.maxDecoBonus)).mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT));
-                appraiser.maxDecoBonus = _decoBonus;
-            }
-        }
-
-        // 2 Appraised nft extra
-        uint256 _appraisalMilestoneBonus = _getAppraisedBonusMappingValue(appraiser.uniqueWhitelistedNFTsAppraised, appraisalBonusMapping);
-        if( appraiser.uniqueWhitelistedNFTAppraisedLastBonus < _appraisalMilestoneBonus) {
-            reactionActivityBonus = reactionActivityBonus.add((_appraisalMilestoneBonus.sub(appraiser.uniqueWhitelistedNFTAppraisedLastBonus)).mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT));
-            appraiser.uniqueWhitelistedNFTAppraisedLastBonus = _appraisalMilestoneBonus;
-        }
-
-        // 4 percentage of total assets consideration
-        if(stakedWhitelistedNFTCount > 0) {
-            uint256 percentageTotalAssets = uint256(1000000000000000000).mul(appraiser.uniqueWhitelistedNFTsAppraised).div(stakedWhitelistedNFTCount);
-            if( appraiser.maxAssetsPercentageAppraised < percentageTotalAssets) {
-                appraiser.maxAssetsPercentageAppraised = percentageTotalAssets;
-                reactionActivityBonus = reactionActivityBonus.add(percentageTotalAssets.mul(uint256(100)).mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT) / 1000000000000000000);
-            }
-        }
-
-        // 5 Appraisal days Bonus
-        uint256 daysPassedSinceLastGuildAppraisal = diffDays(_guildMemberWeight.lastUpdateDay, _currentDay);
-        if(daysPassedSinceLastGuildAppraisal < 10) {
-            reactionActivityBonus = reactionActivityBonus.add(uint256(10).sub(daysPassedSinceLastGuildAppraisal).mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT));
-        }
-
         uint256 _currentDayReactionPoint = _getGuildMemberReactionPoints(_guildMember, _currentDay);
         // update current day reaction points with the other factors
 
         if (_currentDayReactionPoint > 0) {     // 2.5%
-            return _initGuildMemberWeight(_guildMember).add((reactionActivityBonus.add(_currentDayReactionPoint).add((MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT)))
+            return _initGuildMemberWeight(_guildMember).add((_currentDayReactionPoint).add((MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT))
                                     .mul(DEFAULT_POINT_WITHOUT_DECAY_RATE - DECAY_POINT_WITH_APPRAISAL)
                                     .div(DEFAULT_POINT_WITHOUT_DECAY_RATE));
         } else {                                // 7.5%
