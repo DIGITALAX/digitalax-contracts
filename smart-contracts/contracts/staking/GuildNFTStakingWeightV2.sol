@@ -176,6 +176,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
     constructor() public {
         startTime = _getNow();
+        reactionPoint["Self"] = 1;
         reactionPoint["Love"] = 30;
         reactionPoint["Like"] = 10;
         reactionPoint["Fire"] = 25;
@@ -481,6 +482,8 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         result = result.add(_reaction.appraisalCount["Sad"].mul(reactionPoint["Sad"]));
         result = result.add(_reaction.appraisalCount["Angry"].mul(reactionPoint["Angry"]));
         result = result.add(_reaction.appraisalCount["Novel"].mul(reactionPoint["Novel"]));
+
+        result = result.add(_reaction.appraisalCount["Self"].mul(reactionPoint["Self"]));
 
         return result.mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT);
     }
@@ -893,8 +896,10 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
         // Owner
         OwnerWeight storage owner = ownerWeight[_guildMember];
 
-        owner.dailyGuildMemberWeight[_currentDay] = owner.dailyGuildMemberWeight[_currentDay].sub(owner.lastGuildMemberWeight)
-                                                                    .add(_guildMemberWeight.dailyWeight[_currentDay]);
+        owner.dailyGuildMemberWeight[_currentDay] = _guildMemberWeight.dailyWeight[_currentDay];
+        // TODO analyze this, whats going on here> had to change due to subtract overflow.
+        //       = owner.dailyGuildMemberWeight[_currentDay].sub(owner.lastGuildMemberWeight)
+//                                                                    .add(_guildMemberWeight.dailyWeight[_currentDay]);
 
         totalGuildWeight = totalGuildWeight.sub(owner.lastGuildMemberWeight)
                                         .add(owner.dailyGuildMemberWeight[_currentDay]);
@@ -934,6 +939,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
             _updateTodayWeightByReaction(_whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][_tokenIds[i]]);
         }
+        appraiserBoost(_tokenIds.length);
     }
 
     function follow(address[] memory _whitelistedNFTs, uint256[] memory _tokenIds) external {
@@ -958,6 +964,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
             _updateTodayWeightByReaction(_whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][_tokenIds[i]]);
         }
+        appraiserBoost(_tokenIds.length);
     }
 
     function share(address[] memory _whitelistedNFTs, uint256[] memory _tokenIds) external {
@@ -982,6 +989,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
             _updateTodayWeightByReaction(_whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][_tokenIds[i]]);
         }
+        appraiserBoost(_tokenIds.length);
     }
 
     function metaverse(address[] memory _whitelistedNFTs, uint256[] memory _tokenIds) external {
@@ -1006,6 +1014,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
             _updateTodayWeightByReaction(_whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][_tokenIds[i]]);
         }
+        appraiserBoost(_tokenIds.length);
     }
 
 
@@ -1038,6 +1047,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
             _updateTodayWeightByReaction(_whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][_tokenIds[i]]);
         }
+        appraiserBoost(_tokenIds.length);
     }
 
 
@@ -1069,6 +1079,7 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
             _updateTodayWeightByReaction(_whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][_tokenIds[i]]);
 
         }
+        appraiserBoost(_tokenIds.length);
     }
 
     function appraiseGuildMember(address[] memory _guildMembers, string[] memory _reactions) external {
@@ -1105,6 +1116,15 @@ contract GuildNFTStakingWeightV2 is BaseRelayRecipient {
 
             _updateTodayGuildMemberWeightByReaction(_guildMembers[i]);
         }
+        appraiserBoost(_guildMembers.length);
+    }
+
+    function appraiserBoost(uint256 reactionQuantity) internal {
+        // AppraiserStats
+        TokenWeight storage _guildMemberWeight = guildMemberWeight[_msgSender()];
+        uint256 currentDay = getCurrentDay();
+        _guildMemberWeight.dailyTokenReaction[currentDay].appraisalCount["Self"] = _guildMemberWeight.dailyTokenReaction[currentDay].appraisalCount["Self"].add(reactionQuantity);
+        _updateTodayGuildMemberWeightByReaction(_msgSender());
     }
 
     // TODO unit test this very thoroughly

@@ -265,7 +265,7 @@ const {
 
 		const ownerWeight1 = await this.stakingWeight.getOwnerWeight(staker);
 		const totalWeight1 = await this.stakingWeight.getTotalWeight();
-		expect(ownerWeight1).to.be.bignumber.equal("13950000");
+		expect(ownerWeight1).to.be.bignumber.equal("531950000");
 		expect(totalWeight1).to.be.bignumber.equal("15000000");
 
 		//
