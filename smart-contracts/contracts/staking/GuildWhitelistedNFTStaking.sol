@@ -46,6 +46,10 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     IGuildNFTStakingWeight public weightContract;
 
     uint256 public whitelistedNFTStakedTotal;
+
+
+    mapping (address => uint256) public whitelistedNFTContractStakedTotal;
+
     uint256 public lastUpdateTime;
 
     uint256 public totalRoundRewards;
@@ -77,7 +81,18 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     // Address of nft -> maps to token id of nft -> matches to characteristic
     mapping (address => mapping(uint256 => bool)) public nftIsStaked;
     mapping (address => mapping(uint256 => uint256)) public numberOfTimesNFTWasStaked;
-    mapping (address => mapping(uint256 => mapping(uint256 => StakeRecord))) public nftStakeRecords;
+    mapping (address => mapping(uint256 => mapping(uint256 => StakeRecord))) public nftStakeRecords; // Last stake time derived from here
+    mapping (address => mapping(uint256 => uint256)) public amountOfTimeSpecificNFTHasBeenStakedTotal;
+
+    // Contract Specific
+    mapping (address => uint256) public amountOfTimeContractNFTsHaveBeenStakedTotal;
+    mapping (address => uint256) public lastTimeContractNFTStakedPeriodRecorded;
+
+    // For all nfts
+    uint256 public amountOfStakingTimeAllNFTsHaveBeenStaked;
+    uint256 public lastTimeAllNFTStakingPeriodRecorded;
+
+    uint256 startTime;
 
     // Mapping from address, token ID to owner address
     mapping (address => mapping(uint256 => address)) public tokenOwner;
@@ -274,6 +289,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
 
     /// @notice Stake multiple NFTs and earn reward tokens.
     function stakeBatch(address[] memory _whitelistedNFTs,uint256[] memory _tokenIds) external {
+        require(_whitelistedNFTs.length == _tokenIds.length, "GuildWhitelisedNFTStaking.stakeBatch: Arrays must be equivalent lengths");
         for (uint i = 0; i < _tokenIds.length; i++) {
             _stake(_msgSender(), _whitelistedNFTs[i], _tokenIds[i]);
         }
@@ -293,6 +309,8 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         staker.numberNFTStaked = staker.numberNFTStaked.add(1);
         staker.numberNFTStakedPerToken[_whitelistedNFT] = staker.numberNFTStakedPerToken[_whitelistedNFT].add(1);
         whitelistedNFTStakedTotal = whitelistedNFTStakedTotal.add(1);
+        whitelistedNFTContractStakedTotal[_whitelistedNFT] = whitelistedNFTContractStakedTotal[_whitelistedNFT].add(1);
+
         staker.tokenIds[_whitelistedNFT].push(_tokenId);
         staker.tokenIndex[_whitelistedNFT][_tokenId] = staker.tokenIds[_whitelistedNFT].length.sub(1);
         tokenOwner[_whitelistedNFT][_tokenId] = _user;
@@ -357,7 +375,23 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     function _unstake(address _user, address _whitelistedNFT, uint256 _tokenId, bool _isApprovedParty) internal {
         Staker storage staker = stakers[_user];
 
+        nftStakeRecords[_whitelistedNFT][_tokenId][numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId].sub(1)].nftUnstakeTime = _getNow();
+
+        uint256 timeWasStaked = _getNow().sub(currentlyStakedWhitelistedNFTStakeTime(_whitelistedNFT, _tokenId));
+        amountOfTimeSpecificNFTHasBeenStakedTotal[_whitelistedNFT][_tokenId] = amountOfTimeSpecificNFTHasBeenStakedTotal[_whitelistedNFT][_tokenId].add(timeWasStaked);
+
+        uint256 timeContractNftWasStaked = (_getNow().sub(lastTimeContractNFTStakedPeriodRecorded[_whitelistedNFT])).mul(whitelistedNFTContractStakedTotal[_whitelistedNFT]);
+        amountOfTimeContractNFTsHaveBeenStakedTotal[_whitelistedNFT] = amountOfTimeContractNFTsHaveBeenStakedTotal[_whitelistedNFT].add(timeContractNftWasStaked);
+        lastTimeContractNFTStakedPeriodRecorded[_whitelistedNFT] = _getNow();
+
+        uint256 timeAllNFTWereStaked = (_getNow().sub(lastTimeAllNFTStakingPeriodRecorded)).mul(whitelistedNFTStakedTotal);
+        amountOfStakingTimeAllNFTsHaveBeenStaked = amountOfStakingTimeAllNFTsHaveBeenStaked.add(timeAllNFTWereStaked);
+        lastTimeAllNFTStakingPeriodRecorded = _getNow();
+
         whitelistedNFTStakedTotal = whitelistedNFTStakedTotal.sub(1);
+        whitelistedNFTContractStakedTotal[_whitelistedNFT] = whitelistedNFTContractStakedTotal[_whitelistedNFT].sub(1);
+
+        nftIsStaked[_whitelistedNFT][_tokenId] = false;
 
         uint256 lastIndex = staker.tokenIds[_whitelistedNFT].length - 1;
         uint256 lastIndexKey = staker.tokenIds[_whitelistedNFT][lastIndex];
@@ -382,9 +416,6 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
             totalRoundRewards = 0;
         }
 
-        nftIsStaked[_whitelistedNFT][_tokenId] = false;
-        nftStakeRecords[_whitelistedNFT][_tokenId][numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId].sub(1)].nftUnstakeTime = _getNow();
-
         IGuildNFTStakingWeightWhitelisted(address(weightContract)).unstakeWhitelistedNFT(_whitelistedNFT, _tokenId, _msgSender());
 
         if(_isApprovedParty){
@@ -394,6 +425,43 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         }
 
         emit Unstaked(_user, _whitelistedNFT, _tokenId);
+    }
+
+    // Only makes sense for nfts currently staked
+    function currentlyStakedWhitelistedNFTStakeTime(address _whitelistedNFT, uint256 _tokenId) public view returns (uint256){
+        if(nftIsStaked[_whitelistedNFT][_tokenId]){
+            return nftStakeRecords[_whitelistedNFT][_tokenId][numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId].sub(1)].nftStakeTime;
+        } else {
+            return 0;
+        }
+    }
+
+    function calcSpecificWhitelistedNFTOverallStakeTime(address _whitelistedNFT, uint256 _tokenId) external view returns (uint256){
+        if(nftIsStaked[_whitelistedNFT][_tokenId]){
+            uint256 timeWasStaked = _getNow().sub(currentlyStakedWhitelistedNFTStakeTime(_whitelistedNFT, _tokenId));
+            return amountOfTimeSpecificNFTHasBeenStakedTotal[_whitelistedNFT][_tokenId].add(timeWasStaked);
+        } else {
+            return amountOfTimeSpecificNFTHasBeenStakedTotal[_whitelistedNFT][_tokenId];
+        }
+    }
+
+    function calcWhitelistedNFTContractOverallStakeTime(address _whitelistedNFT) external view returns (uint256){
+        if(whitelistedNFTContractStakedTotal[_whitelistedNFT] > 0){
+            uint256 timeContractNftWasStaked = (_getNow().sub(lastTimeContractNFTStakedPeriodRecorded[_whitelistedNFT])).mul(whitelistedNFTContractStakedTotal[_whitelistedNFT]);
+            return amountOfTimeContractNFTsHaveBeenStakedTotal[_whitelistedNFT].add(timeContractNftWasStaked);
+
+        } else {
+            return amountOfTimeContractNFTsHaveBeenStakedTotal[_whitelistedNFT];
+        }
+    }
+
+    function calcAllWhitelistedNFTsOverallStakeTime(address _whitelistedNFT) external view returns (uint256){
+        if(whitelistedNFTStakedTotal > 0){
+            uint256 timeAllNFTWereStaked = (_getNow().sub(lastTimeAllNFTStakingPeriodRecorded)).mul(whitelistedNFTStakedTotal);
+            return amountOfStakingTimeAllNFTsHaveBeenStaked.add(timeAllNFTWereStaked);
+        } else {
+            return amountOfStakingTimeAllNFTsHaveBeenStaked;
+        }
     }
 
     // Unstake without caring about rewards. EMERGENCY ONLY.
@@ -407,7 +475,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         emit EmergencyUnstake(_msgSender(), _whitelistedNFT, _tokenId);
     }
 
-    // Only to be used in the maximum emergency case where an NFT is completely stuck, this could break the rest of the contract.
+    // Only to be used in the maximum emergency case where a extremely high value NFT is completely stuck, this could break the rest of the contract.
     // If this is used, should likely just refund every user their NFT as rewards will not be accurate.
     function adminEmergencySafeUnstake(address _whitelistedNFT, uint256 _tokenId) public {
         require(
