@@ -29,25 +29,11 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     mapping(address => uint256) whitelistedTokensIndex;
     address[] whitelistedTokens;
 
-    event AddWhitelistedTokens(
-        address[] whitelistedTokens
-    );
-
-    event RemoveWhitelistedTokens(
-        address[] whitelistedTokens
-    );
-
-    event UpdateAccessControls(
-        address indexed accessControls
-    );
-
     DigitalaxAccessControls public accessControls;
     IGuildNFTRewards public rewardsContract;
     IGuildNFTStakingWeight public weightContract;
 
     uint256 public whitelistedNFTStakedTotal;
-
-
     mapping (address => uint256) public whitelistedNFTContractStakedTotal;
 
     uint256 public lastUpdateTime;
@@ -71,7 +57,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
         mapping (address => uint256) numberNFTStakedPerToken; //continue here
         uint256 rewardsEarned;
         uint256 rewardsReleased;
-    } // TODO add some more getters to access this information
+    }
 
     struct StakeRecord {
         uint256 nftStakeTime;
@@ -107,6 +93,19 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     /// @notice sets the token to be claimable or not, cannot claim if it set to false
     bool public tokensClaimable;
     bool initialised;
+
+    // Events
+    event AddWhitelistedTokens(
+        address[] whitelistedTokens
+    );
+
+    event RemoveWhitelistedTokens(
+        address[] whitelistedTokens
+    );
+
+    event UpdateAccessControls(
+        address indexed accessControls
+    );
 
     /// @notice event emitted when a user has staked a token
     event Staked(address owner, address whitelistedNFT, uint256 tokenId);
@@ -647,30 +646,4 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     function getNFTStakedRecord(address _whitelistedNFT, uint256 _tokenId, uint256 _recordIndex) external view returns (uint256, uint256){
         return (nftStakeRecords[_whitelistedNFT][_tokenId][_recordIndex].nftStakeTime, nftStakeRecords[_whitelistedNFT][_tokenId][_recordIndex].nftUnstakeTime);
     }
-
-    // Big todo
-    function getDurationStaked(address _whitelistedNFT, uint256 _tokenId, uint256 _startTime, uint256 _endTime, uint256 _optionalIndexStart, uint256 _optionalIndexEnd) external view returns (uint256){
-        // mapping (address => mapping(uint256 => uint256)) public numberOfTimesNFTWasStaked;
-        // mapping (address => mapping(uint256 => mapping(uint256 => StakeRecord))) public nftStakeRecords;
-        require(_endTime > _startTime, "GuildWhitelistedNFTStaking.getDurationStaked: End time must be greater than start time");
-        uint256 index = numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId];
-        return index; // temporary.
-
-        // If there are optional indexes, we can use that as a guide.
-        // Start at the optional index for start.
-        // Loop through and say
-        // Is the start time in this index?, if so record the index, if not move on through indexes
-
-        // We identified the start index, so we can find the duration of stake within that index. If the duration is more so then that index, move accessControls
-
-        // start looking for the end index, if the optional index end is ok use that and move on
-
-        // sample to find the end of the index, and record that
-
-        // For each index between the start and end index, we need to keep track of how much quantity of time was included in those indexes
-        // Return the summation of this amount of time.
-
-    }
-
-
 }
