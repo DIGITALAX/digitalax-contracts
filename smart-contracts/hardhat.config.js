@@ -1,20 +1,25 @@
 require('dotenv').config();
-usePlugin('@nomiclabs/buidler-waffle');
-usePlugin('@nomiclabs/buidler-truffle5');
-usePlugin('buidler-gas-reporter');
-usePlugin('solidity-coverage');
-usePlugin('@nomiclabs/buidler-solhint');
-usePlugin('buidler-contract-sizer');
+require('@nomiclabs/hardhat-waffle');
+require('@nomiclabs/hardhat-truffle5');
+require('hardhat-gas-reporter');
+require('solidity-coverage');
+require('@nomiclabs/hardhat-solhint');
+require('hardhat-contract-sizer');
+require('@nomiclabs/hardhat-ethers');
+require('@openzeppelin/hardhat-upgrades');
+
 
 const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
 module.exports = {
-  solc: {
+  solidity: {
     version: '0.6.12',
-    optimizer: {
-      enabled: true,
-      runs: 200
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
     }
   },
   gasReporter: {
@@ -57,8 +62,8 @@ module.exports = {
       //url: `https://matic-mainnet.chainstacklabs.com`,
       //url: `https://rpc-mainnet.maticvigil.com/v1/293c0f4455f0a5933014c66d2fb84f7ca257d16b`,
       accounts: [`0x${PRIVATE_KEY}`],
-      gasPrice: 12000000000,
-      timeout: 30000
+      gasPrice: 10000000000,
+      timeout: 3600000
     },
     coverage: {
       url: 'http://localhost:8555',

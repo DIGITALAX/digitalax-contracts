@@ -10,7 +10,7 @@ import "./interfaces/IERC20.sol";
 import "./interfaces/IGuildNFTRewards.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "./interfaces/IGuildNFTStakingWeight.sol";
-import "@nomiclabs/buidler/console.sol";
+import "hardhat/console.sol";
 /**
  * @title Digitalax Staking
  * @dev Stake NFTs, earn tokens on the Digitalax platform

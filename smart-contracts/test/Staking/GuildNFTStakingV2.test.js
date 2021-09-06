@@ -1,3 +1,5 @@
+//const { upgrades} = require( "@openzeppelin/hardhat-upgrades");
+
 const {
 	expectRevert,
 	expectEvent,
@@ -18,9 +20,11 @@ const {
   const GuildNFTStaking = artifacts.require('GuildNFTStakingMock');
   const GuildWhitelistedNFTStaking = artifacts.require('GuildWhitelistedNFTStakingMock');
   const GuildNFTStakingWeight = artifacts.require('GuildNFTStakingWeightV2Mock');
+  const GuildNFTStakingWeightV2Storage = artifacts.require('GuildNFTStakingWeightV2Storage');
+  const GuildNFTStakingWeightV3 = artifacts.require('GuildNFTStakingWeightV3');
   const DecoOracle = artifacts.require('DecoOracle');
-  const PodeNFTv2 = artifacts.require('PodeNFTv2');
-  const DigitalaxGarmentNFTV2 = artifacts.require('DigitalaxGarmentNFTV2');
+  const PodeNFTv2 = artifacts.require('contracts/PodeNFTv2.sol:PodeNFTv2');
+  const DigitalaxGarmentNFTV2 = artifacts.require('DigitalaxGarmentNFTv2');
   const DigitalaxMaterials = artifacts.require('DigitalaxMaterialsV2');
 
   // 1,000 * 10 ** 18
@@ -84,6 +88,9 @@ const {
 
 	  this.stakingWeight = await GuildNFTStakingWeight.new();
 
+	  const StakingWeightV2StorageContractFactory = await ethers.getContractFactory("GuildNFTStakingWeightV2Storage");
+	  this.stakingWeightStorage = await upgrades.deployProxy(StakingWeightV2StorageContractFactory, [this.stakingWeight.address, this.accessControls.address], {initializer: 'initialize'});
+
 	  this.oracle = await DecoOracle.new(
 		  '31540000',
 		  '120',
@@ -113,7 +120,7 @@ const {
 		  constants.ZERO_ADDRESS
 	  );
 
-	  await this.stakingWeight.init(this.guildNftStaking.address, this.guildWhitelistedNftStaking.address, this.decoToken.address, this.accessControls.address);
+	  await this.stakingWeight.initialize(this.guildNftStaking.address, this.guildWhitelistedNftStaking.address, this.decoToken.address, this.accessControls.address, this.stakingWeightStorage.address);
 
 	  await this.guildNftStaking.setTokensClaimable(true, {from: admin});
 
@@ -426,7 +433,7 @@ const {
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'],{from: staker});
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'],{from: staker2});
 
-		  await this.stakingWeight.follow([this.skinsToken.address], ['100002'], {from: staker2})
+//		  await this.stakingWeight.follow([this.skinsToken.address], ['100002'], {from: staker2})
 
 		  console.log('The staked tokens are');
 		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker, this.skinsToken.address));
@@ -491,7 +498,7 @@ const {
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'],{from: staker});
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'],{from: staker2});
 
-		  await this.stakingWeight.share([this.skinsToken.address], ['100002'], {from: staker2})
+	//	  await this.stakingWeight.share([this.skinsToken.address], ['100002'], {from: staker2})
 
 		  console.log('The staked tokens are');
 		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker, this.skinsToken.address));
@@ -554,7 +561,7 @@ const {
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'],{from: staker});
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'],{from: staker2});
 
-		  await this.stakingWeight.metaverse([this.skinsToken.address], ['100002'], {from: staker2})
+	//	  await this.stakingWeight.metaverse([this.skinsToken.address], ['100002'], {from: staker2})
 
 		  console.log('The staked tokens are');
 		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker, this.skinsToken.address));
@@ -760,8 +767,8 @@ const {
 		  await this.stakingWeight.clapWhitelistedNFT([this.skinsToken.address], ['100002'], [30], {from: staker2})
 
 		  await this.stakingWeight.favorite([this.skinsToken.address], ['100002'], {from: staker2});
-		  await this.stakingWeight.follow([this.skinsToken.address], ['100002'], {from: staker2});
-		  await this.stakingWeight.share([this.skinsToken.address], ['100002'], {from: staker2});
+//		  await this.stakingWeight.follow([this.skinsToken.address], ['100002'], {from: staker2});
+//		  await this.stakingWeight.share([this.skinsToken.address], ['100002'], {from: staker2});
 
 
 		  const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -1236,6 +1243,154 @@ const {
 
 	const finalDecoBalance = await this.decoToken.balanceOf(staker);
 	const finalDecoBalance2 = await this.decoToken.balanceOf(staker2);
+
+
+	console.log('initial deco balance 1');
+	console.log(initialDecoBalance);
+	console.log('initial deco balance 2');
+	console.log(initialDecoBalance2);
+
+	console.log('final deco balance 1');
+	console.log(finalDecoBalance.toString());
+	console.log('final deco balance 2');
+	console.log(finalDecoBalance2.toString());
+
+	console.log('Make sure that staker 1 gets more than staker 2 because they had appraisals done');
+	expect(finalDecoBalance).to.be.bignumber.greaterThan(finalDecoBalance2);
+
+		expect(finalDecoBalance2.add(finalDecoBalance)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+
+	// expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(HUNDRED_TOKENS);
+	// expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(HUNDRED_TOKENS);
+
+	console.log('Staker 1 and 2');
+	console.log(finalDecoBalance.sub(initialDecoBalance).toString());
+	console.log(finalDecoBalance2.sub(initialDecoBalance2).toString());
+  });
+
+	it('successfully upgrades the contract', async () => {
+		const [adminAccount, stakerAccount, stakerAccount2] = await ethers.getSigners();
+
+		const StakingWeightV2ContractFactory = await ethers.getContractFactory("GuildNFTStakingWeightV2");
+		const StakingWeightV2ContractFactoryV2 = await ethers.getContractFactory("GuildNFTStakingWeightV3");
+
+		const stakingWeightDeployedProxy = await upgrades.deployProxy(StakingWeightV2ContractFactory, [this.guildNftStaking.address, this.guildWhitelistedNftStaking.address, this.decoToken.address, this.accessControls.address, this.stakingWeightStorage.address], {initializer: 'initialize'});
+
+		console.log('contracstt deployed');
+		await this.guildNftStaking.setWeightingContract(stakingWeightDeployedProxy.address, {from: admin});
+		await this.stakingWeightStorage.updateWeightContract(stakingWeightDeployedProxy.address, {from: admin});
+			console.log('weighting contract switched');
+		const stakingWeightDepoyedProxy2 = stakingWeightDeployedProxy; //
+
+		const newWeighting = new ethers.Contract(
+			stakingWeightDepoyedProxy2.address,
+			GuildNFTStakingWeight.abi,
+			stakerAccount
+		);
+		const newWeighting2 = new ethers.Contract(
+			stakingWeightDepoyedProxy2.address,
+			GuildNFTStakingWeight.abi,
+			stakerAccount2
+		);
+		console.log('proxy updated');
+	await this.token.mint(stakerAccount.address, minter, {from: minter});
+	await this.token.mint(stakerAccount.address, minter, {from: minter});
+	await this.token.mint(stakerAccount2.address, minter, {from: minter});
+	await this.token.mint(stakerAccount2.address, minter, {from: minter});
+	await this.token.setPrimarySalePrice(TOKEN_1, ONE_ETH, {from: admin});
+	await this.token.setPrimarySalePrice(TOKEN_2, ONE_ETH, {from: admin});
+	await this.token.setPrimarySalePrice(TOKEN_3, ONE_ETH, {from: admin});
+	await this.token.setPrimarySalePrice(TOKEN_4, ONE_ETH, {from: admin});
+	await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: stakerAccount.address});
+	await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: stakerAccount2.address});
+	await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2],{from: stakerAccount.address});
+	await this.guildNftStaking.stakeBatch([TOKEN_3,TOKEN_4],{from: stakerAccount2.address});
+
+	// Mint staker 3vsome skins tokens
+	await this.skinsToken.mint(staker3, randomURI, minter, {from: minter});
+	await this.skinsToken.mint(staker3, randomURI, minter, {from: minter});
+	await this.skinsToken.mint(staker3, randomURI, minter, {from: minter});
+	await this.skinsToken.mint(staker3, randomURI, minter, {from: minter});
+
+	await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker3});
+
+	await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100001','100002','100003','100004'],{from: staker3});
+
+	//await stakingWeightDeployedProxy.favorite(new Array(3).fill(this.skinsToken.address), ['100001', '100002', '100003'], {from: staker});
+	await newWeighting.favorite(new Array(3).fill(this.skinsToken.address), ['100001', '100002', '100003']);
+
+	// await stakingWeightDeployedProxy.appraiseGuildMember(Array(1).fill(staker), Array(1).fill( 'Love'), {from: staker2});
+	// await stakingWeightDeployedProxy.appraiseGuildMember(Array(1).fill(staker2), Array(1).fill( 'Love'), {from: staker});
+	await newWeighting2.appraiseGuildMember(Array(1).fill(stakerAccount.address), Array(1).fill( 'Love'));
+	await newWeighting.appraiseGuildMember(Array(1).fill(stakerAccount2.address), Array(1).fill( 'Love'));
+
+	//	await this.stakingWeight.appraiseGuildMember(Array(200).fill(staker), Array(200).fill( 'Love'), {from: staker2});
+	//await this.guildNftStaking.stakeAll({from: staker});
+	console.log(await this.guildNftStaking.getStakedTokens(stakerAccount.address));
+	console.log(await this.guildNftStaking.getStakedTokens(stakerAccount2.address));
+	//
+
+		await this.guildNFTRewards.setNowOverride('1209601'); // next week
+		await this.guildNftStaking.setNowOverride('1209601'); // next week
+		await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
+		await this.stakingWeight.setNowOverride('1209601'); // next week
+	console.log('balance of staker before and after:');
+
+	const initialDecoBalance = await this.decoToken.balanceOf(stakerAccount.address);
+	const initialDecoBalance2 = await this.decoToken.balanceOf(stakerAccount2.address);
+
+	console.log("Unclaimed rewards");
+	console.log(await this.guildNftStaking.unclaimedRewards(stakerAccount.address));
+	console.log(await this.guildNftStaking.unclaimedRewards(stakerAccount2.address));
+
+	//await time.increase(time.duration.seconds(1000001));
+
+	console.log('await this.guildNFTRewards.getDecoDailyAPY()');
+	console.log(await this.guildNFTRewards.getDecoDailyAPY());
+
+	console.log("staker1");
+	console.log(stakerAccount.address);
+	console.log("staker2");
+	console.log(stakerAccount2.address);
+	console.log("weights");
+	console.log((await stakingWeightDepoyedProxy2.getOwnerWeight(stakerAccount.address)).toString());
+	console.log((await stakingWeightDepoyedProxy2.getOwnerWeight(stakerAccount2.address)).toString());
+	console.log("diving in");
+	console.log((await stakingWeightDeployedProxy.getTotalWhitelistedNFTTokenWeight()).toString());
+	console.log((await stakingWeightDepoyedProxy2.getTotalWhitelistedNFTTokenWeight()).toString());
+	console.log((await stakingWeightDepoyedProxy2.startTime()).toString());
+	console.log('Thats it folks');
+
+	const stakingWeightV3Contract = await upgrades.upgradeProxy(stakingWeightDeployedProxy.address, StakingWeightV2ContractFactoryV2);
+		console.log("diving in");
+		console.log((await stakingWeightDeployedProxy.getTotalWhitelistedNFTTokenWeight()).toString());
+		console.log((await stakingWeightDepoyedProxy2.getTotalWhitelistedNFTTokenWeight()).toString());
+		console.log((await stakingWeightV3Contract.getTotalWhitelistedNFTTokenWeight()).toString());
+
+
+		console.log((await stakingWeightDepoyedProxy2.startTime()).toString());
+		console.log((await stakingWeightV3Contract.startTime()).toString());
+
+		console.log((await stakingWeightV3Contract.testValue()).toString());
+
+		await stakingWeightV3Contract.setTest();
+		console.log('initialized')
+		console.log((await stakingWeightV3Contract.testValue()).toString());
+
+		console.log('Thats it folks');
+
+	await this.guildNftStaking.unstakeBatch([TOKEN_1,TOKEN_2], {from: stakerAccount.address});
+
+		console.log("weights");
+		console.log((await stakingWeightDeployedProxy.getOwnerWeight(stakerAccount.address)).toString());
+		console.log((await stakingWeightDeployedProxy.getOwnerWeight(stakerAccount2.address)).toString());
+		console.log((await stakingWeightDeployedProxy.getTotalWeight()).toString());
+
+	await this.guildNftStaking.unstakeBatch([TOKEN_3, TOKEN_4], {from: stakerAccount2.address});
+
+
+	const finalDecoBalance = await this.decoToken.balanceOf(stakerAccount.address);
+	const finalDecoBalance2 = await this.decoToken.balanceOf(stakerAccount2.address);
 
 
 	console.log('initial deco balance 1');

@@ -7,8 +7,9 @@ import "../DigitalaxAccessControls.sol";
 //import "./interfaces/IGuildNFTStakingWeight.sol";
 //import "./interfaces/IGuildNFTStakingWeightWhitelisted.sol";
 
-import "@nomiclabs/buidler/console.sol";
+import "hardhat/console.sol";
 import "./interfaces/IGuildNFTStakingWeightStorage.sol";
+import "@openzeppelin/contracts/proxy/Initializable.sol";
 
 import "../EIP2771/BaseRelayRecipient.sol";
 /**
@@ -18,10 +19,9 @@ import "../EIP2771/BaseRelayRecipient.sol";
  * @author
  */
 
-abstract contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRelayRecipient {
+contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRelayRecipient, Initializable {
     using SafeMath for uint256;
 
-    bool initialised;
     uint256 constant MULTIPLIER = 100000;
     // Important contract addresses we need to set
     DigitalaxAccessControls public accessControls;
@@ -39,18 +39,18 @@ abstract contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorag
 
     // Constants
 
-    uint256 DECAY_POINT_DEFAULT = 75; // 7.5%
-    uint256 DECAY_POINT_WITH_APPRAISAL = 25; // 2.5%
+    uint256 public DECAY_POINT_DEFAULT;
+    uint256 public DECAY_POINT_WITH_APPRAISAL;
 
     // Overall variables
-    uint256 startTime;
-    uint256 stakedNFTCount;
-    uint256 stakedWhitelistedNFTCount;
-    uint256 totalWhitelistedNFTTokenWeight;
-    uint256 totalGuildWeight;
+    uint256 public startTime;
+    uint256 public stakedNFTCount;
+    uint256 public stakedWhitelistedNFTCount;
+    uint256 public totalWhitelistedNFTTokenWeight;
+    uint256 public totalGuildWeight;
 
-    uint256 lastUpdateDay;
-    uint256 lastGuildMemberUpdateDay;
+    uint256 public lastUpdateDay;
+    uint256 public lastGuildMemberUpdateDay;
 
     // Struct Arrays
     PercentageMapping[9] clapMapping;
@@ -58,14 +58,26 @@ abstract contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorag
     AppraisedBonusMapping[13] appraisalBonusMapping;
 
     // Mappings
-    mapping (string => uint256) reactionPoint;
-    mapping (uint256 => address) tokenOwner;
-    mapping (address => mapping(uint256 => address)) whitelistedNFTTokenOwner;
+    mapping (string => uint256) public reactionPoint;
+    mapping (uint256 => address) public tokenOwner;
+    mapping (address => mapping(uint256 => address)) public whitelistedNFTTokenOwner;
 
-    mapping (uint256 => uint256) dailyWeight;
+    mapping (uint256 => uint256) public dailyWeight;
 
-    constructor() public {
+    modifier onlyWeightContract() {
+        require(
+            _msgSender() == weightContract,
+            "GuildNFTStakingWeightV2Storage.onlyWeightContract: caller is not the weight contract"
+        );
+        _;
+    }
+
+    function initialize(address _weightContract, DigitalaxAccessControls _accessControls) public initializer {
         startTime = _getNow();
+
+        DECAY_POINT_DEFAULT = 75; // 7.5%
+        DECAY_POINT_WITH_APPRAISAL = 25; // 2.5%
+
         reactionPoint["Self"] = 1;
         reactionPoint["Love"] = 30;
         reactionPoint["Like"] = 10;
@@ -113,23 +125,61 @@ abstract contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorag
         appraisalBonusMapping[10] = AppraisedBonusMapping(3600, 55);
         appraisalBonusMapping[11] = AppraisedBonusMapping(6000, 89);
         appraisalBonusMapping[12] = AppraisedBonusMapping(13000, 144);
-    }
-
-    modifier onlyWeightContract() {
-        require(
-            _msgSender() == weightContract,
-            "GuildNFTStakingWeightV2Storage.onlyWeightContract: caller is not the weight contract"
-        );
-        _;
-    }
-
-    function init(address _weightContract, DigitalaxAccessControls _accessControls) external {
-        require(!initialised, "Already initialised");
 
         accessControls = _accessControls;
         weightContract = _weightContract;
+    }
 
-        initialised = true;
+    function getDECAY_POINT_DEFAULT() external override view returns (uint256){
+        return DECAY_POINT_DEFAULT;
+    }
+
+    function getDECAY_POINT_WITH_APPRAISAL() external override view returns (uint256){
+        return DECAY_POINT_WITH_APPRAISAL;
+    }
+
+    function getDailyWeight(uint256 _day) external override view returns (uint256){
+        return dailyWeight[_day];
+    }
+
+    function getLastGuildMemberUpdateDay() external override view returns (uint256){
+        return lastGuildMemberUpdateDay;
+    }
+
+    function getLastUpdateDay() external override view returns (uint256){
+        return lastUpdateDay;
+    }
+
+    function getReactionPoint(string memory _type) external override view returns (uint256){
+        return reactionPoint[_type];
+    }
+
+    function getStakedNFTCount() external override view returns (uint256){
+        return stakedNFTCount;
+    }
+
+    function getStakedWhitelistedNFTCount() external override view returns (uint256){
+        return stakedWhitelistedNFTCount;
+    }
+
+    function getStartTime() external override view returns (uint256){
+        return startTime;
+    }
+
+    function getTokenOwner(uint256 _tokenId) external override view returns (address){
+        return tokenOwner[_tokenId];
+    }
+
+    function getTotalGuildWeight() external override view returns (uint256){
+        return totalGuildWeight;
+    }
+
+    function getTotalWhitelistedNFTTokenWeight() external override view returns (uint256){
+        return totalWhitelistedNFTTokenWeight;
+    }
+
+    function getWhitelistedNFTTokenOwner(address _whitelistedNFT, uint256 _tokenId) external override view returns (address){
+        return whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId];
     }
 
     function setClapsMappingValue(uint256[] memory percentage, uint256[] memory mappingValue) external {
@@ -181,15 +231,6 @@ abstract contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorag
         );
         require(address(_accessControls) != address(0), "GuildNFTStakingWeightV2.updateAccessControls: Zero Address");
         accessControls = _accessControls;
-    }
-
-    function updateStartTime(uint256 _startTime) external {
-        require(
-            accessControls.hasAdminRole(_msgSender()),
-            "GuildNFTStakingWeightV2.updateStartTime: Sender must be admin"
-        );
-
-        startTime = _startTime;
     }
 
     // Note needs to be 10x higher then the percentage you are interested in.
@@ -296,7 +337,7 @@ abstract contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorag
     function setStartTime(uint256 _startTime) external returns (uint256){
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "GuildNFTStaking.updateAccessControls: Sender must be admin"
+            "GuildNFTStakingWeightV2Storage.updateAccessControls: Sender must be admin"
         );
         startTime = _startTime;
         return startTime;
@@ -375,5 +416,28 @@ abstract contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorag
 
     function _getNow() internal virtual view returns (uint256) {
         return block.timestamp;
+    }
+
+    // TODO TEMPORARY **************
+//    uint256 public nowOverride;
+//
+//    function setNowOverride(uint256 _now) external {
+//        nowOverride = _now;
+//    }
+//
+//    function _getNow() internal view returns (uint256) {
+//        return nowOverride;
+//    }
+
+    function updateWeightContract(address _weightContract) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "GuildNFTStakingWeightV2Storage.updateWeightContract: Sender must be admin"
+        );
+
+        weightContract = _weightContract;
+    }
+    function versionRecipient() external view override returns (string memory) {
+        return "1";
     }
 }

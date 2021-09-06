@@ -13,7 +13,7 @@ import "./interfaces/IGuildNFTStakingWeightWhitelisted.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "./interfaces/IGuildNFTStakingWeight.sol";
 
-import "@nomiclabs/buidler/console.sol";
+import "hardhat/console.sol";
 /**
  * @title Digitalax whitelisted Staking
  * @dev Stake whitelisted nfts and stake membership guild tokens upon them

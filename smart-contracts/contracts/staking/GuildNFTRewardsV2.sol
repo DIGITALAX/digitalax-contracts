@@ -12,7 +12,7 @@ import "./interfaces/IGuildNFTRewards.sol";
 import "./interfaces/IGuildNFTRewardsWhitelisted.sol";
 import "@openzeppelin/contracts/proxy/Initializable.sol";
 
-import "@nomiclabs/buidler/console.sol";
+import "hardhat/console.sol";
 
 /**
  * @title Digitalax Rewards
