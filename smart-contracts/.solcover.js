@@ -82,7 +82,6 @@ module.exports = {
         'mock/DigitalaxSubscriptionMarketplaceMock.sol',
         'mock/DigitalaxSubscriptionNFTTunnelMock.sol',
         'mock/DigitalaxSubscriptionRootTunnelMock.sol',
-        'oracle/DecoOracle_me.sol',
         'oracle/DecoOracle.sol',
         'oracle/DigitalaxMonaOracle.sol',
         'oracle/DripOracle.sol',
