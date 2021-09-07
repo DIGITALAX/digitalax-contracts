@@ -42,16 +42,6 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
     uint256 public DECAY_POINT_DEFAULT;
     uint256 public DECAY_POINT_WITH_APPRAISAL;
 
-    // Overall variables
-    uint256 public startTime;
-    uint256 public stakedNFTCount;
-    uint256 public stakedWhitelistedNFTCount;
-    uint256 public totalWhitelistedNFTTokenWeight;
-    uint256 public totalGuildWeight;
-
-    uint256 public lastUpdateDay;
-    uint256 public lastGuildMemberUpdateDay;
-
     // Struct Arrays
     PercentageMapping[9] clapMapping;
     PercentageMapping[9] decoBonusMapping;
@@ -59,10 +49,6 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
 
     // Mappings
     mapping (string => uint256) public reactionPoint;
-    mapping (uint256 => address) public tokenOwner;
-    mapping (address => mapping(uint256 => address)) public whitelistedNFTTokenOwner;
-
-    mapping (uint256 => uint256) public dailyWeight;
 
     modifier onlyWeightContract() {
         require(
@@ -73,7 +59,6 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
     }
 
     function initialize(address _weightContract, DigitalaxAccessControls _accessControls) public initializer {
-        startTime = _getNow();
 
         DECAY_POINT_DEFAULT = 75; // 7.5%
         DECAY_POINT_WITH_APPRAISAL = 25; // 2.5%
@@ -138,49 +123,10 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
         return DECAY_POINT_WITH_APPRAISAL;
     }
 
-    function getDailyWeight(uint256 _day) external override view returns (uint256){
-        return dailyWeight[_day];
-    }
-
-    function getLastGuildMemberUpdateDay() external override view returns (uint256){
-        return lastGuildMemberUpdateDay;
-    }
-
-    function getLastUpdateDay() external override view returns (uint256){
-        return lastUpdateDay;
-    }
-
     function getReactionPoint(string memory _type) external override view returns (uint256){
         return reactionPoint[_type];
     }
 
-    function getStakedNFTCount() external override view returns (uint256){
-        return stakedNFTCount;
-    }
-
-    function getStakedWhitelistedNFTCount() external override view returns (uint256){
-        return stakedWhitelistedNFTCount;
-    }
-
-    function getStartTime() external override view returns (uint256){
-        return startTime;
-    }
-
-    function getTokenOwner(uint256 _tokenId) external override view returns (address){
-        return tokenOwner[_tokenId];
-    }
-
-    function getTotalGuildWeight() external override view returns (uint256){
-        return totalGuildWeight;
-    }
-
-    function getTotalWhitelistedNFTTokenWeight() external override view returns (uint256){
-        return totalWhitelistedNFTTokenWeight;
-    }
-
-    function getWhitelistedNFTTokenOwner(address _whitelistedNFT, uint256 _tokenId) external override view returns (address){
-        return whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId];
-    }
 
     function setClapsMappingValue(uint256[] memory percentage, uint256[] memory mappingValue) external {
         require(percentage.length == 9, "GuildNFTStakingWeightV2.setClapsMappingValue: Must set all mapping values");
@@ -332,58 +278,6 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
         }// 0 held
     }
 
-
-    //    // Overall variables
-    function setStartTime(uint256 _startTime) external returns (uint256){
-        require(
-            accessControls.hasAdminRole(_msgSender()),
-            "GuildNFTStakingWeightV2Storage.updateAccessControls: Sender must be admin"
-        );
-        startTime = _startTime;
-        return startTime;
-    }
-
-    function setStakedNFTCount(uint256 _stakedNFTCount) onlyWeightContract external override returns (uint256){
-        stakedNFTCount = _stakedNFTCount;
-        return stakedNFTCount;
-    }
-
-    function setStakedWhitelistedNFTCount(uint256 _stakedWhitelistedNFTCount) onlyWeightContract external override returns (uint256){
-        stakedWhitelistedNFTCount = _stakedWhitelistedNFTCount;
-        return stakedWhitelistedNFTCount;
-    }
-
-
-    function setTotalWhitelistedNFTTokenWeight(uint256 _totalWhitelistedNFTTokenWeight) onlyWeightContract external override returns (uint256){
-        totalWhitelistedNFTTokenWeight = _totalWhitelistedNFTTokenWeight;
-        return totalWhitelistedNFTTokenWeight;
-    }
-
-
-    function setTotalGuildWeight(uint256 _totalGuildWeight) onlyWeightContract external override returns (uint256){
-        totalGuildWeight = _totalGuildWeight;
-        return totalGuildWeight;
-    }
-
-    function setLastUpdateDay(uint256 _lastUpdateDay) external returns (uint256){
-        require(
-        accessControls.hasAdminRole(_msgSender()),
-        "GuildNFTStaking.setLastUpdateDay: Sender must be admin"
-        );
-        lastUpdateDay = _lastUpdateDay;
-        return lastUpdateDay;
-    }
-
-    function setLastGuildMemberUpdateDay(uint256 _lastGuildMemberUpdateDay) external returns (uint256){
-        require(
-            accessControls.hasAdminRole(_msgSender()),
-            "GuildNFTStaking.setLastGuildMemberUpdateDay: Sender must be admin"
-        );
-        lastGuildMemberUpdateDay = _lastGuildMemberUpdateDay;
-        return lastGuildMemberUpdateDay;
-    }
-
-
     //    // Mappings
     function updateReactionPoint(string memory _reaction, uint256 _point) external returns(uint256) {
         require(
@@ -395,39 +289,10 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
         return reactionPoint[_reaction];
     }
 
-    function setTokenOwner(uint256 _tokenId, address _owner) onlyWeightContract external override returns (address){
-        tokenOwner[_tokenId] = _owner;
-        return tokenOwner[_tokenId];
-    }
-
-    function setWhitelistedNFTTokenOwner(address _whitelistedNFT, uint256 _tokenId, address _whitelistedNFTTokenOwner) onlyWeightContract external override returns (address){
-        whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId] = _whitelistedNFTTokenOwner;
-        return whitelistedNFTTokenOwner[_whitelistedNFT][_tokenId];
-    }
-
-    function setDailyWeight(uint256 _day, uint256 _dailyWeight) onlyWeightContract external override returns (uint256){
-        dailyWeight[_day] = _dailyWeight;
-        return dailyWeight[_day];
-    }
 
     function _msgSender() internal view returns (address payable sender) {
         return BaseRelayRecipient.msgSender();
     }
-
-    function _getNow() internal virtual view returns (uint256) {
-        return block.timestamp;
-    }
-
-    // TODO TEMPORARY **************
-//    uint256 public nowOverride;
-//
-//    function setNowOverride(uint256 _now) external {
-//        nowOverride = _now;
-//    }
-//
-//    function _getNow() internal view returns (uint256) {
-//        return nowOverride;
-//    }
 
     function updateWeightContract(address _weightContract) external {
         require(
