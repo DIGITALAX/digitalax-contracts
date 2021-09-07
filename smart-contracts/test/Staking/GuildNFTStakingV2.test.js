@@ -263,7 +263,7 @@ const {
 	  await this.guildNftStaking.setNowOverride('1209601'); // next week
 	  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 	  await this.stakingWeight.setNowOverride('1209601'); // next week
-	  await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 	  console.log('balance of staker before and after:');
 
 	  const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -324,7 +324,7 @@ const {
 		  await this.guildNftStaking.setNowOverride('1209601'); // next week
 		  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		  await this.stakingWeight.setNowOverride('1209601'); // next week
-		  await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 		  console.log('balance of staker before and after:');
 
 		  const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -380,7 +380,7 @@ const {
 		  await this.guildNftStaking.setNowOverride('1209601'); // next week
 		  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		  await this.stakingWeight.setNowOverride('1209601'); // next week
-		  await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 		  console.log('balance of staker before and after:');
 
 		  const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -447,7 +447,7 @@ const {
 		  await this.guildNftStaking.setNowOverride('1209601'); // next week
 		  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		  await this.stakingWeight.setNowOverride('1209601'); // next week
-		  await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 
 		  const initialDecoBalance = await this.decoToken.balanceOf(staker);
 		  const initialDecoBalance2 = await this.decoToken.balanceOf(staker2);
@@ -512,7 +512,7 @@ const {
 		  await this.guildNftStaking.setNowOverride('1209601'); // next week
 		  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		  await this.stakingWeight.setNowOverride('1209601'); // next week
-		  await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 
 		  const initialDecoBalance = await this.decoToken.balanceOf(staker);
 		  const initialDecoBalance2 = await this.decoToken.balanceOf(staker2);
@@ -576,7 +576,7 @@ const {
 		  await this.guildNftStaking.setNowOverride('1209601'); // next week
 		  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		  await this.stakingWeight.setNowOverride('1209601'); // next week
-		  await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 
 		  const initialDecoBalance = await this.decoToken.balanceOf(staker);
 		  const initialDecoBalance2 = await this.decoToken.balanceOf(staker2);
@@ -646,7 +646,7 @@ const {
 		  await this.guildNftStaking.setNowOverride('1209601'); // next week
 		  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		  await this.stakingWeight.setNowOverride('1209601'); // next week
-		  await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 
 		  const initialDecoBalance = await this.decoToken.balanceOf(staker);
 		  const initialDecoBalance2 = await this.decoToken.balanceOf(staker2);
@@ -709,7 +709,7 @@ const {
 		  await this.guildNftStaking.setNowOverride('1209601'); // next week
 		  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		  await this.stakingWeight.setNowOverride('1209601'); // next week
-		  await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 
 		  const initialDecoBalance = await this.decoToken.balanceOf(staker);
 		  const initialDecoBalance2 = await this.decoToken.balanceOf(staker2);
@@ -771,7 +771,7 @@ const {
 		  await this.guildNftStaking.setNowOverride('1209601'); // next week
 		  await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		  await this.stakingWeight.setNowOverride('1209601'); // next week
-		  await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 
 		  await this.stakingWeight.clapWhitelistedNFT([this.skinsToken.address], ['100002'], [30], {from: staker2})
 
@@ -829,7 +829,7 @@ const {
 		await this.guildNftStaking.setNowOverride('1209601'); // next week
 		await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		await this.stakingWeight.setNowOverride('1209601'); // next week
-		await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 	  console.log('balance of staker before and after:');
 
 	  const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -858,7 +858,7 @@ const {
 		await this.guildNftStaking.setNowOverride('1209601'); // next week
 		await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		await this.stakingWeight.setNowOverride('1209601'); // next week
-		await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 	  console.log('balance of staker before and after:');
 
 	  const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -885,7 +885,7 @@ const {
 		await this.guildNftStaking.setNowOverride('1209601'); // next week
 		await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		await this.stakingWeight.setNowOverride('1209601'); // next week
-		await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 	  console.log('balance of staker before and after:');
 
 	  const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -912,7 +912,7 @@ const {
 		await this.guildNftStaking.setNowOverride('1209601'); // next week
 		await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		await this.stakingWeight.setNowOverride('1209601'); // next week
-		await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 	  console.log('balance of staker before and after:');
 
 	  const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -953,7 +953,7 @@ const {
 		await this.guildNftStaking.setNowOverride('1209601'); // next week
 		await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		await this.stakingWeight.setNowOverride('1209601'); // next week
-		await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 	console.log('balance of staker before and after:');
 
 	const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -1039,7 +1039,7 @@ const {
 		await this.guildNftStaking.setNowOverride('1209601'); // next week
 		await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		await this.stakingWeight.setNowOverride('1209601'); // next week
-		await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+		 // next week
 	console.log('balance of staker before and after:');
 
 	const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -1125,7 +1125,7 @@ const {
 		await this.guildNftStaking.setNowOverride('1209601'); // next week
 		await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		await this.stakingWeight.setNowOverride('1209601'); // next week
-		await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 	console.log('balance of staker before and after:');
 
 	const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -1224,7 +1224,7 @@ const {
 		await this.guildNftStaking.setNowOverride('1209601'); // next week
 		await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		await this.stakingWeight.setNowOverride('1209601'); // next week
-		await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 	console.log('balance of staker before and after:');
 
 	const initialDecoBalance = await this.decoToken.balanceOf(staker);
@@ -1351,7 +1351,7 @@ const {
 		await this.guildNftStaking.setNowOverride('1209601'); // next week
 		await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		await this.stakingWeight.setNowOverride('1209601'); // next week
-		await this.stakingWeightStorage.setNowOverride('1209601'); // next week
+
 	console.log('balance of staker before and after:');
 
 	const initialDecoBalance = await this.decoToken.balanceOf(stakerAccount.address);
