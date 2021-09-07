@@ -626,29 +626,48 @@ contract GuildNFTStakingWeightV2 {
         lastGuildMemberUpdateDay = (_currentDay);
     }
 
-    function favorite(address[] memory _whitelistedNFTs, uint256[] memory _tokenIds) external {
-        require(ownerWeight[_msgSender()].stakedNFTCount > 0, "GuildNFTStakingWeightV2.favorite: Sender must stake PODE");
+    // Fixed reaction - reactWhitelistedNFT represents favorite, follow, share, and metaverse.
+    function reactWhitelistedNFT(address[] memory _whitelistedNFTs, uint256[] memory _tokenIds, string[] memory _reactions) external {
+        require(ownerWeight[_msgSender()].stakedNFTCount > 0, "GuildNFTStakingWeightV2.reactWhitelistedNFT: Sender must stake PODE");
+        require(_whitelistedNFTs.length == _tokenIds.length, "GuildNFTStakingWeightV2.reactWhitelistedNFT: Token id Arrays must be equal in length");
+        require(_whitelistedNFTs.length == _reactions.length, "GuildNFTStakingWeightV2.reactWhitelistedNFT: Reaction Arrays must be equal in length");
 
         uint256 _currentDay = diffDays(startTime, _getNow());
 
         AppraiserStats storage appraiser = appraiserStats[_msgSender()];
 
-        require(_whitelistedNFTs.length == _tokenIds.length, "Must be equal quantity of whitelisted and token ids");
         for (uint256 i = 0; i < _whitelistedNFTs.length; i++) {
-
-//            console.log("update today weight by reactions %s", _whitelistedNFTs[i]);
-
-            require(
-                appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].favoriteCount == 0,
-                "WeightingContract.favorite: Members can favorite an NFT once per day."
-            );
-
-            // Appraiser
-            appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].favoriteCount = 1;
-
-            // Token
             TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFTs[i]][_tokenIds[i]];
-            token.dailyTokenReaction[_currentDay].favoriteCount = token.dailyTokenReaction[_currentDay].favoriteCount.add(1);
+            if (keccak256(bytes(_reactions[i])) == keccak256(bytes("Favorite"))) {
+                require(appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].favoriteCount == 0,
+                    "WeightingContract.reactWhitelistedNFT: Members can favorite an NFT once per day.");
+                appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].favoriteCount = 1;
+                token.dailyTokenReaction[_currentDay].favoriteCount = token.dailyTokenReaction[_currentDay].favoriteCount.add(1);
+
+            } else if (keccak256(bytes(_reactions[i])) == keccak256(bytes("Follow"))) {
+                require(appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].followCount == 0,
+                    "WeightingContract.reactWhitelistedNFT: Members can follow an NFT once per day.");
+                appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].followCount = 1;
+                token.dailyTokenReaction[_currentDay].followCount = token.dailyTokenReaction[_currentDay].followCount.add(1);
+
+            } else if (keccak256(bytes(_reactions[i])) == keccak256(bytes("Share"))) {
+                require(appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].shareCount == 0,
+                    "WeightingContract.reactWhitelistedNFT: Members can share an NFT once per day.");
+                appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].shareCount = 1;
+                token.dailyTokenReaction[_currentDay].shareCount = token.dailyTokenReaction[_currentDay].shareCount.add(1);
+
+            } else if (keccak256(bytes(_reactions[i])) == keccak256(bytes("Metaverse"))) {
+                require(appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].metaverseCount == 0,
+                    "WeightingContract.reactWhitelistedNFT: Members can metaverse an NFT once per day.");
+                appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].metaverseCount = 1;
+                token.dailyTokenReaction[_currentDay].metaverseCount = token.dailyTokenReaction[_currentDay].metaverseCount.add(1);
+
+            } else {
+                require(
+                    false,
+                    "WeightingContract.reactWhitelistedNFT: An inputted reaction string is not allowed"
+                );
+            }
 
             _updateTodayWeightByReaction(_whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][ _tokenIds[i]]);
         }
@@ -658,95 +677,8 @@ contract GuildNFTStakingWeightV2 {
         _guildMemberWeight.dailyTokenReaction[currentDay].appraisalCount["Self"] = _guildMemberWeight.dailyTokenReaction[currentDay].appraisalCount["Self"].add(_tokenIds.length);
         _updateTodayGuildMemberWeightByReaction(_msgSender());
     }
-//
-//    function follow(address[] memory _whitelistedNFTs, uint256[] memory _tokenIds) external {
-//        require(ownerWeight[_msgSender()].stakedNFTCount > 0, "GuildNFTStakingWeightV2.follow: Sender must stake PODE");
-//
-//        uint256 _currentDay = diffDays(startTime, _getNow());
-//
-//        AppraiserStats storage appraiser = appraiserStats[_msgSender()];
-//        require(_whitelistedNFTs.length == _tokenIds.length, "Must be equal quantity of whitelisted and token ids");
-//        for (uint256 i = 0; i < _whitelistedNFTs.length; i++) {
-//            require(
-//                appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].followCount == 0,
-//                "WeightingContract.follow: Members can follow an NFT once per day."
-//            );
-//
-//            // Appraiser
-//            appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].followCount = 1;
-//
-//            // Token
-//            TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFTs[i]][_tokenIds[i]];
-//            token.dailyTokenReaction[_currentDay].followCount = token.dailyTokenReaction[_currentDay].followCount.add(1);
-//
-//            _updateTodayWeightByReaction(_whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][ _tokenIds[i]]);
-//        }
-//                // AppraiserStats - Boost
-    //        TokenWeight storage _guildMemberWeight = guildMemberWeight[_msgSender()];
-    //        uint256 currentDay = diffDays(startTime, _getNow());
-    //        _guildMemberWeight.dailyTokenReaction[currentDay].appraisalCount["Self"] = _guildMemberWeight.dailyTokenReaction[currentDay].appraisalCount["Self"].add(_tokenIds.length);
-    //        _updateTodayGuildMemberWeightByReaction(_msgSender());
-//    }
-//
-//    function share(address[] memory _whitelistedNFTs, uint256[] memory _tokenIds) external {
-//        require(ownerWeight[_msgSender()].stakedNFTCount > 0, "GuildNFTStakingWeightV2.share: Sender must stake PODE");
-//
-//        uint256 _currentDay = diffDays(startTime, _getNow());
-//
-//        AppraiserStats storage appraiser = appraiserStats[_msgSender()];
-//        require(_whitelistedNFTs.length == _tokenIds.length, "Must be equal quantity of whitelisted and token ids");
-//        for (uint256 i = 0; i < _whitelistedNFTs.length; i++) {
-//            require(
-//                appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].shareCount == 0,
-//                "WeightingContract.share: Members can share an NFT once per day."
-//            );
-//
-//            // Appraiser
-//            appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].shareCount = 1;
-//
-//            // Token
-//            TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFTs[i]][_tokenIds[i]];
-//            token.dailyTokenReaction[_currentDay].shareCount = token.dailyTokenReaction[_currentDay].shareCount.add(1);
-//
-//            _updateTodayWeightByReaction(_whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][ _tokenIds[i]]);
-//        }
-//                // AppraiserStats - Boost
-    //        TokenWeight storage _guildMemberWeight = guildMemberWeight[_msgSender()];
-    //        uint256 currentDay = diffDays(startTime, _getNow());
-    //        _guildMemberWeight.dailyTokenReaction[currentDay].appraisalCount["Self"] = _guildMemberWeight.dailyTokenReaction[currentDay].appraisalCount["Self"].add(_tokenIds.length);
-    //        _updateTodayGuildMemberWeightByReaction(_msgSender());
-//    }
-//
-//    function metaverse(address[] memory _whitelistedNFTs, uint256[] memory _tokenIds) external {
-//        require(ownerWeight[_msgSender()].stakedNFTCount > 0, "GuildNFTStakingWeightV2.metaverse: Sender must stake PODE");
-//
-//        uint256 _currentDay = diffDays(startTime, _getNow());
-//
-//        AppraiserStats storage appraiser = appraiserStats[_msgSender()];
-//        require(_whitelistedNFTs.length == _tokenIds.length, "Must be equal quantity of whitelisted and token ids");
-//        for (uint256 i = 0; i < _whitelistedNFTs.length; i++) {
-//            require(
-//                appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].metaverseCount == 0,
-//                "WeightingContract.metaverse: Members can do this an NFT once per day."
-//            );
-//
-//            // Appraiser
-//            appraiser.dailyTokenReaction[_currentDay][_whitelistedNFTs[i]][_tokenIds[i]].metaverseCount = 1;
-//
-//            // Token
-//            TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFTs[i]][_tokenIds[i]];
-//            token.dailyTokenReaction[_currentDay].metaverseCount = token.dailyTokenReaction[_currentDay].metaverseCount.add(1);
-//
-//            _updateTodayWeightByReaction(_whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][ _tokenIds[i]]);
-//        }
-//                // AppraiserStats - Boost
-    //        TokenWeight storage _guildMemberWeight = guildMemberWeight[_msgSender()];
-    //        uint256 currentDay = diffDays(startTime, _getNow());
-    //        _guildMemberWeight.dailyTokenReaction[currentDay].appraisalCount["Self"] = _guildMemberWeight.dailyTokenReaction[currentDay].appraisalCount["Self"].add(_tokenIds.length);
-    //        _updateTodayGuildMemberWeightByReaction(_msgSender());
-//    }
-//
 
+    // Emotional appraisals
     function appraiseWhitelistedNFT( address[] memory _whitelistedNFTs, uint256[] memory _tokenIds, string[] memory _reactions) external {
         require(ownerWeight[_msgSender()].stakedNFTCount > 0, "GuildNFTStakingWeightV2.appraise: Sender must stake PODE");
 

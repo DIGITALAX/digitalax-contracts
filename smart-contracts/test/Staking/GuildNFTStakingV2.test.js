@@ -34,6 +34,7 @@ const {
   const TWO_THOUSAND_TOKENS = new BN('2000000000000000000000');
   const HUNDRED_TOKENS = new BN('100000000000000000000');
   const FIFTY_TOKENS = new BN('50000000000000000000');
+  const FOURTY_TOKENS = new BN('40000000000000000000');
   const HALF_TOKEN = new BN('50000000000000000');
   const ONE_TOKEN = new BN('100000000000000000');
   const TWO_TOKEN = new BN('200000000000000000');
@@ -314,8 +315,8 @@ const {
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100001','100002', '100003','100004'],{from: staker});
 		  //await this.nftStaking.stakeAll({from: staker});
 
-		  await this.stakingWeight.favorite(
-		  	[this.skinsToken.address], ['100003'], {from: staker2})
+		  await this.stakingWeight.reactWhitelistedNFT(
+		  	[this.skinsToken.address], ['100003'], ['Favorite'],{from: staker2})
 
 		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker, this.skinsToken.address));
 
@@ -368,8 +369,8 @@ const {
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'],{from: staker});
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'],{from: staker2});
 
-		  await this.stakingWeight.favorite(Array(1).fill(this.skinsToken.address), Array(1).fill( '100002'), {from: staker2});
-		  //await this.stakingWeight.favorite(Array(200).fill(this.skinsToken.address), Array(200).fill( '100002'), {from: staker2});
+		  await this.stakingWeight.reactWhitelistedNFT(Array(1).fill(this.skinsToken.address), Array(1).fill( '100002'), Array(1).fill('Favorite'), {from: staker2});
+		 // await this.stakingWeight.reactWhitelistedNFT(Array(100).fill(this.skinsToken.address), Array(100).fill( '100002'), Array(100).fill('Favorite'), {from: staker2});
 
 		  console.log('The staked tokens are');
 		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker, this.skinsToken.address));
@@ -403,7 +404,8 @@ const {
 
 		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
 
-		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+		  // Allow for a little bit of derivation for low reaction nfts - there is a decay rate
+		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FOURTY_TOKENS);
 
 		  expect(finalDecoBalance > finalDecoBalance2);
 
@@ -436,7 +438,7 @@ const {
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'],{from: staker});
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'],{from: staker2});
 
-//		  await this.stakingWeight.follow([this.skinsToken.address], ['100002'], {from: staker2})
+		  await this.stakingWeight.reactWhitelistedNFT(Array(1).fill(this.skinsToken.address), Array(1).fill( '100002'), Array(1).fill('Follow'), {from: staker2});
 
 		  console.log('The staked tokens are');
 		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker, this.skinsToken.address));
@@ -468,7 +470,8 @@ const {
 
 		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
 
-		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+		  // Allow for a little bit of derivation for low reaction nfts - there is a decay rate
+		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FOURTY_TOKENS);
 
 		  expect(finalDecoBalance > finalDecoBalance2);
 
@@ -502,7 +505,7 @@ const {
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'],{from: staker});
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'],{from: staker2});
 
-	//	  await this.stakingWeight.share([this.skinsToken.address], ['100002'], {from: staker2})
+		  await this.stakingWeight.reactWhitelistedNFT(Array(1).fill(this.skinsToken.address), Array(1).fill( '100002'), Array(1).fill('Share'), {from: staker2});
 
 		  console.log('The staked tokens are');
 		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker, this.skinsToken.address));
@@ -532,7 +535,8 @@ const {
 
 		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
 
-		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+		  // Allow for a little bit of derivation for low reaction nfts - there is a decay rate
+		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FOURTY_TOKENS);
 
 		  expect(finalDecoBalance > finalDecoBalance2);
 
@@ -566,7 +570,7 @@ const {
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'],{from: staker});
 		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'],{from: staker2});
 
-	//	  await this.stakingWeight.metaverse([this.skinsToken.address], ['100002'], {from: staker2})
+		  await this.stakingWeight.reactWhitelistedNFT(Array(1).fill(this.skinsToken.address), Array(1).fill( '100002'), Array(1).fill('Metaverse'), {from: staker2});
 
 		  console.log('The staked tokens are');
 		  console.log(await this.guildWhitelistedNftStaking.getStakedTokens(staker, this.skinsToken.address));
@@ -596,9 +600,77 @@ const {
 
 		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
 
-		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+		  // Allow for a little bit of derivation for low reaction nfts - there is a decay rate
+		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FOURTY_TOKENS);
 
 		  expect(finalDecoBalance > finalDecoBalance2);
+
+	  });
+
+	  it('successfully deposits many NFT and batch skins with different users, then validates that we cant do random reactions', async () => {
+	  		// Pre req, staker 2 puts some tokens in.
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.setPrimarySalePrice(TOKEN_1, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_2, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_3, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_4, ONE_ETH, {from: admin});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker2});
+		  expect(await this.guildNftStaking.nftStakedTotal()).to.be.bignumber.equal("0");
+		  await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2],{from: staker});
+		  await this.guildNftStaking.stakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
+
+		  // Mint staker 1 some skins tokens
+		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker2, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker2, randomURI, minter, {from: minter});
+
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker});
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker2});
+		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'],{from: staker});
+		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'],{from: staker2});
+
+		  await expectRevert(
+			  this.stakingWeight.reactWhitelistedNFT(Array(1).fill(this.skinsToken.address), Array(1).fill( '100002'), Array(1).fill('Garbage'), {from: staker2}),
+		  'WeightingContract.reactWhitelistedNFT: An inputted reaction string is not allowed'
+		  );
+
+	  });
+
+	  // todo
+
+	  it('successfully unstakes via emergency admin unstake', async () => {
+	  		// Pre req, staker 2 puts some tokens in.
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.setPrimarySalePrice(TOKEN_1, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_2, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_3, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_4, ONE_ETH, {from: admin});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker2});
+		  expect(await this.guildNftStaking.nftStakedTotal()).to.be.bignumber.equal("0");
+		  await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2],{from: staker});
+		  await this.guildNftStaking.stakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
+
+		  // Mint staker 1 some skins tokens
+		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker2, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker2, randomURI, minter, {from: minter});
+
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker});
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker2});
+		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'],{from: staker});
+		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'],{from: staker2});
+
+		  // TODO try emergency unstake by admin and make sure random accounts cannot do it.
 
 	  });
 
@@ -666,7 +738,8 @@ const {
 
 		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
 
-		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+		  // Allow for a little bit of derivation for low reaction nfts - there is a decay rate
+		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FOURTY_TOKENS);
 
 		  expect(finalDecoBalance > finalDecoBalance2);
 
@@ -729,7 +802,8 @@ const {
 
 		  expect(finalDecoBalance2.sub(initialDecoBalance2)).to.be.bignumber.greaterThan(new BN('0'));
 
-		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+		  // Allow for a little bit of derivation for low reaction nfts - there is a decay rate
+		  expect(finalDecoBalance.add(finalDecoBalance2)).to.be.bignumber.greaterThan(FOURTY_TOKENS);
 
 		  expect(finalDecoBalance > finalDecoBalance2);
 
@@ -775,7 +849,7 @@ const {
 
 		  await this.stakingWeight.clapWhitelistedNFT([this.skinsToken.address], ['100002'], [30], {from: staker2})
 
-		  await this.stakingWeight.favorite([this.skinsToken.address], ['100002'], {from: staker2});
+		  await this.stakingWeight.reactWhitelistedNFT([this.skinsToken.address], ['100002'], ['Favorite'], {from: staker2});
 //		  await this.stakingWeight.follow([this.skinsToken.address], ['100002'], {from: staker2});
 //		  await this.stakingWeight.share([this.skinsToken.address], ['100002'], {from: staker2});
 
@@ -1210,7 +1284,7 @@ const {
 
 	await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100001','100002','100003','100004'],{from: staker3});
 
-	await this.stakingWeight.favorite(new Array(3).fill(this.skinsToken.address), ['100001', '100002', '100003'], {from: staker});
+	await this.stakingWeight.reactWhitelistedNFT(new Array(3).fill(this.skinsToken.address), ['100001', '100002', '100003'], new Array(3).fill("Favorite"), {from: staker});
 
 	await this.stakingWeight.appraiseGuildMember(Array(1).fill(staker), Array(1).fill( 'Love'), {from: staker2});
 	await this.stakingWeight.appraiseGuildMember(Array(1).fill(staker2), Array(1).fill( 'Love'), {from: staker});
@@ -1288,8 +1362,8 @@ const {
 	it('successfully upgrades the contract', async () => {
 		const [adminAccount, stakerAccount, stakerAccount2] = await ethers.getSigners();
 
-		const StakingWeightV2ContractFactory = await ethers.getContractFactory("GuildNFTStakingWeightV2");
-		const StakingWeightV2ContractFactoryV2 = await ethers.getContractFactory("GuildNFTStakingWeightV3");
+		const StakingWeightV2ContractFactory = await ethers.getContractFactory("GuildNFTStakingWeightV2Mock");
+		const StakingWeightV2ContractFactoryV2 = await ethers.getContractFactory("GuildNFTStakingWeightV3Mock");
 
 		const stakingWeightDeployedProxy = await upgrades.deployProxy(StakingWeightV2ContractFactory, [this.guildNftStaking.address, this.guildWhitelistedNftStaking.address, this.decoToken.address, this.accessControls.address, this.stakingWeightStorage.address], {initializer: 'initialize'});
 
@@ -1334,7 +1408,7 @@ const {
 	await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100001','100002','100003','100004'],{from: staker3});
 
 	//await stakingWeightDeployedProxy.favorite(new Array(3).fill(this.skinsToken.address), ['100001', '100002', '100003'], {from: staker});
-	await newWeighting.favorite(new Array(3).fill(this.skinsToken.address), ['100001', '100002', '100003']);
+	await newWeighting.reactWhitelistedNFT(new Array(3).fill(this.skinsToken.address), ['100001', '100002', '100003'],  new Array(3).fill("Favorite"));
 
 	// await stakingWeightDeployedProxy.appraiseGuildMember(Array(1).fill(staker), Array(1).fill( 'Love'), {from: staker2});
 	// await stakingWeightDeployedProxy.appraiseGuildMember(Array(1).fill(staker2), Array(1).fill( 'Love'), {from: staker});
@@ -1351,6 +1425,7 @@ const {
 		await this.guildNftStaking.setNowOverride('1209601'); // next week
 		await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
 		await this.stakingWeight.setNowOverride('1209601'); // next week
+		await stakingWeightDeployedProxy.setNowOverride('1209601'); // next week
 
 	console.log('balance of staker before and after:');
 
@@ -1380,7 +1455,9 @@ const {
 	console.log('Thats it folks');
 
 	const stakingWeightV3Contract = await upgrades.upgradeProxy(stakingWeightDeployedProxy.address, StakingWeightV2ContractFactoryV2);
-		console.log("diving in");
+
+		await stakingWeightV3Contract.setNowOverride('1209601'); // next week
+	console.log("diving in");
 		console.log((await stakingWeightDeployedProxy.getTotalWhitelistedNFTTokenWeight()).toString());
 		console.log((await stakingWeightDepoyedProxy2.getTotalWhitelistedNFTTokenWeight()).toString());
 		console.log((await stakingWeightV3Contract.getTotalWhitelistedNFTTokenWeight()).toString());
