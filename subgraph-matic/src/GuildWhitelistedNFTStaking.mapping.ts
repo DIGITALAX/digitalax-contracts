@@ -82,11 +82,11 @@ export function handleStaked(event: Staked): void {
 export function handleUnstaked(event: Unstaked): void {
     let owner = event.params.owner.toHexString()
     let staker = GuildWhitelistedNFTStaker.load(owner);
-    
     let oldGarments = staker.garments;
     let newGarments = new Array<string>();
     for (let i = 0; i < oldGarments.length; i += 1) {
-        if (oldGarments[i] !== event.params.tokenId.toString()) {
+        const newId = event.params.whitelistedNFT.toHexString().concat("-").concat(event.params.tokenId.toString());
+        if (oldGarments[i] != newId) {
             newGarments.push(oldGarments[i]);
         }
     }
@@ -101,7 +101,8 @@ export function handleEmergencyUnstake(event: EmergencyUnstake): void {
     let oldGarments = staker.garments;
     let newGarments = new Array<string>();
     for (let i = 0; i < oldGarments.length; i += 1) {
-        if (oldGarments[i] !== event.params.tokenId.toString()) {
+        const newId = event.params.whitelistedNFT.toHexString().concat("-").concat(event.params.tokenId.toString());
+        if (oldGarments[i] != newId) {
             newGarments.push(oldGarments[i]);
         }
     }
