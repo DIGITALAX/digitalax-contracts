@@ -1098,17 +1098,12 @@ contract GuildNFTStakingWeightV3 {
         return block.timestamp;
     }
 
-// STARTING HERE
-    // EXAMPLE NEW STORED VARIABLE
-    uint256 public testValue;
 
     // EXAMPLE UPGRADED FUNCTION
     function getTotalWhitelistedNFTTokenWeight() external view returns (uint256) {
         return uint256(555); //calcNewTotalWhitelistedNFTWeight();
     }
-    function setTest() external {
-        testValue = uint256(666);
-    }
+
 }
 
 
