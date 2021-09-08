@@ -114,11 +114,6 @@ contract GuildNFTStakingWeightV2 {
     mapping (address => OwnerWeight) public ownerWeight;
     mapping (address => AppraiserStats) public appraiserStats;
 
-    // Events
-    event UpdateAccessControls(
-        address indexed accessControls
-    );
-
     event StakedMembershipToken(
         address owner,
         uint256 tokenId
@@ -140,14 +135,17 @@ contract GuildNFTStakingWeightV2 {
         uint256 tokenId
     );
 
-    event WhitelistedNFTAppraisal(
-        address appraiser,
-        uint256 timestamp,
+    event WhitelistedNFTReaction(
         string reaction,
+        uint256 quantity,
         address whitelistedNFT,
         uint256 tokenId
     );
 
+    event AppraiseGuildMember(
+        string reaction,
+        address guildMember
+    );
 
     function initialize(address _stakingContract, address _whitelistedStakingContract, IERC20 _guildNativeERC20Token, DigitalaxAccessControls _accessControls, IGuildNFTStakingWeightStorage _store) public  {
         require(!initialised, "GuildNFTStakingWeightV2.initialize: Already Init");
@@ -206,61 +204,16 @@ contract GuildNFTStakingWeightV2 {
         );
         require(address(_accessControls) != address(0), "GuildNFTStakingWeightV2.updateAccessControls: Zero Address");
         accessControls = _accessControls;
-        emit UpdateAccessControls(address(_accessControls));
     }
 
         // Overall variables
     function setStartTime(uint256 _startTime) external returns (uint256){
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "GuildNFTStakingWeightV2Storage.updateAccessControls: Sender must be admin"
+            "GuildNFTStakingWeightV2Storage.setStartTime: Sender must be admin"
         );
         startTime = _startTime;
         return startTime;
-    }
-
-
-    function _getReactionPoints(address _whitelistedNFT, uint256 _tokenId, uint256 _currentDay) internal view returns (uint256) {
-        TokenReaction storage _reaction = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId].dailyTokenReaction[_currentDay];
-
-        uint256 result = 0;
-
-        result = result.add(_reaction.metaverseCount.mul(store.getReactionPoint("Metaverse")));
-
-        result = result.add(_reaction.shareCount.mul(store.getReactionPoint("Share")));
-        result = result.add(_reaction.favoriteCount.mul(store.getReactionPoint("Favorite")));
-        result = result.add(_reaction.followCount.mul(store.getReactionPoint("Follow")));
-
-        uint256 _totalSupply = guildNativeERC20Token.totalSupply();
-        uint256 erc20Balance = guildNativeERC20Token.balanceOf(_msgSender());
-
-        result = result.add(_reaction.clapCount);       // stake points = clap limit per day
-
-        result = result.add(_reaction.appraisalCount["Love"].mul(store.getReactionPoint("Love")));
-        result = result.add(_reaction.appraisalCount["Like"].mul(store.getReactionPoint("Like")));
-        result = result.add(_reaction.appraisalCount["Fire"].mul(store.getReactionPoint("Fire")));
-        result = result.add(_reaction.appraisalCount["Sad"].mul(store.getReactionPoint("Sad")));
-        result = result.add(_reaction.appraisalCount["Angry"].mul(store.getReactionPoint("Angry")));
-        result = result.add(_reaction.appraisalCount["Novel"].mul(store.getReactionPoint("Novel")));
-
-        return result.mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT);
-    }
-
-    function _getGuildMemberReactionPoints(address _guildMember, uint256 _currentDay) internal view returns (uint256) {
-        TokenReaction storage _reaction = guildMemberWeight[_guildMember].dailyTokenReaction[_currentDay];
-
-        uint256 result = 0;
-
-        result = result.add(_reaction.appraisalCount["Love"].mul(store.getReactionPoint("Love")));
-        result = result.add(_reaction.appraisalCount["Like"].mul(store.getReactionPoint("Like")));
-        result = result.add(_reaction.appraisalCount["Fire"].mul(store.getReactionPoint("Fire")));
-        result = result.add(_reaction.appraisalCount["Sad"].mul(store.getReactionPoint("Sad")));
-        result = result.add(_reaction.appraisalCount["Angry"].mul(store.getReactionPoint("Angry")));
-        result = result.add(_reaction.appraisalCount["Novel"].mul(store.getReactionPoint("Novel")));
-
-        result = result.add(_reaction.appraisalCount["Self"].mul(store.getReactionPoint("Self")));
-
-        return result.mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT);
     }
 
 
@@ -512,9 +465,30 @@ contract GuildNFTStakingWeightV2 {
                         .div(DEFAULT_POINT_WITHOUT_DECAY_RATE).mul(_currentDay.sub(_token.lastUpdateDay)));
 
 
-        // **
+        // ** Get Reaction points
+        TokenReaction storage _reaction = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId].dailyTokenReaction[_currentDay];
 
-        uint256 _currentDayReactionPoint = _getReactionPoints(_whitelistedNFT, _tokenId, _currentDay);
+        uint256 _currentDayReactionPoint = 0;
+
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.metaverseCount.mul(store.getReactionPoint("Metaverse")));
+
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.shareCount.mul(store.getReactionPoint("Share")));
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.favoriteCount.mul(store.getReactionPoint("Favorite")));
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.followCount.mul(store.getReactionPoint("Follow")));
+
+        uint256 _totalSupply = guildNativeERC20Token.totalSupply();
+        uint256 erc20Balance = guildNativeERC20Token.balanceOf(_msgSender());
+
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.clapCount);       // stake points = clap limit per day
+
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.appraisalCount["Love"].mul(store.getReactionPoint("Love")));
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.appraisalCount["Like"].mul(store.getReactionPoint("Like")));
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.appraisalCount["Fire"].mul(store.getReactionPoint("Fire")));
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.appraisalCount["Sad"].mul(store.getReactionPoint("Sad")));
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.appraisalCount["Angry"].mul(store.getReactionPoint("Angry")));
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.appraisalCount["Novel"].mul(store.getReactionPoint("Novel")));
+
+        _currentDayReactionPoint = _currentDayReactionPoint.mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT);
 
 //        console.log("the reaction points are %s ######################", _currentDayReactionPoint);
         if (_currentDayReactionPoint > 0) {     // 2.5%
@@ -538,7 +512,22 @@ contract GuildNFTStakingWeightV2 {
             return _guildMemberWeight.lastWeight;
         }
 
-        uint256 _currentDayReactionPoint = _getGuildMemberReactionPoints(_guildMember, _currentDay);
+        // Get guild member reaction points
+        TokenReaction storage _reaction = guildMemberWeight[_guildMember].dailyTokenReaction[_currentDay];
+
+        uint256 _currentDayReactionPoint = 0;
+
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.appraisalCount["Love"].mul(store.getReactionPoint("Love")));
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.appraisalCount["Like"].mul(store.getReactionPoint("Like")));
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.appraisalCount["Fire"].mul(store.getReactionPoint("Fire")));
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.appraisalCount["Sad"].mul(store.getReactionPoint("Sad")));
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.appraisalCount["Angry"].mul(store.getReactionPoint("Angry")));
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.appraisalCount["Novel"].mul(store.getReactionPoint("Novel")));
+
+        _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.appraisalCount["Self"].mul(store.getReactionPoint("Self")));
+
+        _currentDayReactionPoint = _currentDayReactionPoint.mul(MULTIPLIER).mul(DAILY_NFT_WEIGHT_DEFAULT);
+
         // update current day reaction points with the other factors
 
         // init guild member weight *******
@@ -670,12 +659,15 @@ contract GuildNFTStakingWeightV2 {
             }
 
             _updateTodayWeightByReaction(_whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][ _tokenIds[i]]);
+            emit WhitelistedNFTReaction(_reactions[i], 1, _whitelistedNFTs[i], _tokenIds[i]);
         }
         // AppraiserStats - Boost
         TokenWeight storage _guildMemberWeight = guildMemberWeight[_msgSender()];
         uint256 currentDay = diffDays(startTime, _getNow());
         _guildMemberWeight.dailyTokenReaction[currentDay].appraisalCount["Self"] = _guildMemberWeight.dailyTokenReaction[currentDay].appraisalCount["Self"].add(_tokenIds.length);
         _updateTodayGuildMemberWeightByReaction(_msgSender());
+
+
     }
 
     // Emotional appraisals
@@ -707,6 +699,7 @@ contract GuildNFTStakingWeightV2 {
             token.dailyTokenReaction[_currentDay].appraisalCount[_reactions[i]] = token.dailyTokenReaction[_currentDay].appraisalCount[_reactions[i]].add(1);
 
             _updateTodayWeightByReaction(_whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][ _tokenIds[i]]);
+            emit WhitelistedNFTReaction(_reactions[i], 1, _whitelistedNFTs[i], _tokenIds[i]);
         }
         // AppraiserStats - Boost
         TokenWeight storage _guildMemberWeight = guildMemberWeight[_msgSender()];
@@ -742,7 +735,7 @@ contract GuildNFTStakingWeightV2 {
             token.dailyTokenReaction[_currentDay].clapCount = token.dailyTokenReaction[_currentDay].clapCount.add(_clapQuantity[i]);
 
             _updateTodayWeightByReaction(_whitelistedNFTs[i], _tokenIds[i], whitelistedNFTTokenOwner[_whitelistedNFTs[i]][ _tokenIds[i]]);
-
+            emit WhitelistedNFTReaction("Clap", _clapQuantity[i], _whitelistedNFTs[i], _tokenIds[i]);
         }
         // AppraiserStats - Boost
         TokenWeight storage _guildMemberWeight = guildMemberWeight[_msgSender()];
@@ -784,6 +777,7 @@ contract GuildNFTStakingWeightV2 {
             _guildMemberWeight.dailyTokenReaction[_currentDay].appraisalCount[_reactions[i]] = _guildMemberWeight.dailyTokenReaction[_currentDay].appraisalCount[_reactions[i]].add(1);
 
             _updateTodayGuildMemberWeightByReaction(_guildMembers[i]);
+            emit AppraiseGuildMember(_reactions[i], _guildMembers[i]);
         }
 
         // AppraiserStats - Boost
