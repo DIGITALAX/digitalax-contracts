@@ -1358,6 +1358,35 @@ const {
 	console.log(finalDecoBalance.sub(initialDecoBalance).toString());
 	console.log(finalDecoBalance2.sub(initialDecoBalance2).toString());
   });
+it('successfully deposits many NFT and batch with multiple users, and emergency unstakes and admin emergency unstakes', async () => {
+	await this.token.mint(staker, minter, {from: minter});
+	await this.token.mint(staker, minter, {from: minter});
+	await this.token.mint(staker2, minter, {from: minter});
+	await this.token.mint(staker2, minter, {from: minter});
+	await this.token.setPrimarySalePrice(TOKEN_1, ONE_ETH, {from: admin});
+	await this.token.setPrimarySalePrice(TOKEN_2, ONE_ETH, {from: admin});
+	await this.token.setPrimarySalePrice(TOKEN_3, ONE_ETH, {from: admin});
+	await this.token.setPrimarySalePrice(TOKEN_4, ONE_ETH, {from: admin});
+	await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
+	await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker2});
+	await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2],{from: staker});
+	await this.guildNftStaking.stakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
+
+	// Mint staker 3vsome skins tokens
+	await this.skinsToken.mint(staker3, randomURI, minter, {from: minter});
+	await this.skinsToken.mint(staker3, randomURI, minter, {from: minter});
+	await this.skinsToken.mint(staker3, randomURI, minter, {from: minter});
+	await this.skinsToken.mint(staker3, randomURI, minter, {from: minter});
+
+	await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker3});
+
+	await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100001','100002','100003','100004'],{from: staker3});
+
+	// Try emergency unstake, admin and admin safe unstake
+	await this.guildWhitelistedNftStaking.emergencyUnstake(this.skinsToken.address, '100001', {from: staker3});
+	await this.guildWhitelistedNftStaking.adminEmergencyUnstake(this.skinsToken.address, '100002', {from: admin});
+	await this.guildWhitelistedNftStaking.adminEmergencySafeUnstake(this.skinsToken.address, '100003', {from: admin});
+  });
 
 	it('successfully upgrades the contract', async () => {
 		const [adminAccount, stakerAccount, stakerAccount2] = await ethers.getSigners();
