@@ -127,9 +127,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
 
     /// @notice Admin update of weighting contract
     event WeightingContractUpdated(address indexed oldWeightingContract, address newWeightingContract );
-
-    constructor() public {
-    }
+    
      /**
      * @dev Single gateway to initialize the staking contract after deploying
      * @dev Sets the contract with the DECO NFT and DECO reward token

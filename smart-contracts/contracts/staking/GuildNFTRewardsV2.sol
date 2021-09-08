@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPLv2
+
 
 pragma solidity 0.6.12;
 
@@ -100,8 +100,7 @@ abstract contract GuildNFTRewardsV2 is Initializable, BaseRelayRecipient, Reentr
         IOracle _oracle,
         address _trustedForwarder,
         uint256 _decoRewardsPaidTotal
-    )
-        public initializer
+    ) public initializer
     {
         require(
             address(_decoToken) != address(0),
