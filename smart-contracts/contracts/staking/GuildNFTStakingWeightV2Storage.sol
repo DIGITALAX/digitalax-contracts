@@ -25,7 +25,7 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
     uint256 constant MULTIPLIER = 100000;
     // Important contract addresses we need to set
     DigitalaxAccessControls public accessControls;
-    address weightContract;
+    address public weightContract;
 
     struct PercentageMapping {
         uint256 percentage;
@@ -115,6 +115,7 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
         weightContract = _weightContract;
     }
 
+
     function getDECAY_POINT_DEFAULT() external override view returns (uint256){
         return DECAY_POINT_DEFAULT;
     }
@@ -126,7 +127,6 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
     function getReactionPoint(string memory _type) external override view returns (uint256){
         return reactionPoint[_type];
     }
-
 
     function setClapsMappingValue(uint256[] memory percentage, uint256[] memory mappingValue) external {
         require(percentage.length == 9, "GuildNFTStakingWeightV2.setClapsMappingValue: Must set all mapping values");

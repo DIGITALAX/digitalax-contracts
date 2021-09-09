@@ -2,7 +2,7 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 
-// SPDX-License-Identifier: MIT
+
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
  * checks.
@@ -214,7 +214,7 @@ library SafeMath {
     }
 }
 
-// SPDX-License-Identifier: MIT
+
 /**
  * @dev Interface of the ERC20 standard as defined in the EIP.
  */
@@ -289,7 +289,7 @@ interface IERC20 {
     event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
-// SPDX-License-Identifier: MIT
+
 /**
  * @dev Library for managing
  * https://en.wikipedia.org/wiki/Set_(abstract_data_type)[sets] of primitive
@@ -584,7 +584,7 @@ library EnumerableSet {
     }
 }
 
-// SPDX-License-Identifier: MIT
+
 /**
  * @dev Collection of functions related to the address type
  */
@@ -771,7 +771,7 @@ library Address {
     }
 }
 
-// SPDX-License-Identifier: MIT
+
 /*
  * @dev Provides information about the current execution context, including the
  * sender of the transaction and its data. While these are generally available
@@ -793,7 +793,7 @@ abstract contract Context {
     }
 }
 
-// SPDX-License-Identifier: MIT
+
 /**
  * @dev Contract module that allows children to implement role-based access
  * control mechanisms.
@@ -1004,7 +1004,7 @@ abstract contract AccessControl is Context {
     }
 }
 
-// SPDX-License-Identifier: MIT
+
 /**
  * @notice Access Controls contract for the Digitalax Platform
  * @author BlockRocket.tech
@@ -1192,7 +1192,7 @@ contract DigitalaxAccessControls is AccessControl {
     }
 }
 
-// SPDX-License-Identifier: MIT
+
 library console {
 	address constant CONSOLE_ADDRESS = address(0x000000000000000000636F6e736F6c652e6c6f67);
 
@@ -2741,7 +2741,7 @@ interface IGuildNFTStakingWeightStorage {
     function getReactionPoint(string memory _type) external view returns (uint256);
 }
 
-// SPDX-License-Identifier: MIT
+
 // solhint-disable-next-line compiler-version
 /**
  * @dev This is a base contract to aid in writing upgradeable contracts, or any kind of contract that will be deployed
@@ -2792,7 +2792,7 @@ abstract contract Initializable {
     }
 }
 
-// SPDX-License-Identifier:MIT
+
 /**
  * a contract must implement this interface in order to support relayed transaction.
  * It is better to inherit the BaseRelayRecipient as its implementation.
@@ -2818,7 +2818,7 @@ abstract contract IRelayRecipient {
     function versionRecipient() external virtual view returns (string memory);
 }
 
-// SPDX-License-Identifier:MIT
+
 /**
  * A base contract to be inherited by any contract that want to receive relayed transactions
  * A subclass must use "_msgSender()" instead of "msg.sender"
@@ -2966,6 +2966,7 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
         weightContract = _weightContract;
     }
 
+
     function getDECAY_POINT_DEFAULT() external override view returns (uint256){
         return DECAY_POINT_DEFAULT;
     }
@@ -2977,7 +2978,6 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
     function getReactionPoint(string memory _type) external override view returns (uint256){
         return reactionPoint[_type];
     }
-
 
     function setClapsMappingValue(uint256[] memory percentage, uint256[] memory mappingValue) external {
         require(percentage.length == 9, "GuildNFTStakingWeightV2.setClapsMappingValue: Must set all mapping values");
