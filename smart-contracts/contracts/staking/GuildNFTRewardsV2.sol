@@ -7,7 +7,6 @@ import "../DigitalaxAccessControls.sol";
 import "./interfaces/IERC20.sol";
 import "../oracle/IOracle.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./interfaces/IGuildNFTRewards.sol";
 import "./interfaces/IGuildNFTRewardsWhitelisted.sol";
 import "@openzeppelin/contracts/proxy/Initializable.sol";
@@ -33,7 +32,7 @@ interface DECO is IERC20 {
     function mint(address tokenOwner, uint tokens) external returns (bool);
 }
 
-contract GuildNFTRewardsV2 is Initializable, BaseRelayRecipient, ReentrancyGuard, IGuildNFTRewards, IGuildNFTRewardsWhitelisted {
+contract GuildNFTRewardsV2 is Initializable, BaseRelayRecipient, IGuildNFTRewards, IGuildNFTRewardsWhitelisted {
     using SafeMath for uint256;
 
     /* ========== Variables ========== */
@@ -58,7 +57,7 @@ contract GuildNFTRewardsV2 is Initializable, BaseRelayRecipient, ReentrancyGuard
     uint256 membershipNFTWtPoints;
 
     /// @notice for storing information from oracle
-    uint256 public lastOracleQuote = 1e18;
+    uint256 public lastOracleQuote;
 
     // We must trust admin to pass correct weighted values, if not we could use something like
     // / @notice mapping of a staker to its current properties
@@ -130,6 +129,8 @@ contract GuildNFTRewardsV2 is Initializable, BaseRelayRecipient, ReentrancyGuard
         startTime = _getNow();
         decoRewardsPaidTotal = _decoRewardsPaidTotal;
         trustedForwarder = _trustedForwarder;
+
+        lastOracleQuote = 1e18;
     }
 
     receive() external payable {
