@@ -44,4 +44,5 @@
   "DripOracleStartBlock": 12000000,
   "DripMarketplaceAddress": "0xb79f4cae758813cf5a661e68bcadca216912f6e7",
   "DripMarketplaceStartBlock": 12000000
+  "GDNMembershipNFT": "0x6A64FfDEfa171437f07b46682622b24f8969400E"
 }
