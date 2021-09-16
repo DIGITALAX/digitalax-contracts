@@ -31,6 +31,7 @@ export function handleRewardPaid(event: RewardPaid): void {
 }
 
 export function handleStaked(event: Staked): void {
+    log.info('this is event.params.whitelistedNFT ------------ {}', [event.params.whitelistedNFT.toString()]);
     let contract = ERC721.bind(event.params.whitelistedNFT);
     let tokenUri = contract.tokenURI(event.params.tokenId);
     let owner = event.params.owner.toHexString()
@@ -41,7 +42,7 @@ export function handleStaked(event: Staked): void {
     garment.owner = owner;
     garment.tokenUri = tokenUri;
     garment.tokenAddress = whitelistedNft;
-    log.info("this is test {}", ['test']);
+    
     if (tokenUri) {
         if (tokenUri.includes('ipfs/')) {
             let tokenHash = tokenUri.split('ipfs/')[1];

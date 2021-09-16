@@ -620,7 +620,7 @@ dataSources:
     name: GuildWhitelistedNFTStaking
     network: "mumbai"
     source:
-      address: "0x2A0C6af6802DB35db210d182d4ba0a67b830eC90"
+      address: "0x21e042FACb0c8C55d3A33D15d4a8279a23d78BE9"
       abi: GuildWhitelistedNFTStaking
       startBlock: 12000000
     mapping:
@@ -632,6 +632,7 @@ dataSources:
         - Unstaked
         - EmergencyUnstake
         - RewardPaid
+        - AddWhitelistedTokens
       abis:
         - name: GuildWhitelistedNFTStaking
           file: ./abis/GuildWhitelistedNFTStaking.json
@@ -727,3 +728,26 @@ dataSources:
         - event: OfferCancelled(indexed uint256)
           handler: handleOfferCancelled
       file: ./src/DripMarketplace.mapping.ts
+  - kind: ethereum/contract
+    name: GuildNFTStakingWeightV2
+    network: "mumbai"
+    source:
+      address: "0xb155B018be74119792dcbE4c9a81906b1809065B"
+      abi: GuildNFTStakingWeightV2
+      startBlock: 12000000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - AppraiseGuildMember
+        - WhitelistedNFTReaction
+      abis:
+        - name: GuildNFTStakingWeightV2
+          file: ./abis/GuildNFTStakingWeightV2.json
+      eventHandlers:
+        - event: AppraiseGuildMember(string,address)
+          handler: handleAppraiseGuildMember
+        - event: WhitelistedNFTReaction(string,uint256,address,uint256)
+          handler: handleWhitelistedNFTReaction
+      file: ./src/GuildNFTStakingWeightV2.mapping.ts

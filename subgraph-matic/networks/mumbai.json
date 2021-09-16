@@ -38,12 +38,14 @@
   "DigitalaxNFTStakingStartBlock": 12000000,
   "GuildNFTStakingAddress": "0x665bF9Ea8E3036088a6C767b0184cA4A4f13AD67",
   "GuildNFTStakingStartBlock": 12000000,
-  "GuildWhitelistedNFTStakingAddress": "0x2A0C6af6802DB35db210d182d4ba0a67b830eC90",
+  "GuildWhitelistedNFTStakingAddress": "0x21e042FACb0c8C55d3A33D15d4a8279a23d78BE9",
   "GuildWhitelistedNFTStakingStartBlock": 12000000,
   "PodeNFTv2Address": "0x2b319564aB130C8fd0e8C996ba806323fE3b7880",
   "PodeNFTv2StartBlock": 12000000,
   "DripOracleAddress": "0x81d6794c7a36b66630ca251cea2f8601edad586b",
   "DripOracleStartBlock": 12000000,
   "DripMarketplaceAddress": "0x39063224d8BF0b7f1cE012E246F0d951E337FC46",
-  "DripMarketplaceStartBlock": 12000000
+  "DripMarketplaceStartBlock": 12000000,
+  "GuildNFTStakingWeightV2Address": "0xb155B018be74119792dcbE4c9a81906b1809065B",
+  "GuildNFTStakingWeightV2StartBlock": 12000000
 }
