@@ -12,6 +12,7 @@
   "author": "BlockRocket.tech",
   "license": "MIT",
   "dependencies": {
+    "hardhat": "2.4.3",
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-solhint": "^2.0.0",
     "@nomiclabs/hardhat-truffle5": "^2.0.0",

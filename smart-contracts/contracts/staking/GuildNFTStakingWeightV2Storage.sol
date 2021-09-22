@@ -68,6 +68,7 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
         reactionPoint["Like"] = 10;
         reactionPoint["Fire"] = 25;
         reactionPoint["Sad"] = 5;
+        reactionPoint["Skip"] = 1;
         reactionPoint["Angry"] = 15;
         reactionPoint["Novel"] = 20;
 

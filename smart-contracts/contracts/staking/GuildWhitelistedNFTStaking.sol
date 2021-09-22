@@ -26,8 +26,8 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
 
     IERC20 public rewardsToken;
 
-    mapping(address => uint256) whitelistedTokensIndex;
-    address[] whitelistedTokens;
+    mapping(address => uint256) public whitelistedTokensIndex;
+    address[] public whitelistedTokens;
 
     DigitalaxAccessControls public accessControls;
     IGuildNFTRewards public rewardsContract;
@@ -78,7 +78,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
     uint256 public amountOfStakingTimeAllNFTsHaveBeenStaked;
     uint256 public lastTimeAllNFTStakingPeriodRecorded;
 
-    uint256 startTime;
+    uint256 public startTime;
 
     // Mapping from address, token ID to owner address
     mapping (address => mapping(uint256 => address)) public tokenOwner;
@@ -127,7 +127,7 @@ contract GuildWhitelistedNFTStaking is BaseRelayRecipient {
 
     /// @notice Admin update of weighting contract
     event WeightingContractUpdated(address indexed oldWeightingContract, address newWeightingContract );
-    
+
      /**
      * @dev Single gateway to initialize the staking contract after deploying
      * @dev Sets the contract with the DECO NFT and DECO reward token
