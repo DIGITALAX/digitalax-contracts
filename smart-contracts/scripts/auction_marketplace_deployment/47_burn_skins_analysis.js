@@ -1,18 +1,16 @@
 const GarmentArtifact = require('../../artifacts/DigitalaxGarmentNFTv2.json');
+const BurnerArtifact = require('../../artifacts/DigitalaxGarmentNFTv2Burner.json');
 const _ = require('lodash');
-var utils = require('ethers').utils;
-
 
 async function main() {
   const [deployer] = await ethers.getSigners();
   const deployerAddress = await deployer.getAddress();
   console.log(
-      'Airdropping bancor vote token with following address',
+      'Analyzing with following address',
       deployerAddress
   );
 
-
-  const {ERC721_GARMENT_ADDRESS} = process.env;
+  const {ERC721_GARMENT_ADDRESS, } = process.env;
   console.log(`ERC721_GARMENT_ADDRESS found [${ERC721_GARMENT_ADDRESS}]`);
 
   const garment = new ethers.Contract(
@@ -21,30 +19,29 @@ async function main() {
       deployer
   );
 
-  const metadata = require('./bancor-airdropV2.json');
- // const metadata = require('./swordart-airdrop.json');
+    console.log(`----------------------`);
+
+  const metadata = require('./allburntokens.json');
   //  Data length
+  console.log("number of tokens to check:")
   console.log(metadata.data.length)
   const datas = metadata.data;
 
-  let firstId = 130995;
 
-  for(let i=0; i< datas.length ; i++){
-  //  console.log("now setting primary sale price");
-  //  await garment.setPrimarySalePrice(firstId, utils.parseEther('0.051771228'));
-
-  //  console.log("set");
-
-    console.log("TRANSFERRING FROM");
-    console.log(datas[i]);
-    console.log("FOR TOKEN ID");
-    console.log(firstId);
-    // Transfer
-    await garment.transferFrom('0x88BB4d01352C34dfd940Bd3f6f60B8EBd8e5C92b', datas[i], firstId);
-    firstId++;
+  for(let i = 0; i< datas.length ; i++){
+    const x = datas[i];
+    try {
+      const tx2 = await garment.ownerOf(
+          x
+      );
+      console.log(`The owner of ${x} is: ${tx2}`);
+    } catch(e){
+      console.log(`It seems ${x} has been burned already`)
+    }
   }
-}
 
+
+}
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.

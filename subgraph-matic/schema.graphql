@@ -564,6 +564,22 @@ type PodeNFTv2Staker @entity {
   rewardsClaimed: BigInt!
 }
 
+type GuildWhitelistedNFT @entity {
+  id: ID!   
+  tokenAddress: String! 
+  owner: Bytes!
+  tokenUri: String!
+  animation: String!
+  name: String!
+  description: String!
+}
+
+type GuildWhitelistedNFTStaker @entity {
+  id: ID!
+  garments: [GuildWhitelistedNFT!]!
+  rewardsClaimed: BigInt!
+}
+
 type PayableTokenReport @entity {
   id: ID!
   payload: BigInt!
