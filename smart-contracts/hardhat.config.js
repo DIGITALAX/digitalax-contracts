@@ -14,13 +14,27 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
 module.exports = {
   solidity: {
-    version: '0.6.12',
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200
-      }
-    }
+    compilers: [
+      {
+        version: '0.6.12',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          }
+        }
+      },
+      {
+        version: '0.8.0',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          }
+
+        }
+      },
+    ],
   },
   gasReporter: {
     currency: 'USD',
@@ -28,10 +42,15 @@ module.exports = {
     gasPrice: 50
   },
   networks: {
+    // hardhat: {
+    //   blockGasLimit: 80000000000000000,
+    //   gasPrice: 1,
+    //   optimizer: { enabled: true, runs: 200}
+    // },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`,
       accounts: [`0x${PRIVATE_KEY}`],
-      gasPrice: 120000000000
+      gasPrice: 100000000000
     },
     ropsten: {
       url: `https://ropsten.infura.io/v3/${INFURA_PROJECT_ID}`,
