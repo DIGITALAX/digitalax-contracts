@@ -558,8 +558,22 @@ type DigitalaxSubscriptionDesignerIndex @entity {
   infoUrl: String!
 }
 
+type ClapHistory @entity {
+  id: ID!
+  owner: String
+  timestamp: BigInt
+  claps: BigInt
+}
+
 type PodeNFTv2Staker @entity {
   id: ID!
+  totalAppraisals: BigInt
+  totalStaked: BigInt
+  totalFollowed: BigInt
+  totalFavourites: BigInt
+  totalMetaverse: BigInt
+  totalShare: BigInt
+  clapHistory: [ClapHistory!]
   garments: [PodeNFTv2!]!
   rewardsClaimed: BigInt!
 }
@@ -567,11 +581,16 @@ type PodeNFTv2Staker @entity {
 type GuildWhitelistedNFT @entity {
   id: ID!   
   tokenAddress: String! 
-  owner: Bytes!
+  owner: String!
   tokenUri: String!
   animation: String!
   name: String!
   description: String!
+}
+
+type GuildWhitelistedToken @entity {
+  id: ID!
+  name: String!
 }
 
 type GuildWhitelistedNFTStaker @entity {
