@@ -25,14 +25,15 @@ export function handleCollectionGroupAdded(event: CollectionGroupAdded): void {
 
     let auctions = new Array<string>();
     let paramAuctions = event.params.auctions;
-    for (let i = 0; i < paramAuctions.length; i += 1) {
+    for (let i = 0; i < paramAuctions.length; i ++) {
         let auctionId = paramAuctions[i];
         auctions.push(auctionId.toString());
     }
 
     let collections = new Array<string>();
     let paramCollections = event.params.collections;
-    for (let i = 0; i < paramCollections.length; i += 1) {
+    log.info("this is collection ids length {}", ['test']);
+    for (let i = 0; i < paramCollections.length; i ++) {
         let collectionId = paramCollections[i];
         collections.push(collectionId.toString());
     }
@@ -144,6 +145,12 @@ export function handleDesignerGroupAdded(event: DesignerGroupAdded): void {
                 }
                 if (res.get('image_url').kind === JSONValueKind.STRING) {
                     designer.image = res.get('image_url').toString();
+                }
+                if (res.get('instagram').kind === JSONValueKind.STRING) {
+                    designer.instagram = res.get('instagram').toString();
+                }
+                if (res.get('twitter').kind === JSONValueKind.STRING) {
+                    designer.twitter = res.get('twitter').toString();
                 }
             }
         }
