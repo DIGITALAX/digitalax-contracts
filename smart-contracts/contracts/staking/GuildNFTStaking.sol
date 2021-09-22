@@ -10,7 +10,7 @@ import "./interfaces/IERC20.sol";
 import "./interfaces/IGuildNFTRewards.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "./interfaces/IGuildNFTStakingWeight.sol";
-
+import "hardhat/console.sol";
 /**
  * @title Digitalax Staking
  * @dev Stake NFTs, earn tokens on the Digitalax platform
@@ -308,7 +308,7 @@ contract GuildNFTStaking is BaseRelayRecipient {
         if (staker.tokenIds.length == 0) {
             delete stakers[_user];
         }
-        
+
         delete tokenOwner[_tokenId];
 
         balance = balance.sub(amount);
@@ -338,8 +338,12 @@ contract GuildNFTStaking is BaseRelayRecipient {
     function updateReward(address _user) public {
         rewardsContract.updateRewards();
         uint256 newRewards = rewardsContract.DecoRewards(lastUpdateTime, _getNow());
+        console.log("Updating rewards for");
+
+        console.log(_user);
 
         if (balance == 0) {
+            console.log("The balance is 0");
             accumulatedRewards = accumulatedRewards.add(newRewards);
             lastUpdateTime = _getNow();
             return;
@@ -350,24 +354,33 @@ contract GuildNFTStaking is BaseRelayRecipient {
 
         weightContract.updateOwnerWeight(_user);
         uint256 totalWeight = weightContract.getTotalWeight();
+        console.log("totalWeight weight %s", totalWeight);
 
         if (totalWeight == 0) {
             return;
         }
 
         uint256 ownerWeight = weightContract.getOwnerWeight(_user);
-
+        console.log("owner weight %s", ownerWeight);
         lastUpdateTime = _getNow();
 
         Staker storage staker = stakers[_user];
+        console.log("newRewards %s", newRewards);
+        console.log("totalRoundrewards %s", totalRoundRewards);
+        console.log("accumulatedRewards %s", accumulatedRewards);
+
         uint256 _stakerRewards = totalRoundRewards.mul(ownerWeight)
                                     .div(totalWeight);
+
+        console.log("reached, staker rewards %s", _stakerRewards);
 
         if (staker.rewardsReleased >= _stakerRewards) {
             staker.rewardsEarned = staker.rewardsReleased;
         } else {
             staker.rewardsEarned = _stakerRewards;
         }
+
+        console.log("rewards earned %s", staker.rewardsEarned);
     }
 
     /// @notice Returns the about of rewards yet to be claimed
@@ -415,15 +428,25 @@ contract GuildNFTStaking is BaseRelayRecipient {
 
         Staker storage staker = stakers[_user];
 
+
+        console.log("rewards earned %s", staker.rewardsEarned);
+        console.log("rewards released %s", staker.rewardsReleased);
+
         if (staker.rewardsEarned <= staker.rewardsReleased) {
             return;
         }
 
         uint256 _payableAmount = staker.rewardsEarned.sub(staker.rewardsReleased);
+
+        console.log("_payableAmount %s", _payableAmount);
+
         staker.rewardsReleased = staker.rewardsReleased.add(_payableAmount);
+
+        console.log("staker.rewardsReleased %s", staker.rewardsReleased);
 
         /// @dev accounts for dust
         uint256 rewardBal = rewardsToken.balanceOf(address(this));
+        console.log("the rewards bal is %s", rewardBal);
         if (_payableAmount > rewardBal) {
             _payableAmount = rewardBal;
         }
