@@ -213,17 +213,15 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
         .concat(event.transaction.index.toString());
   
     let auctionEvent = new DigitalaxGarmentV2AuctionHistory(eventId);
-    let digitalaxGarmentV2 = DigitalaxGarmentV2.load(event.params.garmentTokenId.toString());
-    if (digitalaxGarmentV2) {
-      auctionEvent.token = digitalaxGarmentV2.id
-    } else {
-      auctionEvent.token = '';
+    let garment = DigitalaxGarmentV2.load(event.params.garmentTokenId.toString());
+    if (garment) {
+        auctionEvent.token = DigitalaxGarmentV2.load(event.params.garmentTokenId.toString()).id
+        auctionEvent.eventName = "AuctionCancelled"
+        auctionEvent.timestamp = event.block.timestamp
+        auctionEvent.transactionHash = event.transaction.hash
+        auctionEvent.save()
     }
-    auctionEvent.eventName = "AuctionCancelled"
-    auctionEvent.timestamp = event.block.timestamp
-    auctionEvent.transactionHash = event.transaction.hash
-    auctionEvent.save()
-  
+
     // Clear down bids
     let auction = DigitalaxGarmentV2Auction.load(tokenId.toString());
     if (auction) {
