@@ -205,13 +205,13 @@ export function handleAuctionResulted(event: AuctionResulted): void {
 
 export function handleAuctionCancelled(event: AuctionCancelled): void {
     let tokenId = event.params.garmentTokenId;
-
+  
     let eventId = tokenId.toString()
         .concat("-")
         .concat(event.transaction.hash.toHexString())
         .concat("-")
         .concat(event.transaction.index.toString());
-
+  
     let auctionEvent = new DigitalaxGarmentV2AuctionHistory(eventId);
     let garment = DigitalaxGarmentV2.load(event.params.garmentTokenId.toString());
     if (garment) {
@@ -224,18 +224,19 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
 
     // Clear down bids
     let auction = DigitalaxGarmentV2Auction.load(tokenId.toString());
-
-    if (auction.topBid) {
-        // adjust global stats
-        let globalStats = loadOrCreateGarmentNFTV2GlobalStats();
-        globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue.minus((auction.topBid as BigInt));
-        globalStats.save();
+    if (auction) {
+      if (auction.topBid) {
+          // adjust global stats
+          let globalStats = loadOrCreateGarmentNFTV2GlobalStats();
+          globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue.minus((auction.topBid as BigInt));
+          globalStats.save();
+      }
+    
+      auction.topBidder = null
+      auction.topBid = null
+      auction.lastBidTime = null
+      auction.save();
     }
-
-    auction.topBidder = null
-    auction.topBid = null
-    auction.lastBidTime = null
-    auction.save();
 }
 
 export function handleUpdateBidWithdrawalLockTime(event: UpdateBidWithdrawalLockTime): void {
