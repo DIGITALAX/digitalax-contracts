@@ -636,7 +636,7 @@ const {
 
 		  await expectRevert(
 			  this.stakingWeight.reactWhitelistedNFT(Array(1).fill(this.skinsToken.address), Array(1).fill( '100002'), Array(1).fill('Garbage'), {from: staker2}),
-		  'WeightingContract.reactWhitelistedNFT: An inputted reaction string is not allowed'
+		  'An inputted reaction string is not allowed'
 		  );
 
 	  });

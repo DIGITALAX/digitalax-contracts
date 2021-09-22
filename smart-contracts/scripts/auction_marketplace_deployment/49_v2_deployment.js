@@ -14,11 +14,27 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   const deployerAddress = await deployer.getAddress();
 
-    // const {ACCESS_CONTROLS_ADDRESS} = process.env;
-    // console.log(`ACCESS_CONTROLS_ADDRESS found [${ACCESS_CONTROLS_ADDRESS}]`);
+    const accessControlsAddress = "0xbe5c84e6b036cb41a7a6b5008b9427a5f4f1c9f5";
+    const originalStakingAddress = "0xf0815348F626B0f4f434CAF9C5984694D85B50A1";
+    const decoTokenAddress = "0x200f9621cbce6ed740071ba34fde85ee03f2e113";
+    const decoOracleAddress = "0xcfb6d9134e2742512883e8d68c6166b480bf1875";
+    const trustedForwarderAddress = "0x86C80a8aa58e0A4fa09A69624c31Ab2a6CAD56b8";
+    const rewardsDistributed = "50442764192708333329873549";
+    const tokenWhitelist = [
+                            "0x7B2a989c4D1AD1B79a84CE2EB79dA5D8d9C2b7a7",
+                            "0x2953399124f0cbb46d2cbacd8a89cf0599974963",
+                            "0x2b9bd413852401a7e09c77de1fab53915f8f9336",
+                            "0x5bc808062b6d36f0c6013c4ac662a8ba4f0cb5ea",
+                            "0x2d0d9b4075e231bff33141d69df49ffcf3be7642",
+                            "0xbccaa7acb552a2c7eb27c7eb77c2cc99580735b9",
+                            "0xa5f1ea7df861952863df2e8d1312f7305dabf215",
+                            "0xfd12ec7ea4b381a79c78fe8b2248b4c559011ffb"
+                            ];
+
+
 
     const accessControls = new ethers.Contract(
-        "0xf7580d46080e1ce832ac44cf7224b906d44110b4",
+        accessControlsAddress,
         AccessControlsArtifact.abi,
         deployer
     );
@@ -29,15 +45,15 @@ async function main() {
   console.log(whitelistedNFTStaking.address);
 
   const StakingWeightStorage = await ethers.getContractFactory("GuildNFTStakingWeightV2Storage");
-  const instanceStakingWeightStorage = await upgrades.deployProxy(StakingWeightStorage, ["0x0000000000000000000000000000000000000000","0xf7580d46080e1ce832ac44cf7224b906d44110b4"]);
+  const instanceStakingWeightStorage = await upgrades.deployProxy(StakingWeightStorage, ["0x0000000000000000000000000000000000000000",accessControlsAddress]);
   await instanceStakingWeightStorage.deployed();
 
   const StakingWeight = await ethers.getContractFactory("GuildNFTStakingWeightV2");
   const instanceStakingWeight = await upgrades.deployProxy(StakingWeight,
-      ["0x665bF9Ea8E3036088a6C767b0184cA4A4f13AD67",
+      [originalStakingAddress,
           whitelistedNFTStaking.address,
-        "0xbcd79f68a91500a2cc7c29e3aaa80046cda29833",
-        "0xf7580d46080e1ce832ac44cf7224b906d44110b4",
+        decoTokenAddress,
+        accessControlsAddress,
         instanceStakingWeightStorage.address
       ]);
   await instanceStakingWeight.deployed();
@@ -45,21 +61,21 @@ async function main() {
   const StakingRewards = await ethers.getContractFactory("GuildNFTRewardsV2");
   const instanceStakingRewards = await upgrades.deployProxy(StakingRewards,
       [
-          "0xbcd79f68a91500a2cc7c29e3aaa80046cda29833",
-        "0xf7580d46080e1ce832ac44cf7224b906d44110b4",
-        "0x665bF9Ea8E3036088a6C767b0184cA4A4f13AD67",
+          decoTokenAddress,
+        accessControlsAddress,
+        originalStakingAddress,
           whitelistedNFTStaking.address,
-        "0x3d25C78740EF6519AfE4266a972c1c7e6934EC02",
-        "0x9399BB24DBB5C4b782C70c2969F58716Ebbd6a3b",
-        "19511605390211640209994124"
+          decoOracleAddress,
+          trustedForwarderAddress,
+        rewardsDistributed
       ]);
   await instanceStakingRewards.deployed();
 
     const stakingInit = await whitelistedNFTStaking.initStaking(
-        "0xbcd79f68a91500a2cc7c29e3aaa80046cda29833",
-            "0xf7580d46080e1ce832ac44cf7224b906d44110b4",
+        decoTokenAddress,
+            accessControlsAddress,
             instanceStakingWeight.address,
-            "0x9399BB24DBB5C4b782C70c2969F58716Ebbd6a3b" );
+            trustedForwarderAddress );
     await stakingInit.wait();
 
     await instanceStakingWeightStorage.updateWeightContract(instanceStakingWeight.address);
@@ -73,24 +89,17 @@ async function main() {
     await acr2.wait();
 
     console.log('weight points');
-    // TODO staking set weight points
     await instanceStakingRewards.setWeightPoints('5000000000000000000000000000000000000', '5000000000000000000000000000000000000');
 
-    // TODO staking set rewards contract
     console.log('rewardscontract');
     const updateRewardContract = await whitelistedNFTStaking.setRewardsContract(instanceStakingRewards.address);
     await updateRewardContract.wait();
 
-    // TODO staking set rewards quantities
     console.log('setrewards');
-    await instanceStakingRewards.setRewards([0], ['4128750000000000000000000']);
-    await instanceStakingRewards.setRewards([1], ['4128750000000000000000000']);
-    await instanceStakingRewards.setRewards([2], ['4128750000000000000000000']);
-    await instanceStakingRewards.setRewards([3], ['4128750000000000000000000']);
+    await instanceStakingRewards.setRewards([0,1,2,3,4,5,6,7,8,9,10,11,12,13], Array(14).fill('4128750000000000000000000'));
 
-    // TODO set the rewards and weight contract on original pode nft staking contract
     console.log('whitelisting');
-    const whitelisted = await whitelistedNFTStaking.addWhitelistedTokens(["0x1Bc6D640710759Be37E5DCD1b23B322250353751"]);
+    const whitelisted = await whitelistedNFTStaking.addWhitelistedTokens(tokenWhitelist);
     await whitelisted.wait();
 
   console.log('the tokens have been deployed');

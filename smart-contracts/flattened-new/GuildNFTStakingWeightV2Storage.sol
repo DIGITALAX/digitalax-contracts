@@ -2876,7 +2876,7 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
     uint256 constant MULTIPLIER = 100000;
     // Important contract addresses we need to set
     DigitalaxAccessControls public accessControls;
-    address weightContract;
+    address public weightContract;
 
     struct PercentageMapping {
         uint256 percentage;
@@ -2919,6 +2919,7 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
         reactionPoint["Like"] = 10;
         reactionPoint["Fire"] = 25;
         reactionPoint["Sad"] = 5;
+        reactionPoint["Skip"] = 1;
         reactionPoint["Angry"] = 15;
         reactionPoint["Novel"] = 20;
 
