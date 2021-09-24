@@ -42,6 +42,9 @@ export function handleStaked(event: Staked): void {
     garment.owner = owner;
     garment.tokenUri = tokenUri;
     garment.tokenAddress = whitelistedNft;
+    garment.animation = '';
+    garment.description = '';
+    garment.name = '';
     
     if (tokenUri) {
         if (tokenUri.includes('ipfs/')) {
@@ -116,7 +119,10 @@ export function handleAddWhitelistedTokens(event: AddWhitelistedTokens): void {
     for (let i = 0; i < addresses.length; i += 1) {
         let contract = ERC721.bind(addresses[i]);
         const guildWhitelistedToken = new GuildWhitelistedToken(addresses[i].toHexString());
-        guildWhitelistedToken.name = contract.name();
-        guildWhitelistedToken.save();
+        const result = contract.try_name();
+        if (!result.reverted) {
+          guildWhitelistedToken.name = result.value;
+          guildWhitelistedToken.save();
+        }
     }
 }
