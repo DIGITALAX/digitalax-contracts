@@ -27,7 +27,6 @@ export function handleAppraiseGuildMember(event: AppraiseGuildMember): void {
 }
 
 export function handleWhitelistedNFTReaction(event: WhitelistedNFTReaction): void {
-  log.info("this is handlewhitelistednftreaction ------------ {}", [event.transaction.from.toHexString()]);
   let podeStaker = PodeNFTv2Staker.load(event.transaction.from.toHexString());
   if (!podeStaker) {
     podeStaker = new PodeNFTv2Staker(event.transaction.from.toHexString());
