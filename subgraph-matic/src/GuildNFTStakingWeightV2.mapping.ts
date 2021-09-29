@@ -7,8 +7,6 @@ import {
 import { ClapHistory, PodeNFTv2Staker } from "../generated/schema";
 
 export function handleAppraiseGuildMember(event: AppraiseGuildMember): void {
-  const contract = GuildNFTStakingWeightV2Contract.bind(event.address);
-  const stats = contract.appraiserStats(event.params.guildMember);
   let podeStaker = PodeNFTv2Staker.load(event.params.guildMember.toHexString());
   if (!podeStaker) {
     podeStaker = new PodeNFTv2Staker(event.params.guildMember.toHexString());
@@ -21,13 +19,13 @@ export function handleAppraiseGuildMember(event: AppraiseGuildMember): void {
     podeStaker.totalMetaverse = new BigInt(0);
     podeStaker.totalShare = new BigInt(0);
   }
-  podeStaker.totalAppraisals = stats.value0;
-  podeStaker.totalStaked = contract.stakedNFTCount();
   podeStaker.save();
 }
 
 export function handleWhitelistedNFTReaction(event: WhitelistedNFTReaction): void {
+  const contract = GuildNFTStakingWeightV2Contract.bind(event.address);
   let podeStaker = PodeNFTv2Staker.load(event.transaction.from.toHexString());
+  const stats = contract.appraiserStats(event.transaction.from);
   if (!podeStaker) {
     podeStaker = new PodeNFTv2Staker(event.transaction.from.toHexString());
     podeStaker.garments = null;
@@ -46,6 +44,7 @@ export function handleWhitelistedNFTReaction(event: WhitelistedNFTReaction): voi
   log.info("this is event.params.whitelistedNft ------------ {}", [event.params.whitelistedNFT.toHexString()]);
   log.info("this is event.params.tokenId ------------ {}", [event.params.tokenId.toString()]);
 
+  podeStaker.totalAppraisals = stats.value0;
   
   if (event.params.reaction == 'Favorite') {
     podeStaker.totalFavourites = podeStaker.totalFavourites.plus(event.params.quantity);
