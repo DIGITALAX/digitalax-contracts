@@ -157,7 +157,11 @@
         "name": "_guildMembers",
         "type": "address[]"
       },
-      { "internalType": "string[]", "name": "_reactions", "type": "string[]" }
+      {
+        "internalType": "string[]",
+        "name": "_reactions",
+        "type": "string[]"
+      }
     ],
     "name": "appraiseGuildMember",
     "outputs": [],
@@ -171,8 +175,16 @@
         "name": "_whitelistedNFTs",
         "type": "address[]"
       },
-      { "internalType": "uint256[]", "name": "_tokenIds", "type": "uint256[]" },
-      { "internalType": "string[]", "name": "_reactions", "type": "string[]" }
+      {
+        "internalType": "uint256[]",
+        "name": "_tokenIds",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "string[]",
+        "name": "_reactions",
+        "type": "string[]"
+      }
     ],
     "name": "appraiseWhitelistedNFT",
     "outputs": [],
@@ -180,7 +192,13 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "name": "appraiserStats",
     "outputs": [
       {
@@ -203,7 +221,11 @@
         "name": "lastReactionDay",
         "type": "uint256"
       },
-      { "internalType": "uint256", "name": "maxDecoBonus", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "maxDecoBonus",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "maxAssetsPercentageAppraised",
@@ -225,51 +247,103 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_owner", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
     ],
     "name": "balanceOf",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_owner", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
     ],
     "name": "balanceOfWhitelistedNFT",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_tokenOwner", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_tokenOwner",
+        "type": "address"
+      }
     ],
     "name": "calcNewOwnerWeight",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "calcNewTotalWhitelistedNFTWeight",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "calcNewWeight",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_tokenOwner", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_tokenOwner",
+        "type": "address"
+      }
     ],
     "name": "calcNewWhitelistedNFTOwnerWeight",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -280,7 +354,11 @@
         "name": "_whitelistedNFTs",
         "type": "address[]"
       },
-      { "internalType": "uint256[]", "name": "_tokenIds", "type": "uint256[]" },
+      {
+        "internalType": "uint256[]",
+        "name": "_tokenIds",
+        "type": "uint256[]"
+      },
       {
         "internalType": "uint256[]",
         "name": "_clapQuantity",
@@ -294,42 +372,88 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_tokenOwner", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_tokenOwner",
+        "type": "address"
+      }
     ],
     "name": "getOwnerWeight",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "getTotalWeight",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "getTotalWhitelistedNFTTokenWeight",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_tokenOwner", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_tokenOwner",
+        "type": "address"
+      }
     ],
     "name": "getWhitelistedNFTOwnerWeight",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "name": "guildMemberWeight",
     "outputs": [
-      { "internalType": "uint256", "name": "lastWeight", "type": "uint256" },
-      { "internalType": "uint256", "name": "lastUpdateDay", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "lastWeight",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lastUpdateDay",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -338,7 +462,11 @@
     "inputs": [],
     "name": "guildNativeERC20Token",
     "outputs": [
-      { "internalType": "contract IERC20", "name": "", "type": "address" }
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -379,22 +507,46 @@
   {
     "inputs": [],
     "name": "lastGuildMemberUpdateDay",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "lastUpdateDay",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "_tokenId", "type": "uint256" },
-      { "internalType": "address", "name": "_tokenOwner", "type": "address" },
-      { "internalType": "uint256", "name": "stakeWeight", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_tokenOwner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "stakeWeight",
+        "type": "uint256"
+      }
     ],
     "name": "migrateCurrentStake",
     "outputs": [],
@@ -402,10 +554,20 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "name": "ownerWeight",
     "outputs": [
-      { "internalType": "uint256", "name": "lastWeight", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "lastWeight",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "lastGuildMemberWeight",
@@ -426,8 +588,16 @@
         "name": "stakedWhitelistedNFTCount",
         "type": "uint256"
       },
-      { "internalType": "uint256", "name": "startDay", "type": "uint256" },
-      { "internalType": "uint256", "name": "lastUpdateDay", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "startDay",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lastUpdateDay",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "lastGuildMemberUpdateDay",
@@ -438,11 +608,25 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "podeTokenWeight",
     "outputs": [
-      { "internalType": "uint256", "name": "lastWeight", "type": "uint256" },
-      { "internalType": "uint256", "name": "lastUpdateDay", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "lastWeight",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lastUpdateDay",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -454,8 +638,16 @@
         "name": "_whitelistedNFTs",
         "type": "address[]"
       },
-      { "internalType": "uint256[]", "name": "_tokenIds", "type": "uint256[]" },
-      { "internalType": "string[]", "name": "_reactions", "type": "string[]" }
+      {
+        "internalType": "uint256[]",
+        "name": "_tokenIds",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "string[]",
+        "name": "_reactions",
+        "type": "string[]"
+      }
     ],
     "name": "reactWhitelistedNFT",
     "outputs": [],
@@ -464,17 +656,35 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "_startTime", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "_startTime",
+        "type": "uint256"
+      }
     ],
     "name": "setStartTime",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "_tokenId", "type": "uint256" },
-      { "internalType": "address", "name": "_tokenOwner", "type": "address" },
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_tokenOwner",
+        "type": "address"
+      },
       {
         "internalType": "uint256",
         "name": "_primarySalePrice",
@@ -493,8 +703,16 @@
         "name": "_whitelistedNFT",
         "type": "address"
       },
-      { "internalType": "uint256", "name": "_tokenId", "type": "uint256" },
-      { "internalType": "address", "name": "_tokenOwner", "type": "address" }
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_tokenOwner",
+        "type": "address"
+      }
     ],
     "name": "stakeWhitelistedNFT",
     "outputs": [],
@@ -504,28 +722,52 @@
   {
     "inputs": [],
     "name": "stakedNFTCount",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "stakedWhitelistedNFTCount",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "stakingContract",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "startTime",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -543,30 +785,62 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "tokenOwner",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "totalGuildWeight",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "totalWhitelistedNFTTokenWeight",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "_tokenId", "type": "uint256" },
-      { "internalType": "address", "name": "_tokenOwner", "type": "address" }
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_tokenOwner",
+        "type": "address"
+      }
     ],
     "name": "unstake",
     "outputs": [],
@@ -580,8 +854,16 @@
         "name": "_whitelistedNFT",
         "type": "address"
       },
-      { "internalType": "uint256", "name": "_tokenId", "type": "uint256" },
-      { "internalType": "address", "name": "_tokenOwner", "type": "address" }
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_tokenOwner",
+        "type": "address"
+      }
     ],
     "name": "unstakeWhitelistedNFT",
     "outputs": [],
@@ -603,55 +885,117 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_tokenOwner", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_tokenOwner",
+        "type": "address"
+      }
     ],
     "name": "updateOwnerWeight",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "updateWeight",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_tokenOwner", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_tokenOwner",
+        "type": "address"
+      }
     ],
     "name": "updateWhitelistedNFTOwnerWeight",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "updateWhitelistedNFTWeight",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "", "type": "address" },
-      { "internalType": "uint256", "name": "", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
     "name": "whitelistedNFTTokenOwner",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "", "type": "address" },
-      { "internalType": "uint256", "name": "", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
     "name": "whitelistedNFTTokenWeight",
     "outputs": [
-      { "internalType": "uint256", "name": "lastWeight", "type": "uint256" },
-      { "internalType": "uint256", "name": "lastUpdateDay", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "lastWeight",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lastUpdateDay",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -659,7 +1003,13 @@
   {
     "inputs": [],
     "name": "whitelistedStakingContract",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   }

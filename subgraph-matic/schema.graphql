@@ -584,6 +584,7 @@ type GuildWhitelistedNFT @entity {
   owner: String!
   tokenUri: String!
   animation: String!
+  image: String
   name: String!
   description: String!
 }
