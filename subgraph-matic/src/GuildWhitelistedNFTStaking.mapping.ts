@@ -45,6 +45,7 @@ export function handleStaked(event: Staked): void {
     garment.animation = '';
     garment.description = '';
     garment.name = '';
+    garment.image = '';
     
     if (tokenUri) {
         if (tokenUri.includes('ipfs/')) {
@@ -63,6 +64,9 @@ export function handleStaked(event: Staked): void {
                         }
                         if (res.get('name').kind === JSONValueKind.STRING) {
                             garment.name = res.get('name').toString();
+                        }
+                        if (res.get('image').kind == JSONValueKind.STRING) {
+                            garment.image = res.get('image').toString();
                         }
                     }
                 }
