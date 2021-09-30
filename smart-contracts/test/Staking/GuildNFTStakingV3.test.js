@@ -831,7 +831,8 @@ const {
 		  await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2],{from: staker});
 		  await this.guildNftStaking.stakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
 
-		  await this.guildWhitelistedNftStaking.addWhitelistedTokens([this.digitalaxMaterials.address], [false], [true], {from: admin});
+		  await this.guildWhitelistedNftStaking.addWhitelistedTokens([this.digitalaxMaterials.address], [true], [true], {from: admin});
+		  await this.guildWhitelistedNftStaking.whitelistTokenIds(this.digitalaxMaterials.address, ['100001','100002','100003','100004'] , {from: admin});
 		  await this.digitalaxMaterials.mintChild('100001', 1, staker, '0x00');
 		  await this.digitalaxMaterials.mintChild('100002', 1, staker, '0x00');
 		  await this.digitalaxMaterials.mintChild('100003', 1, staker2, '0x00');
@@ -878,6 +879,49 @@ const {
 
 		  expect(finalDecoBalance > finalDecoBalance2);
 
+	  });
+
+	  it('successfully deposits ERC1155, admin unstakes emergency unstakes', async () => {
+	  		// Pre req, staker 2 puts some tokens in.
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.setPrimarySalePrice(TOKEN_1, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_2, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_3, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_4, ONE_ETH, {from: admin});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker2});
+		  expect(await this.guildNftStaking.nftStakedTotal()).to.be.bignumber.equal("0");
+		  await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2],{from: staker});
+		  await this.guildNftStaking.stakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
+
+		  await this.guildWhitelistedNftStaking.addWhitelistedTokens([this.digitalaxMaterials.address], [true], [true], {from: admin});
+		  await this.guildWhitelistedNftStaking.whitelistTokenIds(this.digitalaxMaterials.address, ['100001','100002','100003','100004'] , {from: admin});
+		  await this.digitalaxMaterials.mintChild('100001', 1, staker, '0x00');
+		  await this.digitalaxMaterials.mintChild('100001', 1, staker, '0x00');
+		  await this.digitalaxMaterials.mintChild('100002', 1, staker, '0x00');
+		  await this.digitalaxMaterials.mintChild('100003', 1, staker2, '0x00');
+		  await this.digitalaxMaterials.mintChild('100004', 1, staker2, '0x00');
+
+		  await this.digitalaxMaterials.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker});
+		  await this.digitalaxMaterials.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker2});
+
+		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.digitalaxMaterials.address), ['100001','100002'],{from: staker});
+		  await expectRevert(
+			  this.guildWhitelistedNftStaking.stakeBatch(new Array(1).fill(this.digitalaxMaterials.address), ['100001'],{from: staker}),
+			  '1 of this token ID is already staked, this is first come first served'
+		  );
+
+		  await this.guildWhitelistedNftStaking.stakeBatch(new Array(2).fill(this.digitalaxMaterials.address), ['100003','100004'],{from: staker2});
+
+		  await this.guildWhitelistedNftStaking.emergencyUnstake(this.digitalaxMaterials.address, '100001', {from: staker});
+		  await this.guildWhitelistedNftStaking.adminEmergencySafeUnstake(this.digitalaxMaterials.address, '100002', {from: admin});
+		  await expectRevert(
+			  this.guildWhitelistedNftStaking.adminEmergencyUnstake(this.digitalaxMaterials.address, '100003', {from: admin}),
+			  'This method is only for ERC721'
+		  );
 	  });
 
 	  it('Follows the token whitelist', async () => {

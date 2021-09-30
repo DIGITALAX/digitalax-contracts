@@ -371,6 +371,7 @@ contract GuildWhitelistedNFTStakingV2 is BaseRelayRecipient {
             _tokenId
         );
 
+        require(!nftIsStaked[_whitelistedNFT][_tokenId], "1 of this token ID is already staked, this is first come first served");
         nftIsStaked[_whitelistedNFT][_tokenId] = true;
         nftStakeRecords[_whitelistedNFT][_tokenId][numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId]].nftStakeTime = _getNow();
         numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId] = numberOfTimesNFTWasStaked[_whitelistedNFT][_tokenId].add(1);
