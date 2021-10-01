@@ -208,6 +208,16 @@ contract GuildNFTStakingWeightV3 {
         return startTime;
     }
 
+  function setStakedWhitelistedNFTCount(address _tokenOwner, uint256 _manualSet) external returns (uint256){
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "Sender must be admin"
+        );
+      OwnerWeight storage owner = ownerWeight[_tokenOwner];
+
+      owner.stakedWhitelistedNFTCount = _manualSet;
+    }
+
 
     function calcNewWeight() public view returns (uint256) {
         uint256 _currentDay = diffDays(startTime, _getNow());
