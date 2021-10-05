@@ -8,17 +8,17 @@ const {
     balance,
     time
   } = require('@openzeppelin/test-helpers');
-  
+
   const {expect} = require('chai');
-  
-  const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
+
+  const DigitalaxAccessControls = artifacts.require('contracts/DigitalaxAccessControls.sol:DigitalaxAccessControls');
   const MockERC20 = artifacts.require('MockERC20');
   const WethToken = artifacts.require('WethToken');
   const DigitalaxRewardsV2 = artifacts.require('DigitalaxRewardsV2Mock');
   const DigitalaxRewardsV2Real = artifacts.require('DigitalaxRewardsV2');
   const DigitalaxMonaStaking = artifacts.require('DigitalaxMonaStakingMock');
   const DigitalaxMonaOracle = artifacts.require('DigitalaxMonaOracle');
-  
+
   // 1,000 * 10 ** 18
   const ONE_THOUSAND_TOKENS = '1000000000000000000000';
   const EXCHANGE_RATE = new BN('1200000000000000000');
@@ -31,15 +31,15 @@ const {
   const ONE_HUNDRED_TOKENS = new BN('10000000000000000000');
   const TWO_ETH = ether('2');
   const MAX_NUMBER_OF_POOLS = new BN('20');
-  
+
   contract('DigitalaxMonaStaking', (accounts) => {
     const [admin, smartContract, platformFeeAddress, minter, provider, staker] = accounts;
-  
+
     beforeEach(async () => {
       this.accessControls = await DigitalaxAccessControls.new({from: admin});
       await this.accessControls.addMinterRole(minter, {from: admin});
       await this.accessControls.addSmartContractRole(smartContract, {from: admin});
-  
+
       this.monaToken = this.token = await MockERC20.new(
           'MONA',
           'MONA',
@@ -47,7 +47,7 @@ const {
           {from: staker}
       );
 
-  
+
       this.weth = await WethToken.new(
         { from: minter }
       );
@@ -70,7 +70,7 @@ const {
           this.accessControls.address,
           constants.ZERO_ADDRESS,
       );
-  
+
       this.digitalaxRewards = await DigitalaxRewardsV2.new(
           this.monaToken.address,
           this.accessControls.address,
@@ -85,7 +85,7 @@ const {
       await this.monaStaking.setRewardsContract(this.digitalaxRewards.address, { from: admin });
       await this.monaToken.approve(this.monaStaking.address, ONE_THOUSAND_TOKENS, { from: staker });
     });
-  
+
     describe('Contract deployment', () => {
       it('Reverts when mona token is zero', async () => {
         await expectRevert(
@@ -119,16 +119,16 @@ const {
                     'DigitalaxMonaStaking.setRewardsContract: Sender must be admin'
                 );
             });
-    
+
             it('successfully sets rewards contract', async () => {
                 await this.monaStaking.setRewardsContract(this.digitalaxRewards.address, {from: admin});
-    
+
                 const updated = await this.monaStaking.rewardsContract();
                 expect(updated).to.be.equal(this.digitalaxRewards.address);
             });
         });
     })
-  
+
     describe('Access Controls', () => {
       describe('updateAccessControls()', () => {
         it('fails when not admin', async () => {
@@ -137,28 +137,28 @@ const {
               'DigitalaxMonaStaking.updateAccessControls: Sender must be admin'
           );
         });
-  
+
         it('reverts when trying to set recipient as ZERO address', async () => {
           await expectRevert(
               this.monaStaking.updateAccessControls(constants.ZERO_ADDRESS, {from: admin}),
               'DigitalaxMonaStaking.updateAccessControls: Zero Address'
           );
         });
-  
+
         it('successfully updates access controls', async () => {
           const accessControlsV2 = await DigitalaxAccessControls.new({from: admin});
-  
+
           const original = await this.monaStaking.accessControls();
           expect(original).to.be.equal(this.accessControls.address);
-  
+
           await this.monaStaking.updateAccessControls(accessControlsV2.address, {from: admin});
-  
+
           const updated = await this.monaStaking.accessControls();
           expect(updated).to.be.equal(accessControlsV2.address);
         });
       });
     })
-  
+
     describe('Init Mona Staking Pool', () => {
       describe('initMonaStakingPool()', () => {
         it('fails when not admin', async () => {
@@ -233,7 +233,7 @@ const {
             'DigitalaxMonaStaking.initMonaStakingPool: Contract already reached max number of supported pools'
           );
         })
-  
+
         it('successfully inits staking pool', async () => {
           const original = await this.monaStaking.numberOfStakingPools();
           await this.monaStaking.initMonaStakingPool(
@@ -250,7 +250,7 @@ const {
         })
       });
     })
-  
+
     describe('Set Mona Token', () => {
       describe('setMonaToken()', () => {
         it('fails when not admin', async () => {
@@ -266,13 +266,13 @@ const {
               'DigitalaxMonaStaking.setMonaToken: Invalid Mona Token'
           );
         });
-  
+
         it('successfully updates mona token', async () => {
           const original = await this.monaStaking.monaToken();
           expect(original).to.be.equal(this.monaToken.address);
-  
+
           await this.monaStaking.setMonaToken(this.accessControls.address, {from: admin});
-  
+
           const updated = await this.monaStaking.monaToken();
           expect(updated).to.be.equal(this.accessControls.address);
         });
@@ -287,22 +287,22 @@ const {
               'DigitalaxMonaStaking.setTokensClaimable: Sender must be admin'
           );
         });
-  
-        it('successfully enabled tokens claimable', async () => {  
+
+        it('successfully enabled tokens claimable', async () => {
           await this.monaStaking.setTokensClaimable(true, {from: admin});
-  
+
           const updated = await this.monaStaking.tokensClaimable();
           expect(updated).to.be.equal(true);
         });
       });
     })
-  
+
     describe('Admin functions', () => {
       beforeEach(async () => {
           this.weth.deposit({from: minter, value: TWENTY_TOKENS});
           this.weth.transfer(this.monaStaking.address, TWENTY_TOKENS, {from: minter});
       });
-  
+
       describe('reclaimERC20()', async () => {
         describe('validation', async () => {
           it('cannot reclaim erc20 if it is not Admin', async () => {
@@ -420,7 +420,7 @@ const {
       it('successfully unstaking', async () => {
         const originAmount = await this.monaToken.balanceOf(staker);
         await this.monaStaking.unstake(0, ONE_TOKEN, {from: staker});
-        
+
         expect(await this.monaToken.balanceOf(staker)).to.be.bignumber.greaterThan(originAmount);
       })
     });
@@ -497,11 +497,11 @@ const {
         await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, {from: admin});
         await this.digitalaxRewards.setNowOverride('604800'); // first week
       });
-      
+
       it('less staker should have less rewards', async () => {
         await this.monaStaking.stake(0, ONE_TOKEN, {from: minter});
         await this.monaStaking.stake(0, TWO_TOKEN, {from: staker});
-        
+
         await this.monaStaking.setNowOverride('1209600'); // next week
 
         const minterRewards = await this.monaStaking.unclaimedRewards(0, minter);
@@ -533,11 +533,11 @@ const {
         await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, {from: admin});
         await this.digitalaxRewards.setNowOverride('604800'); // first week
       });
-      
+
       it('late staker should have no bonus rewards', async () => {
         await this.monaStaking.stake(0, ONE_TOKEN, {from: minter});
         await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
-        
+
         await this.monaStaking.setNowOverride('1209600'); // next week
 
         const bonusRewards = await this.monaStaking.unclaimedBonusRewards(0, staker);
@@ -548,11 +548,11 @@ const {
 
         expect(minterRewards.claimableRewards).to.be.bignumber.equal(stakerRewards.claimableRewards);
       });
-      
+
       it('early staker should have bonus rewards', async () => {
         await this.monaStaking.stake(0, ONE_TOKEN, {from: minter});
         await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
-        
+
         await this.monaStaking.setNowOverride('1209600'); // next week
         await this.digitalaxRewards.setNowOverride('1209600'); // first week
 
@@ -599,18 +599,17 @@ const {
       it('Successfully claim tokens', async () => {
         await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
         await this.monaStaking.setNowOverride('1209600'); // next week
-        
+
         await this.monaStaking.claimReward(0, {from: staker});
         const afterBalance = await this.monaToken.balanceOf(staker);
         expect(afterBalance).to.be.bignumber.equals(new BN('990000000000000000000'));
       });
     })
-  
-  
+
+
     async function getGasCosts(receipt) {
       const tx = await web3.eth.getTransaction(receipt.tx);
       const gasPrice = new BN(tx.gasPrice);
       return gasPrice.mul(new BN(receipt.receipt.gasUsed));
     }
   });
-  
