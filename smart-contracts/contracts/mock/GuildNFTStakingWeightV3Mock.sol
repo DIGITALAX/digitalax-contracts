@@ -16,11 +16,11 @@ contract GuildNFTStakingWeightV3Mock is GuildNFTStakingWeightV3 {
         return nowOverride;
     }
 
-    // STARTING HERE
-    // EXAMPLE NEW STORED VARIABLE
-
-    function setTest() external {
-        testValue = uint256(666);
-    }
-    uint256 public testValue;
+//    // STARTING HERE
+//    // EXAMPLE NEW STORED VARIABLE
+//
+//    function setTest() external {
+//        testValue = uint256(666);
+//    }
+//    uint256 public testValue;
 }
