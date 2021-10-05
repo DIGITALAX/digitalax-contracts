@@ -34,6 +34,7 @@ const {
   const TWO_THOUSAND_TOKENS = new BN('2000000000000000000000');
   const HUNDRED_TOKENS = new BN('100000000000000000000');
   const FIFTY_TOKENS = new BN('50000000000000000000');
+  const FOURTY_NINE_TOKENS = new BN('49000000000000000000');
   const FOURTY_TOKENS = new BN('40000000000000000000');
   const HALF_TOKEN = new BN('50000000000000000');
   const ONE_TOKEN = new BN('100000000000000000');
@@ -917,7 +918,7 @@ const {
 
 		console.log(finalDecoBalance.sub(initialDecoBalance).toString());
 	  // TODO !!
-	  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+	  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(FOURTY_NINE_TOKENS);
 
 	});
 
@@ -943,7 +944,7 @@ const {
 
 	  const finalDecoBalance = await this.decoToken.balanceOf(staker);
 
-	  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+	  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(FOURTY_NINE_TOKENS);
 
 	  console.log(finalDecoBalance.sub(initialDecoBalance).toString());
 	});
@@ -970,7 +971,7 @@ const {
 
 	  const finalDecoBalance = await this.decoToken.balanceOf(staker);
 
-	  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(FIFTY_TOKENS);
+	  expect(finalDecoBalance.sub(initialDecoBalance)).to.be.bignumber.greaterThan(FOURTY_NINE_TOKENS);
 
 	  console.log(finalDecoBalance.sub(initialDecoBalance).toString());
 	});
@@ -1494,12 +1495,12 @@ it('successfully deposits many NFT and batch with multiple users, and emergency 
 
 		console.log((await stakingWeightDepoyedProxy2.startTime()).toString());
 		console.log((await stakingWeightV3Contract.startTime()).toString());
-
+/*
 		console.log((await stakingWeightV3Contract.testValue()).toString());
 
 		await stakingWeightV3Contract.setTest();
 		console.log('initialized')
-		console.log((await stakingWeightV3Contract.testValue()).toString());
+		console.log((await stakingWeightV3Contract.testValue()).toString());*/
 
 		console.log('Thats it folks');
 
@@ -1634,7 +1635,9 @@ it('successfully deposits many NFT and batch with multiple users, and emergency 
 	console.log((await stakingWeightDepoyedProxy2.getTotalWhitelistedNFTTokenWeight()).toString());
 	console.log((await stakingWeightDepoyedProxy2.startTime()).toString());
 	console.log('Thats it folks');
+	console.log('before balance whitelisted:');
 
+		console.log((await stakingWeightDeployedProxy.balanceOfWhitelistedNFT(stakerAccount3.address)).toString());
 	const stakingWeightV3Contract = await upgrades.upgradeProxy(stakingWeightDeployedProxy.address, StakingWeightV2ContractFactoryV2);
 
 		await stakingWeightV3Contract.setNowOverride('1209601'); // next week
@@ -1644,14 +1647,21 @@ it('successfully deposits many NFT and batch with multiple users, and emergency 
 		console.log((await stakingWeightV3Contract.getTotalWhitelistedNFTTokenWeight()).toString());
 
 
+		console.log('try upgrade and set whitelisted nft count')
+		console.log((await stakingWeightV3Contract.balanceOfWhitelistedNFT(stakerAccount.address)).toString());
+		console.log((await stakingWeightV3Contract.balanceOfWhitelistedNFT(stakerAccount2.address)).toString());
+		console.log((await stakingWeightV3Contract.balanceOfWhitelistedNFT(stakerAccount3.address)).toString());
+		// await stakingWeightV3Contract.setStakedWhitelistedNFTCount(stakerAccount3.address, 4);
+		// console.log((await stakingWeightV3Contract.balanceOfWhitelistedNFT(stakerAccount3.address)).toString());
+
 		console.log((await stakingWeightDepoyedProxy2.startTime()).toString());
 		console.log((await stakingWeightV3Contract.startTime()).toString());
 
-		console.log((await stakingWeightV3Contract.testValue()).toString());
-
-		await stakingWeightV3Contract.setTest();
-		console.log('initialized')
-		console.log((await stakingWeightV3Contract.testValue()).toString());
+		// console.log((await stakingWeightV3Contract.testValue()).toString());
+		//
+		// await stakingWeightV3Contract.setTest();
+		// console.log('initialized')
+		// console.log((await stakingWeightV3Contract.testValue()).toString());
 
 		console.log('Thats it folks');
 
@@ -1701,6 +1711,7 @@ it('successfully deposits many NFT and batch with multiple users, and emergency 
 	console.log('Staker 3 was not staked and received:');
 	console.log(initial3balance);
 	console.log(finalBalance3);
+
   });
 
 	async function getGasCosts(receipt) {
