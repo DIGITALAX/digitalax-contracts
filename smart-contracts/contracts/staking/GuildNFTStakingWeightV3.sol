@@ -7,8 +7,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../DigitalaxAccessControls.sol";
 
 import "./interfaces/IGuildNFTStakingWeightStorage.sol";
-
-
 /**
  * @title Digitalax Guild NFT Staking Weight
  * @dev Calculates the weight for staking on the PODE system
@@ -218,7 +216,6 @@ contract GuildNFTStakingWeightV3 {
       owner.stakedWhitelistedNFTCount = _manualSet;
     }
 
-
     function calcNewWeight() public view returns (uint256) {
         uint256 _currentDay = diffDays(startTime, _getNow());
 
@@ -387,12 +384,12 @@ contract GuildNFTStakingWeightV3 {
         // Set up appraisers info
         AppraiserStats storage appraiser = appraiserStats[_tokenOwner];
         // 1 Deco extra
-        if(guildNativeERC20Token.totalSupply() > 0) {
-            uint256 _decoBonus = store.getDecoBonusMappingValue(guildNativeERC20Token.totalSupply(), guildNativeERC20Token.balanceOf(_tokenOwner));
-            if( appraiser.maxDecoBonus < _decoBonus) {
-                appraiser.maxDecoBonus = _decoBonus;
-            }
-        }
+//        if(guildNativeERC20Token.totalSupply() > 0) {
+//            uint256 _decoBonus = store.getDecoBonusMappingValue(guildNativeERC20Token.totalSupply(), guildNativeERC20Token.balanceOf(_tokenOwner));
+//            if( appraiser.maxDecoBonus < _decoBonus) {
+//                appraiser.maxDecoBonus = _decoBonus;
+//            }
+//        }
         // 2 Appraised nft extra
         uint256 _appraisalMilestoneBonus = store.getAppraisedBonusMappingValue(appraiser.uniqueWhitelistedNFTsAppraised);
         if( appraiser.uniqueWhitelistedNFTAppraisedLastBonus < _appraisalMilestoneBonus) {
@@ -421,7 +418,6 @@ contract GuildNFTStakingWeightV3 {
         }
 
         totalGuildWeight = (totalGuildWeight.add(modWeight));
-
 
         owner.lastGuildMemberUpdateDay = _currentDay;
 
@@ -599,15 +595,15 @@ contract GuildNFTStakingWeightV3 {
     // Fixed reaction - reactWhitelistedNFT represents favorite, follow, share, and metaverse.
     function reactWhitelistedNFT(address[] memory _whitelistedNFTs, uint256[] memory _tokenIds, string[] memory _reactions) external {
         require(ownerWeight[_msgSender()].stakedNFTCount > 0, "Sender must stake PODE");
-        require(_whitelistedNFTs.length == _tokenIds.length, "Token id Arrays must be equal in length");
-        require(_whitelistedNFTs.length == _reactions.length, "Reaction Arrays must be equal in length");
+        require(_whitelistedNFTs.length == _tokenIds.length, "Arrays must be equal in length");
+        require(_whitelistedNFTs.length == _reactions.length, "Arrays must be equal in length");
 
         uint256 _currentDay = diffDays(startTime, _getNow());
 
         AppraiserStats storage appraiser = appraiserStats[_msgSender()];
 
         for (uint256 i = 0; i < _whitelistedNFTs.length; i++) {
-            require(whitelistedNFTTokenOwner[_whitelistedNFTs[i]][ _tokenIds[i]] != _msgSender(), "WeightingContract.reactWhitelistedNFT: Cannot React to Own token");
+            require(whitelistedNFTTokenOwner[_whitelistedNFTs[i]][ _tokenIds[i]] != _msgSender(), "Cannot React to Own token");
 
             TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFTs[i]][_tokenIds[i]];
             if (keccak256(bytes(_reactions[i])) == keccak256(bytes("Favorite"))) {
@@ -701,7 +697,7 @@ contract GuildNFTStakingWeightV3 {
         uint256 _currentDay = diffDays(startTime, _getNow());
         AppraiserStats storage appraiser = appraiserStats[_msgSender()];
 
-        require(_whitelistedNFTs.length == _tokenIds.length, "Must be equal quantity of whitelisted and token ids");
+        require(_whitelistedNFTs.length == _tokenIds.length, "Must be equal quantity of whitelisted token ids");
         uint256 _totalSupply = guildNativeERC20Token.totalSupply();
         uint256 erc20Balance = guildNativeERC20Token.balanceOf(_msgSender());
         uint256 _clapLimit = store.getClapMappingValue(_totalSupply, erc20Balance);
@@ -844,44 +840,44 @@ contract GuildNFTStakingWeightV3 {
         // TokenWeight storage token = tokenWeight[_tokenId];
         OwnerWeight storage owner = ownerWeight[_tokenOwner];
 
-
         owner.stakedNFTCount = owner.stakedNFTCount.sub(1);
 
         stakedNFTCount = stakedNFTCount.sub(1);
-
-        // need appraiser rewards logic here if there is staked erc20 tokens
 
         TokenWeight storage token = podeTokenWeight[_tokenId];
 
         uint256 newWeight = owner.lastGuildMemberWeight.div(owner.stakedNFTCount.add(1));
 
-        //        if(newWeight<= totalGuildWeight){
-        //            totalGuildWeight = totalGuildWeight.sub(newWeight);
-        //        }
-        owner.lastGuildMemberWeight = owner.lastGuildMemberWeight.sub(newWeight);
+        if(newWeight<= totalGuildWeight){
+            totalGuildWeight = totalGuildWeight.sub(newWeight);
+        }
+
+        if(newWeight <= owner.lastGuildMemberWeight){
+            owner.lastGuildMemberWeight = owner.lastGuildMemberWeight.sub(newWeight);
+        }
 
         updateOwnerWeight(_tokenOwner);
         owner.lastGuildMemberUpdateDay = _currentDay;
         lastGuildMemberUpdateDay = (_currentDay);
+
         if (stakedNFTCount == 0) {
             totalGuildWeight = (0);
         }
-        if (owner.stakedNFTCount == 0) {
-            delete ownerWeight[_tokenOwner];
-        }
 
-        // TODO figure out if logic like this is needed.
-        // owner.dailyGuildMemberWeight[_currentDay] = owner.dailyGuildMemberWeight[_currentDay].sub(newWeight);
+        if(token.lastWeight <= totalGuildWeight ) {
+            totalGuildWeight = (totalGuildWeight.sub(token.lastWeight));
+        }
 
         token.lastWeight = newWeight;
 
         TokenWeight storage guildMember = guildMemberWeight[_tokenOwner];
 
+        if(newWeight <= owner.dailyGuildMemberWeight[_currentDay]){
+            owner.dailyGuildMemberWeight[_currentDay] = owner.dailyGuildMemberWeight[_currentDay].sub(newWeight);
+        }
         guildMember.dailyWeight[_currentDay] = owner.dailyGuildMemberWeight[_currentDay];
         guildMember.lastWeight = owner.lastGuildMemberWeight;
 
-
-        // delete podeTokenWeight[_tokenId]; // TODO look at this dont think its right action
         delete tokenOwner[_tokenId];
 
         emit UnstakedMembershipToken(_tokenOwner, _tokenId);
@@ -910,8 +906,6 @@ contract GuildNFTStakingWeightV3 {
             owner.startDay = _currentDay;
         }
 
-        //  updateOwnerWeight(_tokenOwner);
-
         owner.stakedWhitelistedNFTCount = owner.stakedWhitelistedNFTCount.add(1);
         owner.lastWeight = owner.lastWeight.add(token.lastWeight);
 
@@ -937,33 +931,36 @@ contract GuildNFTStakingWeightV3 {
         TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId];
         OwnerWeight storage owner = ownerWeight[_tokenOwner];
 
-        //  updateOwnerWeight(_tokenOwner);
+        token.dailyWeight[_currentDay] = _calcTokenWeight(_whitelistedNFT, _tokenId);
+        token.lastWeight = token.dailyWeight[_currentDay];
 
         owner.stakedWhitelistedNFTCount = owner.stakedWhitelistedNFTCount.sub(1);
 
-        if (owner.stakedWhitelistedNFTCount == 0) {
-            delete ownerWeight[_tokenOwner];
+        if(token.lastWeight <= owner.lastWeight){
+            owner.lastWeight = owner.lastWeight.sub(token.lastWeight);
+        }
+
+        if(token.lastWeight <= owner.dailyWeight[_currentDay]){
+            owner.dailyWeight[_currentDay] = owner.dailyWeight[_currentDay].sub(token.lastWeight);
         }
 
         stakedWhitelistedNFTCount = stakedWhitelistedNFTCount.sub(1);
-
-        // need appraiser rewards logic here if there is staked erc20 tokens
-        // need appraiser rewards logic here if there is staked erc20 tokens
 
         if (stakedWhitelistedNFTCount == 0) {
             totalWhitelistedNFTTokenWeight = 0;
         }
 
-        token.lastWeight = owner.lastWeight;
 
-        token.dailyWeight[_currentDay] = owner.dailyWeight[_currentDay];
+        if(token.lastWeight <= totalWhitelistedNFTTokenWeight) {
+            totalWhitelistedNFTTokenWeight = (totalWhitelistedNFTTokenWeight.sub(token.lastWeight));
+        }
 
         updateWhitelistedNFTOwnerWeight(_tokenOwner);
 
         owner.lastUpdateDay = _currentDay;
         lastUpdateDay = (_currentDay);
 
-        //    delete whitelistedNFTTokenWeight[_whitelistedNFT][_tokenId]; // TODO Is this ok?
+
         delete whitelistedNFTTokenOwner[_whitelistedNFT][ _tokenId];
 
         emit UnstakedWhitelistedNFTToken(_tokenOwner, _whitelistedNFT, _tokenId);
