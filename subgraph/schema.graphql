@@ -225,6 +225,7 @@ type DigitalaxLookNFT @entity {
   texture: String
   pattern: String
   background: String
+  color: String
   shape: String
   flare: String
   form: String
