@@ -50,10 +50,15 @@ yarn test
 ```
 yarn run coverage
 ```
+Example run of coverage with specific options:
+
+```
+yarn run coverage --testfiles "test/Staking/GuildNFTStakingV3.test.js"
+```
 
 ### Deployment scripts
 
 ```
 npx buidler run --network rinkeby scripts/1_deploy_access_controls.js
 ```
-npx buidler run --network mumbai scripts/auction_marketplace_deployment/18_round_8_create_subscription.js
+npx hardhat run --network mumbai scripts/auction_marketplace_deployment/18_round_8_create_subscription.js

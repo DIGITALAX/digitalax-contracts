@@ -3,10 +3,15 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import "../staking/GuildNFTStakingWeightV3.sol";
+import "../staking/GuildWhitelistedNFTStakingV2.sol";
 
-contract GuildNFTStakingWeightV3Mock is GuildNFTStakingWeightV3 {
+contract GuildWhitelistedNFTStakingV2Mock is GuildWhitelistedNFTStakingV2 {
     uint256 public nowOverride;
+
+    constructor(
+    )
+    GuildWhitelistedNFTStakingV2()
+    public {}
 
     function setNowOverride(uint256 _now) external {
         nowOverride = _now;
@@ -15,12 +20,4 @@ contract GuildNFTStakingWeightV3Mock is GuildNFTStakingWeightV3 {
     function _getNow() internal override view returns (uint256) {
         return nowOverride;
     }
-
-//    // STARTING HERE
-//    // EXAMPLE NEW STORED VARIABLE
-//
-//    function setTest() external {
-//        testValue = uint256(666);
-//    }
-//    uint256 public testValue;
 }
