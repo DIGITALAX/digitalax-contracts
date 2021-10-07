@@ -751,3 +751,23 @@ dataSources:
         - event: WhitelistedNFTReaction(string,uint256,address,uint256)
           handler: handleWhitelistedNFTReaction
       file: ./src/GuildNFTStakingWeightV2.mapping.ts
+  - kind: ethereum/contract
+    name: GDNMembershipNFT
+    network: "{{network}}"
+    source:
+      address: "{{GDNMembershipNFTAddress}}"
+      abi: GDNMembershipNFT
+      startBlock: {{GDNMembershipNFTStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasam/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: GDNMembershipNFT
+          file: ./abis/GDNMembershipNFT.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/GDNMembershipNFT.mapping.ts

@@ -579,14 +579,25 @@ type PodeNFTv2Staker @entity {
 }
 
 type GuildWhitelistedNFT @entity {
-  id: ID!   
-  tokenAddress: String! 
+  id: ID!
+  tokenAddress: String!
   owner: String!
   tokenUri: String!
   animation: String!
   image: String
   name: String!
   description: String!
+}
+
+type GDNMembershipNFT @entity {
+  id: ID!
+  owner: Bytes!
+  name: String!
+  description: String!
+  image: String!
+  animation: String!
+  tokenUri: String!
+  attributes: [GarmentAttribute!]!
 }
 
 type GuildWhitelistedToken @entity {

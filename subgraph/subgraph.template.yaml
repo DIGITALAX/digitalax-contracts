@@ -6,9 +6,9 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DigitalaxGenesisNFT
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxGenesisNFTAddress}}'
+      address: "{{DigitalaxGenesisNFTAddress}}"
       abi: DigitalaxGenesisNFT
       startBlock: {{DigitalaxGenesisNFTStartBlock}}
     mapping:
@@ -19,6 +19,7 @@ dataSources:
         - GenesisPurchased
         - ContributionIncreased
         - DigitalaxGenesisNFTContractDeployed
+        - Transfer
       abis:
         - name: DigitalaxGenesisNFT
           file: ./abis/DigitalaxGenesisNFT.json
@@ -29,12 +30,14 @@ dataSources:
           handler: handleContributionIncreased
         - event: DigitalaxGenesisNFTContractDeployed()
           handler: handleGenesisDeployed
+        - event: Transfer(address, address, uint256)
+          handler: handleTransfer
       file: ./src/DigitalaxGenesisNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentNFT
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxGarmentNFTAddress}}'
+      address: "{{DigitalaxGarmentNFTAddress}}"
       abi: DigitalaxGarmentNFT
       startBlock: {{DigitalaxGarmentNFTStartBlock}}
     mapping:
@@ -58,9 +61,9 @@ dataSources:
       file: ./src/DigitalaxGarmentNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterials
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxMaterialsAddress}}'
+      address: "{{DigitalaxMaterialsAddress}}"
       abi: DigitalaxMaterials
       startBlock: {{DigitalaxMaterialsStartBlock}}
     mapping:
@@ -87,9 +90,9 @@ dataSources:
       file: ./src/DigitalaxMaterials.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuction
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxAuctionAddress}}'
+      address: "{{DigitalaxAuctionAddress}}"
       abi: DigitalaxAuction
       startBlock: {{DigitalaxAuctionStartBlock}}
     mapping:
@@ -136,9 +139,9 @@ dataSources:
       file: ./src/DigitalaxAuction.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAccessControls
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxAccessControlsAddress}}'
+      address: "{{DigitalaxAccessControlsAddress}}"
       abi: DigitalaxAccessControls
       startBlock: {{DigitalaxAccessControlsStartBlock}}
     mapping:
@@ -177,9 +180,9 @@ dataSources:
       file: ./src/DigitalaxAccessControls.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentCollection
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxGarmentCollectionAddress}}'
+      address: "{{DigitalaxGarmentCollectionAddress}}"
       abi: DigitalaxGarmentCollection
       startBlock: {{DigitalaxGarmentCollectionStartBlock}}
     mapping:
@@ -200,9 +203,9 @@ dataSources:
       file: ./src/DigitalaxGarmentCollection.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMarketplace
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxMarketplaceAddress}}'
+      address: "{{DigitalaxMarketplaceAddress}}"
       abi: DigitalaxMarketplace
       startBlock: {{DigitalaxMarketplaceStartBlock}}
     mapping:
@@ -234,9 +237,9 @@ dataSources:
       file: ./src/DigitalaxMarketplace.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxPodePortal
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxPodePortalAddress}}'
+      address: "{{DigitalaxPodePortalAddress}}"
       abi: DigitalaxPodePortal
       startBlock: {{DigitalaxPodePortalStartBlock}}
     mapping:
@@ -254,9 +257,9 @@ dataSources:
       file: ./src/DigitalaxPodePortal.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxIndex
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxIndexAddress}}'
+      address: "{{DigitalaxIndexAddress}}"
       abi: DigitalaxIndex
       startBlock: {{DigitalaxIndexStartBlock}}
     mapping:
@@ -292,9 +295,9 @@ dataSources:
       file: ./src/DigitalaxIndex.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGenesisStaking
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxGenesisStakingAddress}}'
+      address: "{{DigitalaxGenesisStakingAddress}}"
       abi: DigitalaxGenesisStaking
       startBlock: {{DigitalaxGenesisStakingStartBlock}}
     mapping:
@@ -318,9 +321,9 @@ dataSources:
       file: ./src/DigitalaxGenesisStaking.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxNFTStaking
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxNFTStakingAddress}}'
+      address: "{{DigitalaxNFTStakingAddress}}"
       abi: DigitalaxNFTStaking
       startBlock: {{DigitalaxNFTStakingStartBlock}}
     mapping:
