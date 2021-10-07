@@ -578,9 +578,20 @@ type PodeNFTv2Staker @entity {
   rewardsClaimed: BigInt!
 }
 
+type GuildNFTWeight @entity {
+  id: ID!
+  totalAppraisals: BigInt!
+  totalFollowed: BigInt!
+  totalFavourites: BigInt!
+  totalMetaverse: BigInt!
+  totalShare: BigInt!
+  totalSkips: BigInt!
+  totalClaps: BigInt!
+}
+
 type GuildWhitelistedNFT @entity {
-  id: ID!   
-  tokenAddress: String! 
+  id: ID!
+  tokenAddress: String!
   owner: String!
   tokenUri: String!
   animation: String!
