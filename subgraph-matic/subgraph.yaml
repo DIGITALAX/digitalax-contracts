@@ -771,3 +771,23 @@ dataSources:
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
       file: ./src/GDNMembershipNFT.mapping.ts
+  - kind: ethereum/contract
+    name: LookGoldenTicket
+    network: "matic"
+    source:
+      address: "0xDae2C7570bcAFc8157A8395ED19eA6CcbfE10147"
+      abi: LookGoldenTicket
+      startBlock: 12000000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasam/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: LookGoldenTicket
+          file: ./abis/LookGoldenTicket.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/LookGoldenTicket.mapping.ts
