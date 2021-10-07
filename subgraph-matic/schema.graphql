@@ -598,6 +598,7 @@ type GuildWhitelistedNFT @entity {
   image: String
   name: String!
   description: String!
+  timestamp: BigInt
 }
 
 type GuildWhitelistedToken @entity {
