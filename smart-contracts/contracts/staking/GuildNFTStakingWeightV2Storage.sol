@@ -7,7 +7,7 @@ import "../DigitalaxAccessControls.sol";
 //import "./interfaces/IGuildNFTStakingWeight.sol";
 //import "./interfaces/IGuildNFTStakingWeightWhitelisted.sol";
 
-import "hardhat/console.sol";
+//import "hardhat/console.sol";
 import "./interfaces/IGuildNFTStakingWeightStorage.sol";
 import "@openzeppelin/contracts/proxy/Initializable.sol";
 
