@@ -627,3 +627,14 @@ type PayableTokenReport @entity {
   payload: BigInt!
   timestamp: BigInt!
 }
+
+type DigitalaxLookGoldenTicket @entity {
+  id: ID!
+  name: String!
+  owner: Bytes!
+  description: String!
+  animation: String!
+  image: String!
+  attributes: [GarmentAttribute!]!
+  tokenUri: String!
+}

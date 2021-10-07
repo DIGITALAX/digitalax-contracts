@@ -218,3 +218,18 @@ type DigitalaxGarmentStakedToken @entity {
   staker: Bytes!
   timestamp: BigInt!
 }
+
+type DigitalaxLookNFT @entity {
+  id: ID!
+  name: String
+  texture: String
+  pattern: String
+  background: String
+  shape: String
+  flare: String
+  form: String
+  line: String
+  element: String
+  owner: Bytes
+  tokenUri: String
+}

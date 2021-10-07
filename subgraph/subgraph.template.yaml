@@ -30,7 +30,7 @@ dataSources:
           handler: handleContributionIncreased
         - event: DigitalaxGenesisNFTContractDeployed()
           handler: handleGenesisDeployed
-        - event: Transfer(address, address, uint256)
+        - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
       file: ./src/DigitalaxGenesisNFT.mapping.ts
   - kind: ethereum/contract
@@ -345,3 +345,23 @@ dataSources:
         - event: EmergencyUnstake(indexed address,uint256)
           handler: handleEmergencyUnstake
       file: ./src/DigitalaxNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxLookNFT
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxLookNFTAddress}}"
+      abi: DigitalaxLookNFT
+      startBlock: {{DigitalaxLookNFTStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: DigitalaxLookNFT
+          file: ./abis/DigitalaxLookNFT.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/DigitalaxLookNFT.mapping.ts
