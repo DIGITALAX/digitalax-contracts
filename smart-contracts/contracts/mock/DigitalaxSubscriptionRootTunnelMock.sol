@@ -5,7 +5,6 @@ import {BaseRootTunnelMock} from "./BaseRootTunnelMock.sol";
 import "../garment/DigitalaxSubscriptionNFT.sol";
 import "../garment/DFBundle.sol";
 import "../ERC1155/ERC1155.sol";
-import "@nomiclabs/buidler/console.sol";
 
 contract DigitalaxSubscriptionRootTunnelMock is BaseRootTunnelMock {
     DigitalaxSubscriptionNFT public nft;
@@ -37,10 +36,8 @@ contract DigitalaxSubscriptionRootTunnelMock is BaseRootTunnelMock {
                     nft.setPrimarySalePrice(newTokenId, _primarySalePrices[i]);
                 }
                 if(_children[i].length > 0){
-                    console.log("children output", _children[i][0]);
                     for( uint256 j; j< _children[i].length; j++){
                         uint256 newChildId = materials.createChild(_childrenURIs[i][j]);
-                        console.log(_childrenURIs[i][j]);
                         materials.mintChild(newChildId, _childrenBalances[i][j], address(nft), abi.encodePacked(newTokenId));
                     }
                 }
