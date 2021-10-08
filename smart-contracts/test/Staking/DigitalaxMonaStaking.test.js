@@ -164,9 +164,6 @@ const {
         it('fails when not admin', async () => {
           await expectRevert(
               this.monaStaking.initMonaStakingPool(
-                1,
-                ONE_TOKEN,
-                TEN_TOKENS,
                 100,
                 10,
                 {from: staker}
@@ -175,78 +172,12 @@ const {
           );
         });
 
-        it('fails when minimum stake in mona is zero', async () => {
-          await expectRevert(
-            this.monaStaking.initMonaStakingPool(
-              1,
-              0,
-              TEN_TOKENS,
-              100,
-              10,
-              {from: admin}
-            ),
-            'DigitalaxMonaStaking.initMonaStakingPool: The minimum stake in Mona must be greater than zero'
-          );
-        });
-
-        it('fails when the maximum stake in mona is less than minimum stake in mona', async () => {
-          await expectRevert(
-            this.monaStaking.initMonaStakingPool(
-              1,
-              ONE_TOKEN,
-              0,
-              100,
-              10,
-              {from: admin}
-            ),
-            'DigitalaxMonaStaking.initMonaStakingPool: The maximum stake in Mona must be greater than or equal to the minimum stake'
-          );
-        });
-
-        it('fails when reach max number of pools', async () => {
-          this.monaStakingV2 = await DigitalaxMonaStaking.new(
-            this.monaToken.address,
-            this.accessControls.address,
-            constants.ZERO_ADDRESS,
-          );
-
-          for (let i = 0; i < MAX_NUMBER_OF_POOLS; i ++) {
-            await this.monaStakingV2.initMonaStakingPool(
-              1,
-              ONE_TOKEN,
-              TEN_TOKENS,
-              100,
-              10,
-              {from: admin}
-            );
-          }
-
-          await expectRevert(
-            this.monaStakingV2.initMonaStakingPool(
-              1,
-              ONE_TOKEN,
-              TEN_TOKENS,
-              100,
-              10,
-              {from: admin}
-            ),
-            'DigitalaxMonaStaking.initMonaStakingPool: Contract already reached max number of supported pools'
-          );
-        })
-
         it('successfully inits staking pool', async () => {
-          const original = await this.monaStaking.numberOfStakingPools();
           await this.monaStaking.initMonaStakingPool(
-            1,
-            ONE_TOKEN,
-            TEN_TOKENS,
             100,
             10,
             {from: admin}
           );
-
-          const updated = await this.monaStaking.numberOfStakingPools();
-          expect(updated).to.be.bignumber.greaterThan(original);
         })
       });
     })
@@ -339,9 +270,6 @@ const {
     describe('Staking', () => {
       beforeEach(async () => {
         await this.monaStaking.initMonaStakingPool(
-          1,
-          ONE_TOKEN,
-          TEN_TOKENS,
           100,
           10,
           {from: admin}
@@ -350,95 +278,64 @@ const {
 
       it('fails when amount is zero', async () => {
         await expectRevert(
-          this.monaStaking.stake(0, 0, {from: staker}),
+          this.monaStaking.stake(0, {from: staker}),
           'DigitalaxMonaStaking._stake: Staked amount must be greater than 0'
-        );
-      });
-
-      it('fails when amount is less than min stake amount', async () => {
-        await expectRevert(
-          this.monaStaking.stake(0, HALF_TOKEN, {from: staker}),
-          'DigitalaxMonaStaking._stake: Staked amount must be greater than or equal to minimum stake'
-        );
-      });
-
-      it('fails when amount is greater than max stake amount', async () => {
-        await expectRevert(
-          this.monaStaking.stake(0, ONE_THOUSAND_TOKENS, {from: staker}),
-          'DigitalaxMonaStaking._stake: Staked amount must be less than or equal to maximum stake'
         );
       });
 
       it('fails when the pool is already full', async () => {
         await this.monaStaking.initMonaStakingPool(
           1,
-          ONE_TOKEN,
-          TEN_TOKENS,
-          1,
           1,
           {from: admin}
         );
-        await this.monaStaking.stake(1, ONE_TOKEN, {from: staker});
+        await this.monaStaking.stake(ONE_TOKEN, {from: staker});
         await expectRevert(
-          this.monaStaking.stake(1, ONE_TOKEN, {from: minter}),
+          this.monaStaking.stake(ONE_TOKEN, {from: minter}),
           'DigitalaxMonaStaking._stake: This pool is already full'
         );
       });
 
       it('successfully deposits MONA token', async () => {
-        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
-        expect(await this.monaStaking.getStakedBalance(0, staker)).to.be.bignumber.equal(ONE_TOKEN);
+        await this.monaStaking.stake(ONE_TOKEN, {from: staker});
+        expect(await this.monaStaking.getStakedBalance(staker)).to.be.bignumber.equal(ONE_TOKEN);
       });
 
       it('successfully stake more tokens', async () => {
-        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
-        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
-        expect(await this.monaStaking.getStakedBalance(0, staker)).to.be.bignumber.equal(TWO_TOKEN);
+        await this.monaStaking.stake(ONE_TOKEN, {from: staker});
+        await this.monaStaking.stake(ONE_TOKEN, {from: staker});
+        expect(await this.monaStaking.getStakedBalance(staker)).to.be.bignumber.equal(TWO_TOKEN);
       });
     });
 
     describe('Unstaking', () => {
       beforeEach(async () => {
         await this.monaStaking.initMonaStakingPool(
-          1,
-          ONE_TOKEN,
-          TEN_TOKENS,
           100,
           10,
           {from: admin}
         );
-        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
+        await this.monaStaking.stake(ONE_TOKEN, {from: staker});
       });
 
       it('fails when unstaking more tokens than staked', async () => {
         await expectRevert(
-          this.monaStaking.unstake(0, TWO_TOKEN, {from: staker}),
+          this.monaStaking.unstake(TWO_TOKEN, {from: staker}),
           'DigitalaxMonaStaking._unstake: Sender must have staked tokens'
         );
       });
 
       it('successfully unstaking', async () => {
         const originAmount = await this.monaToken.balanceOf(staker);
-        await this.monaStaking.unstake(0, ONE_TOKEN, {from: staker});
+        await this.monaStaking.unstake(ONE_TOKEN, {from: staker});
 
         expect(await this.monaToken.balanceOf(staker)).to.be.bignumber.greaterThan(originAmount);
       })
     });
 
-    describe('Rewards differ from pool to pool', () => {
+    describe('Rewards transfer', () => {
       beforeEach(async () => {
         await this.monaStaking.initMonaStakingPool(
-          7,
-          ONE_TOKEN,
-          TEN_TOKENS,
-          100,
-          10,
-          {from: admin}
-        );
-        await this.monaStaking.initMonaStakingPool(
-          14,
-          ONE_TOKEN,
-          TEN_TOKENS,
           100,
           10,
           {from: admin}
@@ -448,28 +345,26 @@ const {
         await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
         await this.monaToken.approve(this.monaStaking.address, TWENTY_TOKENS, { from: minter });
         await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
-        await this.digitalaxRewards.initializePools(0, [0], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools(0, [1], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools(0, [2], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools(1, [0], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools(1, [1], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools(1, [2], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools([0], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools([1], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools([2], [ether('10000000000000000000')], [10], {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, {from: admin});
       });
 
-      it('Rewards of 2 other staking pools', async () => {
-        await this.monaStaking.stake(0, ONE_TOKEN, {from: minter});
-        await this.monaStaking.stake(1, ONE_TOKEN, {from: staker});
+      it('Rewards of 2 other staking', async () => {
+        await this.monaStaking.stake(ONE_TOKEN, {from: minter});
+        await this.monaStaking.stake(ONE_TOKEN, {from: staker});
         await this.digitalaxRewards.setNowOverride('1209600'); // next week
         await this.monaStaking.setNowOverride('1209600'); // next week
         await this.oracle.pushReport(EXCHANGE_RATE, {from: provider});
 
-        const minterRewards = await this.monaStaking.unclaimedRewards(0, minter);
-
         await this.digitalaxRewards.setNowOverride('1814400'); // next week
         await this.monaStaking.setNowOverride('1814400'); // next week
-        const stakerRewards = await this.monaStaking.unclaimedRewards(1, staker);
+
+        const minterRewards = await this.monaStaking.unclaimedRewards(minter);
+
+        const stakerRewards = await this.monaStaking.unclaimedRewards(staker);
 
         expect(stakerRewards.claimableRewards).to.be.bignumber.equal(minterRewards.claimableRewards);
       });
@@ -478,9 +373,6 @@ const {
     describe('Rewards differ depends on staking amount', () => {
       beforeEach(async () => {
         await this.monaStaking.initMonaStakingPool(
-          7,
-          ONE_TOKEN,
-          TEN_TOKENS,
           10,
           5,
           {from: admin}
@@ -490,22 +382,22 @@ const {
         await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
         await this.monaToken.approve(this.monaStaking.address, TWENTY_TOKENS, { from: minter });
         await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
-        await this.digitalaxRewards.initializePools(0, [0], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools(0, [1], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools(0, [2], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools([0], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools([1], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools([2], [ether('10000000000000000000')], [10], {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, {from: admin});
         await this.digitalaxRewards.setNowOverride('604800'); // first week
       });
 
       it('less staker should have less rewards', async () => {
-        await this.monaStaking.stake(0, ONE_TOKEN, {from: minter});
-        await this.monaStaking.stake(0, TWO_TOKEN, {from: staker});
+        await this.monaStaking.stake(ONE_TOKEN, {from: minter});
+        await this.monaStaking.stake(TWO_TOKEN, {from: staker});
 
         await this.monaStaking.setNowOverride('1209600'); // next week
 
-        const minterRewards = await this.monaStaking.unclaimedRewards(0, minter);
-        const stakerRewards = await this.monaStaking.unclaimedRewards(0, staker);
+        const minterRewards = await this.monaStaking.unclaimedRewards(minter);
+        const stakerRewards = await this.monaStaking.unclaimedRewards(staker);
 
         expect(stakerRewards.claimableRewards).to.be.bignumber.greaterThan(minterRewards.claimableRewards);
       });
@@ -514,9 +406,6 @@ const {
     describe('Bonus Rewards', () => {
       beforeEach(async () => {
         await this.monaStaking.initMonaStakingPool(
-          7,
-          ONE_TOKEN,
-          TEN_TOKENS,
           2,
           1,
           {from: admin}
@@ -526,39 +415,39 @@ const {
         await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
         await this.monaToken.approve(this.monaStaking.address, TWENTY_TOKENS, { from: minter });
         await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
-        await this.digitalaxRewards.initializePools(0, [0], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools(0, [1], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools(0, [2], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools([0], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools([1], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools([2], [ether('10000000000000000000')], [10], {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, {from: admin});
         await this.digitalaxRewards.setNowOverride('604800'); // first week
       });
 
       it('late staker should have no bonus rewards', async () => {
-        await this.monaStaking.stake(0, ONE_TOKEN, {from: minter});
-        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
+        await this.monaStaking.stake(ONE_TOKEN, {from: minter});
+        await this.monaStaking.stake(ONE_TOKEN, {from: staker});
 
         await this.monaStaking.setNowOverride('1209600'); // next week
 
-        const bonusRewards = await this.monaStaking.unclaimedBonusRewards(0, staker);
+        const bonusRewards = await this.monaStaking.unclaimedBonusRewards(staker);
         expect(bonusRewards.claimableRewards).to.be.bignumber.equal(new BN('0'));
 
-        const minterRewards = await this.monaStaking.unclaimedRewards(0, minter);
-        const stakerRewards = await this.monaStaking.unclaimedRewards(0, staker);
+        const minterRewards = await this.monaStaking.unclaimedRewards(minter);
+        const stakerRewards = await this.monaStaking.unclaimedRewards(staker);
 
         expect(minterRewards.claimableRewards).to.be.bignumber.equal(stakerRewards.claimableRewards);
       });
 
       it('early staker should have bonus rewards', async () => {
-        await this.monaStaking.stake(0, ONE_TOKEN, {from: minter});
-        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
+        await this.monaStaking.stake(ONE_TOKEN, {from: minter});
+        await this.monaStaking.stake(ONE_TOKEN, {from: staker});
 
         await this.monaStaking.setNowOverride('1209600'); // next week
         await this.digitalaxRewards.setNowOverride('1209600'); // first week
 
-        await this.digitalaxRewards.updateRewards(0, {from: staker});
+        await this.digitalaxRewards.updateRewards({from: staker});
 
-        const bonusRewards = await this.monaStaking.unclaimedBonusRewards(0, staker);
+        const bonusRewards = await this.monaStaking.unclaimedBonusRewards( staker);
         expect(bonusRewards.claimableRewards).to.be.bignumber.equal(new BN('0'));
       });
     });
@@ -566,18 +455,15 @@ const {
     describe('Claim Rewards', () => {
       beforeEach(async () => {
         await this.monaStaking.initMonaStakingPool(
-          7,
-          ONE_TOKEN,
-          TEN_TOKENS,
           2,
           1,
           {from: admin}
         );
 
         await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
-        await this.digitalaxRewards.initializePools(0, [0], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools(0, [1], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools(0, [2], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools([0], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools([1], [ether('10000000000000000000')], [10], {from: admin});
+        await this.digitalaxRewards.initializePools([2], [ether('10000000000000000000')], [10], {from: admin});
         await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
         await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, {from: admin});
@@ -587,22 +473,22 @@ const {
       it('Tokens cannot be claimed', async () => {
         await this.monaStaking.setTokensClaimable(false);
 
-        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
+        await this.monaStaking.stake(ONE_TOKEN, {from: staker});
         await this.monaStaking.setNowOverride('1209600'); // next week
 
         await expectRevert(
-          this.monaStaking.claimReward(0, {from: staker}),
+          this.monaStaking.claimReward({from: staker}),
           "Tokens cannnot be claimed yet"
         );
       });
 
       it('Successfully claim tokens', async () => {
-        await this.monaStaking.stake(0, ONE_TOKEN, {from: staker});
+        await this.monaStaking.stake(ONE_TOKEN, {from: staker});
         await this.monaStaking.setNowOverride('1209600'); // next week
 
-        await this.monaStaking.claimReward(0, {from: staker});
+        await this.monaStaking.claimReward({from: staker});
         const afterBalance = await this.monaToken.balanceOf(staker);
-        expect(afterBalance).to.be.bignumber.equals(new BN('990000000000000000000'));
+        expect(afterBalance).to.be.bignumber.equals(new BN('989900000000000000000')); // BIG TODO , check real numbers
       });
     })
 
