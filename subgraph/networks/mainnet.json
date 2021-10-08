@@ -21,5 +21,7 @@
   "DigitalaxGenesisStakingAddress": "0xa202D5B0892f2981bA86C981884cebA49B8AE096",
   "DigitalaxGenesisStakingStartBlock": 11353711,
   "DigitalaxNFTStakingAddress": "0xc802912c379a1EF995a23c07346bD8373049fa39",
-  "DigitalaxNFTStakingStartBlock": 11413300
+  "DigitalaxNFTStakingStartBlock": 11413300,
+  "DigitalaxLookNFTAddress": "0xc97f4244839c13c6df4258228c60488fa05c8528",
+  "DigitalaxLookNFTStartBlock": 13239600
 }
