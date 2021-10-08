@@ -2,7 +2,7 @@
 
 pragma solidity 0.6.12;
 
-/// @dev an interface to interact with the Guild Staking Weight that will 
+/// @dev an interface to interact with the Guild Staking Weight that will
 interface IGuildNFTStakingWeight {
     function updateWeight() external returns (bool);
     function updateOwnerWeight(address _tokenOwner) external returns (bool);
@@ -11,7 +11,9 @@ interface IGuildNFTStakingWeight {
     function unstake(uint256 _tokenId, address _tokenOwner) external;
 
     function calcNewWeight() external view returns (uint256);
+    function calcNewTotalWhitelistedNFTWeight() external view returns (uint256);
     function calcNewOwnerWeight(address _tokenOwner) external view returns (uint256);
+    function calcNewWhitelistedNFTOwnerWeight(address _tokenOwner) external view returns (uint256);
     function getTotalWeight() external view returns (uint256);
     function getOwnerWeight(address _tokenOwner) external view returns (uint256);
     function getTokenPrice(uint256 _tokenId) external view returns (uint256);
