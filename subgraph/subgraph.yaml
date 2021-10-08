@@ -6,9 +6,9 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DigitalaxGenesisNFT
-    network: 'mainnet'
+    network: "mainnet"
     source:
-      address: '0x89505d2a27b7e8ac56252081d721ecd525e4241e'
+      address: "0x89505d2a27b7e8ac56252081d721ecd525e4241e"
       abi: DigitalaxGenesisNFT
       startBlock: 11157574
     mapping:
@@ -19,6 +19,7 @@ dataSources:
         - GenesisPurchased
         - ContributionIncreased
         - DigitalaxGenesisNFTContractDeployed
+        - Transfer
       abis:
         - name: DigitalaxGenesisNFT
           file: ./abis/DigitalaxGenesisNFT.json
@@ -29,12 +30,14 @@ dataSources:
           handler: handleContributionIncreased
         - event: DigitalaxGenesisNFTContractDeployed()
           handler: handleGenesisDeployed
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
       file: ./src/DigitalaxGenesisNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentNFT
-    network: 'mainnet'
+    network: "mainnet"
     source:
-      address: '0x0b509f4b044f713a91bb50535914f7ad160532fe'
+      address: "0x0b509f4b044f713a91bb50535914f7ad160532fe"
       abi: DigitalaxGarmentNFT
       startBlock: 11320285
     mapping:
@@ -58,9 +61,9 @@ dataSources:
       file: ./src/DigitalaxGarmentNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterials
-    network: 'mainnet'
+    network: "mainnet"
     source:
-      address: '0xe6822e8b4d91b85f9ca00cca79bf92bab14bc221'
+      address: "0xe6822e8b4d91b85f9ca00cca79bf92bab14bc221"
       abi: DigitalaxMaterials
       startBlock: 11320271
     mapping:
@@ -87,9 +90,9 @@ dataSources:
       file: ./src/DigitalaxMaterials.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuction
-    network: 'mainnet'
+    network: "mainnet"
     source:
-      address: '0xd84E216a4804A5e6BAa4f936838E4a3d1A0D3C53'
+      address: "0xd84E216a4804A5e6BAa4f936838E4a3d1A0D3C53"
       abi: DigitalaxAuction
       startBlock: 11320386
     mapping:
@@ -136,9 +139,9 @@ dataSources:
       file: ./src/DigitalaxAuction.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAccessControls
-    network: 'mainnet'
+    network: "mainnet"
     source:
-      address: '0x980bC991b52240C6271F4fd607638e984c888621'
+      address: "0x980bC991b52240C6271F4fd607638e984c888621"
       abi: DigitalaxAccessControls
       startBlock: 11637101
     mapping:
@@ -177,9 +180,9 @@ dataSources:
       file: ./src/DigitalaxAccessControls.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentCollection
-    network: 'mainnet'
+    network: "mainnet"
     source:
-      address: '0x569Ff451D7631917151b8C5b3F669156fdbeD251'
+      address: "0x569Ff451D7631917151b8C5b3F669156fdbeD251"
       abi: DigitalaxGarmentCollection
       startBlock: 11660023
     mapping:
@@ -200,9 +203,9 @@ dataSources:
       file: ./src/DigitalaxGarmentCollection.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMarketplace
-    network: 'mainnet'
+    network: "mainnet"
     source:
-      address: '0xCC48554581c17c2837C13B1685E0e784fADC1c3b'
+      address: "0xCC48554581c17c2837C13B1685E0e784fADC1c3b"
       abi: DigitalaxMarketplace
       startBlock: 11660955
     mapping:
@@ -234,9 +237,9 @@ dataSources:
       file: ./src/DigitalaxMarketplace.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxPodePortal
-    network: 'mainnet'
+    network: "mainnet"
     source:
-      address: '0x87c3C6B9C917B1732f13d36d6938E4f8802f7c7E'
+      address: "0x87c3C6B9C917B1732f13d36d6938E4f8802f7c7E"
       abi: DigitalaxPodePortal
       startBlock: 11740618
     mapping:
@@ -254,9 +257,9 @@ dataSources:
       file: ./src/DigitalaxPodePortal.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxIndex
-    network: 'mainnet'
+    network: "mainnet"
     source:
-      address: '0x93401DB6e0E17078f785019878063ce5baBA9d46'
+      address: "0x93401DB6e0E17078f785019878063ce5baBA9d46"
       abi: DigitalaxIndex
       startBlock: 11740618
     mapping:
@@ -292,9 +295,9 @@ dataSources:
       file: ./src/DigitalaxIndex.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGenesisStaking
-    network: 'mainnet'
+    network: "mainnet"
     source:
-      address: '0xa202D5B0892f2981bA86C981884cebA49B8AE096'
+      address: "0xa202D5B0892f2981bA86C981884cebA49B8AE096"
       abi: DigitalaxGenesisStaking
       startBlock: 11353711
     mapping:
@@ -318,9 +321,9 @@ dataSources:
       file: ./src/DigitalaxGenesisStaking.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxNFTStaking
-    network: 'mainnet'
+    network: "mainnet"
     source:
-      address: '0xc802912c379a1EF995a23c07346bD8373049fa39'
+      address: "0xc802912c379a1EF995a23c07346bD8373049fa39"
       abi: DigitalaxNFTStaking
       startBlock: 11413300
     mapping:
@@ -342,3 +345,23 @@ dataSources:
         - event: EmergencyUnstake(indexed address,uint256)
           handler: handleEmergencyUnstake
       file: ./src/DigitalaxNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxLookNFT
+    network: "mainnet"
+    source:
+      address: "0xc97f4244839c13c6df4258228c60488fa05c8528"
+      abi: DigitalaxLookNFT
+      startBlock: 13239600
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: DigitalaxLookNFT
+          file: ./abis/DigitalaxLookNFT.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/DigitalaxLookNFT.mapping.ts
