@@ -206,6 +206,17 @@ contract GuildNFTStakingWeightV3 {
         return startTime;
     }
 
+    // Overall variables
+    function setTotalWeights(uint256 _totalGuildWeight, uint256 _totalWhitelistedNFTTokenWeight) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "Sender must be admin"
+        );
+        totalGuildWeight = _totalGuildWeight;
+        totalWhitelistedNFTTokenWeight = _totalWhitelistedNFTTokenWeight;
+    }
+
+
   function setStakedWhitelistedNFTCount(address _tokenOwner, uint256 _manualSet) external returns (uint256){
         require(
             accessControls.hasAdminRole(_msgSender()),

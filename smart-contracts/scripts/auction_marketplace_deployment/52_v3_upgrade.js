@@ -15,6 +15,7 @@ async function main() {
 
 
     const StakingWeightV3ContractFactory = await ethers.getContractFactory("GuildNFTStakingWeightV3");
+  //  const stakingWeightV3Contract = await upgrades.upgradeProxy("0xa6C4d291Aae3b1de46BCC13e34E57e1d52A032dB", StakingWeightV3ContractFactory);
     const stakingWeightV3Contract = await upgrades.upgradeProxy("0xE69E1eD04501b1bE9aEb24aa471F68303137a8eA", StakingWeightV3ContractFactory);
     await stakingWeightV3Contract.deployed();
     console.log(stakingWeightV3Contract.address);
