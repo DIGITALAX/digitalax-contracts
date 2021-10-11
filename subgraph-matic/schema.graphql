@@ -600,6 +600,18 @@ type GuildWhitelistedNFT @entity {
   name: String!
   description: String!
   weight: BigInt
+  timestamp: BigInt
+}
+
+type GDNMembershipNFT @entity {
+  id: ID!
+  owner: Bytes!
+  name: String!
+  description: String!
+  image: String!
+  animation: String!
+  tokenUri: String!
+  attributes: [GarmentAttribute!]!
 }
 
 type GuildWhitelistedToken @entity {
@@ -618,4 +630,15 @@ type PayableTokenReport @entity {
   id: ID!
   payload: BigInt!
   timestamp: BigInt!
+}
+
+type DigitalaxLookGoldenTicket @entity {
+  id: ID!
+  name: String!
+  owner: Bytes!
+  description: String!
+  animation: String!
+  image: String!
+  attributes: [GarmentAttribute!]!
+  tokenUri: String!
 }
