@@ -638,6 +638,8 @@ dataSources:
           file: ./abis/GuildWhitelistedNFTStaking.json
         - name: ERC721
           file: ./abis/ERC721.json
+        - name: GuildNFTStakingWeightV2
+          file: ./abis/GuildNFTStakingWeightV2.json
       eventHandlers:
         - event: Staked(address,address,uint256)
           handler: handleStaked
