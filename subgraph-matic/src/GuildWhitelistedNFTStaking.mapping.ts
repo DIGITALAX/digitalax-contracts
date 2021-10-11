@@ -1,8 +1,5 @@
 import {
-<<<<<<< HEAD
   Address,
-=======
->>>>>>> bb813bf40db218e11f0264a5dfe388cea5480b2b
   Bytes,
   ipfs,
   json,
