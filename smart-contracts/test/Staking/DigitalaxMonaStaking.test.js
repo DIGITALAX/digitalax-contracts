@@ -345,9 +345,6 @@ const {
         await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
         await this.monaToken.approve(this.monaStaking.address, TWENTY_TOKENS, { from: minter });
         await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
-        await this.digitalaxRewards.initializePools([0], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools([1], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools([2], [ether('10000000000000000000')], [10], {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, {from: admin});
       });
@@ -382,9 +379,6 @@ const {
         await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
         await this.monaToken.approve(this.monaStaking.address, TWENTY_TOKENS, { from: minter });
         await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
-        await this.digitalaxRewards.initializePools([0], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools([1], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools([2], [ether('10000000000000000000')], [10], {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, {from: admin});
         await this.digitalaxRewards.setNowOverride('604800'); // first week
@@ -415,9 +409,6 @@ const {
         await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
         await this.monaToken.approve(this.monaStaking.address, TWENTY_TOKENS, { from: minter });
         await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
-        await this.digitalaxRewards.initializePools([0], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools([1], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools([2], [ether('10000000000000000000')], [10], {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, {from: admin});
         await this.digitalaxRewards.setNowOverride('604800'); // first week
@@ -461,9 +452,6 @@ const {
         );
 
         await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
-        await this.digitalaxRewards.initializePools([0], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools([1], [ether('10000000000000000000')], [10], {from: admin});
-        await this.digitalaxRewards.initializePools([2], [ether('10000000000000000000')], [10], {from: admin});
         await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
         await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, {from: admin});
