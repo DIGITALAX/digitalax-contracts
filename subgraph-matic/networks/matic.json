@@ -48,7 +48,9 @@
   "DripMarketplaceStartBlock": 12000000,
   "GuildNFTStakingWeightV2Address": "0xE69E1eD04501b1bE9aEb24aa471F68303137a8eA",
   "GuildNFTStakingWeightV2StartBlock": 12000000,
-  "GDNMembershipNFT": "0x6A64FfDEfa171437f07b46682622b24f8969400E",
-  "LookGoldenTicket": "0x1F026fAfeb4F5B9BdC40a2E0E62cC23d28FC1876",
+  "GDNMembershipNFTAddress": "0x6A64FfDEfa171437f07b46682622b24f8969400E",
+  "GDNMembershipNFTStartBlock": 12000000,
+  "LookGoldenTicketAddress": "0xDae2C7570bcAFc8157A8395ED19eA6CcbfE10147",
+  "LookGoldenTicketStartBlock": 12000000,
   "GDNToken": "0x83ecc20e47f8f7a40ebc04ef2f81c6a1de325cdc"
 }

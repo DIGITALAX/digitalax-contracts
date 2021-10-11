@@ -1,5 +1,8 @@
 import {
+<<<<<<< HEAD
   Address,
+=======
+>>>>>>> bb813bf40db218e11f0264a5dfe388cea5480b2b
   Bytes,
   ipfs,
   json,
@@ -71,6 +74,7 @@ export function handleStaked(event: Staked): void {
   if (!tryWeight.reverted) {
     garment.weight = tryWeight.value.value0;
   }
+  garment.timestamp = event.block.timestamp;
 
   if (tokenUri) {
     if (tokenUri.includes("ipfs/")) {
