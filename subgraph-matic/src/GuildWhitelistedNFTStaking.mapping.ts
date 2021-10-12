@@ -1,4 +1,5 @@
 import {
+  Address,
   Bytes,
   ipfs,
   json,
@@ -15,6 +16,10 @@ import {
   GuildWhitelistedNFTStaking as GuildWhitelistedNFTStakingContract,
   AddWhitelistedTokens,
 } from "../generated/GuildWhitelistedNFTStaking/GuildWhitelistedNFTStaking";
+import { GuildNFTStakingWeightV2 as GuildNFTStakingWeightV2Contract } from "../generated/GuildWhitelistedNFTStaking/GuildNFTStakingWeightV2";
+
+const GuildNFTSTakingWeightV2Address =
+  "0xE69E1eD04501b1bE9aEb24aa471F68303137a8eA";
 
 import {
   GuildWhitelistedNFT,
@@ -42,6 +47,9 @@ export function handleStaked(event: Staked): void {
     event.params.whitelistedNFT.toString(),
   ]);
   let contract = ERC721.bind(event.params.whitelistedNFT);
+  let weightContract = GuildNFTStakingWeightV2Contract.bind(
+    Address.fromString(GuildNFTSTakingWeightV2Address)
+  );
   let tokenUri = contract.tokenURI(event.params.tokenId);
   let owner = event.params.owner.toHexString();
   let token = event.params.tokenId.toString();
@@ -55,6 +63,14 @@ export function handleStaked(event: Staked): void {
   garment.description = "";
   garment.name = "";
   garment.image = "";
+
+  let tryWeight = weightContract.try_whitelistedNFTTokenWeight(
+    event.params.whitelistedNFT,
+    event.params.tokenId
+  );
+  if (!tryWeight.reverted) {
+    garment.weight = tryWeight.value.value0;
+  }
   garment.timestamp = event.block.timestamp;
 
   if (tokenUri) {
@@ -90,16 +106,29 @@ export function handleStaked(event: Staked): void {
     staker = new GuildWhitelistedNFTStaker(owner);
     staker.garments = new Array<string>();
     staker.rewardsClaimed = ZERO;
+    staker.weight = ZERO;
   }
+
   let garmentsStaked = staker.garments;
   garmentsStaked.push(garmentId);
   staker.garments = garmentsStaked;
+
+  let tryStakerWeight = weightContract.try_calcNewWhitelistedNFTOwnerWeight(
+    event.params.owner
+  );
+  if (!tryStakerWeight.reverted) {
+    staker.weight = tryStakerWeight.value;
+  }
+
   staker.save();
 }
 
 export function handleUnstaked(event: Unstaked): void {
   let owner = event.params.owner.toHexString();
   let staker = GuildWhitelistedNFTStaker.load(owner);
+  let weightContract = GuildNFTStakingWeightV2Contract.bind(
+    Address.fromString(GuildNFTSTakingWeightV2Address)
+  );
   let oldGarments = staker.garments;
   let newGarments = new Array<string>();
   for (let i = 0; i < oldGarments.length; i += 1) {
@@ -111,6 +140,14 @@ export function handleUnstaked(event: Unstaked): void {
       newGarments.push(oldGarments[i]);
     }
   }
+
+  let tryStakerWeight = weightContract.try_calcNewWhitelistedNFTOwnerWeight(
+    event.params.owner
+  );
+  if (!tryStakerWeight.reverted) {
+    staker.weight = tryStakerWeight.value;
+  }
+
   staker.garments = newGarments;
   staker.save();
 }
@@ -118,6 +155,9 @@ export function handleUnstaked(event: Unstaked): void {
 export function handleEmergencyUnstake(event: EmergencyUnstake): void {
   let owner = event.params.user.toHexString();
   let staker = GuildWhitelistedNFTStaker.load(owner);
+  let weightContract = GuildNFTStakingWeightV2Contract.bind(
+    Address.fromString(GuildNFTSTakingWeightV2Address)
+  );
 
   let oldGarments = staker.garments;
   let newGarments = new Array<string>();
@@ -129,6 +169,13 @@ export function handleEmergencyUnstake(event: EmergencyUnstake): void {
     if (oldGarments[i] != newId) {
       newGarments.push(oldGarments[i]);
     }
+  }
+
+  let tryStakerWeight = weightContract.try_calcNewWhitelistedNFTOwnerWeight(
+    event.params.user
+  );
+  if (!tryStakerWeight.reverted) {
+    staker.weight = tryStakerWeight.value;
   }
   staker.garments = newGarments;
   staker.save();
