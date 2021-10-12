@@ -113,6 +113,12 @@ type DigitalaxGarment @entity {
   children: [DigitalaxGarmentChild!]!
 }
 
+type AdditionalSource @entity {
+  id: ID!
+  type: String!
+  url: String!
+}
+
 type DigitalaxGarmentV2 @entity {
   id: ID!
   designer: String!
@@ -124,6 +130,7 @@ type DigitalaxGarmentV2 @entity {
   name: String!
   description: String!
   external: String!
+  additionalSources: [AdditionalSource!]
   attributes: [GarmentAttribute!]!
   children: [DigitalaxGarmentChildV2!]!
 }
