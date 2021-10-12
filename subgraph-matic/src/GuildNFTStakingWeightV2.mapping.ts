@@ -12,6 +12,7 @@ import {
 import { ONE, ZERO } from "./constants";
 
 export function handleAppraiseGuildMember(event: AppraiseGuildMember): void {
+  let contract = GuildNFTStakingWeightV2Contract.bind(event.address);
   let podeStaker = PodeNFTv2Staker.load(event.params.guildMember.toHexString());
   if (!podeStaker) {
     podeStaker = new PodeNFTv2Staker(event.params.guildMember.toHexString());
@@ -23,6 +24,12 @@ export function handleAppraiseGuildMember(event: AppraiseGuildMember): void {
     podeStaker.totalFavourites = ZERO;
     podeStaker.totalMetaverse = ZERO;
     podeStaker.totalShare = ZERO;
+    podeStaker.weight = ZERO;
+  }
+
+  let tryWeight = contract.try_calcNewOwnerWeight(event.params.guildMember);
+  if (!tryWeight.reverted) {
+    podeStaker.weight = tryWeight.value;
   }
   podeStaker.save();
 }
@@ -30,6 +37,7 @@ export function handleAppraiseGuildMember(event: AppraiseGuildMember): void {
 export function handleWhitelistedNFTReaction(
   event: WhitelistedNFTReaction
 ): void {
+  let contract = GuildNFTStakingWeightV2Contract.bind(event.address);
   let podeStaker = PodeNFTv2Staker.load(event.transaction.from.toHexString());
   if (
     !event.params.tokenId.toString() ||
@@ -53,6 +61,7 @@ export function handleWhitelistedNFTReaction(
     podeStaker.totalFavourites = ZERO;
     podeStaker.totalMetaverse = ZERO;
     podeStaker.totalShare = ZERO;
+    podeStaker.weight = ZERO;
     podeStaker.clapHistory = null;
   }
 
@@ -73,6 +82,10 @@ export function handleWhitelistedNFTReaction(
   }
 
   podeStaker.totalAppraisals = podeStaker.totalAppraisals.plus(ONE);
+  let tryWeight = contract.try_calcNewOwnerWeight(event.transaction.from);
+  if (!tryWeight.reverted) {
+    podeStaker.weight = tryWeight.value;
+  }
   nftWeights.totalAppraisals = nftWeights.totalAppraisals.plus(ONE);
 
   if (event.params.reaction == "Favorite") {
