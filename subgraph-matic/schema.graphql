@@ -576,6 +576,7 @@ type PodeNFTv2Staker @entity {
   clapHistory: [ClapHistory!]
   garments: [PodeNFTv2!]!
   rewardsClaimed: BigInt!
+  weight: BigInt
 }
 
 type GuildNFTWeight @entity {
@@ -598,6 +599,7 @@ type GuildWhitelistedNFT @entity {
   image: String
   name: String!
   description: String!
+  weight: BigInt
   timestamp: BigInt
 }
 
@@ -621,6 +623,7 @@ type GuildWhitelistedNFTStaker @entity {
   id: ID!
   garments: [GuildWhitelistedNFT!]!
   rewardsClaimed: BigInt!
+  weight: BigInt
 }
 
 type PayableTokenReport @entity {
