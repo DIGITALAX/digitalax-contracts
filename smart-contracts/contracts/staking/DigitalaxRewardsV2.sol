@@ -52,7 +52,7 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
 
     // TODO continue from here with rev per second , deposit
     mapping (address => mapping(uint256 => uint256)) public weeklyTokenRevenueSharingPerSecond; // All token  revenue sharing
-    
+
     // Staking pool rewards
     uint256 public startTime;
     uint256 public monaRewardsPaidTotal;
@@ -78,6 +78,10 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
 
     // Events
     event AddRewardTokens(
+        address[] rewardTokens
+    );
+
+    event RemoveRewardTokens(
         address[] rewardTokens
     );
 
@@ -281,10 +285,10 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
             "DigitalaxRewardsV2.withdrawMonaRewards: Sender must be admin"
         );
 
-        require(
-        _week >= getCurrentWeek(),
-            "DigitalaxRewardsV2.withdrawMonaRewards: The rewards generated should be set for the future weeks"
-        );
+//        require(
+//        _week >= getCurrentWeek(),
+//            "DigitalaxRewardsV2.withdrawMonaRewards: The rewards generated should be set for the future weeks"
+//        );
 
 
         // Deposit this amount of MONA here
@@ -371,7 +375,6 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
 
     }
 
-
     function addRewardTokens(address[] memory _rewardTokens) public {
         require(
             accessControls.hasAdminRole(_msgSender()),
@@ -386,6 +389,29 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
             }
         }
         emit AddRewardTokens(_rewardTokens);
+    }
+
+    function removeRewardTokens(address[] memory _rewardTokens) public {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "RemoveRewardTokens: Sender must be admin"
+        );
+
+        require((rewardTokens.length) > 0, "RemoveRewardTokens: No reward tokens instantiated");
+        require((_rewardTokens.length) > 0, "RemoveRewardTokens: Empty array not supported");
+
+        for (uint i = 0; i < _rewardTokens.length; i++) {
+            if(checkInRewardTokens(_rewardTokens[i])) {
+                uint256 rowToDelete = rewardTokensIndex[_rewardTokens[i]];
+                address keyToMove = rewardTokens[rewardTokens.length-1];
+                rewardTokens[rowToDelete] = keyToMove;
+                rewardTokensIndex[keyToMove] = rowToDelete;
+                rewardTokens.pop();
+                delete(rewardTokensIndex[_rewardTokens[i]]);
+            }
+        }
+
+        emit RemoveRewardTokens(_rewardTokens);
     }
 
     function checkInRewardTokens(address _rewardToken) public view returns (bool isAddress) {
