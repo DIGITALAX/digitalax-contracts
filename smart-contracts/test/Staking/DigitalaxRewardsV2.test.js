@@ -305,14 +305,14 @@ contract('DigitalaxRewardsV2', (accounts) => {
 
       it('fails when not admin', async () => {
         await expectRevert(
-            this.digitalaxRewards.depositRevenueSharingRewards( 1, TWO_ETH, TWO_ETH, {from: staker}),
+            this.digitalaxRewards.depositRevenueSharingRewards( 1, TWO_ETH, TWO_ETH, [], [], {from: staker}),
             'DigitalaxRewardsV2.setRewards: Sender must be admin'
         );
       });
 
       it('fails when not a future week', async () => {
         await expectRevert(
-            this.digitalaxRewards.depositRevenueSharingRewards( 0, TWENTY_TOKENS, TWENTY_TOKENS, {from: admin}),
+            this.digitalaxRewards.depositRevenueSharingRewards( 0, TWENTY_TOKENS, TWENTY_TOKENS, [], [], {from: admin}),
             'DigitalaxRewardsV2.depositRevenueSharingRewards: The rewards generated should be set for the future weeks'
         );
       });
@@ -320,13 +320,13 @@ contract('DigitalaxRewardsV2', (accounts) => {
       it('fails if insufficient mona approval', async () => {
         await this.monaToken.approve(this.digitalaxRewards.address, 0, {from: admin});
         await expectRevert(
-            this.digitalaxRewards.depositRevenueSharingRewards(1, TWENTY_TOKENS, TWENTY_TOKENS, {from: admin}),
+            this.digitalaxRewards.depositRevenueSharingRewards(1, TWENTY_TOKENS, TWENTY_TOKENS, [], [], {from: admin}),
             'DigitalaxRewardsV2.depositRevenueSharingRewards: Failed to supply ERC20 Allowance'
         );
       });
 
       it('successfully deposits revenue sharing rewards', async () => {
-        const {receipt} = await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, {from: admin});
+        const {receipt} = await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, [], [], {from: admin});
 
         const monaRevenue = await this.digitalaxRewards.weeklyMonaRevenueSharingPerSecond(1);
         expect(monaRevenue).to.be.bignumber.equal(TEN_ETH.div(new BN('604800')));
@@ -366,8 +366,8 @@ contract('DigitalaxRewardsV2', (accounts) => {
   describe('Update Rewards', () => {
     beforeEach(async () => {
       await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('5')), {from: admin});
-      await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, {from: admin});
-      await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, {from: admin});
+      await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, [], [], {from: admin});
+      await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, [], [], {from: admin});
 
       await this.digitalaxRewards.setNowOverride('1209600'); // next week
 
@@ -482,8 +482,8 @@ contract('DigitalaxRewardsV2', (accounts) => {
   describe('Gets total new mona and eth rewards', () => {
     beforeEach(async () => {
       await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('5')), {from: admin});
-      await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, {from: admin});
-      await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, {from: admin});
+      await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, [], [], {from: admin});
+      await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, [], [], {from: admin});
 
       await this.digitalaxRewards.setNowOverride('1209601'); // next week
     });
@@ -532,8 +532,8 @@ contract('DigitalaxRewardsV2', (accounts) => {
       await this.monaStaking.stake(TWO_ETH, {from: staker});
       await this.monaStaking.stake(THREE_ETH, {from: newRecipient});
       await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('5')), {from: admin});
-      await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, {from: admin});
-      await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, {from: admin});
+      await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, [], [], {from: admin});
+      await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, [], [], {from: admin});
 
     });
 
