@@ -483,7 +483,11 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         return (rewardTokens[rewardTokensIndex[_rewardToken]] == _rewardToken);
     }
 
-    function getRewardTokens() public view returns (address[] memory returnRewardTokens){
+    function getExtraRewardTokens() external view returns (address[] memory returnRewardTokens){
+        return getRewardTokens();
+    }
+
+    function getRewardTokens() internal view returns (address[] memory returnRewardTokens){
         address[] memory a = new address[](rewardTokens.length);
         for (uint i=0; i< rewardTokens.length; i++) {
             a[i] = rewardTokens[i];
