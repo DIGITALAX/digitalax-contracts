@@ -53,6 +53,7 @@ export function handleTransfer(event: Transfer): void {
     garment.description = "";
     garment.external = "";
     garment.attributes = new Array<string>();
+    garment.additionalSources = new Array<string>();
 
     if (garment.tokenUri) {
       if (garment.tokenUri.includes("ipfs/")) {
@@ -72,7 +73,7 @@ export function handleTransfer(event: Transfer): void {
               for (let i = 1; i <= 4; i += 1) {
                 if (res.get(`image_${i}_url`).kind === JSONValueKind.STRING) {
                   let additionalSource = new AdditionalSource(
-                    garment.id + "image" + i.toString()
+                    garment.id + "-image-" + i.toString()
                   );
                   additionalSource.type = "image";
                   additionalSource.url = res.get(`image_${i}_url`).toString();
@@ -87,7 +88,7 @@ export function handleTransfer(event: Transfer): void {
                   res.get(`animation_${i}_url`).kind === JSONValueKind.STRING
                 ) {
                   let additionalSource = new AdditionalSource(
-                    garment.id + "animation" + i.toString()
+                    garment.id + "-animation-" + i.toString()
                   );
                   additionalSource.type = "animation";
                   additionalSource.url = res
@@ -242,6 +243,7 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
     garment.description = "";
     garment.external = "";
     garment.attributes = new Array<string>();
+    garment.additionalSources = new Array<string>();
   }
   garment.tokenUri = contract.tokenURI(event.params._tokenId);
 
@@ -263,7 +265,7 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
             for (let i = 1; i <= 4; i += 1) {
               if (res.get(`image_${i}_url`).kind === JSONValueKind.STRING) {
                 let additionalSource = new AdditionalSource(
-                  garment.id + "image" + i.toString()
+                  garment.id + "-image-" + i.toString()
                 );
                 additionalSource.type = "image";
                 additionalSource.url = res.get(`image_${i}_url`).toString();
@@ -276,7 +278,7 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
             for (let i = 1; i <= 4; i += 1) {
               if (res.get(`animation_${i}_url`).kind === JSONValueKind.STRING) {
                 let additionalSource = new AdditionalSource(
-                  garment.id + "animation" + i.toString()
+                  garment.id + "-animation-" + i.toString()
                 );
                 additionalSource.type = "animation";
                 additionalSource.url = res.get(`animation_${i}_url`).toString();
@@ -352,6 +354,7 @@ export function handleTokenPriceSaleUpdated(
     garment.description = "";
     garment.external = "";
     garment.attributes = new Array<string>();
+    garment.additionalSources = new Array<string>();
 
     garment.tokenUri = contract.tokenURI(event.params._tokenId);
 
@@ -373,7 +376,7 @@ export function handleTokenPriceSaleUpdated(
               for (let i = 1; i <= 4; i += 1) {
                 if (res.get(`image_${i}_url`).kind === JSONValueKind.STRING) {
                   let additionalSource = new AdditionalSource(
-                    garment.id + "image" + i.toString()
+                    garment.id + "-image-" + i.toString()
                   );
                   additionalSource.type = "image";
                   additionalSource.url = res.get(`image_${i}_url`).toString();
@@ -388,7 +391,7 @@ export function handleTokenPriceSaleUpdated(
                   res.get(`animation_${i}_url`).kind === JSONValueKind.STRING
                 ) {
                   let additionalSource = new AdditionalSource(
-                    garment.id + "animation" + i.toString()
+                    garment.id + "-animation-" + i.toString()
                   );
                   additionalSource.type = "animation";
                   additionalSource.url = res
