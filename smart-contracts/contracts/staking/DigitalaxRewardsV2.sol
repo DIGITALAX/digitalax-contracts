@@ -9,6 +9,8 @@ import "../oracle/IDigitalaxMonaOracle.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title Digitalax Rewards
  * @dev Calculates the rewards for staking on the Digitalax platform
@@ -293,6 +295,8 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
                 .div(pointMultiplier);
 
             weeklyTokenRevenueSharingPerSecond[_rewardTokens[i]][_week] = weeklyTokenRevenueSharingPerSecond[_rewardTokens[i]][_week].add(rewardAmount);
+            console.log("the week  is: %s", _week);
+            console.log("the token rev is: %s", weeklyTokenRevenueSharingPerSecond[_rewardTokens[i]][_week]);
         }
 
         emit DepositRevenueSharing(_week, weeklyMonaRevenueSharingPerSecond[_week], bonusWeeklyMonaRevenueSharingPerSecond[_week], _rewardTokens, _rewardAmounts);

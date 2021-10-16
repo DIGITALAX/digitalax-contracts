@@ -8,6 +8,8 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./interfaces/IDigitalaxRewards.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "hardhat/console.sol";
+
 
 /**
  * @title Digitalax Staking
@@ -31,7 +33,6 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
     @notice Struct to track what user is staking which tokens
     @dev balance is the current ether balance of the staker
     @dev lastRewardPoints is the amount of rewards (revenue) that were accumulated at the last checkpoint
-    @dev monaRevenueRewardsEarned is the total reward for the staker till now - revenue sharing
     @dev rewardsReleased is how much reward has been paid to the staker - revenue sharing
     @dev isEarlyRewardsStaker is whether this staker qualifies as an early bird for extra bonus
     @dev earlyRewardsEarned the amount of early rewards earned so far by staker
@@ -53,8 +54,8 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
         uint256 bonusMonaRevenueRewardsPending;
         mapping (address => uint256) tokenRevenueRewardsPending;
 
-        uint256 monaRevenueRewardsEarned;
         uint256 monaRevenueRewardsReleased;
+        uint256 bonusMonaRevenueRewardsReleased;
         mapping (address => uint256) tokenRevenueRewardsReleased;
 
         bool isEarlyRewardsStaker;
@@ -129,6 +130,7 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
      * @notice event emitted when a user claims reward
      */
     event MonaRevenueRewardPaid(address indexed user, uint256 reward);
+    event TokenRevenueRewardPaid(address indexed token, address indexed user, uint256 reward);
 
     event ClaimableStatusUpdated(bool status);
     event EmergencyUnstake(address indexed user, uint256 amount);
@@ -294,7 +296,7 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
     )
         external
         view
-        returns (uint256 balance, uint256 lastRewardPoints, uint256 lastBonusRewardPoints, uint256 lastRewardUpdateTime, uint256 monaRevenueRewardsPending,uint256 bonusMonaRevenueRewardsPending, uint256 monaRevenueRewardsEarned, uint256 monaRevenueRewardsReleased, bool isEarlyRewardsStaker)
+        returns (uint256 balance, uint256 lastRewardPoints, uint256 lastBonusRewardPoints, uint256 lastRewardUpdateTime, uint256 monaRevenueRewardsPending,uint256 bonusMonaRevenueRewardsPending, uint256 monaRevenueRewardsReleased, bool isEarlyRewardsStaker)
     {
         Staker storage staker = pool.stakers[_user];
         return (staker.balance,
@@ -303,7 +305,6 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
             staker.lastRewardUpdateTime,
             staker.monaRevenueRewardsPending,
             staker.bonusMonaRevenueRewardsPending,
-            staker.monaRevenueRewardsEarned,
             staker.monaRevenueRewardsReleased,
             staker.isEarlyRewardsStaker);
     }
@@ -550,14 +551,17 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
     }
 
     /*
-     * @notice Unstake without caring about rewards. EMERGENCY ONLY.
+     * @notice Unstake ALL without caring about rewards. EMERGENCY ONLY.
      */
     function emergencyUnstake()
         external
     {
         uint256 amount = pool.stakers[_msgSender()].balance;
         pool.stakers[_msgSender()].balance = 0;
-        pool.stakers[_msgSender()].monaRevenueRewardsEarned = 0;
+    // TODO figure out if rewards released or pending even needs to change..
+//        pool.stakers[_msgSender()].monaRevenueRewardsPending= 0;
+//        pool.stakers[_msgSender()].bonusMonaRevenueRewardsPending = 0;
+    // TODO all tokens
 
         IERC20(monaToken).safeTransfer(address(_msgSender()), amount);
         emit EmergencyUnstake(_msgSender(), amount);
@@ -604,17 +608,23 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
 
         address[] memory _tokens = rewardsContract.getExtraRewardTokens();
         // Continue if there is mona value in this pool
+
+        console.log("Going into the routine %s", _tokens[0]);
         if (pool.stakedMonaTotalForPool > 0) {
         for (uint i=0; i< _tokens.length; i++) {
+            console.log("routine %s", _tokens[i]);
             // 2 Calculates the overall amount of mona revenue that has increased since the last time someone called this method
             uint256 thisTokenRewards = rewardsContract.TokenRevenueRewards(_tokens[i], pool.lastUpdateTime,
                                                 _getNow());
+             console.log("this token rewrad %s", thisTokenRewards);
 
             // 3 Update the overall rewards per token points with the new mona rewards
             pool.tokenRewardsPerTokenPoints[_tokens[i]] = pool.tokenRewardsPerTokenPoints[_tokens[i]].add(thisTokenRewards
                 .mul(1e18)
                 .mul(pointMultiplier)
                 .div(pool.stakedMonaTotalForPool));
+
+            console.log("this token rewraaad %s", pool.tokenRewardsPerTokenPoints[_tokens[i]]);
             }
         }
 
@@ -637,14 +647,17 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
                 staker.lastRewardPoints = pool.rewardsPerTokenPoints;
 
                 if(staker.isEarlyRewardsStaker){
-                    staker.bonusMonaRevenueRewardsPending = staker.monaRevenueRewardsPending.add(bonusRewards);
+                    staker.bonusMonaRevenueRewardsPending = staker.bonusMonaRevenueRewardsPending.add(bonusRewards);
                     staker.lastBonusRewardPoints = pool.bonusRewardsPerTokenPoints;
                 }
-
+    console.log("next routine %s",  _tokens.length);
                 for (uint i=0; i< _tokens.length; i++) {
                     uint256 specificTokenRewards = tokenRewardsOwing(_user, _tokens[i]);
                     staker.tokenRevenueRewardsPending[_tokens[i]] = staker.tokenRevenueRewardsPending[_tokens[i]].add(specificTokenRewards);
                     staker.lastTokenRewardPoints[_tokens[i]] = pool.tokenRewardsPerTokenPoints[_tokens[i]];
+                    console.log("specific token rewardss %s", specificTokenRewards);
+                    console.log("staker.tokenRevenueRewardsPending[_tokens[i]] %s", staker.tokenRevenueRewardsPending[_tokens[i]]);
+                    console.log("staker.lastTokenRewardPoints[_tokens[i]] %s", staker.lastTokenRewardPoints[_tokens[i]]);
                 }
 
                 staker.lastRewardUpdateTime = _getNow();
@@ -663,6 +676,27 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
         returns(uint256)
     {
         uint256 newRewardPerToken = pool.rewardsPerTokenPoints.sub(pool.stakers[_user].lastRewardPoints);
+        uint256 rewards = pool.stakers[_user].balance.mul(newRewardPerToken)
+                                                .div(1e18)
+                                                .div(pointMultiplier);
+
+
+        return rewards;
+    }
+
+    /*
+     * @dev The rewards are dynamic and normalised from the other pools
+     * @dev This gets the rewards from each of the periods as one multiplier
+     */
+    function extraTokenRewardsOwing(
+        address _user,
+        address _token
+    )
+        public
+        view
+        returns(uint256)
+    {
+        uint256 newRewardPerToken = pool.tokenRewardsPerTokenPoints[_token].sub(pool.stakers[_user].lastTokenRewardPoints[_token]);
         uint256 rewards = pool.stakers[_user].balance.mul(newRewardPerToken)
                                                 .div(1e18)
                                                 .div(pointMultiplier);
@@ -715,7 +749,6 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
       * @param _user the user we are interested in
       * @dev returns the claimable rewards and pending rewards
       */
-     // TODO stack too deep
     function unclaimedRewards(
         address _user
     )
@@ -742,9 +775,49 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
                                                 .div(1e18)
                                                 .div(pointMultiplier);
 
-       claimableRewards = staker.monaRevenueRewardsEarned.add(newRewards).sub(staker.monaRevenueRewardsReleased);
+        claimableRewards = staker.monaRevenueRewardsPending.add(newRewards).sub(staker.monaRevenueRewardsReleased);
 
         pendingRewards = newRewards.add(staker.monaRevenueRewardsPending);
+    }
+
+
+
+
+     /*
+      * @notice Returns the about of rewards yet to be claimed (this currently includes pending and awarded together
+      * @param _user the user we are interested in
+      * @dev returns the claimable rewards and pending rewards
+      */
+    function unclaimedExtraRewards(
+        address _user,
+        address _token
+    )
+        public
+        view
+        returns(uint256 claimableRewards, uint256 pendingRewards)
+    {
+        if (pool.stakedMonaTotalForPool == 0) {
+            return (0,0);
+        }
+
+        Staker storage staker = pool.stakers[_user];
+
+        uint256 tokenRewards = rewardsContract.TokenRevenueRewards(_token, pool.lastUpdateTime,
+                                                        _getNow());
+
+        uint256 newRewardPerToken = pool.tokenRewardsPerTokenPoints[_token].add(tokenRewards
+                                                                .mul(1e18)
+                                                                .mul(pointMultiplier)
+                                                                .div(pool.stakedMonaTotalForPool))
+                                                         .sub(staker.lastTokenRewardPoints[_token]);
+
+        uint256 newRewards = staker.balance.mul(newRewardPerToken)
+                                                .div(1e18)
+                                                .div(pointMultiplier);
+
+        claimableRewards = staker.tokenRevenueRewardsPending[_token].add(newRewards).sub(staker.tokenRevenueRewardsReleased[_token]);
+
+        pendingRewards = newRewards.add(staker.tokenRevenueRewardsPending[_token]);
     }
 
 
@@ -777,7 +850,7 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
         newBonusRewards = newBonusRewards.div(1e18);
         newBonusRewards = newBonusRewards.div(pointMultiplier);
 
-        claimableRewards = staker.monaRevenueRewardsEarned.add(newBonusRewards).sub(staker.monaRevenueRewardsReleased);
+        claimableRewards = staker.bonusMonaRevenueRewardsPending.add(newBonusRewards).sub(staker.bonusMonaRevenueRewardsReleased);
         pendingRewards = newBonusRewards.add(staker.bonusMonaRevenueRewardsPending);
     }
 
@@ -803,17 +876,50 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
 
         Staker storage staker = pool.stakers[_user];
 
-        uint256 payableAmount = staker.monaRevenueRewardsEarned.sub(staker.monaRevenueRewardsReleased);
-        staker.monaRevenueRewardsReleased = staker.monaRevenueRewardsReleased.add(payableAmount);
-
-        /// @dev accounts for dust
-        uint256 rewardBal = IERC20(monaToken).balanceOf(address(this));
-        if (payableAmount > rewardBal) {
-            payableAmount = rewardBal;
+        uint256 payableAmount = 0;
+        if(staker.monaRevenueRewardsPending >= staker.monaRevenueRewardsReleased) {
+            payableAmount = staker.monaRevenueRewardsPending.sub(staker.monaRevenueRewardsReleased);
+            staker.monaRevenueRewardsReleased = staker.monaRevenueRewardsPending;
+            if(staker.bonusMonaRevenueRewardsPending >= staker.bonusMonaRevenueRewardsReleased) {
+                uint256 payableBonusAmount = staker.bonusMonaRevenueRewardsPending.sub(staker.bonusMonaRevenueRewardsReleased);
+                payableAmount = payableAmount.add(payableBonusAmount);
+                staker.bonusMonaRevenueRewardsReleased = staker.bonusMonaRevenueRewardsPending;
+            }
         }
 
-        IERC20(monaToken).transfer(_user, payableAmount);
-        emit MonaRevenueRewardPaid(_user, payableAmount);
+        if(payableAmount > 0){
+            /// @dev accounts for dust
+            uint256 rewardBal = IERC20(monaToken).balanceOf(address(this));
+            if (payableAmount > rewardBal) {
+                payableAmount = rewardBal;
+            }
+
+            IERC20(monaToken).transfer(_user, payableAmount);
+            emit MonaRevenueRewardPaid(_user, payableAmount);
+        }
+
+        // Extra tokens
+        address[] memory _tokens = rewardsContract.getExtraRewardTokens();
+        // Continue if there is mona value in this pool
+        for (uint i=0; i< _tokens.length; i++) {
+            uint256 rewardPayableAmount = 0;
+            if(staker.tokenRevenueRewardsPending[_tokens[i]] >= staker.tokenRevenueRewardsReleased[_tokens[i]]) {
+                rewardPayableAmount = staker.tokenRevenueRewardsPending[_tokens[i]].sub(staker.tokenRevenueRewardsReleased[_tokens[i]]);
+                staker.tokenRevenueRewardsReleased[_tokens[i]] = staker.tokenRevenueRewardsPending[_tokens[i]];
+            }
+            if(rewardPayableAmount > 0){
+                /// @dev accounts for dust
+                uint256 tokenRewardBal = IERC20(_tokens[i]).balanceOf(address(this));
+                if (rewardPayableAmount > tokenRewardBal) {
+                    rewardPayableAmount = tokenRewardBal;
+                }
+
+                IERC20(_tokens[i]).transfer(_user, payableAmount);
+                emit TokenRevenueRewardPaid(_tokens[i], _user, payableAmount);
+            }
+
+
+        }
     }
 
     function getMonaTokenPerEthUnit(uint ethAmt) public view  returns (uint liquidity){

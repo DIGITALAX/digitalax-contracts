@@ -20,14 +20,13 @@ const {
   const DigitalaxMonaOracle = artifacts.require('DigitalaxMonaOracle');
 
   // 1,000 * 10 ** 18
-  const ONE_THOUSAND_TOKENS = '1000000000000000000000';
+  const TEN_THOUSAND_TOKENS = '1000000000000000000000';
   const EXCHANGE_RATE = new BN('1200000000000000000');
-  const TWO_HUNDRED_TOKENS = new BN('200000000000000000000');
   const HALF_TOKEN = new BN('50000000000000000');
   const ONE_TOKEN = new BN('100000000000000000');
   const TWO_TOKEN = new BN('200000000000000000');
   const TEN_TOKENS = new BN('1000000000000000000');
-  const TWENTY_TOKENS = new BN('20000000000000000000');
+  const TWO_HUNDRED = new BN('20000000000000000000');
   const ONE_HUNDRED_TOKENS = new BN('10000000000000000000');
   const TWO_ETH = ether('2');
   const MAX_NUMBER_OF_POOLS = new BN('20');
@@ -43,7 +42,7 @@ const {
       this.monaToken = this.token = await MockERC20.new(
           'MONA',
           'MONA',
-          ONE_THOUSAND_TOKENS,
+          TEN_THOUSAND_TOKENS,
           {from: staker}
       );
 
@@ -82,8 +81,13 @@ const {
           0
       );
 
+      await this.digitalaxRewards.addRewardTokens([this.weth.address]);
+
+      await this.weth.deposit({from: minter, value: TWO_HUNDRED});
+      await this.weth.transfer(admin, TWO_HUNDRED, {from: minter});
+
       await this.monaStaking.setRewardsContract(this.digitalaxRewards.address, { from: admin });
-      await this.monaToken.approve(this.monaStaking.address, ONE_THOUSAND_TOKENS, { from: staker });
+      await this.monaToken.approve(this.monaStaking.address, TEN_THOUSAND_TOKENS, { from: staker });
     });
 
     describe('Contract deployment', () => {
@@ -230,8 +234,8 @@ const {
 
     describe('Admin functions', () => {
       beforeEach(async () => {
-          this.weth.deposit({from: minter, value: TWENTY_TOKENS});
-          this.weth.transfer(this.monaStaking.address, TWENTY_TOKENS, {from: minter});
+          await this.weth.deposit({from: minter, value: TWO_HUNDRED});
+          await this.weth.transfer(this.monaStaking.address, TWO_HUNDRED, {from: minter});
       });
 
       describe('reclaimERC20()', async () => {
@@ -253,10 +257,10 @@ const {
           it('can reclaim Erc20', async () => {
 
             const adminBalanceBeforeReclaim = await this.weth.balanceOf(admin);
-            expect(await this.weth.balanceOf(this.monaStaking.address)).to.be.bignumber.equal(TWENTY_TOKENS);
+            expect(await this.weth.balanceOf(this.monaStaking.address)).to.be.bignumber.equal(TWO_HUNDRED);
 
             // Reclaim erc20 from contract
-            await this.monaStaking.reclaimERC20(this.weth.address, TWENTY_TOKENS, {from: admin});
+            await this.monaStaking.reclaimERC20(this.weth.address, TWO_HUNDRED, {from: admin});
 
             expect(await this.weth.balanceOf(this.monaStaking.address)).to.be.bignumber.equal(new BN('0'));
 
@@ -341,10 +345,10 @@ const {
           {from: admin}
         );
 
-        await this.monaToken.transfer(minter, TWENTY_TOKENS, {from: staker});
+        await this.monaToken.transfer(minter, TWO_HUNDRED, {from: staker});
         await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
-        await this.monaToken.approve(this.monaStaking.address, TWENTY_TOKENS, { from: minter });
-        await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
+        await this.monaToken.approve(this.monaStaking.address, TWO_HUNDRED, { from: minter });
+        await this.monaToken.approve(this.digitalaxRewards.address, TWO_HUNDRED, { from: admin });
         await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, [], [], {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, [], [], {from: admin});
       });
@@ -375,10 +379,10 @@ const {
           {from: admin}
         );
 
-        await this.monaToken.transfer(minter, TWENTY_TOKENS, {from: staker});
+        await this.monaToken.transfer(minter, TWO_HUNDRED, {from: staker});
         await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
-        await this.monaToken.approve(this.monaStaking.address, TWENTY_TOKENS, { from: minter });
-        await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
+        await this.monaToken.approve(this.monaStaking.address, TWO_HUNDRED, { from: minter });
+        await this.monaToken.approve(this.digitalaxRewards.address, TWO_HUNDRED, { from: admin });
         await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, [], [], {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, [], [], {from: admin});
         await this.digitalaxRewards.setNowOverride('604800'); // first week
@@ -405,10 +409,10 @@ const {
           {from: admin}
         );
 
-        await this.monaToken.transfer(minter, TWENTY_TOKENS, {from: staker});
+        await this.monaToken.transfer(minter, TWO_HUNDRED, {from: staker});
         await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
-        await this.monaToken.approve(this.monaStaking.address, TWENTY_TOKENS, { from: minter });
-        await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
+        await this.monaToken.approve(this.monaStaking.address, TWO_HUNDRED, { from: minter });
+        await this.monaToken.approve(this.digitalaxRewards.address, TWO_HUNDRED, { from: admin });
         await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, [], [], {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, [], [], {from: admin});
         await this.digitalaxRewards.setNowOverride('604800'); // first week
@@ -452,13 +456,13 @@ const {
         );
 
         await this.monaToken.transfer(admin, ONE_HUNDRED_TOKENS, {from: staker});
-        await this.monaToken.approve(this.digitalaxRewards.address, TWENTY_TOKENS, { from: admin });
+        await this.monaToken.approve(this.digitalaxRewards.address, TWO_HUNDRED, { from: admin });
         await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_TOKENS, TEN_TOKENS, [], [], {from: admin});
         await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_TOKENS, TEN_TOKENS, [], [], {from: admin});
-        await this.digitalaxRewards.setNowOverride('604800'); // first week
       });
 
       it('Tokens cannot be claimed', async () => {
+        await this.digitalaxRewards.setNowOverride('604800'); // first week
         await this.monaStaking.setTokensClaimable(false);
 
         await this.monaStaking.stake(ONE_TOKEN, {from: staker});
@@ -471,12 +475,71 @@ const {
       });
 
       it('Successfully claim tokens', async () => {
+        await this.digitalaxRewards.setNowOverride('604800'); // first week
         await this.monaStaking.stake(ONE_TOKEN, {from: staker});
         await this.monaStaking.setNowOverride('1209600'); // next week
 
         await this.monaStaking.claimReward({from: staker});
         const afterBalance = await this.monaToken.balanceOf(staker);
-        expect(afterBalance).to.be.bignumber.equals(new BN('989900000000000000000')); // BIG TODO , check real numbers
+        expect(afterBalance).to.be.bignumber.equals(new BN('990000000000000000000')); // BIG TODO , check real numbers
+      });
+
+      it('Successfully claim extra rewards tokens', async () => {
+        await this.weth.approve(this.digitalaxRewards.address, TWO_HUNDRED, { from: admin });
+        const rewardsBeforeBalanceWeth = await this.weth.balanceOf(this.digitalaxRewards.address);
+        expect(rewardsBeforeBalanceWeth).to.be.bignumber.equals(new BN('0'));
+        await this.digitalaxRewards.depositRevenueSharingRewards(1, 0, 0, [this.weth.address], [ONE_HUNDRED_TOKENS], {from: admin});
+        await this.digitalaxRewards.depositRevenueSharingRewards(2, 0, 0, [this.weth.address], [ONE_HUNDRED_TOKENS], {from: admin});
+        await this.digitalaxRewards.setNowOverride('604800'); // first week
+        const rewardAfterBalanceWeth = await this.weth.balanceOf(this.digitalaxRewards.address);
+        expect(rewardAfterBalanceWeth).to.be.bignumber.equals(TWO_HUNDRED);
+        await this.monaStaking.stake(ONE_TOKEN, {from: staker});
+
+        const beforeBalanceWeth = await this.weth.balanceOf(staker);
+        expect(beforeBalanceWeth).to.be.bignumber.equals(new BN('0'));
+
+        await this.monaStaking.updateReward(staker, {from: staker});
+        await this.monaStaking.setNowOverride('1209601'); // next week
+        await this.digitalaxRewards.setNowOverride('1209601'); // next week
+        const rewardResult = await this.digitalaxRewards.TokenRevenueRewards(this.weth.address, 1209540, 1209600, {from: staker});
+        console.log('rewardResult')
+        console.log(rewardResult)
+
+        await this.monaStaking.updateReward(staker, {from: staker});
+        await this.monaStaking.claimReward({from: staker});
+        const afterBalance = await this.monaToken.balanceOf(staker);
+        expect(afterBalance).to.be.bignumber.greaterThan(new BN('990000000000000000000'));
+        const afterBalanceWeth = await this.weth.balanceOf(staker);
+        expect(afterBalanceWeth).to.be.bignumber.greaterThan(TWO_HUNDRED);
+      });
+
+      it('Successfully can test limit of maximum number of tokens', async () => {
+        await this.weth.approve(this.digitalaxRewards.address, TWO_HUNDRED, { from: admin });
+        const rewardsBeforeBalanceWeth = await this.weth.balanceOf(this.digitalaxRewards.address);
+        expect(rewardsBeforeBalanceWeth).to.be.bignumber.equals(new BN('0'));
+        await this.digitalaxRewards.depositRevenueSharingRewards(1, 0, 0, [this.weth.address], [ONE_HUNDRED_TOKENS], {from: admin});
+        await this.digitalaxRewards.depositRevenueSharingRewards(2, 0, 0, [this.weth.address], [ONE_HUNDRED_TOKENS], {from: admin});
+        await this.digitalaxRewards.setNowOverride('604800'); // first week
+        const rewardAfterBalanceWeth = await this.weth.balanceOf(this.digitalaxRewards.address);
+        expect(rewardAfterBalanceWeth).to.be.bignumber.equals(TWO_HUNDRED);
+        await this.monaStaking.stake(ONE_TOKEN, {from: staker});
+
+        const beforeBalanceWeth = await this.weth.balanceOf(staker);
+        expect(beforeBalanceWeth).to.be.bignumber.equals(new BN('0'));
+
+        await this.monaStaking.updateReward(staker, {from: staker});
+        await this.monaStaking.setNowOverride('1209601'); // next week
+        await this.digitalaxRewards.setNowOverride('1209601'); // next week
+        const rewardResult = await this.digitalaxRewards.TokenRevenueRewards(this.weth.address, 1209540, 1209600, {from: staker});
+        console.log('rewardResult')
+        console.log(rewardResult)
+
+        await this.monaStaking.updateReward(staker, {from: staker});
+        await this.monaStaking.claimReward({from: staker});
+        const afterBalance = await this.monaToken.balanceOf(staker);
+        expect(afterBalance).to.be.bignumber.greaterThan(new BN('990000000000000000000'));
+        const afterBalanceWeth = await this.weth.balanceOf(staker);
+        expect(afterBalanceWeth).to.be.bignumber.greaterThan(TWO_HUNDRED);
       });
     })
 
