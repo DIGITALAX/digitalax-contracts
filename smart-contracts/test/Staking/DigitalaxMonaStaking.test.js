@@ -510,7 +510,7 @@ const {
         const afterBalance = await this.monaToken.balanceOf(staker);
         expect(afterBalance).to.be.bignumber.greaterThan(new BN('990000000000000000000'));
         const afterBalanceWeth = await this.weth.balanceOf(staker);
-        expect(afterBalanceWeth).to.be.bignumber.greaterThan(TWO_HUNDRED);
+        expect(afterBalanceWeth).to.be.bignumber.greaterThan(new BN('2000000000000000000'));
       });
 
       it('Successfully can test limit of maximum number of tokens', async () => {
@@ -539,7 +539,7 @@ const {
         const afterBalance = await this.monaToken.balanceOf(staker);
         expect(afterBalance).to.be.bignumber.greaterThan(new BN('990000000000000000000'));
         const afterBalanceWeth = await this.weth.balanceOf(staker);
-        expect(afterBalanceWeth).to.be.bignumber.greaterThan(TWO_HUNDRED);
+        expect(afterBalanceWeth).to.be.bignumber.greaterThan(new BN('2000000000000000000'));
       });
     })
 
