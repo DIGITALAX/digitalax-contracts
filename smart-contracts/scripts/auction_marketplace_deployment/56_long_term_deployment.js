@@ -33,7 +33,7 @@ async function main() {
             monaTokenAddress,
             accessControlsAddress,
             trustedForwarderAddress
-        ]);
+        ], {initializer: 'initialize'});
     const monaStaking = await monaStakingDeploy.deployed();
 
   const StakingRewards = await ethers.getContractFactory("DigitalaxRewardsV2");
@@ -47,7 +47,7 @@ async function main() {
                 0,
                 0,
                 0
-        ]);
+        ], {initializer: 'initialize'});
      await instanceStakingRewards.deployed();
 
     console.log('tokens claimable');
@@ -61,6 +61,10 @@ async function main() {
     console.log('add extra tokens');
     const extraTokens = await instanceStakingRewards.addRewardTokens([decoTokenAddress]);
     await extraTokens.wait();
+
+    console.log('start time');
+    const startT = await instanceStakingRewards.setStartTime(1634124053);
+    await startT.wait();
 
     console.log(`The rewards: ${instanceStakingRewards.address} `);
     console.log(`The staking: ${monaStaking.address}`);
