@@ -52,29 +52,31 @@ const {
       );
 
 
-      this.oracle = await DigitalaxMonaOracle.new(
-          '86400',
-          '120',
-          '1',
-          this.accessControls.address,
-          {from: admin}
-      );
+      // this.oracle = await DigitalaxMonaOracle.new(
+      //     '86400',
+      //     '120',
+      //     '1',
+      //     this.accessControls.address,
+      //     {from: admin}
+      // );
 
-      await this.oracle.addProvider(provider, {from: admin});
-      await this.oracle.pushReport(EXCHANGE_RATE, {from: provider});
+     // await this.oracle.addProvider(provider, {from: admin});
+     // await this.oracle.pushReport(EXCHANGE_RATE, {from: provider});
       await time.increase(time.duration.seconds(120));
 
-      this.monaStaking = await DigitalaxMonaStaking.new(
+      this.monaStaking = await DigitalaxMonaStaking.new();
+      await this.monaStaking.initialize(
           this.monaToken.address,
           this.accessControls.address,
           constants.ZERO_ADDRESS,
       );
 
-      this.digitalaxRewards = await DigitalaxRewardsV2.new(
+      this.digitalaxRewards = await DigitalaxRewardsV2.new();
+      await this.digitalaxRewards.initialize(
           this.monaToken.address,
           this.accessControls.address,
           this.monaStaking.address,
-          this.oracle.address,
+        //  this.oracle.address,
           constants.ZERO_ADDRESS,
           0,
           0,
@@ -92,8 +94,9 @@ const {
 
     describe('Contract deployment', () => {
       it('Reverts when mona token is zero', async () => {
+        const monaStaking2 = await DigitalaxMonaStaking.new();
         await expectRevert(
-            DigitalaxMonaStaking.new(
+            monaStaking2.initialize(
                 constants.ZERO_ADDRESS,
                 this.accessControls.address,
                 constants.ZERO_ADDRESS,
@@ -103,8 +106,9 @@ const {
         );
       });
       it('Reverts when access controls is 0', async () => {
+        const monaStaking2 = await DigitalaxMonaStaking.new();
         await expectRevert(
-            DigitalaxMonaStaking.new(
+            monaStaking2.initialize(
                 this.monaToken.address,
                 constants.ZERO_ADDRESS,
                 constants.ZERO_ADDRESS,
@@ -358,7 +362,7 @@ const {
         await this.monaStaking.stake(ONE_TOKEN, {from: staker});
         await this.digitalaxRewards.setNowOverride('1209600'); // next week
         await this.monaStaking.setNowOverride('1209600'); // next week
-        await this.oracle.pushReport(EXCHANGE_RATE, {from: provider});
+       // await this.oracle.pushReport(EXCHANGE_RATE, {from: provider});
 
         await this.digitalaxRewards.setNowOverride('1814400'); // next week
         await this.monaStaking.setNowOverride('1814400'); // next week

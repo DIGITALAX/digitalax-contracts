@@ -5,9 +5,9 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../DigitalaxAccessControls.sol";
 import "./interfaces/IERC20.sol";
-import "../oracle/IDigitalaxMonaOracle.sol";
+//import "../oracle/IDigitalaxMonaOracle.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/proxy/Initializable.sol";
 
 import "hardhat/console.sol";
 
@@ -31,21 +31,20 @@ interface MONA is IERC20 {
     function mint(address tokenOwner, uint tokens) external returns (bool);
 }
 
-contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
+contract DigitalaxRewardsV2 is Initializable, BaseRelayRecipient {
     using SafeMath for uint256;
 
     /* ========== Variables ========== */
 
     MONA public monaToken;
-    /// @notice Mona to Ether Oracle
-    IDigitalaxMonaOracle public oracle;
+
     DigitalaxAccessControls public accessControls;
     DigitalaxStaking public monaStaking;
 
     mapping(address => uint256) public rewardTokensIndex;
     address[] public rewardTokens;
 
-    uint256 public MAX_REWARD_TOKENS = 10;
+    uint256 public MAX_REWARD_TOKENS;
     uint256 constant pointMultiplier = 10e18;
     uint256 constant SECONDS_PER_DAY = 24 * 60 * 60;
     uint256 constant SECONDS_PER_WEEK = 7 * 24 * 60 * 60;
@@ -61,9 +60,6 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
     uint256 public bonusMonaRewardsPaidTotal;
     mapping(address => uint256) public tokenRewardsPaidTotal;
 
-    /// @notice for storing information from oracle
-    uint256 public lastOracleQuote = 1e18;
-
     uint256 public lastRewardsTime;
     mapping(address => uint256) public tokenRewardsPaid;
 
@@ -75,8 +71,6 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
     event RewardAdded(address indexed addr, uint256 reward);
     event RewardDistributed(address indexed addr, uint256 reward);
     event ReclaimedERC20(address indexed token, uint256 amount);
-
-    event UpdateOracle(address indexed oracle);
 
     // Events
     event AddRewardTokens(
@@ -103,17 +97,16 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
     );
 
     /* ========== Admin Functions ========== */
-    constructor(
+    function initialize(
         MONA _monaToken,
         DigitalaxAccessControls _accessControls,
         DigitalaxStaking _monaStaking,
-        IDigitalaxMonaOracle _oracle,
         address _trustedForwarder,
         uint256 _startTime,
         uint256 _monaRewardsPaidTotal,
         uint256 _bonusMonaRewardsPaidTotal
     )
-        public
+        public initializer
     {
         require(
             address(_monaToken) != address(0),
@@ -127,18 +120,14 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
             address(_monaStaking) != address(0),
             "DigitalaxRewardsV2: Invalid Mona Staking"
         );
-        require(
-            address(_oracle) != address(0),
-            "DigitalaxRewardsV2: Invalid Mona Oracle"
-        );
         monaToken = _monaToken;
         accessControls = _accessControls;
         monaStaking = _monaStaking;
-        oracle = _oracle;
         startTime = _startTime;
         monaRewardsPaidTotal = _monaRewardsPaidTotal;
         bonusMonaRewardsPaidTotal = _bonusMonaRewardsPaidTotal;
         trustedForwarder = _trustedForwarder;
+        MAX_REWARD_TOKENS = 10;
     }
     receive() external payable {
     }
@@ -185,21 +174,6 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
             "DigitalaxRewardsV2.setStartTime: Sender must be admin"
         );
         startTime = _startTime;
-    }
-
-    /**
-     @notice Method for updating oracle
-     @dev Only admin
-     @param _oracle new oracle
-     */
-    function updateOracle(IDigitalaxMonaOracle _oracle) external {
-        require(
-            accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxRewardsV2.updateOracle: Sender must be admin"
-        );
-
-        oracle = _oracle;
-        emit UpdateOracle(address(_oracle));
     }
 
 
@@ -393,11 +367,6 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
             lastRewardsTime = _getNow();
             return false;
         }
-
-        // @dev Update the oracle
-        (uint256 exchangeRate, bool rateValid) = oracle.getData();
-        require(rateValid, "DigitalaxMarketplace.estimateMonaAmount: Oracle data is invalid");
-        lastOracleQuote = exchangeRate;
 
         /// @dev This sends rewards (Mona from revenue sharing)
         _updateMonaRewards();
@@ -766,10 +735,9 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
 
         if ( stakedEth != 0) {
             uint256 rewards = MonaRevenueRewards( _getNow() - 60, _getNow());
-            uint256 rewardsInEth = rewards.mul(getEthPerMona()).div(1e18);
 
             /// @dev minutes per year x 100 = 52560000
-            yearlyReturnInEth = rewardsInEth.mul(52560000).mul(1e18).div(stakedEth);
+            yearlyReturnInEth = rewards.mul(52560000).mul(1e18).div(stakedEth);
         }
 
         uint256 yearlyEarlyReturnInEth = 0;
@@ -778,32 +746,14 @@ contract DigitalaxRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
             uint256 earlyStakedEth = monaStaking.earlyStakedEthTotalByPool();
             if ( earlyStakedEth != 0) {
                 uint256 bonusRewards = BonusMonaRevenueRewards(_getNow() - 60, _getNow());
-                uint256 bonusRewardsInEth = bonusRewards.mul(getEthPerMona()).div(1e18);
 
                 /// @dev minutes per year x 100 = 52560000
-                yearlyEarlyReturnInEth = bonusRewardsInEth.mul(52560000).mul(1e18).div(earlyStakedEth);
+                yearlyEarlyReturnInEth = bonusRewards.mul(52560000).mul(1e18).div(earlyStakedEth);
             }
         }
       return yearlyReturnInEth.add(yearlyEarlyReturnInEth);
     }
 
-    // MONA amount for custom ETH amount
-    function getMonaPerEth(uint256 _ethAmt)
-        public
-        view
-        returns (uint256)
-    {
-        return _ethAmt.mul(1e18).div(lastOracleQuote);
-    }
-
-    // ETH amount for 1 MONA
-    function getEthPerMona()
-        public
-        view
-        returns (uint256)
-    {
-        return lastOracleQuote;
-    }
 
     function _getNow() internal virtual view returns (uint256) {
         return block.timestamp;

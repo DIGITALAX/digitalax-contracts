@@ -7,8 +7,8 @@ import "../DigitalaxAccessControls.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./interfaces/IDigitalaxRewards.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "hardhat/console.sol";
+import "@openzeppelin/contracts/proxy/Initializable.sol";
 
 
 /**
@@ -19,7 +19,7 @@ import "hardhat/console.sol";
  */
 
 
-contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
+contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -103,7 +103,7 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
     /*
      * @notice sets the token to be claimable or not, cannot claim if it set to false
      */
-    bool public tokensClaimable = true;
+    bool public tokensClaimable;
 
     /* ========== Events ========== */
     event UpdateAccessControls(
@@ -139,12 +139,13 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
 
     event ReclaimedERC20(address indexed token, uint256 amount);
 
-    constructor(address _monaToken, DigitalaxAccessControls _accessControls, address _trustedForwarder) public {
+    function initialize(address _monaToken, DigitalaxAccessControls _accessControls, address _trustedForwarder)  public initializer {
         require(_monaToken != address(0), "DigitalaxMonaStaking: Invalid Mona Token");
         require(address(_accessControls) != address(0), "DigitalaxMonaStaking: Invalid Access Controls");
         monaToken = _monaToken;
         accessControls = _accessControls;
         trustedForwarder = _trustedForwarder;
+        tokensClaimable = true;
     }
 
     receive() external payable {
@@ -369,8 +370,7 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
         returns (uint256)
     {
 
-        uint256 monaPerEth = getMonaTokenPerEthUnit(1e18);
-        return stakedMonaTotal.mul(1e18).div(monaPerEth);
+        return stakedMonaTotal;
     }
 
     /*
@@ -381,9 +381,7 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
         view
         returns (uint256)
     {
-
-        uint256 monaPerEth = getMonaTokenPerEthUnit(1e18);
-        return earlyStakedMonaTotal.mul(1e18).div(monaPerEth);
+        return earlyStakedMonaTotal;
     }
 
     /*
@@ -394,9 +392,7 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
         view
         returns (uint256)
     {
-
-        uint256 monaPerEth = getMonaTokenPerEthUnit(1e18);
-        return pool.stakedMonaTotalForPool.mul(1e18).div(monaPerEth);
+        return pool.stakedMonaTotalForPool;
     }
 
     /*
@@ -407,9 +403,7 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
         view
         returns (uint256)
     {
-
-        uint256 monaPerEth = getMonaTokenPerEthUnit(1e18);
-        return pool.earlyStakedMonaTotalForPool.mul(1e18).div(monaPerEth);
+        return pool.earlyStakedMonaTotalForPool;
     }
 
 
@@ -920,10 +914,6 @@ contract DigitalaxMonaStaking is BaseRelayRecipient, ReentrancyGuard  {
 
 
         }
-    }
-
-    function getMonaTokenPerEthUnit(uint ethAmt) public view  returns (uint liquidity){
-        return rewardsContract.getMonaPerEth(1e18);
     }
 
     function min(uint256 a, uint256 b) internal pure returns (uint256 c) {
