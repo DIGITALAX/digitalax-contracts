@@ -7,14 +7,6 @@ import "../staking/DigitalaxMonaStaking.sol";
 contract DigitalaxMonaStakingMock is DigitalaxMonaStaking {
     uint256 public nowOverride;
 
-    constructor(
-        address _monaToken,
-        DigitalaxAccessControls _accessControls,
-        address _trustedForwarder
-    )
-    DigitalaxMonaStaking(_monaToken, _accessControls, _trustedForwarder)
-    public {}
-
     function setNowOverride(uint256 _now) external {
         nowOverride = _now;
     }
