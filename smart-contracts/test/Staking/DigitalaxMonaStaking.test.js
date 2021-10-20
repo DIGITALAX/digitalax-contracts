@@ -518,23 +518,38 @@ const {
       });
 
       it('Successfully can test limit of maximum number of tokens', async () => {
+        let wethTokens = [];
+        for (let i = 0; i < 200; i += 1) {
+          newweth = await WethToken.new(
+              { from: minter }
+          );
+          await newweth.deposit({from: minter, value: TWO_HUNDRED});
+          await newweth.transfer(admin, TWO_HUNDRED, {from: minter});
+          await newweth.approve(this.digitalaxRewards.address, TWO_HUNDRED, { from: admin });
+          wethTokens.push(newweth);
+        }
         await this.weth.approve(this.digitalaxRewards.address, TWO_HUNDRED, { from: admin });
-        const rewardsBeforeBalanceWeth = await this.weth.balanceOf(this.digitalaxRewards.address);
+
+        await this.digitalaxRewards.addRewardTokens(wethTokens.map((x) => {return x.address}));
+        const rewardsBeforeBalanceWeth = await wethTokens[0].balanceOf(this.digitalaxRewards.address);
         expect(rewardsBeforeBalanceWeth).to.be.bignumber.equals(new BN('0'));
-        await this.digitalaxRewards.depositRevenueSharingRewards(1, 0, 0, [this.weth.address], [ONE_HUNDRED_TOKENS], {from: admin});
-        await this.digitalaxRewards.depositRevenueSharingRewards(2, 0, 0, [this.weth.address], [ONE_HUNDRED_TOKENS], {from: admin});
+
+        await this.digitalaxRewards.depositRevenueSharingRewards(1, 0, 0, wethTokens.map((x) => {return x.address}), Array(wethTokens.length).fill(ONE_HUNDRED_TOKENS), {from: admin});
+        await this.digitalaxRewards.depositRevenueSharingRewards(2, 0, 0, wethTokens.map((x) => {return x.address}), Array(wethTokens.length).fill(ONE_HUNDRED_TOKENS), {from: admin});
+
+
         await this.digitalaxRewards.setNowOverride('604800'); // first week
-        const rewardAfterBalanceWeth = await this.weth.balanceOf(this.digitalaxRewards.address);
+        const rewardAfterBalanceWeth = await wethTokens[0].balanceOf(this.digitalaxRewards.address);
         expect(rewardAfterBalanceWeth).to.be.bignumber.equals(TWO_HUNDRED);
         await this.monaStaking.stake(ONE_TOKEN, {from: staker});
 
-        const beforeBalanceWeth = await this.weth.balanceOf(staker);
+        const beforeBalanceWeth = await wethTokens[0].balanceOf(staker);
         expect(beforeBalanceWeth).to.be.bignumber.equals(new BN('0'));
 
         await this.monaStaking.updateReward(staker, {from: staker});
         await this.monaStaking.setNowOverride('1209601'); // next week
         await this.digitalaxRewards.setNowOverride('1209601'); // next week
-        const rewardResult = await this.digitalaxRewards.TokenRevenueRewards(this.weth.address, 1209540, 1209600, {from: staker});
+        const rewardResult = await this.digitalaxRewards.TokenRevenueRewards(wethTokens[0].address, 1209540, 1209600, {from: staker});
         console.log('rewardResult')
         console.log(rewardResult)
 
@@ -542,11 +557,15 @@ const {
         await this.monaStaking.claimReward({from: staker});
         const afterBalance = await this.monaToken.balanceOf(staker);
         expect(afterBalance).to.be.bignumber.greaterThan(new BN('990000000000000000000'));
-        const afterBalanceWeth = await this.weth.balanceOf(staker);
+        const afterBalanceWeth = await wethTokens[0].balanceOf(staker);
         expect(afterBalanceWeth).to.be.bignumber.greaterThan(new BN('2000000000000000000'));
+        const afterBalanceWeth2 = await wethTokens[1].balanceOf(staker);
+        expect(afterBalanceWeth2).to.be.bignumber.greaterThan(new BN('2000000000000000000'));
+        const afterBalanceWethFinal = await wethTokens[wethTokens.length - 1].balanceOf(staker);
+        expect(afterBalanceWethFinal).to.be.bignumber.greaterThan(new BN('2000000000000000000'));
+        console.log(`The number of wethtokens was ${wethTokens.length}`)
       });
     })
-
 
     async function getGasCosts(receipt) {
       const tx = await web3.eth.getTransaction(receipt.tx);
