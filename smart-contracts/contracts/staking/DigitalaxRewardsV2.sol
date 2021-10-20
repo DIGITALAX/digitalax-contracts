@@ -127,7 +127,7 @@ contract DigitalaxRewardsV2 is Initializable, BaseRelayRecipient {
         monaRewardsPaidTotal = _monaRewardsPaidTotal;
         bonusMonaRewardsPaidTotal = _bonusMonaRewardsPaidTotal;
         trustedForwarder = _trustedForwarder;
-        MAX_REWARD_TOKENS = 10;
+        MAX_REWARD_TOKENS = 200;
     }
     receive() external payable {
     }
