@@ -19,12 +19,9 @@ import "hardhat/console.sol";
  */
 
 interface DigitalaxStaking {
-    function stakedEthTotal() external view returns (uint256);
-    function stakedEthTotalByPool() external view returns (uint256);
-    function earlyStakedEthTotalByPool() external view returns (uint256);
-    function stakedMonaInPool() external view returns (uint256);
+    function stakedValueTotalForPool() external view returns (uint256);
+    function earlyStakedValueTotalForPool() external view returns (uint256);
     function monaToken() external view returns (address);
-    function WETH() external view returns (address);
 }
 
 interface MONA is IERC20 {
@@ -721,7 +718,7 @@ contract DigitalaxRewardsV2 is Initializable, BaseRelayRecipient {
         view
         returns(uint256)
     {
-        return monaStaking.stakedEthTotal();
+        return monaStaking.stakedValueTotalForPool();
     }
 
     function getMonaDailyAPY(bool isEarlyStaker)
@@ -729,7 +726,7 @@ contract DigitalaxRewardsV2 is Initializable, BaseRelayRecipient {
         view
         returns (uint256)
     {
-        uint256 stakedEth = monaStaking.stakedEthTotalByPool();
+        uint256 stakedEth = monaStaking.stakedValueTotalForPool();
 
         uint256 yearlyReturnInEth = 0;
 
@@ -743,7 +740,7 @@ contract DigitalaxRewardsV2 is Initializable, BaseRelayRecipient {
         uint256 yearlyEarlyReturnInEth = 0;
 
         if(isEarlyStaker){
-            uint256 earlyStakedEth = monaStaking.earlyStakedEthTotalByPool();
+            uint256 earlyStakedEth = monaStaking.earlyStakedValueTotalForPool();
             if ( earlyStakedEth != 0) {
                 uint256 bonusRewards = BonusMonaRevenueRewards(_getNow() - 60, _getNow());
 

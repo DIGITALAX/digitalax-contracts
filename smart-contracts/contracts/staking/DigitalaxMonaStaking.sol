@@ -64,10 +64,11 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
     }
 
     mapping (address => Staker) stakers;
-    uint256 stakedMonaTotalForPool;
-    uint256 earlyStakedMonaTotalForPool;
 
+    uint256 stakedMonaTotalForPool;
     uint256 stakedLPTotalForPool;
+
+    uint256 earlyStakedMonaTotalForPool;
     uint256 earlyStakedLPTotalForPool;
 
     uint256 lastUpdateTime;
@@ -80,9 +81,6 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
 
     uint256 maximumNumberOfEarlyRewardsUsers;
     uint256 currentNumberOfEarlyRewardsUsers;
-
-    uint256 public stakedLPTotal;
-    uint256 public earlyStakedLPTotal;
 
     uint256 constant pointMultiplier = 10e32;
 
@@ -106,11 +104,19 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
      * @notice event emitted when a user has staked a token
      */
     event Staked(address indexed owner, uint256 amount);
+    /*
+     * @notice event emitted when a user has staked a token
+     */
+    event StakedLP(address indexed owner, uint256 amount);
 
     /*
      * @notice event emitted when a user has unstaked a token
      */
     event Unstaked(address indexed owner, uint256 amount);
+    /*
+     * @notice event emitted when a user has unstaked a token
+     */
+    event UnstakedLP(address indexed owner, uint256 amount);
 
     /*
      * @notice event emitted when a user claims reward
@@ -120,16 +126,18 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
 
     event ClaimableStatusUpdated(bool status);
     event EmergencyUnstake(address indexed user, uint256 amount);
+    event EmergencyUnstakeLP(address indexed user, uint256 amount);
     event MonaTokenUpdated(address indexed oldMonaToken, address newMonaToken);
     event LPTokenUpdated(address indexed oldLPToken, address newLPToken);
     event RewardsTokenUpdated(address indexed oldRewardsToken, address newRewardsToken );
 
     event ReclaimedERC20(address indexed token, uint256 amount);
 
-    function initialize(address _monaToken, DigitalaxAccessControls _accessControls, address _trustedForwarder)  public initializer {
+    function initialize(address _monaToken, address _lpToken, DigitalaxAccessControls _accessControls, address _trustedForwarder)  public initializer {
         require(_monaToken != address(0), "DigitalaxMonaStaking: Invalid Mona Token");
         require(address(_accessControls) != address(0), "DigitalaxMonaStaking: Invalid Access Controls");
         monaToken = _monaToken;
+        lpToken = _lpToken;
         accessControls = _accessControls;
         trustedForwarder = _trustedForwarder;
         tokensClaimable = true;
@@ -281,6 +289,20 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
     }
 
     /* @notice Getter functions for Staking contract
+    *  @dev Get the tokens staked by a user
+    */
+    // TODO ORACLE
+    function getStakedUserValue(
+        address _user
+        )
+        public
+        view
+        returns (uint256 balance)
+        {
+         return stakers[_user].balance.add(stakers[_user].lpBalance);
+    }
+
+    /* @notice Getter functions for Staking contract
      *  @dev Get the tokens staked by a user
      */
     function getStakedBalance(
@@ -358,48 +380,48 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
     }
 
     /*
-     * @dev Get the total ETH staked
+     * @dev Get the total Value staked
      */
-    function stakedMonaInPool()
+    function stakedValueTotalForPool()
         external
         view
         returns (uint256)
     {
-        return stakedMonaTotalForPool;
+        return _stakedValueTotalForPool();
     }
 
     /*
-     * @dev Get the total ETH staked (all pools early stakers)
+     * @dev Get the total early value staked
      */
-    function earlyStakedMonaInPool()
+    function earlyStakedValueTotalForPool()
         external
         view
         returns (uint256)
     {
-        return earlyStakedMonaTotalForPool;
+        return _earlyStakedValueTotalForPool();
     }
-
-
     /*
+    //TODO ORACLE
      * @dev Get the total ETH staked
      */
-    function stakedEthTotalByPool()
-        external
+    function _stakedValueTotalForPool()
+        internal
         view
         returns (uint256)
     {
-        return stakedMonaTotalForPool;
+        return stakedMonaTotalForPool.add(stakedLPTotalForPool);
     }
 
     /*
-     * @dev Get the total ETH staked
+     * @dev Get the total value staked
+     //TODO ORACLE
      */
-    function earlyStakedEthTotalByPool()
-        external
+    function _earlyStakedValueTotalForPool()
+        internal
         view
         returns (uint256)
     {
-        return earlyStakedMonaTotalForPool;
+        return earlyStakedMonaTotalForPool.add(earlyStakedLPTotalForPool);
     }
 
 
@@ -411,7 +433,19 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
     )
         external
     {
-        _stake(_msgSender(), _amount);
+        _stake(_msgSender(), _amount, false);
+    }
+
+    /*
+     * @notice Stake MONA Tokens and earn rewards.
+     */
+    function stakeLP(
+        uint256 _amount,
+        bool _isLPToken
+    )
+        external
+    {
+        _stake(_msgSender(), _amount, true);
     }
 
     /*
@@ -421,7 +455,17 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         external
     {
         uint256 balance = IERC20(monaToken).balanceOf(_msgSender());
-        _stake(_msgSender(), balance);
+        _stake(_msgSender(), balance, false);
+    }
+
+    /*
+     * @notice Stake All MONA Tokens in your wallet and earn rewards.
+     */
+    function stakeAllLP()
+        external
+    {
+        uint256 balance = IERC20(lpToken).balanceOf(_msgSender());
+        _stake(_msgSender(), balance, true);
     }
 
     /**
@@ -431,10 +475,12 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
     */
     function _stake(
         address _user,
-        uint256 _amount
+        uint256 _amount,
+        bool _isLPToken
     )
         internal
     {
+    // TODO Add lp token here
         require(
             _amount > 0 ,
             "DigitalaxMonaStaking._stake: Staked amount must be greater than 0"
@@ -443,7 +489,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         Staker storage staker = stakers[_user];
 
         // Check if a new user
-        if(staker.lastRewardUpdateTime == 0 && staker.balance == 0) {
+        if(staker.lastRewardUpdateTime == 0 && staker.balance == 0 && staker.lpBalance == 0) {
             require(
                 currentNumberOfStakersInPool < maximumNumberOfStakersInPool,
                 "DigitalaxMonaStaking._stake: This pool is already full"
@@ -459,7 +505,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
             }
         }
 
-        if(staker.balance == 0) {
+        if(staker.balance == 0 && staker.lpBalance == 0) {
             if (staker.lastRewardPoints == 0 ) {
               staker.lastRewardPoints = rewardsPerTokenPoints;
             }
@@ -478,6 +524,9 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
             earlyStakedMonaTotalForPool = earlyStakedMonaTotalForPool.add(_amount);
         }
 
+        // TODO check something like this
+        // require(IERC20(monaToken).allowance(_msgSender(), address(this)) >= _amount, "ERC20 allowance not approved");
+
         IERC20(monaToken).safeTransferFrom(
             address(_user),
             address(this),
@@ -494,7 +543,23 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
     )
         external
     {
-        _unstake(_msgSender(), _amount);
+
+        _claimReward(_msgSender());
+        _unstake(_msgSender(), _amount, false);
+    }
+
+    /*
+     * @notice Unstake LP Tokens.
+     */
+    function unstakeLP(
+        uint256 _amount,
+        bool _isLPToken
+    )
+        external
+    {
+
+        _claimReward(_msgSender());
+        _unstake(_msgSender(), _amount, true);
     }
 
      /**
@@ -504,27 +569,28 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
     */
     function _unstake(
         address _user,
-        uint256 _amount
+        uint256 _amount,
+        bool _isLPToken
     )
         internal
     {
+    // TODO Set up lp logics
 
         require(
             stakers[_user].balance >= _amount,
             "DigitalaxMonaStaking._unstake: Sender must have staked tokens"
         );
-        _claimReward(_user);
         Staker storage staker = stakers[_user];
 
         staker.balance = staker.balance.sub(_amount);
 
         stakedMonaTotalForPool = stakedMonaTotalForPool.sub(_amount);
 
-        if(staker.isEarlyRewardsStaker){
+        if(staker.isEarlyRewardsStaker && _amount <= earlyStakedMonaTotalForPool){
             earlyStakedMonaTotalForPool = earlyStakedMonaTotalForPool.sub(_amount);
         }
 
-        if (staker.balance == 0) {
+        if (staker.balance == 0 && staker.lpBalance == 0) {
             delete stakers[_user]; // TODO figure out if this is still valid
         }
 
@@ -544,14 +610,18 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         external
     {
         uint256 amount = stakers[_msgSender()].balance;
-        stakers[_msgSender()].balance = 0;
-    // TODO figure out if rewards released or pending even needs to change..
-//        stakers[_msgSender()].monaRevenueRewardsPending= 0;
-//        stakers[_msgSender()].bonusMonaRevenueRewardsPending = 0;
-    // TODO all tokens
-
-        IERC20(monaToken).safeTransfer(address(_msgSender()), amount);
+        _unstake(_msgSender(), amount, false);
         emit EmergencyUnstake(_msgSender(), amount);
+    }
+    /*
+     * @notice Unstake ALL LP without caring about rewards. EMERGENCY ONLY.
+     */
+    function emergencyUnstakeLP()
+        external
+    {
+        uint256 amount = stakers[_msgSender()].lpBalance;
+        _unstake(_msgSender(), amount, true);
+        emit EmergencyUnstakeLP(_msgSender(), amount);
     }
 
 
@@ -563,6 +633,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
     )
         public
     {
+
         // 1 Updates the amount of rewards, transfer MONA to this contract so there is some balance
         rewardsContract.updateRewards();
 
@@ -571,48 +642,44 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
                                                         _getNow());
 
         // Continue if there is mona in this pool
-        if (stakedMonaTotalForPool > 0) {
+        if (_stakedValueTotalForPool() > 0) {
             // 3 Update the overall rewards per token points with the new mona rewards
             rewardsPerTokenPoints = rewardsPerTokenPoints.add(monaRewards
                                                         .mul(1e18)
                                                         .mul(pointMultiplier)
-                                                        .div(stakedMonaTotalForPool));
+                                                        .div(_stakedValueTotalForPool()));
         }
-
 
         // 2 Calculates the bonus overall amount of mona revenue that has increased since the last time someone called this method
         uint256 bonusMonaRewards = rewardsContract.BonusMonaRevenueRewards(lastUpdateTime, _getNow());
 
 
         // Continue if there is mona in this pool
-        if (earlyStakedMonaTotalForPool > 0) {
+        if (_earlyStakedValueTotalForPool() > 0) {
             // 3 Update the overall rewards per token points with the new mona rewards
             bonusRewardsPerTokenPoints = bonusRewardsPerTokenPoints.add(bonusMonaRewards
                                                         .mul(1e18)
                                                         .mul(pointMultiplier)
-                                                        .div(earlyStakedMonaTotalForPool));
+                                                        .div(_earlyStakedValueTotalForPool()));
         }
 
         address[] memory _tokens = rewardsContract.getExtraRewardTokens();
         // Continue if there is mona value in this pool
 
-        console.log("Going into the routine %s", _tokens[0]);
-        if (stakedMonaTotalForPool > 0) {
+        if (_stakedValueTotalForPool() > 0) {
         for (uint i=0; i< _tokens.length; i++) {
-            console.log("routine %s", _tokens[i]);
             // 2 Calculates the overall amount of mona revenue that has increased since the last time someone called this method
             uint256 thisTokenRewards = rewardsContract.TokenRevenueRewards(_tokens[i], lastUpdateTime,
                                                 _getNow());
-             console.log("this token rewrad %s", thisTokenRewards);
 
             // 3 Update the overall rewards per token points with the new mona rewards
             tokenRewardsPerTokenPoints[_tokens[i]] = tokenRewardsPerTokenPoints[_tokens[i]].add(thisTokenRewards
                 .mul(1e18)
                 .mul(pointMultiplier)
-                .div(stakedMonaTotalForPool));
+                .div(_stakedValueTotalForPool()));
 
-            console.log("this token rewraaad %s", tokenRewardsPerTokenPoints[_tokens[i]]);
             }
+
         }
 
         // 4 Update the last update time for this pool, calculating overall rewards
@@ -637,15 +704,11 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
                     staker.bonusMonaRevenueRewardsPending = staker.bonusMonaRevenueRewardsPending.add(bonusRewards);
                     staker.lastBonusRewardPoints = bonusRewardsPerTokenPoints;
                 }
-    console.log("next routine %s",  _tokens.length);
                 for (uint i=0; i< _tokens.length; i++) {
                     uint256 specificTokenRewards = tokenRewardsOwing(_user, _tokens[i]);
                     staker.tokenRevenueRewardsPending[_tokens[i]] = staker.tokenRevenueRewardsPending[_tokens[i]].add(specificTokenRewards);
                     staker.lastTokenRewardPoints[_tokens[i]] = tokenRewardsPerTokenPoints[_tokens[i]];
-                    console.log("specific token rewardss %s", specificTokenRewards);
-                    console.log("staker.tokenRevenueRewardsPending[_tokens[i]] %s", staker.tokenRevenueRewardsPending[_tokens[i]]);
-                    console.log("staker.lastTokenRewardPoints[_tokens[i]] %s", staker.lastTokenRewardPoints[_tokens[i]]);
-                }
+                  }
 
                 staker.lastRewardUpdateTime = _getNow();
         }
@@ -663,7 +726,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         returns(uint256)
     {
         uint256 newRewardPerToken = rewardsPerTokenPoints.sub(stakers[_user].lastRewardPoints);
-        uint256 rewards = stakers[_user].balance.mul(newRewardPerToken)
+        uint256 rewards = getStakedUserValue(_user).mul(newRewardPerToken)
                                                 .div(1e18)
                                                 .div(pointMultiplier);
 
@@ -684,7 +747,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         returns(uint256)
     {
         uint256 newRewardPerToken = tokenRewardsPerTokenPoints[_token].sub(stakers[_user].lastTokenRewardPoints[_token]);
-        uint256 rewards = stakers[_user].balance.mul(newRewardPerToken)
+        uint256 rewards = getStakedUserValue(_user).mul(newRewardPerToken)
                                                 .div(1e18)
                                                 .div(pointMultiplier);
 
@@ -704,7 +767,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         returns(uint256)
     {
         uint256 newRewardPerToken = bonusRewardsPerTokenPoints.sub(stakers[_user].lastBonusRewardPoints);
-        uint256 bonusRewards = stakers[_user].balance.mul(newRewardPerToken)
+        uint256 bonusRewards = getStakedUserValue(_user).mul(newRewardPerToken)
                                                 .div(1e18)
                                                 .div(pointMultiplier);
 
@@ -721,7 +784,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         returns(uint256)
     {
         uint256 newRewardPerToken = tokenRewardsPerTokenPoints[_token].sub(stakers[_user].lastTokenRewardPoints[_token]);
-        uint256 rewards = stakers[_user].balance.mul(newRewardPerToken)
+        uint256 rewards = getStakedUserValue(_user).mul(newRewardPerToken)
                                                 .div(1e18)
                                                 .div(pointMultiplier);
 
@@ -743,7 +806,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         view
         returns(uint256 claimableRewards, uint256 pendingRewards)
     {
-        if (stakedMonaTotalForPool == 0) {
+        if (_stakedValueTotalForPool() == 0) {
             return (0,0);
         }
 
@@ -755,10 +818,10 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         uint256 newRewardPerToken = rewardsPerTokenPoints.add(monaRewards
                                                                 .mul(1e18)
                                                                 .mul(pointMultiplier)
-                                                                .div(stakedMonaTotalForPool))
+                                                                .div(_stakedValueTotalForPool()))
                                                          .sub(staker.lastRewardPoints);
 
-        uint256 newRewards = staker.balance.mul(newRewardPerToken)
+        uint256 newRewards = getStakedUserValue(_user).mul(newRewardPerToken)
                                                 .div(1e18)
                                                 .div(pointMultiplier);
 
@@ -783,7 +846,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         view
         returns(uint256 claimableRewards, uint256 pendingRewards)
     {
-        if (stakedMonaTotalForPool == 0) {
+        if (_stakedValueTotalForPool() == 0) {
             return (0,0);
         }
 
@@ -795,10 +858,10 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         uint256 newRewardPerToken = tokenRewardsPerTokenPoints[_token].add(tokenRewards
                                                                 .mul(1e18)
                                                                 .mul(pointMultiplier)
-                                                                .div(stakedMonaTotalForPool))
+                                                                .div(_stakedValueTotalForPool()))
                                                          .sub(staker.lastTokenRewardPoints[_token]);
 
-        uint256 newRewards = staker.balance.mul(newRewardPerToken)
+        uint256 newRewards = getStakedUserValue(_user).mul(newRewardPerToken)
                                                 .div(1e18)
                                                 .div(pointMultiplier);
 
@@ -807,14 +870,11 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         pendingRewards = newRewards.add(staker.tokenRevenueRewardsPending[_token]);
     }
 
-
-
      /*
       * @notice Returns the about of rewards yet to be claimed for bonuses (this currently includes pending and awarded together)
       * @param _user the user we are interested in
       * @dev returns the claimable rewards and pending rewards
       */
-     // TODO stack too deep
     function unclaimedBonusRewards(
         address _user
     )
@@ -823,17 +883,17 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         returns(uint256 claimableRewards, uint256 pendingRewards)
     {
         Staker storage staker = stakers[_user];
-        if (stakedMonaTotalForPool == 0 || !staker.isEarlyRewardsStaker) {
+        if (_stakedValueTotalForPool() == 0 || !staker.isEarlyRewardsStaker) {
             return (0,0);
         }
 
         uint256 monaBonusRewards = rewardsContract.BonusMonaRevenueRewards(lastUpdateTime, _getNow());
 
         uint256 newBonusRewardPerToken = bonusRewardsPerTokenPoints;
-        newBonusRewardPerToken = newBonusRewardPerToken.add(monaBonusRewards.mul(1e18).mul(pointMultiplier).div(earlyStakedMonaTotalForPool));
+        newBonusRewardPerToken = newBonusRewardPerToken.add(monaBonusRewards.mul(1e18).mul(pointMultiplier).div(_earlyStakedValueTotalForPool()));
         newBonusRewardPerToken = newBonusRewardPerToken.sub(staker.lastBonusRewardPoints);
 
-        uint256 newBonusRewards = staker.balance.mul(newBonusRewardPerToken);
+        uint256 newBonusRewards = getStakedUserValue(_user).mul(newBonusRewardPerToken);
         newBonusRewards = newBonusRewards.div(1e18);
         newBonusRewards = newBonusRewards.div(pointMultiplier);
 

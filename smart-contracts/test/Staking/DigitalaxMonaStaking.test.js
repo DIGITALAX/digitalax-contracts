@@ -47,6 +47,7 @@ const {
       );
 
 
+
       this.weth = await WethToken.new(
         { from: minter }
       );
@@ -67,6 +68,7 @@ const {
       this.monaStaking = await DigitalaxMonaStaking.new();
       await this.monaStaking.initialize(
           this.monaToken.address,
+          this.monaToken.address, // TODO fix this
           this.accessControls.address,
           constants.ZERO_ADDRESS,
       );
@@ -98,6 +100,7 @@ const {
         await expectRevert(
             monaStaking2.initialize(
                 constants.ZERO_ADDRESS,
+                constants.ZERO_ADDRESS,
                 this.accessControls.address,
                 constants.ZERO_ADDRESS,
                 {from: admin}
@@ -109,6 +112,7 @@ const {
         const monaStaking2 = await DigitalaxMonaStaking.new();
         await expectRevert(
             monaStaking2.initialize(
+                this.monaToken.address,
                 this.monaToken.address,
                 constants.ZERO_ADDRESS,
                 constants.ZERO_ADDRESS,
@@ -519,7 +523,7 @@ const {
 
       it('Successfully can test limit of maximum number of tokens', async () => {
         let wethTokens = [];
-        for (let i = 0; i < 200; i += 1) {
+        for (let i = 0; i < 50; i += 1) {
           newweth = await WethToken.new(
               { from: minter }
           );
@@ -542,6 +546,8 @@ const {
         const rewardAfterBalanceWeth = await wethTokens[0].balanceOf(this.digitalaxRewards.address);
         expect(rewardAfterBalanceWeth).to.be.bignumber.equals(TWO_HUNDRED);
         await this.monaStaking.stake(ONE_TOKEN, {from: staker});
+
+
 
         const beforeBalanceWeth = await wethTokens[0].balanceOf(staker);
         expect(beforeBalanceWeth).to.be.bignumber.equals(new BN('0'));
