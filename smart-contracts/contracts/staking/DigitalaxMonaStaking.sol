@@ -515,24 +515,39 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         }
 
         updateReward(_user);
+        if(!_isLPToken){
+            staker.balance = staker.balance.add(_amount);
+            stakedMonaTotalForPool = stakedMonaTotalForPool.add(_amount);
 
-        staker.balance = staker.balance.add(_amount);
+            if(staker.isEarlyRewardsStaker){
+                earlyStakedMonaTotalForPool = earlyStakedMonaTotalForPool.add(_amount);
+            }
+            // TODO check something like this
+             require(IERC20(monaToken).allowance(_user, address(this)) >= _amount, "ERC20 allowance not approved");
 
-        stakedMonaTotalForPool = stakedMonaTotalForPool.add(_amount);
+            IERC20(monaToken).safeTransferFrom(
+                address(_user),
+                address(this),
+                _amount
+                );
+            emit Staked(_user, _amount);
+        } else {
+            staker.lpBalance = staker.lpBalance.add(_amount);
+            stakedLPTotalForPool = stakedLPTotalForPool.add(_amount);
 
-        if(staker.isEarlyRewardsStaker){
-            earlyStakedMonaTotalForPool = earlyStakedMonaTotalForPool.add(_amount);
+            if(staker.isEarlyRewardsStaker){
+                earlyStakedLPTotalForPool = earlyStakedLPTotalForPool.add(_amount);
+            }
+            // TODO check something like this
+             require(IERC20(monaToken).allowance(_user, address(this)) >= _amount, "ERC20 allowance not approved");
+
+            IERC20(lpToken).safeTransferFrom(
+                address(_user),
+                address(this),
+                _amount
+                );
+            emit StakedLP(_user, _amount);
         }
-
-        // TODO check something like this
-        // require(IERC20(monaToken).allowance(_msgSender(), address(this)) >= _amount, "ERC20 allowance not approved");
-
-        IERC20(monaToken).safeTransferFrom(
-            address(_user),
-            address(this),
-            _amount
-        );
-        emit Staked(_user, _amount);
     }
 
     /*
@@ -575,32 +590,54 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         internal
     {
     // TODO Set up lp logics
-
-        require(
-            stakers[_user].balance >= _amount,
-            "DigitalaxMonaStaking._unstake: Sender must have staked tokens"
-        );
         Staker storage staker = stakers[_user];
+        if(!_isLPToken){
+            require(
+                staker.balance >= _amount,
+                "DigitalaxMonaStaking._unstake: Sender must have staked tokens"
+            );
 
-        staker.balance = staker.balance.sub(_amount);
+            staker.balance = staker.balance.sub(_amount);
+            stakedMonaTotalForPool = stakedMonaTotalForPool.sub(_amount);
 
-        stakedMonaTotalForPool = stakedMonaTotalForPool.sub(_amount);
+            if(staker.isEarlyRewardsStaker && _amount <= earlyStakedMonaTotalForPool){
+                earlyStakedMonaTotalForPool = earlyStakedMonaTotalForPool.sub(_amount);
+            }
 
-        if(staker.isEarlyRewardsStaker && _amount <= earlyStakedMonaTotalForPool){
-            earlyStakedMonaTotalForPool = earlyStakedMonaTotalForPool.sub(_amount);
+            uint256 tokenBal = IERC20(monaToken).balanceOf(address(this));
+            if (_amount > tokenBal) {
+                IERC20(monaToken).safeTransfer(address(_user), tokenBal);
+            } else {
+                IERC20(monaToken).safeTransfer(address(_user), _amount);
+            }
+            emit Unstaked(_user, _amount);
+
+        } else {
+            require(
+                staker.lpBalance >= _amount,
+                "DigitalaxMonaStaking._unstake: Sender must have staked tokens"
+            );
+
+            staker.lpBalance = staker.lpBalance.sub(_amount);
+            stakedLPTotalForPool = stakedMonaTotalForPool.sub(_amount);
+
+            if(staker.isEarlyRewardsStaker && _amount <= earlyStakedLPTotalForPool){
+                earlyStakedLPTotalForPool = earlyStakedLPTotalForPool.sub(_amount);
+            }
+
+
+            uint256 tokenBal = IERC20(lpToken).balanceOf(address(this));
+            if (_amount > tokenBal) {
+                IERC20(lpToken).safeTransfer(address(_user), tokenBal);
+            } else {
+                IERC20(lpToken).safeTransfer(address(_user), _amount);
+            }
+            emit UnstakedLP(_user, _amount);
         }
 
         if (staker.balance == 0 && staker.lpBalance == 0) {
-            delete stakers[_user]; // TODO figure out if this is still valid
+            delete stakers[_user]; // TODO check this closely
         }
-
-        uint256 tokenBal = IERC20(monaToken).balanceOf(address(this));
-        if (_amount > tokenBal) {
-            IERC20(monaToken).safeTransfer(address(_user), tokenBal);
-        } else {
-            IERC20(monaToken).safeTransfer(address(_user), _amount);
-        }
-        emit Unstaked(_user, _amount);
     }
 
     /*
