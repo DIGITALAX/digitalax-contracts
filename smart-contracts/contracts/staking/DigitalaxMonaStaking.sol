@@ -961,8 +961,8 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
                     rewardPayableAmount = tokenRewardBal;
                 }
 
-                IERC20(_tokens[i]).transfer(_user, payableAmount);
-                emit TokenRevenueRewardPaid(_tokens[i], _user, payableAmount);
+                IERC20(_tokens[i]).transfer(_user, rewardPayableAmount);
+                emit TokenRevenueRewardPaid(_tokens[i], _user, rewardPayableAmount);
             }
 
 
