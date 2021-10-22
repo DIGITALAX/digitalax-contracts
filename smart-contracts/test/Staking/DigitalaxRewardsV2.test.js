@@ -66,6 +66,7 @@ contract('DigitalaxRewardsV2', (accounts) => {
     this.monaStaking = await DigitalaxMonaStaking.new();
     await this.monaStaking.initialize(
         this.monaToken.address,
+        this.monaToken.address, // TODO fix this
         this.accessControls.address,
         constants.ZERO_ADDRESS
     );
@@ -507,58 +508,44 @@ contract('DigitalaxRewardsV2', (accounts) => {
       });
     });
   })
-  //
-  // describe('Gets staked mona', () => {
-  //   beforeEach(async () => {
-  //     console.log('1');
-  //     await this.monaStaking.initMonaStakingPool(
-  //         100,
-  //         10,
-  //         {from: admin}
-  //     );
-  //
-  //     console.log('1');
-  //     await this.monaToken.transfer(staker, TWO_ETH, { from: minter });
-  //     await this.monaToken.transfer(newRecipient, THREE_ETH, { from: minter });
-  //
-  //     console.log('1');
-  //     await this.monaToken.approve(this.monaStaking.address, TEN_ETH, {from: staker});
-  //     await this.monaToken.approve(this.monaStaking.address, TEN_ETH, {from: newRecipient});
-  //
-  //     console.log('1');
-  //     await this.monaStaking.stake(TWO_ETH, {from: staker});
-  //     await this.monaStaking.stake(THREE_ETH, {from: newRecipient});
-  //
-  //     console.log('1');
-  //     await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('5')), {from: admin});
-  //     await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, [], [], {from: admin});
-  //     await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, [], [], {from: admin});
-  //
-  //   });
-  //
-  //   describe('getMonaStakedEthTotal()', () => {
-  //     it('successfully queries getMonaStakedEthTotal', async () => {
-  //       const staked = await this.digitalaxRewards.getMonaStakedEthTotal({from: staker});
-  //       // 10 mona per eth
-  //       expect(staked).to.be.bignumber.equal(ether('5')); // TODO REVIEW
-  //     });
-  //     // TODO ADD BONUSES
-  //   });
-  //   describe('getMonaDailyAPY()', () => {
-  //     it('successfully queries getMonaDailyAPY', async () => {
-  //       await this.digitalaxRewards.setNowOverride('1209600'); // third week start
-  //       const rewardResult = await this.digitalaxRewards.MonaRevenueRewards(1209540, 1209600, {from: staker});
-  //       const ethPerMona = await this.digitalaxRewards.getEthPerMona({from: staker});
-  //
-  //       const apy = await this.digitalaxRewards.getMonaDailyAPY(0, {from: staker});
-  //
-  //       const totalRewardsInEth = ((rewardResult.mul(ethPerMona).div(ether('1'))));
-  //
-  //       const totalStaked = (TWO_ETH.add(THREE_ETH)).mul(ethPerMona).div(ether('1'));
-  //       expect(apy).to.be.bignumber.equal((totalRewardsInEth.mul(new BN('52560000'))).mul(ether('1')).div(totalStaked)); // TODO double check
-  //     });
-  //   });
-  // });
+
+  describe('Gets staked mona', () => {
+    beforeEach(async () => {
+      console.log('1');
+      await this.monaStaking.initMonaStakingPool(
+          100,
+          10,
+          {from: admin}
+      );
+
+      console.log('1');
+      await this.monaToken.transfer(staker, TWO_ETH, { from: minter });
+      await this.monaToken.transfer(newRecipient, THREE_ETH, { from: minter });
+
+      console.log('1');
+      await this.monaToken.approve(this.monaStaking.address, TEN_ETH, {from: staker});
+      await this.monaToken.approve(this.monaStaking.address, TEN_ETH, {from: newRecipient});
+
+      console.log('1');
+      await this.monaStaking.stake(TWO_ETH, {from: staker});
+      await this.monaStaking.stake(THREE_ETH, {from: newRecipient});
+
+      console.log('1');
+      await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('5')), {from: admin});
+      await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, [], [], {from: admin});
+      await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, [], [], {from: admin});
+
+    });
+
+    describe('getMonaStakedEthTotal()', () => {
+      it('successfully queries getMonaStakedEthTotal', async () => {
+        const staked = await this.digitalaxRewards.getMonaStakedEthTotal({from: staker});
+        // 10 mona per eth
+        expect(staked).to.be.bignumber.equal(ether('5')); // TODO REVIEW
+      });
+      // TODO ADD BONUSES
+    });
+  });
 
 
   async function getGasCosts(receipt) {
