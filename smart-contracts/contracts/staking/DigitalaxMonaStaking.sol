@@ -8,6 +8,9 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./interfaces/IDigitalaxRewards.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "hardhat/console.sol";
+import "./interfaces/UniswapV2Library.sol";
+import "./interfaces/IUniswapV2Pair.sol";
+import "./interfaces/IWETH9.sol";
 import "@openzeppelin/contracts/proxy/Initializable.sol";
 
 
@@ -15,7 +18,6 @@ import "@openzeppelin/contracts/proxy/Initializable.sol";
  * @title Digitalax Staking
  * @dev Stake MONA tokens, earn MONA on the Digitalax platform
  * @author DIGITALAX CORE TEAM
- * @author Based on original staking contract by Adrian Guerrera (deepyr)
  */
 
 
@@ -25,6 +27,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
 
     address public monaToken; // MONA ERC20s
     address public lpToken; // LP ERC20s
+    IWETH public USDT;
 
     uint256 constant SECONDS_IN_A_DAY = 86400;
     DigitalaxAccessControls public accessControls;
@@ -1048,5 +1051,22 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
             "DigitalaxMonaStaking.reclaimETH: Sender must be admin"
         );
         _msgSender().transfer(address(this).balance);
+    }
+
+    function getLPTokenPerEthUnit(uint ethAmt) public view  returns (uint liquidity){
+        (uint256 reserveUsdt, uint256 reserveTokens) = getPairReserves();
+        uint256 outTokens = UniswapV2Library.getAmountOut(ethAmt.div(2), reserveUsdt, reserveTokens);
+        uint _totalSupply =  IUniswapV2Pair(lpToken).totalSupply();
+
+        (address token0, ) = UniswapV2Library.sortTokens(address(USDT), address(monaToken));
+        (uint256 amount0, uint256 amount1) = token0 == address(monaToken) ? (outTokens, ethAmt.div(2)) : (ethAmt.div(2), outTokens);
+        (uint256 _reserve0, uint256 _reserve1) = token0 == address(monaToken) ? (reserveTokens, reserveUsdt) : (reserveUsdt, reserveTokens);
+        liquidity = min(amount0.mul(_totalSupply) / _reserve0, amount1.mul(_totalSupply) / _reserve1);
+    }
+
+    function getPairReserves() internal view returns (uint256 usdtReserves, uint256 tokenReserves) {
+        (address token0,) = UniswapV2Library.sortTokens(address(USDT), address(monaToken));
+        (uint256 reserve0, uint reserve1,) = IUniswapV2Pair(lpToken).getReserves();
+        (usdtReserves, tokenReserves) = token0 == address(monaToken) ? (reserve1, reserve0) : (reserve0, reserve1);
     }
 }
