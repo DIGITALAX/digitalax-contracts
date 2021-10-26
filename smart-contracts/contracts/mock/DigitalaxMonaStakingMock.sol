@@ -14,4 +14,14 @@ contract DigitalaxMonaStakingMock is DigitalaxMonaStaking {
     function _getNow() internal override view returns (uint256) {
         return nowOverride;
     }
+
+    // Temporary to test
+    function monaValue(uint256 lpQuantity)
+        internal
+        override
+        view
+        returns (uint256)
+    {
+        return lpQuantity;
+    }
 }
