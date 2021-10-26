@@ -67,6 +67,7 @@ contract('DigitalaxRewardsV2', (accounts) => {
     await this.monaStaking.initialize(
         this.monaToken.address,
         this.monaToken.address, // TODO fix this
+        this.monaToken.address, // TODO fix this
         this.accessControls.address,
         constants.ZERO_ADDRESS
     );

@@ -69,6 +69,7 @@ const {
       await this.monaStaking.initialize(
           this.monaToken.address,
           this.monaToken.address, // TODO fix this
+          this.monaToken.address, // TODO fix this
           this.accessControls.address,
           constants.ZERO_ADDRESS,
       );
@@ -101,6 +102,7 @@ const {
             monaStaking2.initialize(
                 constants.ZERO_ADDRESS,
                 constants.ZERO_ADDRESS,
+                constants.ZERO_ADDRESS,
                 this.accessControls.address,
                 constants.ZERO_ADDRESS,
                 {from: admin}
@@ -112,6 +114,7 @@ const {
         const monaStaking2 = await DigitalaxMonaStaking.new();
         await expectRevert(
             monaStaking2.initialize(
+                this.monaToken.address,
                 this.monaToken.address,
                 this.monaToken.address,
                 constants.ZERO_ADDRESS,

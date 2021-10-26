@@ -223,7 +223,7 @@ contract DigitalaxRewardsV2 is Initializable, BaseRelayRecipient {
         );
 
         require(
-            _week > getCurrentWeek(),
+            _week >= getCurrentWeek(),
             "DigitalaxRewardsV2.depositRevenueSharingRewards: The rewards generated should be set for the future weeks"
         );
 

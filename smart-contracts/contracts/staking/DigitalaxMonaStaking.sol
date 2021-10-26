@@ -27,7 +27,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
 
     address public monaToken; // MONA ERC20s
     address public lpToken; // LP ERC20s
-    IWETH public USDT;
+    address public usdtToken; // USDT ERC20 in pair
 
     uint256 constant SECONDS_IN_A_DAY = 86400;
     DigitalaxAccessControls public accessControls;
@@ -66,24 +66,24 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         bool isEarlyRewardsStaker;
     }
 
-    mapping (address => Staker) stakers;
+    mapping (address => Staker) public stakers;
 
-    uint256 stakedMonaTotalForPool;
-    uint256 stakedLPTotalForPool;
+    uint256 public stakedMonaTotalForPool;
+    uint256 public stakedLPTotalForPool;
 
-    uint256 earlyStakedMonaTotalForPool;
-    uint256 earlyStakedLPTotalForPool;
+    uint256 public earlyStakedMonaTotalForPool;
+    uint256 public earlyStakedLPTotalForPool;
 
-    uint256 lastUpdateTime;
-    uint256 rewardsPerTokenPoints;
-    uint256 bonusRewardsPerTokenPoints;
-    mapping (address => uint256) tokenRewardsPerTokenPoints;
+    uint256 public lastUpdateTime;
+    uint256 public rewardsPerTokenPoints;
+    uint256 public bonusRewardsPerTokenPoints;
+    mapping (address => uint256) public tokenRewardsPerTokenPoints;
 
-    uint256 currentNumberOfStakersInPool;
-    uint256 maximumNumberOfStakersInPool;
+    uint256 public currentNumberOfStakersInPool;
+    uint256 public maximumNumberOfStakersInPool;
 
-    uint256 maximumNumberOfEarlyRewardsUsers;
-    uint256 currentNumberOfEarlyRewardsUsers;
+    uint256 public maximumNumberOfEarlyRewardsUsers;
+    uint256 public currentNumberOfEarlyRewardsUsers;
 
     uint256 constant pointMultiplier = 10e32;
 
@@ -131,16 +131,18 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
     event EmergencyUnstake(address indexed user, uint256 amount);
     event EmergencyUnstakeLP(address indexed user, uint256 amount);
     event MonaTokenUpdated(address indexed oldMonaToken, address newMonaToken);
+    event UsdtTokenUpdated(address indexed oldUsdtToken, address newUsdtToken);
     event LPTokenUpdated(address indexed oldLPToken, address newLPToken);
     event RewardsTokenUpdated(address indexed oldRewardsToken, address newRewardsToken );
 
     event ReclaimedERC20(address indexed token, uint256 amount);
 
-    function initialize(address _monaToken, address _lpToken, DigitalaxAccessControls _accessControls, address _trustedForwarder)  public initializer {
+    function initialize(address _monaToken, address _lpToken, address _usdtToken, DigitalaxAccessControls _accessControls, address _trustedForwarder)  public initializer {
         require(_monaToken != address(0), "DigitalaxMonaStaking: Invalid Mona Token");
         require(address(_accessControls) != address(0), "DigitalaxMonaStaking: Invalid Access Controls");
         monaToken = _monaToken;
         lpToken = _lpToken;
+        usdtToken = _usdtToken;
         accessControls = _accessControls;
         trustedForwarder = _trustedForwarder;
         tokensClaimable = true;
@@ -242,6 +244,24 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         monaToken = _addr;
         emit MonaTokenUpdated(oldAddr, _addr);
     }
+
+    /*
+     * @notice Lets admin set the Mona Token
+     */
+    function setUsdtToken(
+        address _addr
+    )
+        external
+    {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxMonaStaking.setMonaToken: Sender must be admin"
+        );
+        require(_addr != address(0), "DigitalaxMonaStaking.setMonaToken: Invalid Mona Token");
+        address oldAddr = usdtToken;
+        usdtToken = _addr;
+        emit UsdtTokenUpdated(oldAddr, _addr);
+    }
     /*
      * @notice Lets admin set the Mona Token
      */
@@ -302,7 +322,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         view
         returns (uint256 balance)
         {
-         return stakers[_user].balance.add(stakers[_user].lpBalance);
+         return stakers[_user].balance.add(monaValue(stakers[_user].lpBalance));
     }
 
     /* @notice Getter functions for Staking contract
@@ -412,7 +432,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         view
         returns (uint256)
     {
-        return stakedMonaTotalForPool.add(stakedLPTotalForPool);
+        return stakedMonaTotalForPool.add(monaValue(stakedLPTotalForPool));
     }
 
     /*
@@ -424,7 +444,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         view
         returns (uint256)
     {
-        return earlyStakedMonaTotalForPool.add(earlyStakedLPTotalForPool);
+        return earlyStakedMonaTotalForPool.add(monaValue(earlyStakedLPTotalForPool));
     }
 
 
@@ -443,8 +463,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
      * @notice Stake MONA Tokens and earn rewards.
      */
     function stakeLP(
-        uint256 _amount,
-        bool _isLPToken
+        uint256 _amount
     )
         external
     {
@@ -1053,20 +1072,32 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         _msgSender().transfer(address(this).balance);
     }
 
-    function getLPTokenPerEthUnit(uint ethAmt) public view  returns (uint liquidity){
+    function getLPTokenPerMonaUnit(uint monaAmt) public view  returns (uint liquidity){
         (uint256 reserveUsdt, uint256 reserveTokens) = getPairReserves();
-        uint256 outTokens = UniswapV2Library.getAmountOut(ethAmt.div(2), reserveUsdt, reserveTokens);
+        uint256 outTokens = UniswapV2Library.getAmountOut(monaAmt.div(2), reserveTokens, reserveUsdt);
         uint _totalSupply =  IUniswapV2Pair(lpToken).totalSupply();
 
-        (address token0, ) = UniswapV2Library.sortTokens(address(USDT), address(monaToken));
-        (uint256 amount0, uint256 amount1) = token0 == address(monaToken) ? (outTokens, ethAmt.div(2)) : (ethAmt.div(2), outTokens);
-        (uint256 _reserve0, uint256 _reserve1) = token0 == address(monaToken) ? (reserveTokens, reserveUsdt) : (reserveUsdt, reserveTokens);
+        (address token0, ) = UniswapV2Library.sortTokens(address(usdtToken), address(monaToken));
+        (uint256 amount0, uint256 amount1) = token0 == address(monaToken) ? ( monaAmt.div(2), outTokens) : (outTokens, monaAmt.div(2));
+        (uint256 _reserve0, uint256 _reserve1) = token0 == address(monaToken) ? (reserveUsdt, reserveTokens) : (reserveTokens, reserveUsdt);
         liquidity = min(amount0.mul(_totalSupply) / _reserve0, amount1.mul(_totalSupply) / _reserve1);
     }
 
     function getPairReserves() internal view returns (uint256 usdtReserves, uint256 tokenReserves) {
-        (address token0,) = UniswapV2Library.sortTokens(address(USDT), address(monaToken));
+        (address token0,) = UniswapV2Library.sortTokens(address(usdtToken), address(monaToken));
         (uint256 reserve0, uint reserve1,) = IUniswapV2Pair(lpToken).getReserves();
         (usdtReserves, tokenReserves) = token0 == address(monaToken) ? (reserve1, reserve0) : (reserve0, reserve1);
+    }
+
+    /// @dev Use quickswap to get the conversion to monaValue
+    function monaValue(uint256 lpQuantity)
+        internal
+        virtual
+        view
+        returns (uint256)
+    {
+
+        uint256 lpPerEth = getLPTokenPerMonaUnit(1e18);
+        return lpQuantity.mul(1e18).div(lpPerEth);
     }
 }

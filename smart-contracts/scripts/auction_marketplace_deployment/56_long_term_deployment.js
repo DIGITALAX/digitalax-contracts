@@ -16,21 +16,29 @@ async function main() {
     console.log('Deploying the long term staking contracts');
 
     // Some constants setup
-    const accessControlsAddress = "0xf7580d46080E1ce832aC44cF7224b906D44110B4";
-    const trustedForwarderAddress = "0x9399BB24DBB5C4b782C70c2969F58716Ebbd6a3b";
+    // const accessControlsAddress = "0xf7580d46080E1ce832aC44cF7224b906D44110B4";
+    // const trustedForwarderAddress = "0x9399BB24DBB5C4b782C70c2969F58716Ebbd6a3b";
+
+    const accessControlsAddress = "0xbe5c84e6b036cb41a7a6b5008b9427a5f4f1c9f5";
+    const trustedForwarderAddress = "0x86C80a8aa58e0A4fa09A69624c31Ab2a6CAD56b8";
 
     // // Deploy oracle for deco (rewards token) price
     // const DecoOracleFactory = await ethers.getContractFactory("DecoOracle");
     // const decoOracle = await DecoOracleFactory.deploy( '315400000', '120', '1',  accessControlsAddress);
 
-    const monaTokenAddress = '0xefd3d060ddcfed7903806503440db1089031af3a';
-    const decoTokenAddress = '0xBCD79f68a91500a2Cc7C29e3AaA80046cDa29833';
-    const monaOracleAddress = '0x79Af5034F575eAA57DF52E00BAE80543e5Dca6B7';
+    // const monaTokenAddress = '0xefd3d060ddcfed7903806503440db1089031af3a';
+    // const decoTokenAddress = '0xBCD79f68a91500a2Cc7C29e3AaA80046cDa29833';
+
+    const monaTokenAddress = '0x6968105460f67c3BF751bE7C15f92F5286Fd0CE5';
+    const lpTokenAddress = '0x856ad56defbb685db8392d9e54441df609bc5ce1';
+    const usdtTokenAddress = '0xc2132d05d31c914a87c6611c10748aeb04b58e8f';
 
     const MonaStakingFactory = await ethers.getContractFactory("DigitalaxMonaStaking");
     const monaStakingDeploy = await upgrades.deployProxy(MonaStakingFactory,
         [
             monaTokenAddress,
+            lpTokenAddress,
+            usdtTokenAddress,
             accessControlsAddress,
             trustedForwarderAddress
         ], {initializer: 'initialize'});
@@ -42,7 +50,6 @@ async function main() {
               monaTokenAddress,
               accessControlsAddress,
               monaStaking.address,
-             //monaOracleAddress,
                 trustedForwarderAddress,
                 0,
                 0,
@@ -58,12 +65,16 @@ async function main() {
     const updateRewardContract = await monaStaking.setRewardsContract(instanceStakingRewards.address);
     await updateRewardContract.wait();
 
-    console.log('add extra tokens');
-    const extraTokens = await instanceStakingRewards.addRewardTokens([decoTokenAddress]);
-    await extraTokens.wait();
+    console.log('init staking pool contract');
+    const initStakingPool = await monaStaking.initMonaStakingPool(100000000, 10);
+    await initStakingPool.wait();
+
+    // console.log('add extra tokens');
+    // const extraTokens = await instanceStakingRewards.addRewardTokens([decoTokenAddress]);
+    // await extraTokens.wait();
 
     console.log('start time');
-    const startT = await instanceStakingRewards.setStartTime(1634124053);
+    const startT = await instanceStakingRewards.setStartTime(1633724100 ); // TODO double check start time sets correctly
     await startT.wait();
 
     console.log(`The rewards: ${instanceStakingRewards.address} `);
