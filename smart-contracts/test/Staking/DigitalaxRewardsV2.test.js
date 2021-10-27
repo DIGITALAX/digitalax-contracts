@@ -304,13 +304,6 @@ contract('DigitalaxRewardsV2', (accounts) => {
         );
       });
 
-      it('fails when not a future week', async () => {
-        await expectRevert(
-            this.digitalaxRewards.depositRevenueSharingRewards( 0, TWENTY_TOKENS, TWENTY_TOKENS, [], [], {from: admin}),
-            'DigitalaxRewardsV2.depositRevenueSharingRewards: The rewards generated should be set for the future weeks'
-        );
-      });
-
       it('fails if insufficient mona approval', async () => {
         await this.monaToken.approve(this.digitalaxRewards.address, 0, {from: admin});
         await expectRevert(
