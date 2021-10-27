@@ -1074,7 +1074,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
 
     function getLPTokenPerMonaUnit(uint monaAmt) public view  returns (uint liquidity){
         (uint256 reserveUsdt, uint256 reserveTokens) = getPairReserves();
-        uint256 outTokens = UniswapV2Library.getAmountOut(monaAmt.div(2), reserveTokens, reserveUsdt);
+        uint256 outTokens = UniswapV2Library.getAmountOut(monaAmt.div(2), reserveTokens, reserveUsdt).mul(1e10);
         uint _totalSupply =  IUniswapV2Pair(lpToken).totalSupply();
 
         (address token0, ) = UniswapV2Library.sortTokens(address(usdtToken), address(monaToken));
