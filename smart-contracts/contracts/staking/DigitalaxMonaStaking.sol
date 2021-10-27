@@ -1097,7 +1097,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         returns (uint256)
     {
 
-        uint256 lpPerEth = getLPTokenPerMonaUnit(1e18);
-        return lpQuantity.mul(1e18).div(lpPerEth);
+        uint256 lpPerMona = getLPTokenPerMonaUnit(1e18);
+        return lpQuantity.mul(1e18).div(lpPerMona);
     }
 }
