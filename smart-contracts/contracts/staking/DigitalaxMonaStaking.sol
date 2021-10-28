@@ -544,7 +544,7 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
             if(staker.isEarlyRewardsStaker){
                 earlyStakedMonaTotalForPool = earlyStakedMonaTotalForPool.add(_amount);
             }
-            // TODO check something like this
+
              require(IERC20(monaToken).allowance(_user, address(this)) >= _amount, "ERC20 allowance not approved");
 
             IERC20(monaToken).safeTransferFrom(
@@ -560,8 +560,8 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
             if(staker.isEarlyRewardsStaker){
                 earlyStakedLPTotalForPool = earlyStakedLPTotalForPool.add(_amount);
             }
-            // TODO check something like this
-             require(IERC20(monaToken).allowance(_user, address(this)) >= _amount, "ERC20 allowance not approved");
+
+             require(IERC20(lpToken).allowance(_user, address(this)) >= _amount, "ERC20 allowance not approved");
 
             IERC20(lpToken).safeTransferFrom(
                 address(_user),
