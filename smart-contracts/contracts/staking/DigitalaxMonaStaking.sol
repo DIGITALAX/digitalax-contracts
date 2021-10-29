@@ -797,27 +797,6 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
     }
 
     /*
-     * @dev The rewards are dynamic and normalised from the other pools
-     * @dev This gets the rewards from each of the periods as one multiplier
-     */
-    function extraTokenRewardsOwing(
-        address _user,
-        address _token
-    )
-        public
-        view
-        returns(uint256)
-    {
-        uint256 newRewardPerToken = tokenRewardsPerTokenPoints[_token].sub(stakers[_user].lastTokenRewardPoints[_token]);
-        uint256 rewards = getStakedUserValue(_user).mul(newRewardPerToken)
-                                                .div(1e18)
-                                                .div(pointMultiplier);
-
-
-        return rewards;
-    }
-
-    /*
      * @dev The bonus rewards are dynamic and normalised from the other pools
      * @dev This gets the rewards from each of the periods as one multiplier
      */
