@@ -255,9 +255,9 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
     {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxMonaStaking.setMonaToken: Sender must be admin"
+            "DigitalaxMonaStaking.setUsdtToken: Sender must be admin"
         );
-        require(_addr != address(0), "DigitalaxMonaStaking.setMonaToken: Invalid Mona Token");
+        require(_addr != address(0), "DigitalaxMonaStaking.setUsdtToken: Invalid USDT Token");
         address oldAddr = usdtToken;
         usdtToken = _addr;
         emit UsdtTokenUpdated(oldAddr, _addr);
@@ -272,9 +272,9 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
     {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxMonaStaking.setMonaToken: Sender must be admin"
+            "DigitalaxMonaStaking.setLPToken: Sender must be admin"
         );
-        require(_addr != address(0), "DigitalaxMonaStaking.setMonaToken: Invalid Mona Token");
+        require(_addr != address(0), "DigitalaxMonaStaking.setLPToken: Invalid LP Token");
         address oldAddr = lpToken;
         lpToken = _addr;
         emit LPTokenUpdated(oldAddr, _addr);
@@ -554,7 +554,10 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
                 );
             emit Staked(_user, _amount);
         } else {
+        console.log("The staker lp balance is %s", staker.lpBalance);
             staker.lpBalance = staker.lpBalance.add(_amount);
+
+        console.log("The staker lp balance is %s", staker.lpBalance);
             stakedLPTotalForPool = stakedLPTotalForPool.add(_amount);
 
             if(staker.isEarlyRewardsStaker){
@@ -589,12 +592,10 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
      * @notice Unstake LP Tokens.
      */
     function unstakeLP(
-        uint256 _amount,
-        bool _isLPToken
+        uint256 _amount
     )
         external
     {
-
         _claimReward(_msgSender());
         _unstake(_msgSender(), _amount, true);
     }
@@ -635,13 +636,15 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
             emit Unstaked(_user, _amount);
 
         } else {
+        console.log("the balance is %s", staker.lpBalance);
+        console.log("the amount is %s", _amount);
             require(
                 staker.lpBalance >= _amount,
-                "DigitalaxMonaStaking._unstake: Sender must have staked tokens"
+                "DigitalaxMonaStaking._unstake: Sender must have lp staked tokens"
             );
 
             staker.lpBalance = staker.lpBalance.sub(_amount);
-            stakedLPTotalForPool = stakedMonaTotalForPool.sub(_amount);
+            stakedLPTotalForPool = stakedLPTotalForPool.sub(_amount);
 
             if(staker.isEarlyRewardsStaker && _amount <= earlyStakedLPTotalForPool){
                 earlyStakedLPTotalForPool = earlyStakedLPTotalForPool.sub(_amount);
@@ -1054,7 +1057,11 @@ contract DigitalaxMonaStaking is Initializable, BaseRelayRecipient  {
         );
         require(
             _tokenAddress != address(monaToken),
-            "DigitalaxMonaStaking.reclaimERC20: Cannot withdraw the rewards token"
+            "DigitalaxMonaStaking.reclaimERC20: Cannot withdraw the mona token"
+        );
+        require(
+            _tokenAddress != address(lpToken),
+            "DigitalaxMonaStaking.reclaimERC20: Cannot withdraw the lp token"
         );
         IERC20(_tokenAddress).transfer(_msgSender(), _tokenAmount);
         emit ReclaimedERC20(_tokenAddress, _tokenAmount);
