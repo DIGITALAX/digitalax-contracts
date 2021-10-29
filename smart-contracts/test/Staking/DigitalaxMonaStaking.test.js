@@ -249,6 +249,7 @@ const {
           await this.weth.transfer(this.monaStaking.address, TWO_HUNDRED, {from: minter});
       });
 
+
       describe('reclaimERC20()', async () => {
         describe('validation', async () => {
           it('cannot reclaim erc20 if it is not Admin', async () => {
@@ -261,7 +262,7 @@ const {
           it('cannot reclaim rewards token', async () => {
             await expectRevert(
               this.monaStaking.reclaimERC20(this.monaToken.address, ONE_TOKEN, {from: admin}),
-              'DigitalaxMonaStaking.reclaimERC20: Cannot withdraw the rewards token'
+              'DigitalaxMonaStaking.reclaimERC20: Cannot withdraw the mona token'
             );
           });
 
@@ -277,6 +278,49 @@ const {
 
             // Admin receives eth minus gas fees.
             expect(await this.weth.balanceOf(admin)).to.be.bignumber.greaterThan(adminBalanceBeforeReclaim);
+          });
+        });
+      });
+
+      describe('set tokens', async () => {
+        describe('validation', async () => {
+          it('cannot set the usdt token if it is not Admin', async () => {
+            await expectRevert(
+              this.monaStaking.setUsdtToken(this.weth.address, {from: staker}),
+              'DigitalaxMonaStaking.setUsdtToken: Sender must be admin'
+            );
+          });
+          it('cannot set the lp token if it is not Admin', async () => {
+            await expectRevert(
+              this.monaStaking.setLPToken(this.weth.address, {from: staker}),
+              'DigitalaxMonaStaking.setLPToken: Sender must be admin'
+            );
+          });
+          it('cannot set the usdt token to zero', async () => {
+          await expectRevert(
+              this.monaStaking.setUsdtToken(constants.ZERO_ADDRESS, {from: admin}),
+              'DigitalaxMonaStaking.setUsdtToken: Invalid USDT Token'
+            );
+          });
+          it('cannot set the lp token to zero', async () => {
+            await expectRevert(
+              this.monaStaking.setLPToken(constants.ZERO_ADDRESS, {from: admin}),
+              'DigitalaxMonaStaking.setLPToken: Invalid LP Token'
+            );
+          });
+
+          it('cannot reclaim rewards token', async () => {
+            await expectRevert(
+              this.monaStaking.reclaimERC20(this.monaToken.address, ONE_TOKEN, {from: admin}),
+              'DigitalaxMonaStaking.reclaimERC20: Cannot withdraw the mona token'
+            );
+          });
+
+          it('can change lp and usdt token', async () => {
+            await this.monaStaking.setLPToken(this.weth.address, {from: admin});
+            await this.monaStaking.setUsdtToken(this.weth.address, {from: admin});
+            expect(await this.monaStaking.lpToken()).to.be.equal(this.weth.address);
+            expect(await this.monaStaking.usdtToken()).to.be.equal(this.weth.address);
           });
         });
       });
@@ -316,10 +360,46 @@ const {
         expect(await this.monaStaking.getStakedBalance(staker)).to.be.bignumber.equal(ONE_TOKEN);
       });
 
-      it('successfully stake more tokens', async () => {
+      it('successfully stake and unstake more tokens', async () => {
         await this.monaStaking.stake(ONE_TOKEN, {from: staker});
         await this.monaStaking.stake(ONE_TOKEN, {from: staker});
         expect(await this.monaStaking.getStakedBalance(staker)).to.be.bignumber.equal(TWO_TOKEN);
+        await this.monaStaking.unstake(TWO_TOKEN, {from: staker});
+        expect(await this.monaStaking.getStakedBalance(staker)).to.be.bignumber.equal(new BN('0'));
+      });
+      it('successfully stake and unstake more lp tokens (using mona token as erc20)', async () => {
+        await this.monaStaking.stakeLP(ONE_TOKEN, {from: staker});
+        await this.monaStaking.stakeLP(ONE_TOKEN, {from: staker});
+        expect(await this.monaStaking.getStakedLPBalance(staker)).to.be.bignumber.equal(TWO_TOKEN);
+        await this.monaStaking.unstakeLP(TWO_TOKEN, {from: staker});
+        expect(await this.monaStaking.getStakedLPBalance(staker)).to.be.bignumber.equal(new BN('0'));
+      });
+
+      it('successfully stake and emergency unstake the tokens', async () => {
+        await this.monaStaking.stake(ONE_TOKEN, {from: staker});
+        await this.monaStaking.stake(ONE_TOKEN, {from: staker});
+        expect(await this.monaStaking.getStakedBalance(staker)).to.be.bignumber.equal(TWO_TOKEN);
+        await this.monaStaking.emergencyUnstake({from: staker});
+        expect(await this.monaStaking.getStakedBalance(staker)).to.be.bignumber.equal(new BN('0'));
+      });
+      it('successfully stake and emergency unstake the lp tokens (using mona token as erc20)', async () => {
+        await this.monaStaking.stakeLP(ONE_TOKEN, {from: staker});
+        await this.monaStaking.stakeLP(ONE_TOKEN, {from: staker});
+        expect(await this.monaStaking.getStakedLPBalance(staker)).to.be.bignumber.equal(TWO_TOKEN);
+        await this.monaStaking.emergencyUnstakeLP({from: staker});
+        expect(await this.monaStaking.getStakedLPBalance(staker)).to.be.bignumber.equal(new BN('0'));
+      });
+      it('successfully stake all lp tokens (using mona token as erc20)', async () => {
+        await this.monaStaking.stakeAllLP( {from: staker});
+        expect(await this.monaStaking.getStakedLPBalance(staker)).to.be.bignumber.greaterThan(TWO_TOKEN);
+      });
+      it('successfully stake all lp tokens (using mona token as erc20)', async () => {
+        await this.monaStaking.stakeAll( {from: staker});
+        expect(await this.monaStaking.getStakedBalance(staker)).to.be.bignumber.greaterThan(TWO_TOKEN);
+      });
+      it('successfully stake all lp tokens (using mona token as erc20)', async () => {
+        await this.monaStaking.stakeAllLP( {from: staker});
+        expect(await this.monaStaking.getStakedLPBalance(staker)).to.be.bignumber.greaterThan(TWO_TOKEN);
       });
     });
 
