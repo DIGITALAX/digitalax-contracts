@@ -1,0 +1,11 @@
+{
+  "network": "matic",
+  "GuildWhitelistedNFTStakingAddress": "0x8A7D6A39c22F2aD96eDA06AdBA77E4A0a73e40E7",
+  "GuildWhitelistedNFTStakingStartBlock": 19359122,
+  "GuildNFTStakingAddress": "0xf0815348F626B0f4f434CAF9C5984694D85B50A1",
+  "GuildNFTStakingStartBlock": 16610377,
+  "PodeNFTv2Address": "0x6d4d0b9EaCd6197B31Bec250C0aD6ceC98f8b83f",
+  "PodeNFTv2StartBlock": 16153025,
+  "GuildNFTStakingWeightV2Address": "0xE69E1eD04501b1bE9aEb24aa471F68303137a8eA",
+  "GuildNFTStakingWeightV2StartBlock": 19359150
+}
