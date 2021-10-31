@@ -458,7 +458,12 @@ const {
 
         const stakerRewards = await this.monaStaking.unclaimedRewards(staker);
 
+        const minterBonusRewards = await this.monaStaking.unclaimedBonusRewards(minter);
+
+        const stakerBonusRewards = await this.monaStaking.unclaimedBonusRewards(staker);
+
         expect(stakerRewards.claimableRewards).to.be.bignumber.equal(minterRewards.claimableRewards);
+        expect(stakerBonusRewards.claimableRewards).to.be.bignumber.equal(minterBonusRewards.claimableRewards);
       });
     });
 

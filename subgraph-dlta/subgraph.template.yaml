@@ -1,0 +1,116 @@
+specVersion: 0.0.2
+description: Digitalax Smart Contract Indexing
+repository: https://github.com/DIGITALAX/digitalax-contracts/tree/main/subgraph
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: GuildNFTStaking
+    network: "{{network}}"
+    source:
+      address: "{{GuildNFTStakingAddress}}"
+      abi: GuildNFTStaking
+      startBlock: {{GuildNFTStakingStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+      abis:
+        - name: GuildNFTStaking
+          file: ./abis/GuildNFTStaking.json
+      eventHandlers:
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+      file: ./src/GuildNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: GuildWhitelistedNFTStaking
+    network: "{{network}}"
+    source:
+      address: "{{GuildWhitelistedNFTStakingAddress}}"
+      abi: GuildWhitelistedNFTStaking
+      startBlock: {{GuildWhitelistedNFTStakingStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+        - AddWhitelistedTokens
+      abis:
+        - name: GuildWhitelistedNFTStaking
+          file: ./abis/GuildWhitelistedNFTStaking.json
+        - name: ERC721
+          file: ./abis/ERC721.json
+        - name: GuildNFTStakingWeightV2
+          file: ./abis/GuildNFTStakingWeightV2.json
+      eventHandlers:
+        - event: Staked(address,address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+        - event: AddWhitelistedTokens(address[])
+          handler: handleAddWhitelistedTokens
+      file: ./src/GuildWhitelistedNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: PodeNFTv2
+    network: "{{network}}"
+    source:
+      address: "{{PodeNFTv2Address}}"
+      abi: PodeNFTv2
+      startBlock: {{PodeNFTv2StartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: PodeNFTv2
+          file: ./abis/PodeNFTv2.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: TokenPrimarySalePriceSet(indexed uint256,uint256)
+          handler: handleTokenPriceSaleUpdated
+      file: ./src/PodeNFTv2.mapping.ts
+  - kind: ethereum/contract
+    name: GuildNFTStakingWeightV2
+    network: "{{network}}"
+    source:
+      address: "{{GuildNFTStakingWeightV2Address}}"
+      abi: GuildNFTStakingWeightV2
+      startBlock: {{GuildNFTStakingWeightV2StartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - AppraiseGuildMember
+        - WhitelistedNFTReaction
+      abis:
+        - name: GuildNFTStakingWeightV2
+          file: ./abis/GuildNFTStakingWeightV2.json
+      eventHandlers:
+        - event: AppraiseGuildMember(string,address)
+          handler: handleAppraiseGuildMember
+        - event: WhitelistedNFTReaction(string,uint256,address,uint256)
+          handler: handleWhitelistedNFTReaction
+      file: ./src/GuildNFTStakingWeightV2.mapping.ts
