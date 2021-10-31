@@ -10,7 +10,7 @@ dataSources:
     source:
       address: "0x728Af879c3212cEf7a51D7fC296b5e9b7c14dbf6"
       abi: DigitalaxGarmentNFT
-      startBlock: 12226596
+      startBlock: 12226595
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -38,7 +38,7 @@ dataSources:
     source:
       address: "0x9f0A468AeA1e0F080fB7C9f3E1F9774D1bFAf821"
       abi: DigitalaxMaterials
-      startBlock: 12187339
+      startBlock: 12187338
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -67,7 +67,7 @@ dataSources:
     source:
       address: "0x7B2a989c4D1AD1B79a84CE2EB79dA5D8d9C2b7a7"
       abi: DigitalaxGarmentNFTv2
-      startBlock: 12000000
+      startBlock: 13894238
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -95,7 +95,7 @@ dataSources:
     source:
       address: "0x567c7b3364ba2903a80ecbad6c54ba8c0e1a069e"
       abi: DigitalaxMaterialsV2
-      startBlock: 12000000
+      startBlock: 13894111
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -124,7 +124,7 @@ dataSources:
     source:
       address: "0xCED3335378896671C71D6d632a16A474A70A2F38"
       abi: DigitalaxSubscriptionNFT
-      startBlock: 12000000
+      startBlock: 14490566
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -152,7 +152,7 @@ dataSources:
     source:
       address: "0xdd43Fd6f72d0a35abDb6194E97e7b330822e2263"
       abi: DFBundle
-      startBlock: 12000000
+      startBlock: 14490232
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -181,7 +181,7 @@ dataSources:
     source:
       address: "0x196Fd570D49dE7cF8AaB245F63330D6957A9223a"
       abi: DigitalaxAuction
-      startBlock: 12296647
+      startBlock: 12296646
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -230,7 +230,7 @@ dataSources:
     source:
       address: "0x991C2Dc47AB12eF5020876219625A64C422B30d3"
       abi: DigitalaxAuctionV2
-      startBlock: 12000000
+      startBlock: 15337325
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -279,7 +279,7 @@ dataSources:
     source:
       address: "0xBe5C84E6B036cB41a7a6b5008B9427A5F4f1C9f5"
       abi: DigitalaxAccessControls
-      startBlock: 12186276
+      startBlock: 12186275
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -320,7 +320,7 @@ dataSources:
     source:
       address: "0x73D0995D5603C76119db0a801B9e2c1A78e04aDF"
       abi: DigitalaxGarmentCollection
-      startBlock: 12297721
+      startBlock: 12303825
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -343,7 +343,7 @@ dataSources:
     source:
       address: "0x721f7c76e447174141a761Ce3e80Ad88e5E07047"
       abi: DigitalaxGarmentCollectionV2
-      startBlock: 12000000
+      startBlock: 15377450
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -366,7 +366,7 @@ dataSources:
     source:
       address: "0xB0b0859117512410Ec1a6Da6E012Ff35E65543D7"
       abi: DigitalaxMarketplace
-      startBlock: 12297984
+      startBlock: 12339027
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -404,7 +404,7 @@ dataSources:
     source:
       address: "0x8F235A04cC541efF19Fd42EFBfF0FCACAdd09DBC"
       abi: DigitalaxMarketplaceV2
-      startBlock: 11709635
+      startBlock: 15377622
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -442,7 +442,7 @@ dataSources:
     source:
       address: "0x8896E908f942bb293b9B76a3A0cAf2Ff004859c4"
       abi: DigitalaxSubscriptionCollection
-      startBlock: 12000000
+      startBlock: 14491998
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -465,7 +465,7 @@ dataSources:
     source:
       address: "0x3E11cA9933D1236710d4606aEC4a5e3da28aeBcB"
       abi: DigitalaxSubscriptionMarketplace
-      startBlock: 12000000
+      startBlock: 14492134
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -501,32 +501,12 @@ dataSources:
           handler: handleOfferCancelled
       file: ./src/DigitalaxSubscriptionMarketplace.mapping.ts
   - kind: ethereum/contract
-    name: DigitalaxPodePortal
-    network: "matic"
-    source:
-      address: "0x87c3C6B9C917B1732f13d36d6938E4f8802f7c7E"
-      abi: DigitalaxPodePortal
-      startBlock: 12000000
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      entities:
-        - DigitalaxPodePortalMetadataAdded
-      abis:
-        - name: DigitalaxPodePortal
-          file: ./abis/DigitalaxPodePortal.json
-      eventHandlers:
-        - event: DigitalaxPodePortalMetadataAdded(uint256,string)
-          handler: handleMetadataAdded
-      file: ./src/DigitalaxPodePortal.mapping.ts
-  - kind: ethereum/contract
     name: DigitalaxIndex
     network: "matic"
     source:
       address: "0x5394A69A126f3067A988906b57440A25E029Abef"
       abi: DigitalaxIndex
-      startBlock: 12000000
+      startBlock: 16447919
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -564,7 +544,7 @@ dataSources:
     source:
       address: "0xa7cf890C70817D57ea355C2F4B4BF23B064D91F7"
       abi: DigitalaxNFTStaking
-      startBlock: 12000000
+      startBlock: 15296127
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -588,100 +568,12 @@ dataSources:
           handler: handleRewardPaid
       file: ./src/DigitalaxNFTStaking.mapping.ts
   - kind: ethereum/contract
-    name: GuildNFTStaking
-    network: "matic"
-    source:
-      address: "0xf0815348F626B0f4f434CAF9C5984694D85B50A1"
-      abi: GuildNFTStaking
-      startBlock: 12000000
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      entities:
-        - Staked
-        - Unstaked
-        - EmergencyUnstake
-        - RewardPaid
-      abis:
-        - name: GuildNFTStaking
-          file: ./abis/GuildNFTStaking.json
-      eventHandlers:
-        - event: Staked(address,uint256)
-          handler: handleStaked
-        - event: Unstaked(address,uint256)
-          handler: handleUnstaked
-        - event: EmergencyUnstake(indexed address,uint256)
-          handler: handleEmergencyUnstake
-        - event: RewardPaid(indexed address,uint256)
-          handler: handleRewardPaid
-      file: ./src/GuildNFTStaking.mapping.ts
-  - kind: ethereum/contract
-    name: GuildWhitelistedNFTStaking
-    network: "matic"
-    source:
-      address: "0x8A7D6A39c22F2aD96eDA06AdBA77E4A0a73e40E7"
-      abi: GuildWhitelistedNFTStaking
-      startBlock: 12000000
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      entities:
-        - Staked
-        - Unstaked
-        - EmergencyUnstake
-        - RewardPaid
-        - AddWhitelistedTokens
-      abis:
-        - name: GuildWhitelistedNFTStaking
-          file: ./abis/GuildWhitelistedNFTStaking.json
-        - name: ERC721
-          file: ./abis/ERC721.json
-        - name: GuildNFTStakingWeightV2
-          file: ./abis/GuildNFTStakingWeightV2.json
-      eventHandlers:
-        - event: Staked(address,address,uint256)
-          handler: handleStaked
-        - event: Unstaked(address,address,uint256)
-          handler: handleUnstaked
-        - event: EmergencyUnstake(indexed address,address,uint256)
-          handler: handleEmergencyUnstake
-        - event: RewardPaid(indexed address,uint256)
-          handler: handleRewardPaid
-        - event: AddWhitelistedTokens(address[])
-          handler: handleAddWhitelistedTokens
-      file: ./src/GuildWhitelistedNFTStaking.mapping.ts
-
-  - kind: ethereum/contract
-    name: PodeNFTv2
-    network: "matic"
-    source:
-      address: "0x6d4d0b9EaCd6197B31Bec250C0aD6ceC98f8b83f"
-      abi: PodeNFTv2
-      startBlock: 12000000
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      entities:
-        - Transfer
-      abis:
-        - name: PodeNFTv2
-          file: ./abis/PodeNFTv2.json
-      eventHandlers:
-        - event: Transfer(indexed address,indexed address,indexed uint256)
-          handler: handleTransfer
-        - event: TokenPrimarySalePriceSet(indexed uint256,uint256)
-          handler: handleTokenPriceSaleUpdated
-      file: ./src/PodeNFTv2.mapping.ts
-  - kind: ethereum/contract
     name: DripOracle
     network: "matic"
     source:
       address: "0x850068534c72317a762f0340500dee727ea85e29"
       abi: DripOracle
-      startBlock: 12000000
+      startBlock: 16891723
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -701,7 +593,7 @@ dataSources:
     source:
       address: "0xb79f4cae758813cf5a661e68bcadca216912f6e7"
       abi: DripMarketplace
-      startBlock: 12000000
+      startBlock: 17224622
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -731,35 +623,12 @@ dataSources:
           handler: handleOfferCancelled
       file: ./src/DripMarketplace.mapping.ts
   - kind: ethereum/contract
-    name: GuildNFTStakingWeightV2
-    network: "matic"
-    source:
-      address: "0xE69E1eD04501b1bE9aEb24aa471F68303137a8eA"
-      abi: GuildNFTStakingWeightV2
-      startBlock: 12000000
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      entities:
-        - AppraiseGuildMember
-        - WhitelistedNFTReaction
-      abis:
-        - name: GuildNFTStakingWeightV2
-          file: ./abis/GuildNFTStakingWeightV2.json
-      eventHandlers:
-        - event: AppraiseGuildMember(string,address)
-          handler: handleAppraiseGuildMember
-        - event: WhitelistedNFTReaction(string,uint256,address,uint256)
-          handler: handleWhitelistedNFTReaction
-      file: ./src/GuildNFTStakingWeightV2.mapping.ts
-  - kind: ethereum/contract
     name: GDNMembershipNFT
     network: "matic"
     source:
       address: "0x6A64FfDEfa171437f07b46682622b24f8969400E"
       abi: GDNMembershipNFT
-      startBlock: 12000000
+      startBlock: 19110218
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -779,7 +648,7 @@ dataSources:
     source:
       address: "0xDae2C7570bcAFc8157A8395ED19eA6CcbfE10147"
       abi: LookGoldenTicket
-      startBlock: 12000000
+      startBlock: 19471996
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
