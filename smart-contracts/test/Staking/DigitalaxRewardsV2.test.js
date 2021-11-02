@@ -48,6 +48,9 @@ contract('DigitalaxRewardsV2', (accounts) => {
       { from: minter }
     );
 
+    this.weth.deposit({from: minter, value: TWO_HUNDRED_TOKENS});
+    this.weth.transfer(admin, TWO_HUNDRED_TOKENS, {from: minter});
+
 
     await this.monaToken.transfer(admin, TWO_HUNDRED_TOKENS, { from: minter });
 
@@ -525,19 +528,37 @@ contract('DigitalaxRewardsV2', (accounts) => {
       await this.monaStaking.stake(THREE_ETH, {from: newRecipient});
 
       console.log('1');
-      await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('5')), {from: admin});
-      await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, [], [], {from: admin});
-      await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, [], [], {from: admin});
+      await this.monaToken.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('6')), {from: admin});
+      await this.weth.approve(this.digitalaxRewards.address, TEN_ETH.mul(new BN('6')), {from: admin});
+      await this.digitalaxRewards.addRewardTokens([this.weth.address], {from: admin});
+      await this.digitalaxRewards.depositRevenueSharingRewards(0, TEN_ETH, TEN_ETH, [this.weth.address], [TEN_ETH], {from: admin});
+      await this.digitalaxRewards.depositRevenueSharingRewards(1, TEN_ETH, TEN_ETH, [this.weth.address], [TEN_ETH], {from: admin});
+      await this.digitalaxRewards.depositRevenueSharingRewards(2, TEN_ETH, TEN_ETH, [this.weth.address], [TEN_ETH], {from: admin});
 
     });
 
     describe('getMonaStakedEthTotal()', () => {
       it('successfully queries getMonaStakedEthTotal', async () => {
-        const staked = await this.digitalaxRewards.getMonaStakedEthTotal({from: staker});
+        const staked = await this.digitalaxRewards.getMonaStakedValueTotal({from: staker});
         // 10 mona per eth
         expect(staked).to.be.bignumber.equal(ether('5')); // TODO REVIEW
       });
-      // TODO ADD BONUSES
+    });
+    describe('apy', () => {
+      it('successfully queries apy', async () => {
+         await this.monaStaking.setNowOverride('604801'); // after first week
+         await this.digitalaxRewards.setNowOverride('604801'); // after first week
+        console.log('the apys are');
+        const apyWithBonus = await this.digitalaxRewards.getMonaDailyAPY(true, {from: staker});
+        const apy = await this.digitalaxRewards.getMonaDailyAPY(false, {from: staker});
+        const apyTokenReward = await this.digitalaxRewards.getTokenRewardDailyAPY(this.weth.address, {from: staker});
+        // 10 mona per eth
+
+        console.log(`${apy} ${apyWithBonus} ${apyTokenReward} `);
+        expect(apyTokenReward).to.be.bignumber.greaterThan(ether('0'));
+        expect(apy).to.be.bignumber.greaterThan(ether('0'));
+        expect(apyWithBonus).to.be.bignumber.greaterThan(apy);
+      });
     });
   });
 

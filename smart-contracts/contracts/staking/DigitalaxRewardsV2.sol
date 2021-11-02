@@ -713,7 +713,7 @@ contract DigitalaxRewardsV2 is Initializable, BaseRelayRecipient {
         return diffDays(startTime, _getNow()) / 7;
     }
 
-    function getMonaStakedEthTotal()
+    function getMonaStakedValueTotal()
         public
         view
         returns(uint256)
@@ -726,29 +726,48 @@ contract DigitalaxRewardsV2 is Initializable, BaseRelayRecipient {
         view
         returns (uint256)
     {
-        uint256 stakedEth = monaStaking.stakedValueTotalForPool();
+        uint256 stakedValue = monaStaking.stakedValueTotalForPool();
 
-        uint256 yearlyReturnInEth = 0;
+        uint256 yearlyReturnPerMona = 0;
 
-        if ( stakedEth != 0) {
+        if ( stakedValue != 0) {
             uint256 rewards = MonaRevenueRewards( _getNow() - 60, _getNow());
 
             /// @dev minutes per year x 100 = 52560000
-            yearlyReturnInEth = rewards.mul(52560000).mul(1e18).div(stakedEth);
+            yearlyReturnPerMona = rewards.mul(52560000).mul(1e18).div(stakedValue);
         }
 
-        uint256 yearlyEarlyReturnInEth = 0;
+        uint256 yearlyEarlyReturnPerMona = 0;
 
         if(isEarlyStaker){
-            uint256 earlyStakedEth = monaStaking.earlyStakedValueTotalForPool();
-            if ( earlyStakedEth != 0) {
+            uint256 earlystakedValue = monaStaking.earlyStakedValueTotalForPool();
+            if ( earlystakedValue != 0) {
                 uint256 bonusRewards = BonusMonaRevenueRewards(_getNow() - 60, _getNow());
 
                 /// @dev minutes per year x 100 = 52560000
-                yearlyEarlyReturnInEth = bonusRewards.mul(52560000).mul(1e18).div(earlyStakedEth);
+                yearlyEarlyReturnPerMona = bonusRewards.mul(52560000).mul(1e18).div(earlystakedValue);
             }
         }
-      return yearlyReturnInEth.add(yearlyEarlyReturnInEth);
+      return yearlyReturnPerMona.add(yearlyEarlyReturnPerMona);
+    }
+
+    // Get the amount of yearly return of rewards token per 1 MONA
+   function getTokenRewardDailyAPY(address _rewardToken)
+        external
+        view
+        returns (uint256)
+    {
+        uint256 stakedValue = monaStaking.stakedValueTotalForPool();
+
+        uint256 yearlyReturnPerMona = 0;
+
+        if ( stakedValue != 0) {
+            uint256 rewards = TokenRevenueRewards(_rewardToken, _getNow() - 60, _getNow());
+
+            /// @dev minutes per year x 100 = 52560000
+            yearlyReturnPerMona = rewards.mul(52560000).mul(1e18).div(stakedValue);
+        }
+      return yearlyReturnPerMona;
     }
 
 
