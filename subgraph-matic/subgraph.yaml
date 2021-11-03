@@ -662,3 +662,28 @@ dataSources:
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
       file: ./src/LookGoldenTicket.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxRewardsV2
+    network: "matic"
+    source:
+      address: "0x2C25A0fcBbCFCE834994e40138BC8E26826728c5"
+      abi: DigitalaxRewardsV2
+      startBlock: 20645895
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasam/assemblyscript
+      entities:
+        - AddRewardTokens
+        - RemoveRewardTokens
+      abis:
+        - name: DigitalaxRewardsV2
+          file: ./abis/DigitalaxRewardsV2.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: AddRewardTokens(address[])
+          handler: handleAddRewardTokens
+        - event: RemoveRewardTokens(address[])
+          handler: handleRemoveRewardTokens
+      file: ./src/DigitalaxRewardsV2.mapping.ts

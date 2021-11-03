@@ -565,3 +565,9 @@ type DigitalaxLookGoldenTicket @entity {
   attributes: [GarmentAttribute!]!
   tokenUri: String!
 }
+
+type DigitalaxRewardV2Token @entity {
+  id: ID!
+  name: String!
+  symbol: String!
+}
