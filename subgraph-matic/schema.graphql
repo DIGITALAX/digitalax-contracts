@@ -571,3 +571,17 @@ type DigitalaxRewardV2Token @entity {
   name: String!
   symbol: String!
 }
+
+type DigitalaxMonaMarketplaceRevenue @entity {
+  id: ID!
+  week: BigInt!
+  weeklyMonaSharing: BigInt!
+  bonusWeeklyMonaSharing: BigInt!
+  totalMonaSharing: BigInt!
+  totalBonusMonaSharing: BigInt!
+}
+
+type DigitalaxMonaStaking @entity {
+  id: ID!
+  totalMonaStaked: BigInt!
+}
