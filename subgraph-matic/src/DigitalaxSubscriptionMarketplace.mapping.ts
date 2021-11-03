@@ -29,14 +29,18 @@ export function handleMarketplaceDeployed(event: DigitalaxSubscriptionMarketplac
 
 export function handleUpdateMarketplacePlatformFee(event: UpdateMarketplacePlatformFee): void {
     let offer = DigitalaxSubscriptionMarketplaceOffer.load(event.params.subscriptionCollectionId.toString());
-    offer.marketplacePlatformFee = event.params.platformFee;
-    offer.save();
+    if (offer) {
+        offer.marketplacePlatformFee = event.params.platformFee;
+        offer.save();
+    }
 }
 
 export function handleUpdateMarketplaceDiscountToPayInErc20(event: UpdateMarketplaceDiscountToPayInErc20): void {
     let offer = DigitalaxSubscriptionMarketplaceOffer.load(event.params.subscriptionCollectionId.toString());
-    offer.discountToPayMona = event.params.discount;
-    offer.save();
+    if (offer) {
+        offer.discountToPayMona = event.params.discount;
+        offer.save();
+    }
 }
 
 export function handleOfferCreated(event: OfferCreated): void {
@@ -55,15 +59,19 @@ export function handleOfferCreated(event: OfferCreated): void {
 
 export function handleOfferPrimarySalePriceUpdated(event: UpdateOfferPrimarySalePrice): void {
     let offer = DigitalaxSubscriptionMarketplaceOffer.load(event.params.subscriptionCollectionId.toString());
-    offer.primarySalePrice = event.params.primarySalePrice;
-    offer.save();
+    if (offer) {
+        offer.primarySalePrice = event.params.primarySalePrice;
+        offer.save();
+    }
 }
 
 export function handleUpdateOfferStartEnd(event: UpdateOfferStartEnd): void {
     let offer = DigitalaxSubscriptionMarketplaceOffer.load(event.params.subscriptionCollectionId.toString());
-    offer.startTime = event.params.startTime;
-    offer.endTime = event.params.endTime;
-    offer.save();
+    if (offer) {
+        offer.startTime = event.params.startTime;
+        offer.endTime = event.params.endTime;
+        offer.save();
+    }
 }
 
 export function handleOfferPurchased(event: OfferPurchased): void {
@@ -103,9 +111,11 @@ export function handleOfferPurchased(event: OfferPurchased): void {
 
 export function handleOfferCancelled(event: OfferCancelled): void {
     let offer = DigitalaxSubscriptionMarketplaceOffer.load(event.params.bundleTokenId.toString());
-    offer.primarySalePrice = null;
-    offer.subscriptionCollection = null;
-    offer.startTime = null;
-    offer.endTime = null;
-    offer.save();
+    if (offer) {
+        offer.primarySalePrice = null;
+        offer.subscriptionCollection = null;
+        offer.startTime = null;
+        offer.endTime = null;
+        offer.save();
+    }
 }
