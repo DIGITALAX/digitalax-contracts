@@ -662,3 +662,80 @@ dataSources:
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
       file: ./src/LookGoldenTicket.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxRewardsV2
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxRewardsV2Address}}"
+      abi: DigitalaxRewardsV2
+      startBlock: {{DigitalaxRewardsV2StartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasam/assemblyscript
+      entities:
+        - AddRewardTokens
+        - RemoveRewardTokens
+      abis:
+        - name: DigitalaxRewardsV2
+          file: ./abis/DigitalaxRewardsV2.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: AddRewardTokens(address[])
+          handler: handleAddRewardTokens
+        - event: RemoveRewardTokens(address[])
+          handler: handleRemoveRewardTokens
+      file: ./src/DigitalaxRewardsV2.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxMonaRewards
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxMonaRewardsAddress}}"
+      abi: DigitalaxMonaRewards
+      startBlock: {{DigitalaxMonaRewardsStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasam/assemblyscript
+      entities:
+        - DepositRevenueSharing
+        - WithdrawRevenueSharing
+      abis:
+        - name: DigitalaxMonaRewards
+          file: ./abis/DigitalaxMonaRewards.json
+      eventHandlers:
+        - event: DepositRevenueSharing(uint256,uint256,uint256,address[],uint256[])
+          handler: handleDepositRevenueSharing
+        - event: WithdrawRevenueSharing(uint256,uint256,uint256,address[],uint256[])
+          handler: handleWithdrawRevenueSharing
+      file: ./src/DigitalaxMonaRewards.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxMonaStaking
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxMonaStakingAddress}}"
+      abi: DigitalaxMonaStaking
+      startBlock: {{DigitalaxMonaStakingStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasam/assemblyscript
+      entities:
+        - Staked
+        - StakedLP
+        - Unstaked
+        - UnstakedLP
+      abis:
+        - name: DigitalaxMonaStaking
+          file: ./abis/DigitalaxMonaStaking.json
+      eventHandlers:
+        - event: Staked(indexed address,uint256)
+          handler: handleStaked
+        - event: StakedLP(indexed address,uint256)
+          handler: handleStakedLP
+        - event: Unstaked(indexed address,uint256)
+          handler: handleUnstaked
+        - event: UnstakedLP(indexed address,uint256)
+          handler: handleUnstakedLP
+      file: ./src/DigitalaxMonaStaking.mapping.ts
