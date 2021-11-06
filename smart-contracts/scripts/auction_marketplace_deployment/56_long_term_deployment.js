@@ -74,11 +74,15 @@ async function main() {
     // await extraTokens.wait();
 
     console.log('start time');
-    const startT = await instanceStakingRewards.setStartTime(1633724100 ); // TODO double check start time sets correctly
+    const startT = await instanceStakingRewards.setStartTime(1635254591); // TODO double check start time sets correctly
     await startT.wait();
 
     console.log(`The rewards: ${instanceStakingRewards.address} `);
     console.log(`The staking: ${monaStaking.address}`);
+
+    // Afterwards need to approve LP token for the mona staking
+    // Afterwards need to approve mona token for mona staking and rewards
+    // Afterwards need to deposit mona rewards
 }
 
 // We recommend this pattern to be able to use async/await everywhere
