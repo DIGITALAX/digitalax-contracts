@@ -15,11 +15,11 @@ async function main() {
     // Some constants setup
     const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
     const monaAddress = "0xefd3d060ddcfed7903806503440db1089031af3a";
-    const nixAddress = "0x81ce09546BBA19A04f22af88aDdbE2d3B14c0397";
+    const nixAddress = "0xd365287fDcE62981b6Dd158279B1161995d3862a";
     const nftAddress = "0x1bc6d640710759be37e5dcd1b23b322250353751";
-    const tokenId = '100390';
-    const price = '10000000000';
-    const orderType = '3';
+    const tokenId = '101862';
+    const price = '0';
+
 
     const NFTArtifact = require('../../artifacts/contracts/garment/DigitalaxGarmentNFTv2.sol/DigitalaxGarmentNFTv2.json');
     const nft = new ethers.Contract(
@@ -51,7 +51,8 @@ async function main() {
     );
   console.log(`Nix contract at: ${nix.address}`);
 
-  const makeOrder = await nix.makerAddOrder(ZERO_ADDRESS, nftAddress, [tokenId], 0, orderType, 0, 1, nftAddress);
+  const makeOrder = await nix.addOrder(nftAddress, ZERO_ADDRESS, 1, 0, [tokenId], price, 0, '5', 0, nftAddress);
+
   await makeOrder.wait();
 
   console.log('Order submitted');
@@ -65,3 +66,6 @@ main()
       console.error(error);
       process.exit(1);
     });
+
+
+
