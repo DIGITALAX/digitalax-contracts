@@ -71,7 +71,7 @@ export function handleChildCreated(event: ChildCreated): void {
                 if (attributes[i].kind === JSONValueKind.OBJECT) {
                   let attribute = attributes[i].toObject();
                   let garmentAttribute = new GarmentAttribute(
-                    'child-' + strand.id + i.toString()
+                    "materialv2-" + strand.id + i.toString()
                   );
                   garmentAttribute.type = null;
                   garmentAttribute.value = null;
@@ -154,7 +154,7 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
                   if (attributes[i].kind === JSONValueKind.OBJECT) {
                     let attribute = attributes[i].toObject();
                     let garmentAttribute = new GarmentAttribute(
-                      'child-' + strand.id + i.toString()
+                      "materialv2-" + strand.id + i.toString()
                     );
                     garmentAttribute.type = null;
                     garmentAttribute.value = null;
