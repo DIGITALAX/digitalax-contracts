@@ -47,8 +47,8 @@ export function handleChildCreated(event: ChildCreated): void {
         if (data.isOk) {
           if (data.value.kind === JSONValueKind.OBJECT) {
             let res = data.value.toObject();
-            if (res.get("image").kind === JSONValueKind.STRING) {
-              strand.image = res.get("image").toString();
+            if (res.get("image_url").kind === JSONValueKind.STRING) {
+              strand.image = res.get("image_url").toString();
             }
             if (res.get("Animation").kind === JSONValueKind.STRING) {
               strand.animation = res.get("Animation").toString();
@@ -56,8 +56,8 @@ export function handleChildCreated(event: ChildCreated): void {
             if (res.get("animation_url").kind === JSONValueKind.STRING) {
               strand.animation = res.get("animation_url").toString();
             }
-            if (res.get("name").kind === JSONValueKind.STRING) {
-              strand.name = res.get("name").toString();
+            if (res.get("Designer ID").kind === JSONValueKind.STRING) {
+              strand.name = res.get("Designer ID").toString();
             }
             if (res.get("description").kind === JSONValueKind.STRING) {
               strand.description = res.get("description").toString();
@@ -71,7 +71,7 @@ export function handleChildCreated(event: ChildCreated): void {
                 if (attributes[i].kind === JSONValueKind.OBJECT) {
                   let attribute = attributes[i].toObject();
                   let garmentAttribute = new GarmentAttribute(
-                    strand.id + i.toString()
+                    'child-' + strand.id + i.toString()
                   );
                   garmentAttribute.type = null;
                   garmentAttribute.value = null;
@@ -109,7 +109,7 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
 
   let childIds = event.params.childIds;
   for (let i = 0; i < event.params.childIds.length; i++) {
-    let childId: BigInt = childIds.pop();
+    let childId: BigInt = childIds[i];
     let strand = new DigitalaxMaterialV2(childId.toString());
 
     strand.tokenUri = contract.uri(childId);
@@ -130,8 +130,8 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
           if (data.isOk) {
             if (data.value.kind === JSONValueKind.OBJECT) {
               let res = data.value.toObject();
-              if (res.get("image").kind === JSONValueKind.STRING) {
-                strand.image = res.get("image").toString();
+              if (res.get("image_url").kind === JSONValueKind.STRING) {
+                strand.image = res.get("image_url").toString();
               }
               if (res.get("Animation").kind === JSONValueKind.STRING) {
                 strand.animation = res.get("Animation").toString();
@@ -139,14 +139,14 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
               if (res.get("animation_url").kind === JSONValueKind.STRING) {
                 strand.animation = res.get("animation_url").toString();
               }
-              if (res.get("name").kind === JSONValueKind.STRING) {
-                strand.name = res.get("name").toString();
+              if (res.get("Designer ID").kind === JSONValueKind.STRING) {
+                strand.name = res.get("Designer ID").toString();
               }
               if (res.get("description").kind === JSONValueKind.STRING) {
                 strand.description = res.get("description").toString();
               }
-              if (res.get("external url").kind === JSONValueKind.STRING) {
-                strand.external = res.get("external url").toString();
+              if (res.get("external_url").kind === JSONValueKind.STRING) {
+                strand.external = res.get("external_url").toString();
               }
               if (res.get("attributes").kind === JSONValueKind.ARRAY) {
                 let attributes = res.get("attributes").toArray();
@@ -154,7 +154,7 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
                   if (attributes[i].kind === JSONValueKind.OBJECT) {
                     let attribute = attributes[i].toObject();
                     let garmentAttribute = new GarmentAttribute(
-                      strand.id + i.toString()
+                      'child-' + strand.id + i.toString()
                     );
                     garmentAttribute.type = null;
                     garmentAttribute.value = null;
