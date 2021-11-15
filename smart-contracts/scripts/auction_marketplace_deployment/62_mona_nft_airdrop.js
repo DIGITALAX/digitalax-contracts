@@ -1,5 +1,5 @@
-const SkinsArtifact = require('../../artifacts/DigitalaxGarmentNFTv2.json');
-const _ = require('lodash');
+ const NFTArtifact = require('../../artifacts/contracts/garment/DigitalaxGarmentNFTv2.sol/DigitalaxGarmentNFTv2.json');
+ const _ = require('lodash');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -16,7 +16,7 @@ async function main() {
 
   const garment = new ethers.Contract(
       ERC721_GARMENT_ADDRESS,
-      SkinsArtifact.abi,
+      NFTArtifact.abi,
       deployer
   );
 
@@ -26,25 +26,27 @@ async function main() {
   // const approveToken = await garment.setApprovalForAll(BURNER_ADDRESS, true);
   // await approveToken.wait();
   const addressesList = require('./pode_airdrop.json');
-  const metadatas = require('./pode_heroes.json');
   //  Data length
 
-  console.log(metadatas.data.length)
   console.log(addressesList.data.length)
 
-  const datas = metadatas.data;
   const addresses = addressesList.data;
 
 
-  for(let i = 0; i< addresses.length ; i++){
-    const metadata = "https://digitalax.mypinata.cloud/ipfs/"+datas[i];
+  for(let i = 1275; i< addresses.length ; i++){
+    const metadata = "https://digitalax.mypinata.cloud/ipfs/QmTc8thZRnEVHAAkhQnRVqTjNxVLyHbwpRGWCYuKnTigw3";
     const address = addresses[i];
     console.log('Going to mint to');
     console.log(address);
     console.log('With the metadata:');
     console.log(metadata)
-    const tx = await garment.mint(address, metadata, "0xEa41Cd3F972dB6237FfA2918dF9199B547172420");
-    await tx.wait();
+    try {
+      const tx = await garment.mint(address, metadata, "0xEa41Cd3F972dB6237FfA2918dF9199B547172420");
+      await tx.wait();
+    } catch(e){
+      console.log('this address could not mint:');
+      console.log(address);
+    }
   }
 
 
