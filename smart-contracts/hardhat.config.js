@@ -91,7 +91,7 @@ module.exports = {
       //url: `https://matic-mainnet.chainstacklabs.com`,
       //url: `https://rpc-mainnet.maticvigil.com/v1/293c0f4455f0a5933014c66d2fb84f7ca257d16b`,
       accounts: [`0x${PRIVATE_KEY}`],
-      gasPrice: 50000000000,
+      gasPrice: 35000000000,
       timeout: 3600000
     },
     coverage: {
