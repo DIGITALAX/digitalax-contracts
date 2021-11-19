@@ -449,9 +449,6 @@ contract GuildNFTStakingWeightV3 {
         }
 
         // init token weight
-        if (_token.lastUpdateDay >= _currentDay) {
-            return _token.lastWeight;
-        }
 
         uint256 _yesterdayWeight = _token.dailyWeight[_token.lastUpdateDay];
 
@@ -472,8 +469,6 @@ contract GuildNFTStakingWeightV3 {
         _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.favoriteCount.mul(store.getReactionPoint("Favorite")));
         _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.followCount.mul(store.getReactionPoint("Follow")));
 
-        uint256 _totalSupply = guildNativeERC20Token.totalSupply();
-        uint256 erc20Balance = guildNativeERC20Token.balanceOf(_msgSender());
 
         _currentDayReactionPoint = _currentDayReactionPoint.add(_reaction.clapCount);       // stake points = clap limit per day
 
@@ -527,9 +522,6 @@ contract GuildNFTStakingWeightV3 {
 
         // init guild member weight *******
 
-        if (_guildMemberWeight.lastUpdateDay >= _currentDay) {
-            return _guildMemberWeight.lastWeight;
-        }
 
         uint256 _newWeight = _guildMemberWeight.dailyWeight[_guildMemberWeight.lastUpdateDay];
 
@@ -560,8 +552,14 @@ contract GuildNFTStakingWeightV3 {
         OwnerWeight storage owner = ownerWeight[_tokenOwner];
         // This means that they provided a reaction
         owner.totalWhitelistedNFTAppraisals = owner.totalWhitelistedNFTAppraisals.add(1);
-        owner.dailyWeight[_currentDay] = owner.dailyWeight[_currentDay]
-        .add(token.dailyWeight[_currentDay]).sub(token.lastWeight);
+
+        if(_currentDay > 0){
+            owner.dailyWeight[_currentDay] = owner.dailyWeight[_currentDay]
+                .add(token.dailyWeight[_currentDay]).sub(token.dailyWeight[_currentDay.sub(1)]);
+        } else{
+            owner.dailyWeight[_currentDay] = owner.dailyWeight[_currentDay]
+                .add(token.dailyWeight[_currentDay]);
+        }
 
         totalWhitelistedNFTTokenWeight = (totalWhitelistedNFTTokenWeight.sub(owner.lastWeight)
         .add(owner.dailyWeight[_currentDay]));
