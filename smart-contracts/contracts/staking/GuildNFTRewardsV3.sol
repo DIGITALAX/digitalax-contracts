@@ -9,6 +9,7 @@ import "../oracle/IOracle.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "./interfaces/IGuildNFTRewards.sol";
 import "./interfaces/IGuildNFTRewardsWhitelisted.sol";
+import "./interfaces/IGuildNFTTokenRewards.sol";
 import "@openzeppelin/contracts/proxy/Initializable.sol";
 
 import "hardhat/console.sol";
@@ -32,7 +33,7 @@ interface DECO is IERC20 {
     function mint(address tokenOwner, uint tokens) external returns (bool);
 }
 
-contract GuildNFTRewardsV3 is Initializable, BaseRelayRecipient, IGuildNFTRewards, IGuildNFTRewardsWhitelisted {
+contract GuildNFTRewardsV3 is Initializable, BaseRelayRecipient, IGuildNFTRewards, IGuildNFTRewardsWhitelisted, IGuildNFTTokenRewards {
     using SafeMath for uint256;
 
     /* ========== Variables ========== */
@@ -108,15 +109,11 @@ contract GuildNFTRewardsV3 is Initializable, BaseRelayRecipient, IGuildNFTReward
     );
      event DepositRevenueSharing(
         uint256 week,
-        uint256 weeklyMonaRevenueSharingPerSecond,
-        uint256 bonusWeeklyMonaRevenueSharingPerSecond,
         address[] rewardTokens,
         uint256[] rewardAmounts);
 
     event WithdrawRevenueSharing(
         uint256 week,
-        uint256 amount,
-        uint256 bonusAmount,
         address[] rewardTokens,
         uint256[] rewardTokenAmounts
     );
@@ -427,6 +424,7 @@ contract GuildNFTRewardsV3 is Initializable, BaseRelayRecipient, IGuildNFTReward
         /// @dev This sends rewards (Deco from revenue sharing)
         _updateDecoRewards();
         _updateWhitelistedNFTRewards();
+        _updateTokenRewards();
         /// @dev update accumulated reward
         pool.lastRewardsTime = _getNow();
         whitelistedNFTPool.lastRewardsTime = _getNow();
@@ -550,8 +548,8 @@ contract GuildNFTRewardsV3 is Initializable, BaseRelayRecipient, IGuildNFTReward
  /*
      * @notice Gets the total rewards outstanding from last reward time
      */
-    function totalMembershipRewardTokenRewards(address _rewardToken) external override view returns (uint256) {
-        return _totalMembershipRewardTokenRewards(_rewardToken);
+    function totalNewRewardTokenMembershipRewards(address _rewardToken) external override view returns (uint256) {
+        return _totalNewRewardTokenMembershipRewards(_rewardToken);
     }
 
     /*
@@ -581,7 +579,7 @@ contract GuildNFTRewardsV3 is Initializable, BaseRelayRecipient, IGuildNFTReward
      /*
      * @notice Gets the total rewards outstanding from last reward time
      */
-    function _totalMembershipRewardTokenRewards(address _rewardToken) internal view returns (uint256) {
+    function _totalNewRewardTokenMembershipRewards(address _rewardToken) internal view returns (uint256) {
         uint256 lRewards = MembershipTokenRevenueRewards(_rewardToken, pool.lastRewardsTime, _getNow());
         return lRewards;
     }
@@ -759,12 +757,41 @@ contract GuildNFTRewardsV3 is Initializable, BaseRelayRecipient, IGuildNFTReward
 
     /* ========== Internal Functions ========== */
 
+     function _updateTokenRewards()
+        internal
+    {
+        address[] memory _rewardsTokens = getRewardTokens();
+        for (uint i = 0; i < _rewardsTokens.length; i++)
+        {
+            uint256 rewards = MembershipTokenRevenueRewards(_rewardsTokens[i], pool.lastRewardsTime, _getNow());
+            if ( rewards > 0 ) {
+            tokenRewardsPaidTotal[_rewardsTokens[i]] = tokenRewardsPaidTotal[_rewardsTokens[i]].add(rewards);
+            pool.tokenRewardsPaid[_rewardsTokens[i]] = pool.tokenRewardsPaid[_rewardsTokens[i]].add(rewards);
+                // Send this amount to the staking contract
+                IERC20(_rewardsTokens[i]).transfer(
+                    address(nftStaking),
+                    rewards
+                );
+            }
+
+            uint256 whitelistedRewards = WhitelistedTokenRevenueRewards(_rewardsTokens[i], whitelistedNFTPool.lastRewardsTime, _getNow());
+            if ( whitelistedRewards > 0 ) {
+            tokenRewardsPaidTotal[_rewardsTokens[i]] = tokenRewardsPaidTotal[_rewardsTokens[i]].add(rewards);
+            whitelistedNFTPool.tokenRewardsPaid[_rewardsTokens[i]] = whitelistedNFTPool.tokenRewardsPaid[_rewardsTokens[i]].add(rewards);
+
+                // Send this amount to the staking contract
+                IERC20(_rewardsTokens[i]).transfer(
+                    address(whitelistedNFTStaking),
+                    whitelistedRewards
+                );
+            }
+        }
+    }
 
     function _updateDecoRewards()
         internal
-        returns(uint256 rewards)
     {
-        rewards = DecoRewards(pool.lastRewardsTime, _getNow());
+        uint256 rewards = DecoRewards(pool.lastRewardsTime, _getNow());
         console.log("updating deco rewards");
         console.log("the rewards are %s", rewards);
         if ( rewards > 0 ) {
@@ -778,9 +805,8 @@ contract GuildNFTRewardsV3 is Initializable, BaseRelayRecipient, IGuildNFTReward
 
     function _updateWhitelistedNFTRewards()
         internal
-        returns(uint256 rewards)
     {
-        rewards = WhitelistedNFTRewards(whitelistedNFTPool.lastRewardsTime, _getNow());
+        uint256 rewards = WhitelistedNFTRewards(whitelistedNFTPool.lastRewardsTime, _getNow());
     console.log("_updateWhitelistedNFTRewards");
     console.log("the rewards are %s", rewards);
         if ( rewards > 0 ) {
@@ -883,6 +909,25 @@ contract GuildNFTRewardsV3 is Initializable, BaseRelayRecipient, IGuildNFTReward
 
             /// @dev minutes per year x 100 = 52560000
             yearlyReturnInEth = rewardsInEth.mul(52560000).mul(1e18).div(stakedEth);
+        }
+
+      return yearlyReturnInEth;
+    }
+
+    function getRewardTokenDailyAPY(address _rewardToken)
+        external
+        view
+        returns (uint256)
+    {
+        uint256 stakedEth = nftStaking.stakedEthTotal();
+
+        uint256 yearlyReturnInEth = 0;
+
+        if ( stakedEth != 0) {
+            uint256 rewards = MembershipTokenRevenueRewards(_rewardToken, _getNow() - 60, _getNow());
+
+            /// @dev minutes per year x 100 = 52560000
+            yearlyReturnInEth = rewards.mul(52560000).mul(1e18).div(stakedEth);
         }
 
       return yearlyReturnInEth;
