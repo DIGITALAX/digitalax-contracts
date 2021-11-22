@@ -517,7 +517,7 @@ contract GuildNFTRewardsV3 is Initializable, BaseRelayRecipient, IGuildNFTReward
         return (rewardTokens[rewardTokensIndex[_rewardToken]] == _rewardToken);
     }
 
-    function getExtraRewardTokens() external view returns (address[] memory returnRewardTokens){
+    function getExtraRewardTokens() external override view returns (address[] memory returnRewardTokens){
         return getRewardTokens();
     }
 
