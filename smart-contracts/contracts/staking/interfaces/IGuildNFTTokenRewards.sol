@@ -8,4 +8,5 @@ interface IGuildNFTTokenRewards {
     function totalNewRewardTokenWhitelistedRewards(address _rewardToken) external view returns(uint256);
     function MembershipTokenRevenueRewards(address _rewardToken, uint256 _from, uint256 _to) external view returns(uint256);
     function WhitelistedTokenRevenueRewards(address _rewardToken, uint256 _from, uint256 _to) external view returns(uint256);
+    function getExtraRewardTokens() external view returns (address[] memory returnRewardTokens);
 }
