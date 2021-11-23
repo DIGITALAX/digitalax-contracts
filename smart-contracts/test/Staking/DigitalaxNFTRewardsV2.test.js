@@ -11,7 +11,7 @@ const {
 
 const {expect} = require('chai');
 
-const DigitalaxAccessControls = artifacts.require('DigitalaxAccessControls');
+const DigitalaxAccessControls = artifacts.require('contracts/DigitalaxAccessControls.sol:DigitalaxAccessControls');
 const MockERC20 = artifacts.require('MockERC20');
 const WethToken = artifacts.require('WethToken');
 const DigitalaxNFTRewardsV2 = artifacts.require('DigitalaxNFTRewardsV2Mock');
@@ -645,7 +645,7 @@ contract('DigitalaxNFTRewardsV2', (accounts) => {
         await this.digitalaxRewards.setNowOverride('1209600'); // third week start
         const rewardResult = await this.digitalaxRewards.MonaRevenueRewards(0, 1209540, 1209600, {from: staker});
         const ethPerMona = await this.digitalaxRewards.getEthPerMona({from: staker});
-        
+
         const apy = await this.digitalaxRewards.getMonaDailyAPY(0, {from: staker});
 
         const totalRewardsInEth = ((rewardResult.mul(ethPerMona).div(ether('1'))));

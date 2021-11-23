@@ -69,6 +69,8 @@ contract DigitalaxRewardsV2 is Initializable, BaseRelayRecipient {
     event RewardDistributed(address indexed addr, uint256 reward);
     event ReclaimedERC20(address indexed token, uint256 amount);
 
+
+
     // Events
     event AddRewardTokens(
         address[] rewardTokens
@@ -266,9 +268,7 @@ contract DigitalaxRewardsV2 is Initializable, BaseRelayRecipient {
                 .div(pointMultiplier);
 
             weeklyTokenRevenueSharingPerSecond[_rewardTokens[i]][_week] = weeklyTokenRevenueSharingPerSecond[_rewardTokens[i]][_week].add(rewardAmount);
-            console.log("the week  is: %s", _week);
-            console.log("the token rev is: %s", weeklyTokenRevenueSharingPerSecond[_rewardTokens[i]][_week]);
-        }
+         }
 
         emit DepositRevenueSharing(_week, weeklyMonaRevenueSharingPerSecond[_week], bonusWeeklyMonaRevenueSharingPerSecond[_week], _rewardTokens, _rewardAmounts);
     }
@@ -331,8 +331,6 @@ contract DigitalaxRewardsV2 is Initializable, BaseRelayRecipient {
 
             weeklyTokenRevenueSharingPerSecond[_rewardTokens[i]][_week] = weeklyTokenRevenueSharingPerSecond[_rewardTokens[i]][_week].sub(rewardAmount);
         }
-
-
         emit WithdrawRevenueSharing(_week, _amount, _bonusAmount, _rewardTokens, _rewardAmounts);
 }
 
