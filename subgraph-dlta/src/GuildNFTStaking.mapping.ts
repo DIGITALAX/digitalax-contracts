@@ -12,7 +12,6 @@ import {
 import {ZERO} from "./constants";
 
 export function handleRewardPaid(event: RewardPaid): void {
-    let contract = GuildNFTStakingContract.bind(event.address);
     let owner = event.params.user.toHexString()
     let reward = event.params.reward;
     let staker = PodeNFTv2Staker.load(owner);
@@ -27,7 +26,6 @@ export function handleRewardPaid(event: RewardPaid): void {
 }
 
 export function handleStaked(event: Staked): void {
-    let contract = GuildNFTStakingContract.bind(event.address);
     let owner = event.params.owner.toHexString()
     let token = event.params.tokenId.toString();
     let staker = PodeNFTv2Staker.load(owner);

@@ -53,7 +53,7 @@ export function handleTransfer(event: Transfer): void {
                   if (attributes[i].kind === JSONValueKind.OBJECT) {
                     let attribute = attributes[i].toObject();
                     let garmentAttribute = new GarmentAttribute(
-                      gdnNft.id + i.toString()
+                      "gdn-" + gdnNft.id + i.toString()
                     );
                     garmentAttribute.type = null;
                     garmentAttribute.value = null;
