@@ -78,7 +78,7 @@ export function handleTransfer(event: Transfer): void {
                   if (attributes[i].kind === JSONValueKind.OBJECT) {
                     let attribute = attributes[i].toObject();
                     let garmentAttribute = new GarmentAttribute(
-                      garment.id + i.toString()
+                      "digitalaxV1-" + garment.id + i.toString()
                     );
                     garmentAttribute.type = null;
                     garmentAttribute.value = null;
@@ -228,7 +228,7 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
                   if (attributes[i].kind === JSONValueKind.OBJECT) {
                     let attribute = attributes[i].toObject();
                     let garmentAttribute = new GarmentAttribute(
-                      garment.id + i.toString()
+                      "digitalaxV1-" + garment.id + i.toString()
                     );
                     garmentAttribute.type = null;
                     garmentAttribute.value = null;
@@ -313,7 +313,7 @@ export function handleTokenPriceSaleUpdated(
                   if (attributes[i].kind === JSONValueKind.OBJECT) {
                     let attribute = attributes[i].toObject();
                     let garmentAttribute = new GarmentAttribute(
-                      garment.id + i.toString()
+                      "digitalaxV1-" + garment.id + i.toString()
                     );
                     garmentAttribute.type = null;
                     garmentAttribute.value = null;

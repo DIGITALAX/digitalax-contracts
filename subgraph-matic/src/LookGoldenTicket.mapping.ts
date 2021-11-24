@@ -3,7 +3,10 @@ import {
   LookGoldenTicket as LookGoldenTicketContract,
 } from "../generated/LookGoldenTicket/LookGoldenTicket";
 import { ZERO_ADDRESS } from "./constants";
-import { GarmentAttribute, DigitalaxLookGoldenTicket as LookGoldenTicket } from "../generated/schema";
+import {
+  GarmentAttribute,
+  DigitalaxLookGoldenTicket as LookGoldenTicket,
+} from "../generated/schema";
 import {
   Bytes,
   ipfs,
@@ -53,7 +56,7 @@ export function handleTransfer(event: Transfer): void {
                   if (attributes[i].kind === JSONValueKind.OBJECT) {
                     let attribute = attributes[i].toObject();
                     let garmentAttribute = new GarmentAttribute(
-                      gdnNft.id + i.toString()
+                      "look-" + gdnNft.id + i.toString()
                     );
                     garmentAttribute.type = null;
                     garmentAttribute.value = null;
