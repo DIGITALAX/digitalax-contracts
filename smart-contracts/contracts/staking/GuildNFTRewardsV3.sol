@@ -792,8 +792,6 @@ contract GuildNFTRewardsV3 is Initializable, BaseRelayRecipient, IGuildNFTReward
         internal
     {
         uint256 rewards = DecoRewards(pool.lastRewardsTime, _getNow());
-        console.log("updating deco rewards");
-        console.log("the rewards are %s", rewards);
         if ( rewards > 0 ) {
             pool.decoRewardsPaid = pool.decoRewardsPaid.add(rewards);
             decoRewardsPaidTotal = decoRewardsPaidTotal.add(rewards);
@@ -807,16 +805,9 @@ contract GuildNFTRewardsV3 is Initializable, BaseRelayRecipient, IGuildNFTReward
         internal
     {
         uint256 rewards = WhitelistedNFTRewards(whitelistedNFTPool.lastRewardsTime, _getNow());
-    console.log("_updateWhitelistedNFTRewards");
-    console.log("the rewards are %s", rewards);
         if ( rewards > 0 ) {
             whitelistedNFTPool.decoRewardsPaid = whitelistedNFTPool.decoRewardsPaid.add(rewards);
             decoRewardsPaidTotal = decoRewardsPaidTotal.add(rewards);
-    console.log("_updateWhitelistedNFTRewards");
-    console.log("the rewards are (whitelistedNFTPool) %s", whitelistedNFTPool.decoRewardsPaid);
-    console.log("_updateWhitelistedNFTRewards");
-    console.log("the rewards are (decoRewardsPaidTotal) %s", decoRewardsPaidTotal);
-
 
             // Mint this amount of DECO to the staking contract
             require(decoToken.mint(address(whitelistedNFTStaking), rewards));

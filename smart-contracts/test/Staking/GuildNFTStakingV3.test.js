@@ -17,8 +17,8 @@ const {
   const MockDECO = artifacts.require('MockDECO');
   const WethToken = artifacts.require('WethToken');
   const GuildNFTRewardsMock = artifacts.require('GuildNFTRewardsV3Mock');
-  const GuildNFTStaking = artifacts.require('GuildNFTStakingMock');
-  const GuildWhitelistedNFTStaking = artifacts.require('GuildWhitelistedNFTStakingV2Mock');
+  const GuildNFTStaking = artifacts.require('GuildNFTStakingV3Mock');
+  const GuildWhitelistedNFTStaking = artifacts.require('GuildWhitelistedNFTStakingV3Mock');
   const GuildNFTStakingWeight = artifacts.require('GuildNFTStakingWeightV3Mock');
   const GuildNFTStakingWeightV2Storage = artifacts.require('GuildNFTStakingWeightV2StorageMock');
   const GuildNFTStakingWeightV3 = artifacts.require('GuildNFTStakingWeightV3');
@@ -1949,8 +1949,6 @@ it('successfully deposits many NFT and batch with multiple users, and emergency 
 		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
 		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker2});
 		  expect(await this.guildNftStaking.nftStakedTotal()).to.be.bignumber.equal("0");
-		  await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2],{from: staker});
-		  await this.guildNftStaking.stakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
 
 		  // Mint staker 3vsome skins tokens
 		  await this.skinsToken.mint(staker3, randomURI, minter, {from: minter});
@@ -1962,7 +1960,6 @@ it('successfully deposits many NFT and batch with multiple users, and emergency 
 		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker2});
 		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker3});
 
-
         await this.weth.approve(this.guildNFTRewards.address, TWO_HUNDRED, { from: admin });
         const rewardsBeforeBalanceWeth = await this.weth.balanceOf(this.guildNFTRewards.address);
         expect(rewardsBeforeBalanceWeth).to.be.bignumber.equals(new BN('0'));
@@ -1972,6 +1969,8 @@ it('successfully deposits many NFT and batch with multiple users, and emergency 
         const rewardAfterBalanceWeth = await this.weth.balanceOf(this.guildNFTRewards.address);
         expect(rewardAfterBalanceWeth).to.be.bignumber.equals(TWO_HUNDRED);
 
+        await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2],{from: staker});
+		await this.guildNftStaking.stakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
         await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100001','100002','100003','100004'],{from: staker3});
 
 
@@ -1980,19 +1979,32 @@ it('successfully deposits many NFT and batch with multiple users, and emergency 
 
         await this.guildWhitelistedNftStaking.updateReward(staker3, {from: staker3});
         await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
+        await this.guildNftStaking.setNowOverride('1209601'); // next week
         await this.guildNFTRewards.setNowOverride('1209601'); // next week
         let rewardResult = await this.guildNFTRewards.WhitelistedTokenRevenueRewards(this.weth.address, 1209540, 1209600, {from: staker});
         const rewardResult2 = await this.guildNFTRewards.MembershipTokenRevenueRewards(this.weth.address, 1209540, 1209600, {from: staker});
-        rewardResult = rewardResult + rewardResult2;
         console.log('rewardResult')
         console.log(rewardResult)
+        console.log(rewardResult2)
 
         await this.guildWhitelistedNftStaking.updateReward(staker3, {from: staker3});
         await this.guildWhitelistedNftStaking.claimReward(staker3, {from: staker3});
+        await this.guildNftStaking.claimReward(staker, {from: staker});
+        await this.guildNftStaking.claimReward(staker2, {from: staker2});
         const afterBalance = await this.decoToken.balanceOf(staker3);
         expect(afterBalance).to.be.bignumber.greaterThan(new BN('50000000000000000000'));
-        const afterBalanceWeth = await this.weth.balanceOf(staker3);
+        const afterBalanceWeth3 = await this.weth.balanceOf(staker3);
+        console.log('afterBalanceWeth3');
+        console.log(afterBalanceWeth3.toString());
+        expect(afterBalanceWeth3).to.be.bignumber.greaterThan(new BN('2000000000000000000'));
+        const afterBalanceWeth2 = await this.weth.balanceOf(staker2);
+        console.log('afterBalanceWeth2');
+        console.log(afterBalanceWeth2.toString());
+        expect(afterBalanceWeth2).to.be.bignumber.greaterThan(new BN('2000000000000000000'));
+        const afterBalanceWeth = await this.weth.balanceOf(staker);
         expect(afterBalanceWeth).to.be.bignumber.greaterThan(new BN('2000000000000000000'));
+        console.log('afterBalanceWeth');
+        console.log(afterBalanceWeth.toString());
       });
 
 
