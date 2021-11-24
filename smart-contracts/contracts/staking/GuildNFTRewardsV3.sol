@@ -328,7 +328,7 @@ contract GuildNFTRewardsV3 is Initializable, BaseRelayRecipient, IGuildNFTReward
     {
         require(
             accessControls.hasAdminRole(_msgSender()),
-            "GuildNFTRewardsV3.setRewards: Sender must be admin"
+            "GuildNFTRewardsV3.depositRevenueSharingRewards: Sender must be admin"
         );
 
         require(

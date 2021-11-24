@@ -16,7 +16,7 @@ const {
   const DigitalaxAccessControls = artifacts.require('contracts/DigitalaxAccessControls.sol:DigitalaxAccessControls');
   const MockDECO = artifacts.require('MockDECO');
   const WethToken = artifacts.require('WethToken');
-  const GuildNFTRewardsMock = artifacts.require('GuildNFTRewardsV2Mock');
+  const GuildNFTRewardsMock = artifacts.require('GuildNFTRewardsV3Mock');
   const GuildNFTStaking = artifacts.require('GuildNFTStakingMock');
   const GuildWhitelistedNFTStaking = artifacts.require('GuildWhitelistedNFTStakingV2Mock');
   const GuildNFTStakingWeight = artifacts.require('GuildNFTStakingWeightV3Mock');
@@ -42,6 +42,8 @@ const {
   const TEN_TOKENS = new BN('1000000000000000000');
   const TWENTY_TOKENS = new BN('20000000000000000000');
   const ONE_HUNDRED_TOKENS = new BN('10000000000000000000');
+    const TEN_THOUSAND_TOKENS = '1000000000000000000000';
+  const TWO_HUNDRED = new BN('20000000000000000000');
   const ONE_ETH = ether('1');
   const TWO_ETH = ether('2');
   const MAX_NUMBER_OF_POOLS = new BN('20');
@@ -147,11 +149,11 @@ const {
 
 	  await this.decoToken.approve(this.guildNFTRewards.address, TWO_THOUSAND_TOKENS, {from: admin});
 
-	  await this.guildNFTRewards.setRewards([0], [FIFTY_TOKENS], {from: admin});
-	  await this.guildNFTRewards.setRewards([1], [FIFTY_TOKENS], {from: admin});
-	  await this.guildNFTRewards.setRewards([2], [TWO_HUNDRED_TOKENS], {from: admin});
-	  await this.guildNFTRewards.setRewards([3], [HUNDRED_TOKENS], {from: admin});
-	  await this.guildNFTRewards.setRewards([4], [TWENTY_TOKENS], {from: admin});
+	  await this.guildNFTRewards.setMintedRewards([0], [FIFTY_TOKENS], {from: admin});
+	  await this.guildNFTRewards.setMintedRewards([1], [FIFTY_TOKENS], {from: admin});
+	  await this.guildNFTRewards.setMintedRewards([2], [TWO_HUNDRED_TOKENS], {from: admin});
+	  await this.guildNFTRewards.setMintedRewards([3], [HUNDRED_TOKENS], {from: admin});
+	  await this.guildNFTRewards.setMintedRewards([4], [TWENTY_TOKENS], {from: admin});
 	  // The pode rewards and whitelisted rewards are currently 50:50
 	//  await this.guildNFTRewards.setWeightPoints(ether('10000000000000000000'), ether('000000000000000000'), {from: admin});
 	  await this.guildNFTRewards.setWeightPoints(ether('5000000000000000000'), ether('5000000000000000000'), {from: admin});
@@ -191,8 +193,14 @@ const {
 		);
 
 		await this.guildWhitelistedNftStaking.addWhitelistedTokens([this.skinsToken.address], [false], [false], {from:admin});
-	});
 
+
+	 	await this.guildNFTRewards.addRewardTokens([this.weth.address]);
+
+	 	await this.weth.deposit({from: minter, value: TWO_HUNDRED});
+      	await this.weth.transfer(admin, TWO_HUNDRED, {from: minter});
+	});
+/*
 	describe('Rewards Contract', () => {
 		describe('setRewardsContract()', () => {
 			it('fails when not admin', async () => {
@@ -1928,6 +1936,64 @@ it('successfully deposits many NFT and batch with multiple users, and emergency 
 		  console.log(finalDecoBalance2);
 		  console.log(finalDecoBalance);
 	  });
+*/
+	   it('Successfully claim extra rewards tokens', async () => {
+	   	 await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.mint(staker2, minter, {from: minter});
+		  await this.token.setPrimarySalePrice(TOKEN_1, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_2, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_3, ONE_ETH, {from: admin});
+		  await this.token.setPrimarySalePrice(TOKEN_4, ONE_ETH, {from: admin});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker});
+		  await this.token.setApprovalForAll(this.guildNftStaking.address, true, {from: staker2});
+		  expect(await this.guildNftStaking.nftStakedTotal()).to.be.bignumber.equal("0");
+		  await this.guildNftStaking.stakeBatch([TOKEN_1,TOKEN_2],{from: staker});
+		  await this.guildNftStaking.stakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
+
+		  // Mint staker 3vsome skins tokens
+		  await this.skinsToken.mint(staker3, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker3, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker3, randomURI, minter, {from: minter});
+		  await this.skinsToken.mint(staker3, randomURI, minter, {from: minter});
+
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker});
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker2});
+		  await this.skinsToken.setApprovalForAll(this.guildWhitelistedNftStaking.address, true, {from: staker3});
+
+
+        await this.weth.approve(this.guildNFTRewards.address, TWO_HUNDRED, { from: admin });
+        const rewardsBeforeBalanceWeth = await this.weth.balanceOf(this.guildNFTRewards.address);
+        expect(rewardsBeforeBalanceWeth).to.be.bignumber.equals(new BN('0'));
+        await this.guildNFTRewards.depositRevenueSharingRewards(1, [this.weth.address], [ONE_HUNDRED_TOKENS], {from: admin});
+        await this.guildNFTRewards.depositRevenueSharingRewards(2, [this.weth.address], [ONE_HUNDRED_TOKENS], {from: admin});
+        await this.guildNFTRewards.setNowOverride('604800'); // first week
+        const rewardAfterBalanceWeth = await this.weth.balanceOf(this.guildNFTRewards.address);
+        expect(rewardAfterBalanceWeth).to.be.bignumber.equals(TWO_HUNDRED);
+
+        await this.guildWhitelistedNftStaking.stakeBatch(new Array(4).fill(this.skinsToken.address), ['100001','100002','100003','100004'],{from: staker3});
+
+
+        const beforeBalanceWeth = await this.weth.balanceOf(staker3);
+        expect(beforeBalanceWeth).to.be.bignumber.equals(new BN('0'));
+
+        await this.guildWhitelistedNftStaking.updateReward(staker3, {from: staker3});
+        await this.guildWhitelistedNftStaking.setNowOverride('1209601'); // next week
+        await this.guildNFTRewards.setNowOverride('1209601'); // next week
+        let rewardResult = await this.guildNFTRewards.WhitelistedTokenRevenueRewards(this.weth.address, 1209540, 1209600, {from: staker});
+        const rewardResult2 = await this.guildNFTRewards.MembershipTokenRevenueRewards(this.weth.address, 1209540, 1209600, {from: staker});
+        rewardResult = rewardResult + rewardResult2;
+        console.log('rewardResult')
+        console.log(rewardResult)
+
+        await this.guildWhitelistedNftStaking.updateReward(staker3, {from: staker3});
+        await this.guildWhitelistedNftStaking.claimReward(staker3, {from: staker3});
+        const afterBalance = await this.decoToken.balanceOf(staker3);
+        expect(afterBalance).to.be.bignumber.greaterThan(new BN('50000000000000000000'));
+        const afterBalanceWeth = await this.weth.balanceOf(staker3);
+        expect(afterBalanceWeth).to.be.bignumber.greaterThan(new BN('2000000000000000000'));
+      });
 
 
 
