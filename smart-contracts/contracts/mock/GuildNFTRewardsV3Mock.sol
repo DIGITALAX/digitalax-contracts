@@ -2,11 +2,16 @@
 
 pragma solidity 0.6.12;
 
-import "../staking/DigitalaxRewardsV2.sol";
 import "../oracle/IDigitalaxMonaOracle.sol";
+import "../staking/GuildNFTRewardsV3.sol";
 
-contract DigitalaxRewardsV2Mock is DigitalaxRewardsV2 {
+contract GuildNFTRewardsV3Mock is GuildNFTRewardsV3 {
     uint256 public nowOverride;
+
+    constructor(
+    )
+    GuildNFTRewardsV3()
+    public {}
 
     function setNowOverride(uint256 _now) external {
         nowOverride = _now;
