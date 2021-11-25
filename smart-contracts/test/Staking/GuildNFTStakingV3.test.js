@@ -200,7 +200,7 @@ const {
 	 	await this.weth.deposit({from: minter, value: TWO_HUNDRED});
       	await this.weth.transfer(admin, TWO_HUNDRED, {from: minter});
 	});
-/*
+
 	describe('Rewards Contract', () => {
 		describe('setRewardsContract()', () => {
 			it('fails when not admin', async () => {
@@ -1936,7 +1936,7 @@ it('successfully deposits many NFT and batch with multiple users, and emergency 
 		  console.log(finalDecoBalance2);
 		  console.log(finalDecoBalance);
 	  });
-*/
+
 	   it('Successfully claim extra rewards tokens', async () => {
 	   	 await this.token.mint(staker, minter, {from: minter});
 		  await this.token.mint(staker, minter, {from: minter});
