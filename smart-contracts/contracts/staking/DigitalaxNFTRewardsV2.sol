@@ -49,7 +49,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
 
     uint256 public startTime;
     uint256 public monaRewardsPaidTotal;
-	
+
 	mapping(address => uint256) public tokenRewardsPaidTotal;
 	mapping(address => uint256) public tokenRewardsPaid;
 
@@ -247,7 +247,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
      */
     function depositRewards(
         uint256 _week,
-        uint256 _amount,        
+        uint256 _amount,
         address[] memory _rewardTokens,
         uint256[] memory _rewardAmounts
     )
@@ -306,7 +306,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
      * @notice Deposit revenue sharing rewards to be distributed during a certain week
      * @dev this number is the total rewards that week with 18 decimals
      */
-    function withdrawMonaRewards(
+    function withdrawRewards(
         uint256 _week,
         uint256 _amount,
         address[] memory _rewardTokens,
@@ -500,12 +500,12 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         uint256 lRewards = MonaRewards(pool.lastRewardsTime, _getNow());
         return lRewards;
     }
-    
+
      /*
      * @notice Gets the total rewards outstanding from last reward time
      */
     function totalNewRewardsWithToken(address _rewardToken) external view returns (uint256) {
-        uint256 lRewards = TokenRevenueRewards(_rewardToken, lastRewardsTime, _getNow());
+        uint256 lRewards = TokenRevenueRewards(_rewardToken, pool.lastRewardsTime, _getNow());
         return lRewards;
     }
 
@@ -604,7 +604,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
 
                 // Send this amount of tokens to the staking contract
                 IERC20(_rewardsTokens[i]).transfer(
-                    address(monaStaking),
+                    address(nftStaking),
                     rewards
                 );
             }
@@ -718,14 +718,14 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
 
       return yearlyReturnInEth;
     }
-    
+
      // Get the amount of yearly return of rewards token per 1 MONA
    function getTokenRewardDailyAPY(address _rewardToken)
         external
         view
         returns (uint256)
     {
-        uint256 stakedValue = monaStaking.stakedEthTotal();
+        uint256 stakedValue = nftStaking.stakedEthTotal();
 
         uint256 yearlyReturnPerMona = 0;
 
