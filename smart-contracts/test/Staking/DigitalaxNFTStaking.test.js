@@ -116,10 +116,10 @@ const randomURI = 'rand';
 
       await this.monaToken.approve(this.digitalaxRewards.address, TWO_THOUSAND_TOKENS, {from: admin});
 
-      await this.digitalaxRewards.depositMonaRewards(1, FIFTY_TOKENS, {from: admin});
-      await this.digitalaxRewards.depositMonaRewards(2, HUNDRED_TOKENS, {from: admin});
-      await this.digitalaxRewards.depositMonaRewards(3, FIFTY_TOKENS, {from: admin});
-      await this.digitalaxRewards.depositMonaRewards(4, TEN_TOKENS, {from: admin});
+      await this.digitalaxRewards.depositRewards(1, FIFTY_TOKENS, [], [], {from: admin});
+      await this.digitalaxRewards.depositRewards(2, HUNDRED_TOKENS, [], [], {from: admin});
+      await this.digitalaxRewards.depositRewards(3, FIFTY_TOKENS, [], [], {from: admin});
+      await this.digitalaxRewards.depositRewards(4, TEN_TOKENS, [], [], {from: admin});
 
 
       await this.nftStaking.setRewardsContract(this.digitalaxRewards.address, { from: admin });
@@ -325,8 +325,8 @@ const randomURI = 'rand';
     await time.increase(time.duration.seconds(120));
 
     // Make sure we can withdraw and deposit the same amount back in.
-    await this.digitalaxRewards.withdrawMonaRewards(3, FIFTY_TOKENS, {from: admin});
-    await this.digitalaxRewards.depositMonaRewards(3, FIFTY_TOKENS, {from: admin});
+    await this.digitalaxRewards.withdrawRewards(3, FIFTY_TOKENS, [], [], {from: admin});
+    await this.digitalaxRewards.depositRewards(3, FIFTY_TOKENS, [], [], {from: admin});
 
     await this.digitalaxRewards.setNowOverride('2420000'); // final week
     await this.nftStaking.setNowOverride('2420000'); // final week
