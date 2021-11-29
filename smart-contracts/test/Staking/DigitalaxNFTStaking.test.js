@@ -34,6 +34,7 @@ const {
   const TEN_TOKENS = new BN('1000000000000000000');
   const TWENTY_TOKENS = new BN('20000000000000000000');
   const ONE_HUNDRED_TOKENS = new BN('10000000000000000000');
+  const TWO_HUNDRED = new BN('20000000000000000000');
   const TWO_ETH = ether('2');
   const MAX_NUMBER_OF_POOLS = new BN('20');
 const randomURI = 'rand';
@@ -93,7 +94,7 @@ const randomURI = 'rand';
       await time.increase(time.duration.seconds(120));
 
       this.nftStaking = await DigitalaxNFTStaking.new();
-      await this.nftStaking.initStaking(
+      await this.nftStaking.initialize(
           this.monaToken.address,
           this.token.address,
           this.accessControls.address,
@@ -102,7 +103,8 @@ const randomURI = 'rand';
 
       await this.nftStaking.setTokensClaimable(true, {from: admin});
 
-      this.digitalaxRewards = await DigitalaxNFTRewardsV2.new(
+      this.digitalaxRewards = await DigitalaxNFTRewardsV2.new();
+      await this.digitalaxRewards.initialize(
           this.monaToken.address,
           this.accessControls.address,
           this.nftStaking.address,
@@ -114,13 +116,23 @@ const randomURI = 'rand';
 
       await this.digitalaxRewards.setNftStaking(this.nftStaking.address, {from: admin});
 
+      await this.digitalaxRewards.addRewardTokens([this.weth.address]);
+
       await this.monaToken.approve(this.digitalaxRewards.address, TWO_THOUSAND_TOKENS, {from: admin});
 
-      await this.digitalaxRewards.depositRewards(1, FIFTY_TOKENS, [], [], {from: admin});
-      await this.digitalaxRewards.depositRewards(2, HUNDRED_TOKENS, [], [], {from: admin});
-      await this.digitalaxRewards.depositRewards(3, FIFTY_TOKENS, [], [], {from: admin});
-      await this.digitalaxRewards.depositRewards(4, TEN_TOKENS, [], [], {from: admin});
+      await this.weth.deposit({from: minter, value: TWO_HUNDRED});
+      await this.weth.transfer(admin, TWO_HUNDRED, {from: minter});
+      await this.weth.deposit({from: minter, value: TWO_HUNDRED});
+      await this.weth.transfer(admin, TWO_HUNDRED, {from: minter});
 
+      await this.weth.approve(this.digitalaxRewards.address, TWO_THOUSAND_TOKENS, { from: admin });
+      const rewardsBeforeBalanceWeth = await this.weth.balanceOf(this.digitalaxRewards.address);
+      expect(rewardsBeforeBalanceWeth).to.be.bignumber.equals(new BN('0'));
+
+      await this.digitalaxRewards.depositRewards(1, FIFTY_TOKENS, [this.weth.address], [ONE_HUNDRED_TOKENS], {from: admin});
+      await this.digitalaxRewards.depositRewards(2, HUNDRED_TOKENS, [this.weth.address], [ONE_HUNDRED_TOKENS], {from: admin});
+      await this.digitalaxRewards.depositRewards(3, FIFTY_TOKENS, [this.weth.address], [ONE_HUNDRED_TOKENS], {from: admin});
+      await this.digitalaxRewards.depositRewards(4, TEN_TOKENS, [this.weth.address], [ONE_HUNDRED_TOKENS], {from: admin});
 
       await this.nftStaking.setRewardsContract(this.digitalaxRewards.address, { from: admin });
       await this.nftStaking.setTokensClaimable(true, {from: admin});
@@ -360,7 +372,17 @@ const randomURI = 'rand';
     console.log(finalMonaBalance.sub(initialMonaBalance).toString());
     console.log(finalMonaBalance2.sub(initialMonaBalance2).toString());
 
+    const afterBalanceWeth2 = await this.weth.balanceOf(staker2);
+    console.log('afterBalanceWeth2');
+    console.log(afterBalanceWeth2.toString());
+    expect(afterBalanceWeth2).to.be.bignumber.greaterThan(new BN('15000000000000000000'));
+    const afterBalanceWeth = await this.weth.balanceOf(staker);
+    expect(afterBalanceWeth).to.be.bignumber.greaterThan(new BN('15000000000000000000'));
+    console.log('afterBalanceWeth');
+    console.log(afterBalanceWeth.toString());
 
+    console.log('the week is');
+    console.log((await this.digitalaxRewards.getCurrentWeek()).toString());
   });
 
     async function getGasCosts(receipt) {

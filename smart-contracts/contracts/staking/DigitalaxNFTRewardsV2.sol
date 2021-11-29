@@ -7,7 +7,7 @@ import "../DigitalaxAccessControls.sol";
 import "./interfaces/IERC20.sol";
 import "../oracle/IDigitalaxMonaOracle.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/proxy/Initializable.sol";
 
 /**
  * @title Digitalax Rewards
@@ -24,8 +24,43 @@ interface MONA is IERC20 {
     function mint(address tokenOwner, uint tokens) external returns (bool);
 }
 
-contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
+contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, Initializable {
     using SafeMath for uint256;
+        // Booleans are more expensive than uint256 or any type that takes up a full
+    // word because each write operation emits an extra SLOAD to first read the
+    // slot's contents, replace the bits taken up by the boolean, and then write
+    // back. This is the compiler's defense against contract upgrades and
+    // pointer aliasing, and it cannot be disabled.
+
+    // The values being non-zero value makes deployment a bit more expensive,
+    // but in exchange the refund on every call to nonReentrant will be lower in
+    // amount. Since refunds are capped to a percentage of the total
+    // transaction's gas, it is best to keep them low in cases like this one, to
+    // increase the likelihood of the full refund coming into effect.
+    uint256 private _NOT_ENTERED;
+    uint256 private _ENTERED;
+    uint256 private _status;
+
+    /**
+     * @dev Prevents a contract from calling itself, directly or indirectly.
+     * Calling a `nonReentrant` function from another `nonReentrant`
+     * function is not supported. It is possible to prevent this from happening
+     * by making the `nonReentrant` function external, and make it call a
+     * `private` function that does the actual work.
+     */
+    modifier nonReentrant() {
+        // On the first call to nonReentrant, _notEntered will be true
+        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
+
+        // Any calls to nonReentrant after this point will fail
+        _status = _ENTERED;
+
+        _;
+
+        // By storing the original value once again, a refund is triggered (see
+        // https://eips.ethereum.org/EIPS/eip-2200)
+        _status = _NOT_ENTERED;
+    }
 
     /* ========== Variables ========== */
 
@@ -113,7 +148,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
 
 
     /* ========== Admin Functions ========== */
-    constructor(
+    function initialize(
         MONA _monaToken,
         DigitalaxAccessControls _accessControls,
         DigitalaxStaking _nftStaking,
@@ -122,7 +157,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         uint256 _startTime,
         uint256 _monaRewardsPaidTotal
     )
-        public
+        public initializer
     {
         require(
             address(_monaToken) != address(0),
@@ -147,6 +182,11 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, ReentrancyGuard {
         startTime = _startTime;
         monaRewardsPaidTotal = _monaRewardsPaidTotal;
         trustedForwarder = _trustedForwarder;
+
+        MAX_REWARD_TOKENS = 100;
+        _NOT_ENTERED = 1;
+        _ENTERED = 2;
+        _status = _NOT_ENTERED;
     }
     receive() external payable {
     }

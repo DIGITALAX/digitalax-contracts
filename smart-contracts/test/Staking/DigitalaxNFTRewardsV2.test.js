@@ -84,14 +84,15 @@ contract('DigitalaxNFTRewardsV2', (accounts) => {
     await time.increase(time.duration.seconds(120));
 
     this.nftStaking = await DigitalaxNFTStaking.new();
-    this.nftStaking.initStaking(
+    this.nftStaking.initialize(
         this.monaToken.address,
         this.nft.address,
         this.accessControls.address,
         constants.ZERO_ADDRESS
     );
 
-    this.digitalaxRewards = await DigitalaxNFTRewardsV2.new(
+    this.digitalaxRewards = await DigitalaxNFTRewardsV2.new();
+    await this.digitalaxRewards.initialize(
         this.monaToken.address,
         this.accessControls.address,
         this.nftStaking.address,
@@ -103,14 +104,14 @@ contract('DigitalaxNFTRewardsV2', (accounts) => {
 
     // Important
     this.nftStaking.setRewardsContract(this.digitalaxRewards.address, {from: admin});
-    this.digitalaxRewards.depositMonaRewards( 1, TWO_ETH, {from: admin});
+    this.digitalaxRewards.depositRewards( 1, TWO_ETH, [], [], {from: admin});
   });
 
   describe('Contract deployment', () => {
     it('Reverts when access controls is zero', async () => {
+      const digitalaxRewards = await DigitalaxNFTRewardsV2.new();
       await expectRevert(
-        DigitalaxNFTRewardsV2.new(
-          this.monaToken.address,
+          digitalaxRewards.initialize(this.monaToken.address,
           constants.ZERO_ADDRESS,
           this.nftStaking.address,
           this.oracle.address,
@@ -123,8 +124,9 @@ contract('DigitalaxNFTRewardsV2', (accounts) => {
       );
     });
     it('Reverts when mona token is 0', async () => {
+      const digitalaxRewards = await DigitalaxNFTRewardsV2.new();
       await expectRevert(
-        DigitalaxNFTRewardsV2.new(
+        digitalaxRewards.initialize(
           constants.ZERO_ADDRESS,
           this.accessControls.address,
           this.nftStaking.address,
@@ -138,8 +140,9 @@ contract('DigitalaxNFTRewardsV2', (accounts) => {
       );
     });
     it('Reverts when mona staking is zero', async () => {
+      const digitalaxRewards = await DigitalaxNFTRewardsV2.new();
       await expectRevert(
-        DigitalaxNFTRewardsV2.new(
+        digitalaxRewards.initialize(
           this.monaToken.address,
           this.accessControls.address,
           constants.ZERO_ADDRESS,
@@ -153,8 +156,9 @@ contract('DigitalaxNFTRewardsV2', (accounts) => {
       );
     });
     it('Reverts when mona oracle is zero', async () => {
+      const digitalaxRewards = await DigitalaxNFTRewardsV2.new();
       await expectRevert(
-        DigitalaxNFTRewardsV2.new(
+        digitalaxRewards.initialize(
           this.monaToken.address,
           this.accessControls.address,
           this.nftStaking.address,
@@ -168,7 +172,8 @@ contract('DigitalaxNFTRewardsV2', (accounts) => {
       );
     });
     it('Can redeploy the real contract', async () => {
-      const rewardsReal = await DigitalaxNFTRewardsV2Real.new(
+      const digitalaxRewards = await DigitalaxNFTRewardsV2.new();
+      const rewardsReal = await digitalaxRewards.initialize(
           this.monaToken.address,
           this.accessControls.address,
           this.nftStaking.address,
