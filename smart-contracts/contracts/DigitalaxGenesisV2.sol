@@ -60,7 +60,7 @@ contract DigitalaxGenesisV2 is ERC721WithSameTokenURIForAllTokens("DigitalaxGene
     function initialize(DigitalaxAccessControls _accessControls, address _trustedForwarder) public initializer {
         accessControls = _accessControls;
         trustedForwarder = _trustedForwarder;
-        tokenIdPointer = 100000;
+        tokenIdPointer = 0;
         BATCH_LIMIT = 20;
         emit PodeNFTContractDeployed();
     }
@@ -100,7 +100,7 @@ contract DigitalaxGenesisV2 is ERC721WithSameTokenURIForAllTokens("DigitalaxGene
      @param _ogHolder OG Holders - will be required for issuing royalties from secondary sales
      @return uint256 The token ID of the token that was minted
      */
-    function mint(address _beneficiary, address _ogHolder, uint256 _contribution) public returns (uint256) {
+    function mint(uint256 _expectedTokenId, address _beneficiary, address _ogHolder, uint256 _contribution) public returns (uint256) {
         require(
             accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasMinterRole(_msgSender()),
             "PodeNFT.mint: Sender must have the minter or contract role"
@@ -112,6 +112,7 @@ contract DigitalaxGenesisV2 is ERC721WithSameTokenURIForAllTokens("DigitalaxGene
 
         tokenIdPointer = tokenIdPointer.add(1);
         uint256 tokenId = tokenIdPointer;
+        require(tokenId == _expectedTokenId, "Need to know what token id is getting made");
 
         // Mint token and set token URI
         _safeMint(_beneficiary, tokenId);
@@ -124,7 +125,7 @@ contract DigitalaxGenesisV2 is ERC721WithSameTokenURIForAllTokens("DigitalaxGene
         return tokenId;
     }
 
-    function batchMint(address[] memory _recipients, address[] memory _ogHolders, uint256[] memory _contributions) external returns (uint256) {
+    function batchMint(uint256[] memory _expectedTokenIds, address[] memory _recipients, address[] memory _ogHolders, uint256[] memory _contributions) external returns (uint256) {
         require(
             _recipients.length <= maxPerBatch,
             "PodeNFTv2.batchMint: Amount cannot exceed maxPerBatch"
@@ -137,9 +138,13 @@ contract DigitalaxGenesisV2 is ERC721WithSameTokenURIForAllTokens("DigitalaxGene
             _recipients.length == _contributions.length,
             "Array Lengths"
         );
+        require(
+            _recipients.length == _expectedTokenIds.length,
+            "Array Lengths"
+        );
 
         for (uint i = 0; i < _recipients.length; i ++) {
-            mint(_recipients[i], _ogHolders[i], _contributions[i]);
+            mint(_expectedTokenIds[i], _recipients[i], _ogHolders[i], _contributions[i]);
         }
 
         // The token id pointer will now point to the most recently minted id

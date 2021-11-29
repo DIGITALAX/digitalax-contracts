@@ -189,10 +189,10 @@ const randomURI = 'rand';
 
 
     it('successfully deposits NFT and unstakes', async () => {
-      await this.token.mint(staker, staker, "1000000000000000000", {from: minter});
-      await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
+      await this.token.mint(1, staker, staker, "1000000000000000000", {from: minter});
+      await this.token.setPrimarySalePrice('1', TWO_ETH, {from: admin});
       await this.token.setApprovalForAll(this.nftStaking.address, true, {from: staker});
-      await this.nftStaking.stake('100001',{from: staker});
+      await this.nftStaking.stake('1',{from: staker});
       console.log(await this.nftStaking.getStakedTokens(staker));
       await time.increase(time.duration.seconds(120));
 
@@ -203,7 +203,7 @@ const randomURI = 'rand';
       const initialMonaBalance = await this.monaToken.balanceOf(staker);
 
       await time.increase(time.duration.seconds(1000000));
-      await this.nftStaking.unstake('100001', {from: staker});
+      await this.nftStaking.unstake('1', {from: staker});
 
 
       const finalMonaBalance = await this.monaToken.balanceOf(staker);
@@ -214,16 +214,16 @@ const randomURI = 'rand';
     });
 
     it('successfully deposits many NFT and batch', async () => {
-      await this.token.mint(staker, staker, "1000000000000000000", {from: minter});
-      await this.token.mint(staker, staker, "1000000000000000000", {from: minter});
-      await this.token.mint(staker, staker, "1000000000000000000", {from: minter});
-      await this.token.mint(staker, staker, "1000000000000000000", {from: minter});
-      await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
-      await this.token.setPrimarySalePrice('100002', TWO_ETH, {from: admin});
-      await this.token.setPrimarySalePrice('100003', TWO_ETH, {from: admin});
-      await this.token.setPrimarySalePrice('100004', TWO_ETH, {from: admin});
+      await this.token.mint(1, staker, staker, "1000000000000000000", {from: minter});
+      await this.token.mint(2, staker, staker, "1000000000000000000", {from: minter});
+      await this.token.mint(3, staker, staker, "1000000000000000000", {from: minter});
+      await this.token.mint(4, staker, staker, "1000000000000000000", {from: minter});
+      await this.token.setPrimarySalePrice('1', TWO_ETH, {from: admin});
+      await this.token.setPrimarySalePrice('2', TWO_ETH, {from: admin});
+      await this.token.setPrimarySalePrice('3', TWO_ETH, {from: admin});
+      await this.token.setPrimarySalePrice('4', TWO_ETH, {from: admin});
       await this.token.setApprovalForAll(this.nftStaking.address, true, {from: staker});
-      await this.nftStaking.stakeBatch(['100001','100002', '100003','100004'],{from: staker});
+      await this.nftStaking.stakeBatch(['1','2', '3','4'],{from: staker});
       //await this.nftStaking.stakeAll({from: staker});
       console.log(await this.nftStaking.getStakedTokens(staker));
       await time.increase(time.duration.seconds(120));
@@ -235,7 +235,7 @@ const randomURI = 'rand';
       const initialMonaBalance = await this.monaToken.balanceOf(staker);
 
       await time.increase(time.duration.seconds(1000000));
-      await this.nftStaking.unstakeBatch(['100002','100004','100001','100003'], {from: staker});
+      await this.nftStaking.unstakeBatch(['2','4','1','3'], {from: staker});
 
 
       const finalMonaBalance = await this.monaToken.balanceOf(staker);
@@ -246,10 +246,10 @@ const randomURI = 'rand';
     });
 
     it('successfully claims reward  NFT', async () => {
-      await this.token.mint(staker, staker, "1000000000000000000", {from: minter});
-      await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
+      await this.token.mint(1, staker, staker, "1000000000000000000", {from: minter});
+      await this.token.setPrimarySalePrice('1', TWO_ETH, {from: admin});
       await this.token.setApprovalForAll(this.nftStaking.address, true, {from: staker});
-      await this.nftStaking.stake('100001',{from: staker});
+      await this.nftStaking.stake('1',{from: staker});
       await time.increase(time.duration.seconds(120));
 
       await this.digitalaxRewards.setNowOverride('1209601'); // next week
@@ -270,10 +270,10 @@ const randomURI = 'rand';
     });
 
     it('successfully claims reward  NFT', async () => {
-      await this.token.mint(staker, staker, "1000000000000000000", {from: minter});
-      await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
+      await this.token.mint(1, staker, staker, "1000000000000000000", {from: minter});
+      await this.token.setPrimarySalePrice('1', TWO_ETH, {from: admin});
       await this.token.setApprovalForAll(this.nftStaking.address, true, {from: staker});
-      await this.nftStaking.stake('100001',{from: staker});
+      await this.nftStaking.stake('1',{from: staker});
       await time.increase(time.duration.seconds(120));
 
       await this.digitalaxRewards.setNowOverride('1209601'); // next week
@@ -294,10 +294,10 @@ const randomURI = 'rand';
     });
 
     it('successfully emergency unstakes  NFT', async () => {
-      await this.token.mint(staker, staker, "1000000000000000000", {from: minter});
-      await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
+      await this.token.mint(1, staker, staker, "1000000000000000000", {from: minter});
+      await this.token.setPrimarySalePrice('1', TWO_ETH, {from: admin});
       await this.token.setApprovalForAll(this.nftStaking.address, true, {from: staker});
-      await this.nftStaking.stake('100001',{from: staker});
+      await this.nftStaking.stake('1',{from: staker});
       await time.increase(time.duration.seconds(120));
 
       await this.digitalaxRewards.setNowOverride('1209601'); // next week
@@ -307,7 +307,7 @@ const randomURI = 'rand';
       const initialMonaBalance = await this.monaToken.balanceOf(staker);
 
       await time.increase(time.duration.seconds(1000000));
-      await this.nftStaking.emergencyUnstake('100001', {from: staker});
+      await this.nftStaking.emergencyUnstake('1', {from: staker});
 
 
       const finalMonaBalance = await this.monaToken.balanceOf(staker);
@@ -318,18 +318,18 @@ const randomURI = 'rand';
     });
 
     it('successfully deposits many NFT and batch with multiple users multiple weeks', async () => {
-    await this.token.mint(staker, staker, "1000000000000000000", {from: minter});
-    await this.token.mint(staker, staker, "1000000000000000000", {from: minter});
-    await this.token.mint(staker2, staker, "1000000000000000000",  {from: minter});
-    await this.token.mint(staker2, staker, "1000000000000000000",  {from: minter});
-    await this.token.setPrimarySalePrice('100001', TWO_ETH, {from: admin});
-    await this.token.setPrimarySalePrice('100002', TWO_ETH, {from: admin});
-    await this.token.setPrimarySalePrice('100003', TWO_ETH, {from: admin});
-    await this.token.setPrimarySalePrice('100004', TWO_ETH, {from: admin});
+    await this.token.mint(1, staker, staker, "1000000000000000000", {from: minter});
+    await this.token.mint(2, staker, staker, "1000000000000000000", {from: minter});
+    await this.token.mint(3, staker2, staker, "1000000000000000000",  {from: minter});
+    await this.token.mint(4, staker2, staker, "1000000000000000000",  {from: minter});
+    await this.token.setPrimarySalePrice('1', TWO_ETH, {from: admin});
+    await this.token.setPrimarySalePrice('2', TWO_ETH, {from: admin});
+    await this.token.setPrimarySalePrice('3', TWO_ETH, {from: admin});
+    await this.token.setPrimarySalePrice('4', TWO_ETH, {from: admin});
     await this.token.setApprovalForAll(this.nftStaking.address, true, {from: staker});
     await this.token.setApprovalForAll(this.nftStaking.address, true, {from: staker2});
-    await this.nftStaking.stakeBatch(['100001','100002'],{from: staker});
-    await this.nftStaking.stakeBatch(['100003','100004'],{from: staker2});
+    await this.nftStaking.stakeBatch(['1','2'],{from: staker});
+    await this.nftStaking.stakeBatch(['3','4'],{from: staker2});
     //await this.nftStaking.stakeAll({from: staker});
     console.log(await this.nftStaking.getStakedTokens(staker));
     console.log(await this.nftStaking.getStakedTokens(staker2));
@@ -357,8 +357,8 @@ const randomURI = 'rand';
     console.log('await this.digitalaxRewards.getMonaDailyAPY()');
     console.log(await this.digitalaxRewards.getMonaDailyAPY());
 
-    await this.nftStaking.unstakeBatch(['100001','100002'], {from: staker});
-    await this.nftStaking.unstakeBatch(['100001','100002'], {from: staker2});
+    await this.nftStaking.unstakeBatch(['1','2'], {from: staker});
+    await this.nftStaking.unstakeBatch(['1','2'], {from: staker2});
 
 
     const finalMonaBalance = await this.monaToken.balanceOf(staker);
