@@ -8,6 +8,7 @@ import "./interfaces/IERC20.sol";
 import "./interfaces/IDigitalaxNFTRewards.sol";
 import "./interfaces/IDigitalaxNFT.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
+import "@openzeppelin/contracts/proxy/Initializable.sol";
 
 /**
  * @title Digitalax Staking
@@ -15,7 +16,7 @@ import "../EIP2771/BaseRelayRecipient.sol";
  * @author Digitalax Team
  */
 
-contract DigitalaxNFTStaking is BaseRelayRecipient {
+contract DigitalaxNFTStaking is BaseRelayRecipient, Initializable {
     using SafeMath for uint256;
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
 
@@ -65,7 +66,6 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
 
     /// @notice sets the token to be claimable or not, cannot claim if it set to false
     bool public tokensClaimable;
-    bool initialised;
 
     /// @notice event emitted when a user has staked a token
     event Staked(address owner, uint256 amount);
@@ -89,27 +89,23 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
     /// @notice Admin update of rewards contract
     event RewardsTokenUpdated(address indexed oldRewardsToken, address newRewardsToken );
 
-    constructor() public {
-    }
      /**
      * @dev Single gateway to intialize the staking contract after deploying
      * @dev Sets the contract with the MONA NFT and MONA reward token
      */
-    function initStaking(
+    function initialize(
         IERC20 _rewardsToken,
         IDigitalaxNFT _parentNFT,
         DigitalaxAccessControls _accessControls,
         address _trustedForwarder
     )
-        external
+        public initializer
     {
-        require(!initialised, "Already initialised");
         rewardsToken = _rewardsToken;
         parentNFT = _parentNFT;
         accessControls = _accessControls;
         lastUpdateTime = _getNow();
         trustedForwarder = _trustedForwarder;
-        initialised = true;
     }
 
     function setTrustedForwarder(address _trustedForwarder) external  {
