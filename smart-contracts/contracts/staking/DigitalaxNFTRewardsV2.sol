@@ -89,7 +89,7 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, Initializable {
 	mapping(address => uint256) public tokenRewardsPaid;
 
     /// @notice for storing information from oracle
-    uint256 public lastOracleQuote = 1e18;
+    uint256 public lastOracleQuote;
 
     // We must trust admin to pass correct weighted values, if not we could use something like
     // / @notice mapping of a staker to its current properties
@@ -187,6 +187,8 @@ contract DigitalaxNFTRewardsV2 is BaseRelayRecipient, Initializable {
         _NOT_ENTERED = 1;
         _ENTERED = 2;
         _status = _NOT_ENTERED;
+
+        lastOracleQuote = 1e18;
     }
     receive() external payable {
     }
