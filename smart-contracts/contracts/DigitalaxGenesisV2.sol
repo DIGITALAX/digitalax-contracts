@@ -110,9 +110,9 @@ contract DigitalaxGenesisV2 is ERC721WithSameTokenURIForAllTokens("DigitalaxGene
 
         require(_ogHolder != address(0), "PodeNFTv2.mint: OG Holder is zero address");
 
-        tokenIdPointer = tokenIdPointer.add(1);
-        uint256 tokenId = tokenIdPointer;
-        require(tokenId == _expectedTokenId, "Need to know what token id is getting made");
+        require(!_exists(_expectedTokenId), "Token already minted");
+        uint256 tokenId = _expectedTokenId;
+        tokenIdPointer = _expectedTokenId;
 
         // Mint token and set token URI
         _safeMint(_beneficiary, tokenId);
