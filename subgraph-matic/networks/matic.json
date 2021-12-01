@@ -56,5 +56,9 @@
   "PatronIndexAddress": "0x7D997397Ab2e04309F520B70dDa420E15e3F9035",
   "PatronIndexStartBlock": 21758787,
   "PatronMarketplaceAddress": "0xd05F05C24A7540d86935E5b5b6b44742f033Ae24",
-  "PatronMarketplaceStartBlock": 21760884
+  "PatronMarketplaceStartBlock": 21760884,
+  "DigitalaxGenesisV2Address": "0x2543D997E766aF463e2b11bD7EE3e6D722bb1D9B",
+  "DigitalaxGenesisV2StartBlock": 21957039,
+  "DigitalaxGenesisV2StakingAddress": "0x6Afda2712225F950c93e7fd7C807BDE28f1E65A5",
+  "DigitalaxGenesisV2StakingStartBlock": 21992122
 }
