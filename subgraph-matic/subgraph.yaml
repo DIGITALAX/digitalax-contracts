@@ -539,6 +539,44 @@ dataSources:
           handler: handleDeveloperGroupRemoved
       file: ./src/DigitalaxIndex.mapping.ts
   - kind: ethereum/contract
+    name: PatronIndex
+    network: "matic"
+    source:
+      address: "0x7D997397Ab2e04309F520B70dDa420E15e3F9035"
+      abi: PatronIndex
+      startBlock: 21758787
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - CollectionGroupAdded
+        - CollectionGroupRemoved
+        - CollectionGroupUpdated
+        - DesignerGroupAdded
+        - DesignerGroupRemoved
+        - DeveloperGroupAdded
+        - DeveloperGroupRemoved
+      abis:
+        - name: PatronIndex
+          file: ./abis/PatronIndex.json
+      eventHandlers:
+        - event: CollectionGroupAdded(indexed uint256,uint256[],uint256[],uint256)
+          handler: handleCollectionGroupAdded
+        - event: CollectionGroupRemoved(indexed uint256)
+          handler: handleCollectionGroupRemoved
+        - event: CollectionGroupUpdated(indexed uint256,uint256[],uint256[],uint256)
+          handler: handleCollectionGroupUpdated
+        - event: DesignerGroupAdded(address,string,uint256[],uint256[])
+          handler: handleDesignerGroupAdded
+        - event: DesignerGroupRemoved(address)
+          handler: handleDesignerGroupRemoved
+        - event: DeveloperGroupAdded(address,string,uint256[],uint256[])
+          handler: handleDeveloperGroupAdded
+        - event: DeveloperGroupRemoved(address)
+          handler: handleDeveloperGroupRemoved
+      file: ./src/PatronIndex.mapping.ts
+  - kind: ethereum/contract
     name: DigitalaxNFTStaking
     network: "matic"
     source:
@@ -622,6 +660,41 @@ dataSources:
         - event: OfferCancelled(indexed uint256)
           handler: handleOfferCancelled
       file: ./src/DripMarketplace.mapping.ts
+  - kind: ethereum/contract
+    name: PatronMarketplace
+    network: "matic"
+    source:
+      address: "0xd05F05C24A7540d86935E5b5b6b44742f033Ae24"
+      abi: PatronMarketplace
+      startBlock: 21760884
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - DigitalaxMarketplaceContractDeployed
+        - UpdateMarketplaceDiscountToPayInErc20
+        - OfferCreated
+        - UpdateOfferPrimarySalePrice
+        - OfferPurchased
+        - OfferCancelled
+      abis:
+        - name: PatronMarketplace
+          file: ./abis/PatronMarketplace.json
+      eventHandlers:
+        - event: DigitalaxMarketplaceContractDeployed()
+          handler: handleMarketplaceDeployed
+        - event: UpdateMarketplaceDiscountToPayInErc20(indexed uint256,uint256)
+          handler: handleUpdateMarketplaceDiscountToPayInErc20
+        - event: OfferCreated(indexed uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleOfferCreated
+        - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
+          handler: handleOfferPrimarySalePriceUpdated
+        - event: OfferPurchased(uint256,uint256,uint256,uint256,uint256)
+          handler: handleOfferPurchased
+        - event: OfferCancelled(indexed uint256)
+          handler: handleOfferCancelled
+      file: ./src/PatronMarketplace.mapping.ts
   - kind: ethereum/contract
     name: GDNMembershipNFT
     network: "matic"
