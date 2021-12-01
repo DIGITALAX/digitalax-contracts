@@ -26,6 +26,11 @@ type DripDay @entity {
   totalMarketplaceVolumeInUSD: BigInt!
 }
 
+type PatronDay @entity {
+  id: ID!
+  totalMarketplaceVolumeInUSD: BigInt!
+}
+
 type DigitalaxGarmentNFTGlobalStat @entity {
   id: ID!
   totalSalesValue: BigInt! # Eth value in WEI accross all successful auctions
@@ -55,6 +60,12 @@ type DripGlobalStat @entity {
   usdETHConversion: BigInt! # USD FOR ETH IN WEI
 }
 
+type PatronGlobalStat @entity {
+  id: ID!
+  totalMarketplaceSalesInUSD: BigInt! # USD value collected in WEI across all marketplace
+  usdETHConversion: BigInt! # USD FOR ETH IN WEI
+}
+
 type DigitalaxGarmentChild @entity {
   id: ID! # {parent-token-id}-{child-token-id}
   parentId: BigInt! # parent token ID
@@ -76,6 +87,13 @@ type DigitalaxGarmentChildV2 @entity {
 }
 
 type DigitalaxCollectionGroup @entity {
+  id: ID!
+  auctions: [DigitalaxGarmentV2Auction!]!
+  collections: [DigitalaxGarmentV2Collection!]!
+  digiBundle: DigitalaxGarmentV2Collection!
+}
+
+type PatronCollectionGroup @entity {
   id: ID!
   auctions: [DigitalaxGarmentV2Auction!]!
   collections: [DigitalaxGarmentV2Collection!]!
@@ -434,6 +452,16 @@ type DripMarketplaceOffer @entity {
   discountToPayERC20: BigInt!
 }
 
+type PatronMarketplaceOffer @entity {
+  id: ID!
+  garmentCollection: DigitalaxGarmentV2Collection!
+  primarySalePrice: BigInt!
+  startTime: BigInt!
+  endTime: BigInt!
+  amountSold: BigInt!
+  discountToPayERC20: BigInt!
+}
+
 type DigitalaxMarketplacePurchaseHistory @entity {
   id: ID!
   eventName: String!
@@ -484,6 +512,25 @@ type DigitalaxSubscriptionPurchaseHistory @entity {
 }
 
 type DripMarketplacePurchaseHistory @entity {
+  id: ID!
+  eventName: String!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  token: DigitalaxGarmentV2!
+  buyer: Bytes!
+  orderId: BigInt!
+  value: BigInt! # USD Value
+  shippingUsd: BigInt!
+  paymentTokenTransferredAmount: BigInt!
+  paymentToken: String!
+  garmentCollectionId: BigInt!
+  discountToPayERC20: BigInt!
+  rarity: String!
+  usdEthExchange: BigInt! # Eth for every USD in wei at the time of the tx
+  usdPaymentTokenExchange: BigInt! # Payment Token for every USD in wei at the time of the tx
+}
+
+type PatronMarketplacePurchaseHistory @entity {
   id: ID!
   eventName: String!
   timestamp: BigInt!
