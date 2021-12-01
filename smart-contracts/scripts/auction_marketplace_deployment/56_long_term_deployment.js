@@ -66,7 +66,7 @@ async function main() {
     await updateRewardContract.wait();
 
     console.log('init staking pool contract');
-    const initStakingPool = await monaStaking.initMonaStakingPool(100000000, 10);
+    const initStakingPool = await monaStaking.initMonaStakingPool(10000000000, 100);
     await initStakingPool.wait();
 
     // console.log('add extra tokens');
@@ -74,7 +74,7 @@ async function main() {
     // await extraTokens.wait();
 
     console.log('start time');
-    const startT = await instanceStakingRewards.setStartTime(1635254591); // TODO double check start time sets correctly
+    const startT = await instanceStakingRewards.setStartTime(1637776800); // TODO double check start time sets correctly
     await startT.wait();
 
     console.log(`The rewards: ${instanceStakingRewards.address} `);

@@ -8,6 +8,7 @@ import "./interfaces/IERC20.sol";
 import "./interfaces/IDigitalaxNFTRewards.sol";
 import "./interfaces/IDigitalaxNFT.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
+import "@openzeppelin/contracts/proxy/Initializable.sol";
 
 /**
  * @title Digitalax Staking
@@ -15,7 +16,7 @@ import "../EIP2771/BaseRelayRecipient.sol";
  * @author Digitalax Team
  */
 
-contract DigitalaxNFTStaking is BaseRelayRecipient {
+contract DigitalaxNFTStaking is BaseRelayRecipient, Initializable {
     using SafeMath for uint256;
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
 
@@ -46,8 +47,11 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         mapping (uint256 => uint256) tokenIndex;
         uint256 balance;
         uint256 lastRewardPoints;
+         mapping (address => uint256) lastTokenRewardPoints;
         uint256 rewardsEarned;
         uint256 rewardsReleased;
+        mapping (address => uint256) tokenRevenueRewardsEarned;
+        mapping (address => uint256) tokenRevenueRewardsReleased;
     }
 
     event UpdateAccessControls(
@@ -62,16 +66,19 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
 
     /// @notice sets the token to be claimable or not, cannot claim if it set to false
     bool public tokensClaimable;
-    bool initialised;
 
     /// @notice event emitted when a user has staked a token
     event Staked(address owner, uint256 amount);
+	mapping (address => uint256) public tokenRewardsPerTokenPoints;
 
     /// @notice event emitted when a user has unstaked a token
     event Unstaked(address owner, uint256 amount);
 
     /// @notice event emitted when a user claims reward
     event RewardPaid(address indexed user, uint256 reward);
+
+ 	/// @notice event emitted when a user claims reward
+    event TokenRevenueRewardPaid(address indexed rewardToken, address indexed user, uint256 reward);
 
     /// @notice Allows reward tokens to be claimed
     event ClaimableStatusUpdated(bool status);
@@ -82,27 +89,23 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
     /// @notice Admin update of rewards contract
     event RewardsTokenUpdated(address indexed oldRewardsToken, address newRewardsToken );
 
-    constructor() public {
-    }
      /**
      * @dev Single gateway to intialize the staking contract after deploying
      * @dev Sets the contract with the MONA NFT and MONA reward token
      */
-    function initStaking(
+    function initialize(
         IERC20 _rewardsToken,
         IDigitalaxNFT _parentNFT,
         DigitalaxAccessControls _accessControls,
         address _trustedForwarder
     )
-        external
+        public initializer
     {
-        require(!initialised, "Already initialised");
         rewardsToken = _rewardsToken;
         parentNFT = _parentNFT;
         accessControls = _accessControls;
         lastUpdateTime = _getNow();
         trustedForwarder = _trustedForwarder;
-        initialised = true;
     }
 
     function setTrustedForwarder(address _trustedForwarder) external  {
@@ -343,7 +346,6 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
     )
         public
     {
-
         rewardsContract.updateRewards();
         uint256 parentRewards = rewardsContract.MonaRewards(lastUpdateTime, _getNow());
 
@@ -354,6 +356,25 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
                                             .div(stakedEthTotal));
         }
 
+        address[] memory _tokens = rewardsContract.getExtraRewardTokens();
+        // Continue if there is mona value in this pool
+
+        if (stakedEthTotal > 0) {
+        for (uint i=0; i< _tokens.length; i++) {
+            // 2 Calculates the overall amount of mona revenue that has increased since the last time someone called this method
+            uint256 thisTokenRewards = rewardsContract.TokenRevenueRewards(_tokens[i], lastUpdateTime,
+                                                _getNow());
+
+            // 3 Update the overall rewards per token points with the new mona rewards
+            tokenRewardsPerTokenPoints[_tokens[i]] = tokenRewardsPerTokenPoints[_tokens[i]].add(thisTokenRewards
+                .mul(1e18)
+                .mul(pointMultiplier)
+                .div(stakedEthTotal));
+
+            }
+
+        }
+
         lastUpdateTime = _getNow();
         uint256 rewards = rewardsOwing(_user);
 
@@ -361,6 +382,11 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         if (_user != address(0)) {
             staker.rewardsEarned = staker.rewardsEarned.add(rewards);
             staker.lastRewardPoints = rewardsPerTokenPoints;
+                for (uint i=0; i< _tokens.length; i++) {
+                    uint256 specificTokenRewards = tokenRewardsOwing(_user, _tokens[i]);
+                    staker.tokenRevenueRewardsEarned[_tokens[i]] = staker.tokenRevenueRewardsEarned[_tokens[i]].add(specificTokenRewards);
+                    staker.lastTokenRewardPoints[_tokens[i]] = tokenRewardsPerTokenPoints[_tokens[i]];
+                  }
         }
     }
 
@@ -379,6 +405,22 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         uint256 rewards = stakers[_user].balance.mul(newRewardPerToken)
                                                 .div(1e18)
                                                 .div(pointMultiplier);
+        return rewards;
+    }
+    function tokenRewardsOwing(
+        address _user,
+        address _token
+    )
+        public
+        view
+        returns(uint256)
+    {
+        uint256 newRewardPerToken = tokenRewardsPerTokenPoints[_token].sub(stakers[_user].lastTokenRewardPoints[_token]);
+        uint256 rewards = stakers[_user].balance.mul(newRewardPerToken)
+                                                .div(1e18)
+                                                .div(pointMultiplier);
+
+
         return rewards;
     }
 
@@ -408,6 +450,42 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
                                                 .div(pointMultiplier);
         return rewards.add(stakers[_user].rewardsEarned).sub(stakers[_user].rewardsReleased);
     }
+/*
+      * @notice Returns the about of rewards yet to be claimed (this currently includes pending and awarded together
+      * @param _user the user we are interested in
+      * @dev returns the claimable rewards and pending rewards
+      */
+    function unclaimedExtraRewards(
+        address _user,
+        address _token
+    )
+        public
+        view
+        returns(uint256 claimableRewards, uint256 pendingRewards)
+    {
+        if (stakedEthTotal == 0) {
+            return (0,0);
+        }
+
+        Staker storage staker = stakers[_user];
+
+        uint256 tokenRewards = rewardsContract.TokenRevenueRewards(_token, lastUpdateTime,
+                                                        _getNow());
+
+        uint256 newRewardPerToken = tokenRewardsPerTokenPoints[_token].add(tokenRewards
+                                                                .mul(1e18)
+                                                                .mul(pointMultiplier)
+                                                                .div(stakedEthTotal))
+                                                         .sub(staker.lastTokenRewardPoints[_token]);
+
+        uint256 newRewards = stakers[_user].balance.mul(newRewardPerToken)
+                                                .div(1e18)
+                                                .div(pointMultiplier);
+
+        claimableRewards = staker.tokenRevenueRewardsEarned[_token].add(newRewards).sub(staker.tokenRevenueRewardsReleased[_token]);
+
+        pendingRewards = newRewards.add(staker.tokenRevenueRewardsEarned[_token]);
+    }
 
 
     /// @notice Lets a user with rewards owing to claim tokens
@@ -435,6 +513,27 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
 
         rewardsToken.transfer(_user, payableAmount);
         emit RewardPaid(_user, payableAmount);
+
+	    // Extra tokens
+        address[] memory _tokens = rewardsContract.getExtraRewardTokens();
+        // Continue if there is mona value in this pool
+        for (uint i=0; i< _tokens.length; i++) {
+            uint256 rewardPayableAmount = 0;
+            if(staker.tokenRevenueRewardsEarned[_tokens[i]] >= staker.tokenRevenueRewardsReleased[_tokens[i]]) {
+                rewardPayableAmount = staker.tokenRevenueRewardsEarned[_tokens[i]].sub(staker.tokenRevenueRewardsReleased[_tokens[i]]);
+                staker.tokenRevenueRewardsReleased[_tokens[i]] = staker.tokenRevenueRewardsEarned[_tokens[i]];
+            }
+            if(rewardPayableAmount > 0){
+                /// @dev accounts for dust
+                uint256 tokenRewardBal = IERC20(_tokens[i]).balanceOf(address(this));
+                if (rewardPayableAmount > tokenRewardBal) {
+                    rewardPayableAmount = tokenRewardBal;
+                }
+
+                IERC20(_tokens[i]).transfer(_user, rewardPayableAmount);
+                emit TokenRevenueRewardPaid(_tokens[i], _user, rewardPayableAmount);
+            }
+        }
     }
 
 
