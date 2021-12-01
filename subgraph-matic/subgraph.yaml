@@ -580,9 +580,9 @@ dataSources:
     name: DigitalaxNFTStaking
     network: "matic"
     source:
-      address: "0xa7cf890C70817D57ea355C2F4B4BF23B064D91F7"
+      address: "0xd80eeB5aFfd3C419f2Cb05477372778862D26757"
       abi: DigitalaxNFTStaking
-      startBlock: 15296127
+      startBlock: 21938451
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -605,6 +605,35 @@ dataSources:
         - event: RewardPaid(indexed address,uint256)
           handler: handleRewardPaid
       file: ./src/DigitalaxNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxOldNFTStaking
+    network: "matic"
+    source:
+      address: "0xa7cf890C70817D57ea355C2F4B4BF23B064D91F7"
+      abi: DigitalaxOldNFTStaking
+      startBlock: 15296127
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+      abis:
+        - name: DigitalaxOldNFTStaking
+          file: ./abis/DigitalaxOldNFTStaking.json
+      eventHandlers:
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+      file: ./src/DigitalaxOldNFTStaking.mapping.ts
   - kind: ethereum/contract
     name: DripOracle
     network: "matic"
