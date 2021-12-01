@@ -386,6 +386,12 @@ type DigitalaxNFTStaker @entity {
   rewardsClaimed: BigInt!
 }
 
+type DigitalaxOldNFTStaker @entity {
+  id: ID!
+  garments: [DigitalaxGarmentV2!]!
+  rewardsClaimed: BigInt!
+}
+
 type DigitalaxMarketplaceOffer @entity {
   id: ID!
   garmentCollection: DigitalaxGarmentCollection!
