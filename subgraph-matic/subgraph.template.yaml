@@ -841,3 +841,55 @@ dataSources:
         - event: UnstakedLP(indexed address,uint256)
           handler: handleUnstakedLP
       file: ./src/DigitalaxMonaStaking.mapping.ts
+    - kind: ethereum/contract
+    name: DigitalaxGenesisV2
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxGenesisV2Address}}"
+      abi: DigitalaxGenesisV2
+      startBlock: {{DigitalaxGenesisV2StartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: DigitalaxGenesisV2
+          file: ./abis/DigitalaxGenesisV2.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: TokenPrimarySalePriceSet(indexed uint256,uint256)
+          handler: handleTokenPriceSaleUpdated
+      file: ./src/DigitalaxGenesisV2.mapping.ts
+    - kind: ethereum/contract
+    name: DigitalaxGenesisV2Staking
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxGenesisV2StakingAddress}}"
+      abi: DigitalaxNFTStaking
+      startBlock: {{DigitalaxGenesisV2StakingStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+      abis:
+        - name: DigitalaxNFTStaking
+          file: ./abis/DigitalaxNFTStaking.json
+      eventHandlers:
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+      file: ./src/DigitalaxGenesisV2Staking.mapping.ts
+
