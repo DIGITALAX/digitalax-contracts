@@ -48,5 +48,9 @@
   "DigitalaxMonaRewardsStartBlock": 20897887,
   "DigitalaxMonaStakingAddress": "0x09C603165E6e6d81F1c10226266e4b3D81141F45",
   "DigitalaxMonaStakingStartBlock": 20897898,
-  "GDNToken": "0x83ecc20e47f8f7a40ebc04ef2f81c6a1de325cdc"
+  "GDNToken": "0x83ecc20e47f8f7a40ebc04ef2f81c6a1de325cdc",
+  "PatronIndexAddress": "0x7D997397Ab2e04309F520B70dDa420E15e3F9035",
+  "PatronIndexStartBlock": 21758787,
+  "PatronMarketplaceAddress": "0xd05F05C24A7540d86935E5b5b6b44742f033Ae24",
+  "PatronMarketplaceStartBlock": 21760884
 }
