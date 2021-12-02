@@ -793,9 +793,9 @@ dataSources:
     name: DigitalaxMonaRewards
     network: "matic"
     source:
-      address: "0x72e442d3D8a60c9CbBF59A939B850A1569eB0245"
+      address: "0x03A3B7F1A5Ac493f7a179E84b5fEc32650a11EB6"
       abi: DigitalaxMonaRewards
-      startBlock: 20897887
+      startBlock: 21991327
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -813,12 +813,35 @@ dataSources:
           handler: handleWithdrawRevenueSharing
       file: ./src/DigitalaxMonaRewards.mapping.ts
   - kind: ethereum/contract
+    name: DigitalaxGenesisRewards
+    network: "matic"
+    source:
+      address: "0x0E100417c6052AF71FAE9e5ceE2cc16Ac8ed99Ec"
+      abi: DigitalaxNFTRewards
+      startBlock: 21992128
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasam/assemblyscript
+      entities:
+        - DepositRevenueSharing
+        - WithdrawRevenueSharing
+      abis:
+        - name: DigitalaxNFTRewards
+          file: ./abis/DigitalaxNFTRewards.json
+      eventHandlers:
+        - event: DepositRevenueSharing(uint256,uint256,uint256,address[],uint256[])
+          handler: handleDepositRevenueSharing
+        - event: WithdrawRevenueSharing(uint256,uint256,uint256,address[],uint256[])
+          handler: handleWithdrawRevenueSharing
+      file: ./src/DigitalaxGenesisRewards.mapping.ts
+  - kind: ethereum/contract
     name: DigitalaxMonaStaking
     network: "matic"
     source:
-      address: "0x09C603165E6e6d81F1c10226266e4b3D81141F45"
+      address: "0xF795c2abB0E7A56A0C011993C37A51626756B4BD"
       abi: DigitalaxMonaStaking
-      startBlock: 20897898
+      startBlock: 21991315
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -892,3 +915,4 @@ dataSources:
         - event: RewardPaid(indexed address,uint256)
           handler: handleRewardPaid
       file: ./src/DigitalaxGenesisV2Staking.mapping.ts
+

@@ -18,19 +18,19 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "week",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
         "name": "weeklyMonaRevenueSharingPerSecond",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "bonusWeeklyMonaRevenueSharingPerSecond",
+        "name": "_week",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_amount",
         "type": "uint256"
       },
       {
@@ -136,21 +136,34 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "address",
+        "name": "oracle",
+        "type": "address"
+      }
+    ],
+    "name": "UpdateOracle",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": false,
         "internalType": "uint256",
-        "name": "week",
+        "name": "weeklyMonaRevenueSharingPerSecond",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "amount",
+        "name": "_week",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "bonusAmount",
+        "name": "_amount",
         "type": "uint256"
       },
       {
@@ -170,18 +183,6 @@
     "type": "event"
   },
   {
-    "inputs": [
-      { "internalType": "uint256", "name": "_from", "type": "uint256" },
-      { "internalType": "uint256", "name": "_to", "type": "uint256" }
-    ],
-    "name": "BonusMonaRevenueRewards",
-    "outputs": [
-      { "internalType": "uint256", "name": "rewards", "type": "uint256" }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "MAX_REWARD_TOKENS",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
@@ -193,7 +194,7 @@
       { "internalType": "uint256", "name": "_from", "type": "uint256" },
       { "internalType": "uint256", "name": "_to", "type": "uint256" }
     ],
-    "name": "MonaRevenueRewards",
+    "name": "MonaRewards",
     "outputs": [
       { "internalType": "uint256", "name": "rewards", "type": "uint256" }
     ],
@@ -240,20 +241,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "bonusMonaRewardsPaidTotal",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "name": "bonusWeeklyMonaRevenueSharingPerSecond",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       { "internalType": "address", "name": "_rewardToken", "type": "address" }
     ],
@@ -268,7 +255,6 @@
     "inputs": [
       { "internalType": "uint256", "name": "_week", "type": "uint256" },
       { "internalType": "uint256", "name": "_amount", "type": "uint256" },
-      { "internalType": "uint256", "name": "_bonusAmount", "type": "uint256" },
       {
         "internalType": "address[]",
         "name": "_rewardTokens",
@@ -280,7 +266,7 @@
         "type": "uint256[]"
       }
     ],
-    "name": "depositRevenueSharingRewards",
+    "name": "depositRewards",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -288,6 +274,13 @@
   {
     "inputs": [],
     "name": "getCurrentWeek",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getEthPerMona",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
@@ -315,17 +308,24 @@
     "type": "function"
   },
   {
-    "inputs": [
-      { "internalType": "bool", "name": "isEarlyStaker", "type": "bool" }
-    ],
+    "inputs": [],
     "name": "getMonaDailyAPY",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
+    "inputs": [
+      { "internalType": "uint256", "name": "_ethAmt", "type": "uint256" }
+    ],
+    "name": "getMonaPerEth",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
-    "name": "getMonaStakedValueTotal",
+    "name": "getMonaStakedEthTotal",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
@@ -353,7 +353,12 @@
       },
       {
         "internalType": "contract DigitalaxStaking",
-        "name": "_monaStaking",
+        "name": "_nftStaking",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IDigitalaxMonaOracle",
+        "name": "_oracle",
         "type": "address"
       },
       {
@@ -365,11 +370,6 @@
       {
         "internalType": "uint256",
         "name": "_monaRewardsPaidTotal",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_bonusMonaRewardsPaidTotal",
         "type": "uint256"
       }
     ],
@@ -389,6 +389,13 @@
   },
   {
     "inputs": [],
+    "name": "lastOracleQuote",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "lastRewardsTime",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
@@ -403,7 +410,16 @@
   },
   {
     "inputs": [],
-    "name": "monaStaking",
+    "name": "monaToken",
+    "outputs": [
+      { "internalType": "contract MONA", "name": "", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nftStaking",
     "outputs": [
       {
         "internalType": "contract DigitalaxStaking",
@@ -416,17 +432,32 @@
   },
   {
     "inputs": [],
-    "name": "monaToken",
+    "name": "oracle",
     "outputs": [
-      { "internalType": "contract MONA", "name": "", "type": "address" }
+      {
+        "internalType": "contract IDigitalaxMonaOracle",
+        "name": "",
+        "type": "address"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "normalMonaRewardsPaid",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "name": "pool",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "lastRewardsTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "monaRewardsPaid",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -506,7 +537,7 @@
     "inputs": [
       { "internalType": "address", "name": "_addr", "type": "address" }
     ],
-    "name": "setMonaStaking",
+    "name": "setNftStaking",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -556,13 +587,6 @@
   },
   {
     "inputs": [],
-    "name": "totalNewBonusMonaRewards",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "totalNewMonaRewards",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
@@ -593,6 +617,19 @@
       }
     ],
     "name": "updateAccessControls",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IDigitalaxMonaOracle",
+        "name": "_oracle",
+        "type": "address"
+      }
+    ],
+    "name": "updateOracle",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -632,7 +669,6 @@
     "inputs": [
       { "internalType": "uint256", "name": "_week", "type": "uint256" },
       { "internalType": "uint256", "name": "_amount", "type": "uint256" },
-      { "internalType": "uint256", "name": "_bonusAmount", "type": "uint256" },
       {
         "internalType": "address[]",
         "name": "_rewardTokens",
@@ -644,7 +680,7 @@
         "type": "uint256[]"
       }
     ],
-    "name": "withdrawMonaRewards",
+    "name": "withdrawRewards",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

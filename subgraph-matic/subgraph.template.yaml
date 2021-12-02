@@ -813,6 +813,29 @@ dataSources:
           handler: handleWithdrawRevenueSharing
       file: ./src/DigitalaxMonaRewards.mapping.ts
   - kind: ethereum/contract
+    name: DigitalaxGenesisRewards
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxGenesisRewardsAddress}}"
+      abi: DigitalaxNFTRewards
+      startBlock: {{DigitalaxGenesisRewardsStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasam/assemblyscript
+      entities:
+        - DepositRevenueSharing
+        - WithdrawRevenueSharing
+      abis:
+        - name: DigitalaxNFTRewards
+          file: ./abis/DigitalaxNFTRewards.json
+      eventHandlers:
+        - event: DepositRevenueSharing(uint256,uint256,uint256,address[],uint256[])
+          handler: handleDepositRevenueSharing
+        - event: WithdrawRevenueSharing(uint256,uint256,uint256,address[],uint256[])
+          handler: handleWithdrawRevenueSharing
+      file: ./src/DigitalaxGenesisRewards.mapping.ts
+  - kind: ethereum/contract
     name: DigitalaxMonaStaking
     network: "{{network}}"
     source:
@@ -841,7 +864,7 @@ dataSources:
         - event: UnstakedLP(indexed address,uint256)
           handler: handleUnstakedLP
       file: ./src/DigitalaxMonaStaking.mapping.ts
-    - kind: ethereum/contract
+  - kind: ethereum/contract
     name: DigitalaxGenesisV2
     network: "{{network}}"
     source:
@@ -863,7 +886,7 @@ dataSources:
         - event: TokenPrimarySalePriceSet(indexed uint256,uint256)
           handler: handleTokenPriceSaleUpdated
       file: ./src/DigitalaxGenesisV2.mapping.ts
-    - kind: ethereum/contract
+  - kind: ethereum/contract
     name: DigitalaxGenesisV2Staking
     network: "{{network}}"
     source:
