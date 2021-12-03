@@ -253,7 +253,7 @@ contract DigitalaxRewardsV2 is Initializable, BaseRelayRecipient {
         bonusWeeklyMonaRevenueSharingPerSecond[_week] = bonusWeeklyMonaRevenueSharingPerSecond[_week].add(bonusMonaAmount);
 
         for (uint i = 0; i < _rewardTokens.length; i++) {
-            require(_rewardTokens[i] != address(0) && _rewardTokens[i] != address(monaToken), "This param is not for MONA or 0 address");
+            require(_rewardTokens[i] != address(0), "This param is not for 0 address");
             require(IERC20(_rewardTokens[i]).allowance(_msgSender(), address(this)) >= _rewardAmounts[i], "DepositRevenueSharingRewards: Failed to supply ERC20 Allowance");
 
             // Deposit this amount of MONA here
