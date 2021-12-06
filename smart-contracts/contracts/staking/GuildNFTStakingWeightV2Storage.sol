@@ -63,12 +63,12 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
         DECAY_POINT_DEFAULT = 75; // 7.5%
         DECAY_POINT_WITH_APPRAISAL = 25; // 2.5%
 
-        reactionPoint["Self"] = 1;
+        reactionPoint["Self"] = 10;
         reactionPoint["Love"] = 30;
         reactionPoint["Like"] = 10;
         reactionPoint["Fire"] = 25;
         reactionPoint["Sad"] = 5;
-        reactionPoint["Skip"] = 1;
+        reactionPoint["Skip"] = 10;
         reactionPoint["Angry"] = 15;
         reactionPoint["Novel"] = 20;
 

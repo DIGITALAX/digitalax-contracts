@@ -68,6 +68,8 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
     // Mapping from token ID to owner address
     mapping (uint256 => address) public tokenOwner;
 
+    mapping(uint256 => address) public approvedParty;
+
     /// @notice sets the token to be claimable or not, cannot claim if it set to false
     bool public tokensClaimable;
     bool initialised;
@@ -223,6 +225,17 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
         }
     }
 
+      /// @notice This is to set an external approved party who can unstake the nft in case the original address is broken.
+    /// @notice To unset, set again with own address or 0x000...000
+    function setApprovedParty(uint256 _tokenId, address _approvedParty) external {
+        require(
+            tokenOwner[_tokenId] == _msgSender(),
+            "GuildWhitelistedNFTStaking.setApprovedParty: Sender must have staked tokenID"
+        );
+
+        approvedParty[_tokenId] = _approvedParty;
+    }
+
     /// @notice Stake NFT and earn reward tokens.
     function stake(uint256 tokenId) external {
         // require();
@@ -269,20 +282,22 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
 
     /// @notice Unstake NFTs.
     function unstake(uint256 _tokenId) external {
+        bool isApprovedParty = approvedParty[_tokenId] == _msgSender();
         require(
-            tokenOwner[_tokenId] == _msgSender(),
-            "DigitalaxParentStaking._unstake: Sender must have staked tokenID"
+            tokenOwner[_tokenId] == _msgSender() || isApprovedParty,
+            "DigitalaxParentStaking._unstake: Sender must have staked tokenID or is approved party"
         );
         claimReward(_msgSender());
-        _unstake(_msgSender(), _tokenId);
+        _unstake(_msgSender(), _tokenId, isApprovedParty);
     }
 
     /// @notice Stake multiple DECO NFTs and claim reward tokens.
     function unstakeBatch(uint256[] memory tokenIds) external {
         claimReward(_msgSender());
         for (uint i = 0; i < tokenIds.length; i++) {
-            if (tokenOwner[tokenIds[i]] == _msgSender()) {
-                _unstake(_msgSender(), tokenIds[i]);
+            bool isApprovedParty = approvedParty[tokenIds[i]] == _msgSender();
+            if (tokenOwner[tokenIds[i]] == _msgSender() || isApprovedParty) {
+                _unstake(_msgSender(), tokenIds[i], isApprovedParty);
             }
         }
     }
@@ -292,7 +307,7 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
      * @dev Rewards to be given out is calculated
      * @dev Balance of stakers are updated as they unstake the nfts based on ether price
     */
-    function _unstake(address _user, uint256 _tokenId) internal {
+    function _unstake(address _user, uint256 _tokenId, bool _isApprovedParty) internal {
         Staker storage staker = stakers[_user];
 
         uint256 amount = getContribution(_tokenId);
@@ -324,18 +339,24 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
         }
 
         weightContract.unstake(_tokenId, _user);
-        parentNFT.safeTransferFrom(address(this), _user, _tokenId);
+
+        if(_isApprovedParty){
+            parentNFT.safeTransferFrom(address(this), approvedParty[_tokenId], _tokenId);
+        } else {
+            parentNFT.safeTransferFrom(address(this), _user, _tokenId);
+        }
 
         emit Unstaked(_user, _tokenId);
     }
 
     // Unstake without caring about rewards. EMERGENCY ONLY.
     function emergencyUnstake(uint256 _tokenId) public {
+        bool isApprovedParty = approvedParty[_tokenId] == _msgSender();
         require(
-            tokenOwner[_tokenId] == _msgSender(),
-            "DigitalaxParentStaking._unstake: Sender must have staked tokenID"
+            tokenOwner[_tokenId] == _msgSender() || isApprovedParty,
+            "DigitalaxParentStaking._unstake: Sender must have staked tokenID or be approved party"
         );
-        _unstake(_msgSender(), _tokenId);
+        _unstake(_msgSender(), _tokenId, isApprovedParty);
         emit EmergencyUnstake(_msgSender(), _tokenId);
     }
 
