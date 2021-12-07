@@ -213,8 +213,25 @@ abstract contract OwnableUpgradeable is Initializable, ContextUpgradeable {
     uint256[49] private __gap;
 }
 
+/// @author: manifold.xyz
 
-abstract contract EIP2981RoyaltyOverrideCore is IEIP2981, IEIP2981RoyaltyOverride, ERC165 {
+/**
+ * @dev Royalty interface for creator core classes
+ */
+interface IManifold {
+
+    /**
+     * @dev Get royalites of a token.  Returns list of receivers and basisPoints
+     *
+     *  bytes4(keccak256('getRoyalties(uint256)')) == 0xbb3bafd6
+     *
+     *  => 0xbb3bafd6 = 0xbb3bafd6
+     */
+    function getRoyalties(uint256 tokenId) external view returns (address payable[] memory, uint256[] memory);
+}
+
+
+abstract contract EIP2981RoyaltyOverrideCore is IEIP2981, IEIP2981RoyaltyOverride, ERC165, IManifold {
     using EnumerableSet for EnumerableSet.UintSet;
 
     TokenRoyalty public defaultRoyalty;
@@ -280,6 +297,15 @@ abstract contract EIP2981RoyaltyOverrideCore is IEIP2981, IEIP2981RoyaltyOverrid
             return (defaultRoyalty.recipient, value*defaultRoyalty.bps/10000);
         }
         return (address(0), 0);
+    }
+
+    function getRoyalties(uint256 tokenId) external override view returns (address payable[] memory, uint256[] memory){
+        uint256 length = 1;
+        uint256[] memory price = new uint256[](length);
+        address payable[] memory designers = new address payable[](length);
+        price[0]= 0;
+        designers[0] = payable(0);
+        return (designers, price);
     }
 }
 
