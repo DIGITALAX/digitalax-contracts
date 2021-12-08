@@ -61,4 +61,6 @@
   "DigitalaxGenesisV2StartBlock": 21957039,
   "DigitalaxGenesisV2StakingAddress": "0x6Afda2712225F950c93e7fd7C807BDE28f1E65A5",
   "DigitalaxGenesisV2StakingStartBlock": 21992122
+  "KeepingDistanceAccessControls: "0xc4EFFA08dD87576DE90F8eA91a7c8f6728f3b4Be",
+  "KeepingDistanceContributionNFt: "0x34657219F55324Bf7ba3e2Cd86A6dA3A441fbe9B"
 }
