@@ -48,6 +48,10 @@ interface IEIP2981RoyaltyOverride is IERC165 {
 
     event TokenRoyaltyRemoved(uint256 tokenId);
     event TokenRoyaltySet(uint256 tokenId, address recipient, uint16 bps);
+
+    event CustomTokenRoyaltyRemoved(uint256 tokenId, address recipient);
+    event CustomTokenRoyaltySet(uint256 tokenId, address recipient, uint16 bps);
+
     event DefaultRoyaltySet(address recipient, uint16 bps);
 
     struct TokenRoyalty {
@@ -231,17 +235,80 @@ interface IManifold {
 }
 
 
-abstract contract EIP2981RoyaltyOverrideCore is IEIP2981, IEIP2981RoyaltyOverride, ERC165, IManifold {
+abstract contract EIP2981RoyaltyOverrideCore is IEIP2981, IEIP2981RoyaltyOverride, ERC165, IManifold, OwnableUpgradeable {
     using EnumerableSet for EnumerableSet.UintSet;
 
     TokenRoyalty public defaultRoyalty;
     mapping(uint256 => TokenRoyalty) private _tokenRoyalties;
     EnumerableSet.UintSet private _tokensWithRoyalties;
 
+    mapping(uint256 => TokenRoyalty[]) private _customTokenRoyalties;
+    mapping(uint256 => mapping (address => uint256)) private _customTokenRoyaltiesAddressIndex;
+
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
         return interfaceId == type(IEIP2981).interfaceId || interfaceId == type(IEIP2981RoyaltyOverride).interfaceId || super.supportsInterface(interfaceId);
     }
 
+    function setCustomTokenRoyalties(uint256[] memory _tokenIds, address[] memory _recipients, uint16[] memory _bps) public onlyOwner {
+        require((_tokenIds.length) > 0, "setCustomTokenRoyalties: Empty array not supported");
+        require((_tokenIds.length) == (_recipients.length), "setCustomTokenRoyalties: Array lengths");
+        require((_tokenIds.length) == (_bps.length), "setCustomTokenRoyalties: Array lengths");
+        for (uint i = 0; i < _tokenIds.length; i++) {
+            if(_recipients[i] != address(0)) {
+                if(checkInCustomAddressExists(_tokenIds[i], _recipients[i])) {
+                       uint256 indexOfAddressInRoyalties = _customTokenRoyaltiesAddressIndex[_tokenIds[i]][ _recipients[i]];
+                        // Delete if bps is 0
+                        if ( _bps[i] == uint16(0)) {
+                            uint256 lengthOfRoyaltyArray = _customTokenRoyalties[_tokenIds[i]].length;
+                            if(lengthOfRoyaltyArray > 1){
+                             // Shift what needs to be deleted to the end
+                                TokenRoyalty memory tempTokenRoyalty = _customTokenRoyalties[_tokenIds[i]][lengthOfRoyaltyArray -1];
+                                _customTokenRoyalties[_tokenIds[i]][indexOfAddressInRoyalties] = tempTokenRoyalty;
+                                _customTokenRoyaltiesAddressIndex[_tokenIds[i]][tempTokenRoyalty.recipient] = indexOfAddressInRoyalties;
+                                _customTokenRoyalties[_tokenIds[i]][indexOfAddressInRoyalties] = tempTokenRoyalty;
+
+                            }
+                            _customTokenRoyalties[_tokenIds[i]].pop();
+                            delete _customTokenRoyaltiesAddressIndex[_tokenIds[i]][_recipients[i]];
+
+                            emit CustomTokenRoyaltyRemoved(_tokenIds[i], _recipients[i]);
+                        } else{
+                            // If it exists, just update the bps with this
+                           _customTokenRoyalties[_tokenIds[i]][indexOfAddressInRoyalties].bps = _bps[i];
+                            emit CustomTokenRoyaltySet(_tokenIds[i], _recipients[i], _bps[i]);
+                        }
+                } else {
+                    // All new custom royalty, no one on previously
+                    _customTokenRoyalties[_tokenIds[i]].push(TokenRoyalty(_recipients[i], _bps[i]));
+                    uint256 newLength = _customTokenRoyalties[_tokenIds[i]].length;
+                    _customTokenRoyaltiesAddressIndex[_tokenIds[i]][_recipients[i]] = newLength - 1;
+                    emit CustomTokenRoyaltySet(_tokenIds[i], _recipients[i], _bps[i]);
+                }
+            }
+        }
+    }
+
+    function checkInCustomAddressExists(uint256 _tokenId, address _recipient) public view returns (bool exists) {
+        uint256 index = _customTokenRoyaltiesAddressIndex[_tokenId][_recipient];
+        if(_customTokenRoyalties[_tokenId][index].recipient == _recipient){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function getCustomRoyaltiesForToken(uint256 _tokenId) public view returns (address payable[] memory, uint256[] memory){
+        uint256 numberOfRecipients = _customTokenRoyalties[_tokenId].length;
+        address payable[] memory a = new address payable[](numberOfRecipients);
+        uint256[] memory b = new uint256 [](numberOfRecipients);
+
+        for (uint i=0; i< numberOfRecipients; i++) {
+            a[i] = payable(_customTokenRoyalties[_tokenId][i].recipient);
+            b[i] = _customTokenRoyalties[_tokenId][i].bps;
+        }
+        return (a,b);
+    }
+    
     /**
      * @dev Sets token royalties. When you override this in the implementation contract
      * ensure that you access restrict it to the contract owner or admin
@@ -299,13 +366,41 @@ abstract contract EIP2981RoyaltyOverrideCore is IEIP2981, IEIP2981RoyaltyOverrid
         return (address(0), 0);
     }
 
-    function getRoyalties(uint256 tokenId) external override view returns (address payable[] memory, uint256[] memory){
-        uint256 length = 1;
-        uint256[] memory price = new uint256[](length);
-        address payable[] memory designers = new address payable[](length);
-        price[0]= 0;
-        designers[0] = payable(0);
-        return (designers, price);
+    // This function gathers whatever info there is - with priority on custom royalties, and secondary priority single royalties - and merges with the default royalty for all tokens
+    function getRoyalties(uint256 _tokenId) external override view returns (address payable[] memory, uint256[] memory){
+        // check custom
+        uint256 customLength = _customTokenRoyalties[_tokenId].length;
+        if( customLength > 0){
+            // Custom token royalties + default for the royalty registry
+            uint256[] memory bps = new uint256[](customLength + 1);
+            address payable[] memory designers = new address payable[](customLength + 1);
+            for (uint i = 0; i < customLength; i++) {
+                bps[i]= _customTokenRoyalties[_tokenId][i].bps;
+                designers[i] = payable(_customTokenRoyalties[_tokenId][i].recipient);
+            }
+            bps[customLength] = defaultRoyalty.bps;
+            designers[customLength] = payable(defaultRoyalty.recipient);
+            return (designers, bps);
+
+        } else if( _tokenRoyalties[_tokenId].recipient != address(0)){
+            // Single token royalties + default for the royalty registry
+            uint256[] memory bps = new uint256[](2);
+            address payable[] memory designers = new address payable[](2);
+            bps[0] = _tokenRoyalties[_tokenId].bps;
+            designers[0] = payable(_tokenRoyalties[_tokenId].recipient);
+            bps[1] = defaultRoyalty.bps;
+            designers[1] = payable(defaultRoyalty.recipient);
+            return (designers, bps);
+
+        } else {
+            // Just default
+             uint256[] memory bps = new uint256[](1);
+            address payable[] memory designers = new address payable[](1);
+            bps[0] = defaultRoyalty.bps;
+            designers[0] = payable(defaultRoyalty.recipient);
+
+            return (designers, bps);
+        }
     }
 }
 
@@ -665,7 +760,7 @@ library EnumerableSet {
 /**
  * Simple EIP2981 reference override implementation
  */
-contract EIP2981RoyaltyOverrideCloneable is EIP2981RoyaltyOverrideCore, OwnableUpgradeable {
+contract EIP2981RoyaltyOverrideCloneable is EIP2981RoyaltyOverrideCore {
 
     function initialize(address royaltyDefaultReceiver, uint16 bps) public initializer {
         __Ownable_init();
