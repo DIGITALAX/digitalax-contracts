@@ -290,6 +290,9 @@ abstract contract EIP2981RoyaltyOverrideCore is IEIP2981, IEIP2981RoyaltyOverrid
 
     function checkInCustomAddressExists(uint256 _tokenId, address _recipient) public view returns (bool exists) {
         uint256 index = _customTokenRoyaltiesAddressIndex[_tokenId][_recipient];
+        if(_customTokenRoyalties[_tokenId].length == 0){
+            return false;
+        }
         if(_customTokenRoyalties[_tokenId][index].recipient == _recipient){
             return true;
         } else {
@@ -308,7 +311,7 @@ abstract contract EIP2981RoyaltyOverrideCore is IEIP2981, IEIP2981RoyaltyOverrid
         }
         return (a,b);
     }
-    
+
     /**
      * @dev Sets token royalties. When you override this in the implementation contract
      * ensure that you access restrict it to the contract owner or admin
