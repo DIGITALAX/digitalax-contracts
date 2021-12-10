@@ -356,7 +356,7 @@ contract Nix is Owned, ReentrancyGuard, ERC721TokenReceiver, Initializable {
         init(msg.sender);
         weth = _weth;
         royaltyEngine = _royaltyEngine;
-        MARKETPLACE_FEE = 25;
+        MARKETPLACE_FEE = 30;
     }
 
     function setMarketplaceFee(uint fee) public onlyOwner {
