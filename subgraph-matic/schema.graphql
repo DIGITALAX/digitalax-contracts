@@ -639,6 +639,20 @@ type DigitalaxMonaStaking @entity {
   totalMonaStaked: BigInt!
 }
 
+type W3FStakingMarketplaceRevenue @entity {
+  id: ID!
+  week: BigInt!
+  weeklyW3FSharing: BigInt!
+  bonusWeeklyW3FSharing: BigInt!
+  totalW3FSharing: BigInt!
+  totalBonusW3FSharing: BigInt!
+}
+
+type W3FStaking @entity {
+  id: ID!
+  totalW3Ftaked: BigInt!
+}
+
 type DigitalaxGenesisV2 @entity {
   id: ID!
   ogHolder: String!
