@@ -915,4 +915,55 @@ dataSources:
         - event: RewardPaid(indexed address,uint256)
           handler: handleRewardPaid
       file: ./src/DigitalaxGenesisV2Staking.mapping.ts
-
+  - kind: ethereum/contract
+    name: W3FStakingRewards
+    network: "{{network}}"
+    source:
+      address: "{{W3FStakingRewardsAddress}}"
+      abi: DigitalaxMonaRewards
+      startBlock: {{W3FStakingRewardsStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasam/assemblyscript
+      entities:
+        - DepositRevenueSharing
+        - WithdrawRevenueSharing
+      abis:
+        - name: DigitalaxMonaRewards
+          file: ./abis/DigitalaxMonaRewards.json
+      eventHandlers:
+        - event: DepositRevenueSharing(uint256,uint256,uint256,address[],uint256[])
+          handler: handleDepositRevenueSharing
+        - event: WithdrawRevenueSharing(uint256,uint256,uint256,address[],uint256[])
+          handler: handleWithdrawRevenueSharing
+      file: ./src/W3FStakingRewards.mapping.ts
+  - kind: ethereum/contract
+    name: W3FStaking
+    network: "{{network}}"
+    source:
+      address: "{{W3FStakingAddress}}"
+      abi: DigitalaxMonaStaking
+      startBlock: {{W3FStakingStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasam/assemblyscript
+      entities:
+        - Staked
+        - StakedLP
+        - Unstaked
+        - UnstakedLP
+      abis:
+        - name: DigitalaxMonaStaking
+          file: ./abis/DigitalaxMonaStaking.json
+      eventHandlers:
+        - event: Staked(indexed address,uint256)
+          handler: handleStaked
+        - event: StakedLP(indexed address,uint256)
+          handler: handleStakedLP
+        - event: Unstaked(indexed address,uint256)
+          handler: handleUnstaked
+        - event: UnstakedLP(indexed address,uint256)
+          handler: handleUnstakedLP
+      file: ./src/W3FStaking.mapping.ts
