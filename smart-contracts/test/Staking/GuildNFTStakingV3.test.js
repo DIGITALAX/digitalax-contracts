@@ -19,9 +19,8 @@ const {
   const GuildNFTRewardsMock = artifacts.require('GuildNFTRewardsV3Mock');
   const GuildNFTStaking = artifacts.require('GuildNFTStakingV3Mock');
   const GuildWhitelistedNFTStaking = artifacts.require('GuildWhitelistedNFTStakingV3Mock');
-  const GuildNFTStakingWeight = artifacts.require('GuildNFTStakingWeightV3Mock');
+  const GuildNFTStakingWeight = artifacts.require('GuildNFTStakingWeightV4Mock');
   const GuildNFTStakingWeightV2Storage = artifacts.require('GuildNFTStakingWeightV2StorageMock');
-  const GuildNFTStakingWeightV3 = artifacts.require('GuildNFTStakingWeightV3');
   const DecoOracle = artifacts.require('DecoOracle');
   const PodeNFTv2 = artifacts.require('contracts/PodeNFTv2.sol:PodeNFTv2');
   const DigitalaxGarmentNFTV2 = artifacts.require('DigitalaxGarmentNFTv2');
@@ -1064,6 +1063,9 @@ const {
 		  await this.guildWhitelistedNftStaking.unstakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'], {from: staker});
 		  await this.guildWhitelistedNftStaking.unstakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'], {from: staker2});
 
+		  await this.guildNftStaking.unstakeBatch([TOKEN_1,TOKEN_2],{from: staker});
+		  await this.guildNftStaking.unstakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
+
 		  const finalDecoBalance = await this.decoToken.balanceOf(staker);
 		  const finalDecoBalance2 = await this.decoToken.balanceOf(staker2);
 
@@ -1915,6 +1917,9 @@ it('successfully deposits many NFT and batch with multiple users, and emergency 
 
 		  await this.guildWhitelistedNftStaking.unstakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'], {from: staker});
 		  await this.guildWhitelistedNftStaking.unstakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'], {from: staker2});
+
+		  await this.guildNftStaking.unstakeBatch([TOKEN_1,TOKEN_2],{from: staker});
+		  await this.guildNftStaking.unstakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
 
 		  const finalDecoBalance = await this.decoToken.balanceOf(staker);
 		  const finalDecoBalance2 = await this.decoToken.balanceOf(staker2);
