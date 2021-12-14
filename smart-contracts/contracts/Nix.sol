@@ -335,6 +335,7 @@ contract Nix is Owned, ReentrancyGuard, ERC721TokenReceiver, Initializable {
     bytes4 private constant ERC721METADATA_INTERFACE = 0x5b5e139f;
     bytes4 private constant ERC721ENUMERABLE_INTERFACE = 0x780e9d63;
     uint private constant ROYALTYFACTOR_MAX = 1000;
+    uint private MARKETPLACE_FEE;
 
     IERC20Partial public weth;
     IRoyaltyEngineV1Partial public royaltyEngine;
@@ -355,6 +356,11 @@ contract Nix is Owned, ReentrancyGuard, ERC721TokenReceiver, Initializable {
         init(msg.sender);
         weth = _weth;
         royaltyEngine = _royaltyEngine;
+        MARKETPLACE_FEE = 30;
+    }
+
+    function setMarketplaceFee(uint fee) public onlyOwner {
+        MARKETPLACE_FEE = fee;
     }
 
     function onERC721Received(address /*_operator*/, address /*_from*/, uint _tokenId, bytes memory /*_data*/) external override returns(bytes4) {
@@ -631,8 +637,21 @@ contract Nix is Owned, ReentrancyGuard, ERC721TokenReceiver, Initializable {
             }
         } catch {
         }
+
+        // Calculate the marketplace fee and deduct from what user needs to pay
+        uint fee = order.price * MARKETPLACE_FEE / 1000;
+        if (!trade.seen[owner]) {
+            trade.uniqueAddresses.push(owner);
+            trade.seen[owner] = true;
+        }
+        // Take the fee
+        trade.netting[owner] += int(fee);
+        trade.netting[wethTo] -= int(fee);
+
+        // Add the order price
         trade.netting[wethTo] += int(order.price);
     }
+
     function transferNetted(Trade storage trade) private {
         for (uint i = 0; i < trade.uniqueAddresses.length; i++) {
             address account = trade.uniqueAddresses[i];

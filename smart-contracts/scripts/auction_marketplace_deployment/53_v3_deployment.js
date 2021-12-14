@@ -49,8 +49,8 @@ async function main() {
     await podeInit.wait();
 
     // Deploy membership guild staking
-    const NFTStakingFactory = await ethers.getContractFactory("GuildWhitelistedNFTStaking");
-    const nftStaking = await NFTStakingFactory.deploy();
+    const NFTStakingFactory = await ethers.getContractFactory("GuildNFTStakingV3");
+    const nfTStaking = await upgrades.deployProxy(NFTStakingFactory, []);
 
     const originalStakingAddress = nftStaking.address;
     const decoTokenAddress = decoToken.address;
@@ -62,8 +62,8 @@ async function main() {
         deployer
     );
 
-  const WhitelistedNFTStaking = await ethers.getContractFactory("GuildWhitelistedNFTStaking");
-  const whitelistedNFTStaking = await WhitelistedNFTStaking.deploy();
+  const WhitelistedNFTStakingFactory = await ethers.getContractFactory("GuildWhitelistedNFTStakingV3");
+  const whitelistedNFTStaking = await upgrades.deployProxy(WhitelistedNFTStakingFactory, []);
   console.log('The whitelisted nft staking is deployed to:');
   console.log(whitelistedNFTStaking.address);
 
@@ -71,7 +71,7 @@ async function main() {
   const instanceStakingWeightStorage = await upgrades.deployProxy(StakingWeightStorage, ["0x0000000000000000000000000000000000000000",accessControlsAddress]);
   await instanceStakingWeightStorage.deployed();
 
-  const StakingWeight = await ethers.getContractFactory("GuildNFTStakingWeightV2");
+  const StakingWeight = await ethers.getContractFactory("GuildNFTStakingWeightV4");
   const instanceStakingWeight = await upgrades.deployProxy(StakingWeight,
       [originalStakingAddress,
           whitelistedNFTStaking.address,
