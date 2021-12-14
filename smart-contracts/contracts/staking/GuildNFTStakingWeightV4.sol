@@ -784,26 +784,42 @@ contract GuildNFTStakingWeightV4 {
 
 
 
-    function migrateCurrentMembershipStake(uint256 _tokenId, uint256 _stakeWeight) external {
+    function migrateCurrentMembershipStake(uint256[] memory _tokenIds, uint256[] memory _stakeWeights) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
             "Sender must be admin"
         );
+        require(
+            _tokenIds.length == _stakeWeights.length,
+            "lengths"
+        );
 
         // TokenWeight
-        TokenWeight storage token = podeTokenWeight[_tokenId];
-        token.lastWeight = _stakeWeight;
+        for (uint256 i = 0; i < _tokenIds.length; i++) {
+            TokenWeight storage token = podeTokenWeight[_tokenIds[i]];
+            token.lastWeight = _stakeWeights[i];
+        }
     }
 
-    function migrateCurrentWhitelistStake(uint256 _tokenId, address _whitelistedNft, uint256 _stakeWeight) external {
+    function migrateCurrentWhitelistStake(uint256[] memory _tokenIds, address[] memory _whitelistedNfts, uint256[] memory _stakeWeights) external {
         require(
             accessControls.hasAdminRole(_msgSender()),
             "Sender must be admin"
         );
+        require(
+            _tokenIds.length == _stakeWeights.length,
+            "lengths"
+        );
+        require(
+            _tokenIds.length == _whitelistedNfts.length,
+            "lengths2"
+        );
 
-        // TokenWeight
-        TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNft][_tokenId];
-        token.lastWeight = _stakeWeight;
+        for (uint256 i = 0; i < _tokenIds.length; i++) {
+            // TokenWeight
+            TokenWeight storage token = whitelistedNFTTokenWeight[_whitelistedNfts[i]][_tokenIds[i]];
+            token.lastWeight = _stakeWeights[i];
+        }
     }
 
     function stake(uint256 _tokenId, address _tokenOwner, uint256 _primarySalePrice) external {
