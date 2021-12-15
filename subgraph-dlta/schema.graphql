@@ -21,6 +21,11 @@ type GuildWhitelistedToken @entity {
   name: String!
 }
 
+type NewPodeGuildWhitelistedToken @entity {
+  id: ID!
+  name: String!
+}
+
 type GuildWhitelistedNFTStaker @entity {
   id: ID!
   garments: [GuildWhitelistedNFT!]!
@@ -28,7 +33,25 @@ type GuildWhitelistedNFTStaker @entity {
   weight: BigInt
 }
 
+type NewPodeGuildWhitelistedNFTStaker @entity {
+  id: ID!
+  garments: [GuildWhitelistedNFT!]!
+  rewardsClaimed: BigInt!
+  weight: BigInt
+}
+
 type GuildNFTWeight @entity {
+  id: ID!
+  totalAppraisals: BigInt!
+  totalFollowed: BigInt!
+  totalFavourites: BigInt!
+  totalMetaverse: BigInt!
+  totalShare: BigInt!
+  totalSkips: BigInt!
+  totalClaps: BigInt!
+}
+
+type NewPodeGuildNFTWeight @entity {
   id: ID!
   totalAppraisals: BigInt!
   totalFollowed: BigInt!
@@ -52,6 +75,19 @@ type GuildWhitelistedNFT @entity {
   timestamp: BigInt
 }
 
+type NewPodeGuildWhitelistedNFT @entity {
+  id: ID!
+  tokenAddress: String!
+  owner: String!
+  tokenUri: String!
+  animation: String!
+  image: String
+  name: String!
+  description: String!
+  weight: BigInt
+  timestamp: BigInt
+}
+
 type ClapHistory @entity {
   id: ID!
   owner: String
@@ -60,6 +96,20 @@ type ClapHistory @entity {
 }
 
 type PodeNFTv2Staker @entity {
+  id: ID!
+  totalAppraisals: BigInt
+  totalStaked: BigInt
+  totalFollowed: BigInt
+  totalFavourites: BigInt
+  totalMetaverse: BigInt
+  totalShare: BigInt
+  clapHistory: [ClapHistory!]
+  garments: [PodeNFTv2!]!
+  rewardsClaimed: BigInt!
+  weight: BigInt
+}
+
+type NewPodeNFTv2Staker @entity {
   id: ID!
   totalAppraisals: BigInt
   totalStaked: BigInt
