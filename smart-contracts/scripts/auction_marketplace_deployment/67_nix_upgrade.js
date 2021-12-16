@@ -12,7 +12,7 @@ async function main() {
 
 
     const NixFactory = await ethers.getContractFactory("Nix");
-    const nix = await upgrades.upgradeProxy("0x7e0e2aDB175B10b19ceACe7bed45d4FF3F3C567A", NixFactory);
+    const nix = await upgrades.upgradeProxy("0x8cc988c30c3959fc0e77ef7baa9c3ed6438b4325", NixFactory);
     await nix.deployed();
     console.log(nix.address);
 
