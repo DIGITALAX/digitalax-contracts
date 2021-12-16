@@ -23,7 +23,7 @@ async function main() {
 
     console.log(`----------------------`);
 
-  const metadata = require('./dltapodeweights.json');
+  const metadata = require('./dltawhitelistweights.json');
   //  Data length
   console.log("number of tokens to check:")
   console.log(metadata.length)
@@ -33,7 +33,7 @@ async function main() {
 
   for(let i = 0; i< chunks.length ; i++){
     const x = chunks[i];
-    const migrate = await stakingWeight.migrateCurrentMembershipStake(x.map((x)=>{return x["id"]}), x.map((x)=>{return x["weight"]}));
+    const migrate = await stakingWeight.migrateCurrentWhitelistStake(x.map((x)=>{return x["tokenId"]}), x.map((x)=>{return x["token"]}), x.map((x)=>{return x["weight"]}));
     await migrate.wait();
     console.log('migrated');
     }

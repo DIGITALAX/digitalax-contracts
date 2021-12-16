@@ -21,6 +21,7 @@ async function main() {
       deployer
   );
 
+
 // {
 // podeNFTv2Stakers(first: 1000)
 //   {
@@ -47,7 +48,6 @@ async function main() {
       console.log(`The Address staker is ${x["id"]}`);
       console.log(`The number of pode this hold is ${x.garments.length}`);
 
-
       const weight = parseFloat(await stakingWeight.calcNewOwnerWeight(x["id"]));
       console.log(`Their overall staking weight (all pode they own) is: ${weight}`);
 
@@ -59,7 +59,7 @@ async function main() {
         // // console.log(`${x["id"]}`);
         //   const migrateWeight = await staking.migrateCurrentStake(y["id"], x["id"], weightEachToken);
         //   await migrateWeight.wait();
-        //   console.log(`${y["id"]} **** migrated stake with value: ${weightEachToken}`);
+        //   console.log(`${y["id"]} **** migrated stake with value: ${newWeight}`);
           minting.push({
             id: y["id"],
             owner: x["id"],
