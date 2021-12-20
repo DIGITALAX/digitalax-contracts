@@ -16,7 +16,7 @@ import "@openzeppelin/contracts/proxy/Initializable.sol";
  * @author Digitalax Team
  */
 
-contract DigitalaxNFTStaking is BaseRelayRecipient, Initializable {
+contract DigitalaxNFTStaking is BaseRelayRecipient {
     using SafeMath for uint256;
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
 
@@ -24,6 +24,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient, Initializable {
     IDigitalaxNFT public parentNFT;
     DigitalaxAccessControls public accessControls;
     IDigitalaxNFTRewards public rewardsContract;
+    bool initialised;
 
 
     /// @notice total ethereum staked currently in the gensesis staking contract
@@ -99,13 +100,15 @@ contract DigitalaxNFTStaking is BaseRelayRecipient, Initializable {
         DigitalaxAccessControls _accessControls,
         address _trustedForwarder
     )
-        public initializer
+        public
     {
+        require(!initialised);
         rewardsToken = _rewardsToken;
         parentNFT = _parentNFT;
         accessControls = _accessControls;
         lastUpdateTime = _getNow();
         trustedForwarder = _trustedForwarder;
+        initialised = true;
     }
 
     function setTrustedForwarder(address _trustedForwarder) external  {

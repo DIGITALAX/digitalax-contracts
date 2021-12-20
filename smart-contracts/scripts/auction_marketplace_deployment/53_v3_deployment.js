@@ -114,6 +114,10 @@ async function main() {
     const updateRewardContract = await whitelistedNFTStaking.setRewardsContract(instanceStakingRewards.address);
     await updateRewardContract.wait();
 
+    console.log('rewardscontract2');
+    const updateRewardContract2 = await nftStaking.setRewardsContract(instanceStakingRewards.address);
+    await updateRewardContract2.wait();
+
     console.log('setrewards');
     const mintedrewards = await instanceStakingRewards.setMintedRewards([0,1,2], Array(14).fill('4128750000000000000000000'));
     await mintedrewards.wait();

@@ -7,7 +7,6 @@ import "../DigitalaxAccessControls.sol";
 import "./interfaces/IERC20.sol";
 //import "../oracle/IDigitalaxMonaOracle.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
-import "@openzeppelin/contracts/proxy/Initializable.sol";
 
 import "hardhat/console.sol";
 
@@ -28,12 +27,13 @@ interface MONA is IERC20 {
     function mint(address tokenOwner, uint tokens) external returns (bool);
 }
 
-contract DigitalaxRewardsV2 is Initializable, BaseRelayRecipient {
+contract DigitalaxRewardsV2 is BaseRelayRecipient {
     using SafeMath for uint256;
 
     /* ========== Variables ========== */
 
     MONA public monaToken;
+    bool initialised;
 
     DigitalaxAccessControls public accessControls;
     DigitalaxStaking public monaStaking;
@@ -105,8 +105,9 @@ contract DigitalaxRewardsV2 is Initializable, BaseRelayRecipient {
         uint256 _monaRewardsPaidTotal,
         uint256 _bonusMonaRewardsPaidTotal
     )
-        public initializer
+        public
     {
+        require(!initialised);
         require(
             address(_monaToken) != address(0),
             "DigitalaxRewardsV2: Invalid Mona Address"
@@ -127,6 +128,7 @@ contract DigitalaxRewardsV2 is Initializable, BaseRelayRecipient {
         bonusMonaRewardsPaidTotal = _bonusMonaRewardsPaidTotal;
         trustedForwarder = _trustedForwarder;
         MAX_REWARD_TOKENS = 200;
+        initialised = true;
     }
     receive() external payable {
     }
