@@ -16,12 +16,45 @@ type PodeNFTv2 @entity {
   attributes: [GarmentAttribute!]!
 }
 
+type GDNMembership @entity {
+  id: ID!
+  owner: Bytes!
+  primarySalePrice: BigInt!
+  tokenUri: String!
+  animation: String!
+  name: String!
+  description: String!
+  attributes: [GarmentAttribute!]!
+}
+
+type LookGoldenTicket @entity {
+  id: ID!
+  owner: Bytes!
+  tokenUri: String!
+  animation: String!
+  name: String!
+  description: String!
+  attributes: [GarmentAttribute!]!
+}
+
 type GuildWhitelistedToken @entity {
   id: ID!
   name: String!
 }
 
+type NewPodeGuildWhitelistedToken @entity {
+  id: ID!
+  name: String!
+}
+
 type GuildWhitelistedNFTStaker @entity {
+  id: ID!
+  garments: [GuildWhitelistedNFT!]!
+  rewardsClaimed: BigInt!
+  weight: BigInt
+}
+
+type NewPodeGuildWhitelistedNFTStaker @entity {
   id: ID!
   garments: [GuildWhitelistedNFT!]!
   rewardsClaimed: BigInt!
@@ -39,7 +72,31 @@ type GuildNFTWeight @entity {
   totalClaps: BigInt!
 }
 
+type NewPodeGuildNFTWeight @entity {
+  id: ID!
+  totalAppraisals: BigInt!
+  totalFollowed: BigInt!
+  totalFavourites: BigInt!
+  totalMetaverse: BigInt!
+  totalShare: BigInt!
+  totalSkips: BigInt!
+  totalClaps: BigInt!
+}
+
 type GuildWhitelistedNFT @entity {
+  id: ID!
+  tokenAddress: String!
+  owner: String!
+  tokenUri: String!
+  animation: String!
+  image: String
+  name: String!
+  description: String!
+  weight: BigInt
+  timestamp: BigInt
+}
+
+type NewPodeGuildWhitelistedNFT @entity {
   id: ID!
   tokenAddress: String!
   owner: String!
@@ -73,6 +130,20 @@ type PodeNFTv2Staker @entity {
   weight: BigInt
 }
 
+type NewPodeNFTv2Staker @entity {
+  id: ID!
+  totalAppraisals: BigInt
+  totalStaked: BigInt
+  totalFollowed: BigInt
+  totalFavourites: BigInt
+  totalMetaverse: BigInt
+  totalShare: BigInt
+  clapHistory: [ClapHistory!]
+  garments: [PodeNFTv2!]!
+  rewardsClaimed: BigInt!
+  weight: BigInt
+}
+
 type PodeNFTv2OGHolder @entity {
   id: ID!
   garments: [PodeNFTv2!]!
@@ -81,4 +152,14 @@ type PodeNFTv2OGHolder @entity {
 type PodeNFTv2Collector @entity {
   id: ID!
   parentsOwned: [PodeNFTv2!]! # only parents owned by the
+}
+
+type GDNMembershipCollector @entity {
+  id: ID!
+  parentsOwned: [GDNMembership!]!
+}
+
+type LookGoldenTicketCollector @entity {
+  id: ID!
+  parentsOwned: [LookGoldenTicket!]!
 }
