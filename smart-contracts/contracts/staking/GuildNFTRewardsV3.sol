@@ -10,7 +10,6 @@ import "../EIP2771/BaseRelayRecipient.sol";
 import "./interfaces/IGuildNFTRewards.sol";
 import "./interfaces/IGuildNFTRewardsWhitelisted.sol";
 import "./interfaces/IGuildNFTTokenRewards.sol";
-import "@openzeppelin/contracts/proxy/Initializable.sol";
 
 import "hardhat/console.sol";
 
@@ -33,9 +32,10 @@ interface DECO is IERC20 {
     function mint(address tokenOwner, uint tokens) external returns (bool);
 }
 
-contract GuildNFTRewardsV3 is Initializable, BaseRelayRecipient, IGuildNFTRewards, IGuildNFTRewardsWhitelisted, IGuildNFTTokenRewards {
+contract GuildNFTRewardsV3 is BaseRelayRecipient, IGuildNFTRewards, IGuildNFTRewardsWhitelisted, IGuildNFTTokenRewards {
     using SafeMath for uint256;
 
+    bool initialised;
     /* ========== Variables ========== */
 
     DECO public decoToken;
@@ -128,8 +128,9 @@ contract GuildNFTRewardsV3 is Initializable, BaseRelayRecipient, IGuildNFTReward
         IOracle _oracle,
         address _trustedForwarder,
         uint256 _decoRewardsPaidTotal
-    ) public initializer
+    ) public
     {
+        require(!initialised);
         require(
             address(_decoToken) != address(0),
             "GuildNFTRewardsV3: Invalid Deco Address"
@@ -161,6 +162,7 @@ contract GuildNFTRewardsV3 is Initializable, BaseRelayRecipient, IGuildNFTReward
 
         lastOracleQuote = 1e18;
         MAX_REWARD_TOKENS = 200;
+        initialised = true;
     }
 
     receive() external payable {

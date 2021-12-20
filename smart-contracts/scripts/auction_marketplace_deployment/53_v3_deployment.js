@@ -15,9 +15,11 @@ async function main() {
   const deployerAddress = await deployer.getAddress();
     console.log('Deploying the next guild');
 
-    // Some constants setup
+    // // Some constants setup
     const accessControlsAddress = "0xbe5c84e6b036cb41a7a6b5008b9427a5f4f1c9f5";
     const trustedForwarderAddress = "0x86C80a8aa58e0A4fa09A69624c31Ab2a6CAD56b8";
+    // const accessControlsAddress = "0xf7580d46080e1ce832ac44cf7224b906d44110b4";
+    // const trustedForwarderAddress = "0x9399BB24DBB5C4b782C70c2969F58716Ebbd6a3b";
     const rewardsDistributed = "0";
     const tokenWhitelist = [
         "0x7B2a989c4D1AD1B79a84CE2EB79dA5D8d9C2b7a7",
@@ -30,31 +32,18 @@ async function main() {
         "0xfd12ec7ea4b381a79c78fe8b2248b4c559011ffb"
     ];
 
-
-    // Deploy Deco (rewards token)
-    const DecoTokenFactory = await ethers.getContractFactory("DECO");
-    const decoToken = await DecoTokenFactory.deploy();
-    const decoInit = await decoToken.initialize('DECO', 'DECO', 18, accessControlsAddress, '0xEa41Cd3F972dB6237FfA2918dF9199B547172420', 350, trustedForwarderAddress);
-    await decoInit.wait();
-
-    // Deploy oracle for deco (rewards token) price
-    const DecoOracleFactory = await ethers.getContractFactory("DecoOracle");
-    const decoOracle = await DecoOracleFactory.deploy( '315400000', '120', '1',  accessControlsAddress);
-    // TODO deco oracle push report
-
-    // Deploy membership token (pode)
-    const PodeNFTv2Factory = await ethers.getContractFactory("PodeNFTv2");
-    const podeNFTv2Token = await PodeNFTv2Factory.deploy();
-    const podeInit = await podeNFTv2Token.initialize(accessControlsAddress, trustedForwarderAddress);
-    await podeInit.wait();
+    const decoTokenAddress = "0x200F9621cBcE6ed740071ba34fdE85eE03f2e113";
+    const decoOracleAddress = "0xCFB6d9134e2742512883E8D68c6166B480Bf1875";
+    const podeNFTv2TokenAddress = "0x6d4d0b9eacd6197b31bec250c0ad6cec98f8b83f";
+    console.log('deco deployed');
 
     // Deploy membership guild staking
     const NFTStakingFactory = await ethers.getContractFactory("GuildNFTStakingV3");
-    const nfTStaking = await upgrades.deployProxy(NFTStakingFactory, []);
+    const nftStaking = await upgrades.deployProxy(NFTStakingFactory, []);
 
     const originalStakingAddress = nftStaking.address;
-    const decoTokenAddress = decoToken.address;
-    const decoOracleAddress = decoOracle.address;
+   // const decoTokenAddress = decoToken.address;
+   // const decoOracleAddress = decoOracle.address;
 
     const accessControls = new ethers.Contract(
         accessControlsAddress,
@@ -81,7 +70,7 @@ async function main() {
       ]);
   await instanceStakingWeight.deployed();
 
-  const StakingRewards = await ethers.getContractFactory("GuildNFTRewardsV2");
+  const StakingRewards = await ethers.getContractFactory("GuildNFTRewardsV3");
   const instanceStakingRewards = await upgrades.deployProxy(StakingRewards,
       [
           decoTokenAddress,
@@ -95,8 +84,8 @@ async function main() {
   await instanceStakingRewards.deployed();
 
     const stakingInit = await nftStaking.initStaking(
-        decoToken.address,
-        podeNFTv2Token.address,
+        decoTokenAddress,
+        podeNFTv2TokenAddress,
         accessControlsAddress,
         instanceStakingWeight.address,
         trustedForwarderAddress);
@@ -126,16 +115,21 @@ async function main() {
     await updateRewardContract.wait();
 
     console.log('setrewards');
-    await instanceStakingRewards.setRewards([0,1,2,3,4,5,6,7,8,9,10,11,12,13], Array(14).fill('4128750000000000000000000'));
+    const mintedrewards = await instanceStakingRewards.setMintedRewards([0,1,2], Array(14).fill('4128750000000000000000000'));
+    await mintedrewards.wait();
+
+    const start = await instanceStakingRewards.setStartTime(1639683109);
+    await start.wait();
 
     console.log('whitelisting');
-    const whitelisted = await whitelistedNFTStaking.addWhitelistedTokens(tokenWhitelist);
+    const whitelisted = await whitelistedNFTStaking.addWhitelistedTokens(tokenWhitelist, Array(tokenWhitelist.length).fill('false'),  Array(tokenWhitelist.length).fill('false'));
     await whitelisted.wait();
 
   console.log('the tokens have been deployed');
   console.log(`The storage: ${instanceStakingWeightStorage.address} (make sure to update weight contract)`);
   console.log(`The weight: ${instanceStakingWeight.address} `);
   console.log(`The rewards: ${instanceStakingRewards.address} `);
+  console.log(`The nft staking: ${nftStaking.address} `);
   console.log(`The whitelisted nft staking: ${whitelistedNFTStaking.address} `);
 
 }

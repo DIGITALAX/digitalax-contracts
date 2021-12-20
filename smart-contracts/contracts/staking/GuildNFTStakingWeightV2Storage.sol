@@ -9,7 +9,6 @@ import "../DigitalaxAccessControls.sol";
 
 //import "hardhat/console.sol";
 import "./interfaces/IGuildNFTStakingWeightStorage.sol";
-import "@openzeppelin/contracts/proxy/Initializable.sol";
 
 import "../EIP2771/BaseRelayRecipient.sol";
 /**
@@ -19,9 +18,10 @@ import "../EIP2771/BaseRelayRecipient.sol";
  * @author
  */
 
-contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRelayRecipient, Initializable {
+contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRelayRecipient {
     using SafeMath for uint256;
 
+    bool initialised;
     uint256 constant MULTIPLIER = 100000;
     // Important contract addresses we need to set
     DigitalaxAccessControls public accessControls;
@@ -58,8 +58,8 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
         _;
     }
 
-    function initialize(address _weightContract, DigitalaxAccessControls _accessControls) public initializer {
-
+    function initialize(address _weightContract, DigitalaxAccessControls _accessControls) public {
+        require(!initialised);
         DECAY_POINT_DEFAULT = 75; // 7.5%
         DECAY_POINT_WITH_APPRAISAL = 25; // 2.5%
 
@@ -114,6 +114,7 @@ contract GuildNFTStakingWeightV2Storage is IGuildNFTStakingWeightStorage, BaseRe
 
         accessControls = _accessControls;
         weightContract = _weightContract;
+        initialised = true;
     }
 
 

@@ -607,7 +607,9 @@ contract Nix is Owned, ReentrancyGuard, ERC721TokenReceiver, Initializable {
             emit OrderExecuted(tokenInfo.token, orderIndexes[i], trades.length - 1, tokenIds);
         }
 
-        require(trade.netting[msg.sender] == netAmount, "NetAmount");
+
+        // require(trade.netting[msg.sender] == netAmount, "NetAmount");
+
         transferNetted(trade);
         handleTips(integrator);
     }
