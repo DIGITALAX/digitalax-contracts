@@ -19,7 +19,6 @@ type PodeNFTv2 @entity {
 type GDNMembership @entity {
   id: ID!
   owner: Bytes!
-  primarySalePrice: BigInt!
   tokenUri: String!
   animation: String!
   name: String!
