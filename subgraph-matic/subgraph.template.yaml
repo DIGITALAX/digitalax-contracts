@@ -967,3 +967,61 @@ dataSources:
         - event: UnstakedLP(indexed address,uint256)
           handler: handleUnstakedLP
       file: ./src/W3FStaking.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxGDNMembershipStaking
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxGDNMembershipStakingAddress}}"
+      abi: DigitalaxNFTStaking
+      startBlock: {{DigitalaxGDNMembershipStakingStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+      abis:
+        - name: DigitalaxNFTStaking
+          file: ./abis/DigitalaxNFTStaking.json
+      eventHandlers:
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+      file: ./src/DigitalaxGDNMembershipStaking.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxGDNSpecialMembershipStaking
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxGDNSpecialMembershipStakingAddress}}"
+      abi: DigitalaxNFTStaking
+      startBlock: {{DigitalaxGDNSpecialMembershipStakingStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+      abis:
+        - name: DigitalaxNFTStaking
+          file: ./abis/DigitalaxNFTStaking.json
+      eventHandlers:
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+      file: ./src/DigitalaxGDNSpecialMembershipStaking.mapping.ts
