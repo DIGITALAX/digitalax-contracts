@@ -680,3 +680,15 @@ type DigitalaxGenesisV2Staker @entity {
   garments: [DigitalaxGenesisV2!]!
   rewardsClaimed: BigInt!
 }
+
+type DigitalaxGDNMembershipStaker @entity {
+  id: ID!
+  garments: [GDNMembershipNFT!]!
+  rewardsClaimed: BigInt!
+}
+
+type DigitalaxGDNSpecialMembershipStaker @entity {
+  id: ID!
+  garments: [DigitalaxGarmentV2!]!
+  rewardsClaimed: BigInt!
+}
