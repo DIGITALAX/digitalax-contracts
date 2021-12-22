@@ -967,3 +967,61 @@ dataSources:
         - event: UnstakedLP(indexed address,uint256)
           handler: handleUnstakedLP
       file: ./src/W3FStaking.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxGDNMembershipStaking
+    network: "matic"
+    source:
+      address: "0x2E4ae1f8E1463f450e9B01F20cee1590Bff4E1fC"
+      abi: DigitalaxNFTStaking
+      startBlock: 22755957
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+      abis:
+        - name: DigitalaxNFTStaking
+          file: ./abis/DigitalaxNFTStaking.json
+      eventHandlers:
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+      file: ./src/DigitalaxGDNMembershipStaking.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxGDNSpecialMembershipStaking
+    network: "matic"
+    source:
+      address: "0xE8775b2CA0b4EBBf00AfA9c2bF55532D431C5653"
+      abi: DigitalaxNFTStaking
+      startBlock: 22756208
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+      abis:
+        - name: DigitalaxNFTStaking
+          file: ./abis/DigitalaxNFTStaking.json
+      eventHandlers:
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+      file: ./src/DigitalaxGDNSpecialMembershipStaking.mapping.ts
