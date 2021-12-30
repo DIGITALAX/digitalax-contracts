@@ -46,6 +46,16 @@ type NewPodeGuildWhitelistedToken @entity {
   name: String!
 }
 
+type NewLookGuildWhitelistedToken @entity {
+  id: ID!
+  name: String!
+}
+
+type NewGDNGuildWhitelistedToken @entity {
+  id: ID!
+  name: String!
+}
+
 type GuildWhitelistedNFTStaker @entity {
   id: ID!
   garments: [GuildWhitelistedNFT!]!
@@ -55,7 +65,21 @@ type GuildWhitelistedNFTStaker @entity {
 
 type NewPodeGuildWhitelistedNFTStaker @entity {
   id: ID!
-  garments: [GuildWhitelistedNFT!]!
+  garments: [NewPodeGuildWhitelistedNFT!]!
+  rewardsClaimed: BigInt!
+  weight: BigInt
+}
+
+type NewLookGuildWhitelistedNFTStaker @entity {
+  id: ID!
+  garments: [NewLookGuildWhitelistedNFT!]!
+  rewardsClaimed: BigInt!
+  weight: BigInt
+}
+
+type NewGDNGuildWhitelistedNFTStaker @entity {
+  id: ID!
+  garments: [NewGDNGuildWhitelistedNFT!]!
   rewardsClaimed: BigInt!
   weight: BigInt
 }
@@ -82,6 +106,28 @@ type NewPodeGuildNFTWeight @entity {
   totalClaps: BigInt!
 }
 
+type NewLookGuildNFTWeight @entity {
+  id: ID!
+  totalAppraisals: BigInt!
+  totalFollowed: BigInt!
+  totalFavourites: BigInt!
+  totalMetaverse: BigInt!
+  totalShare: BigInt!
+  totalSkips: BigInt!
+  totalClaps: BigInt!
+}
+
+type NewGDNGuildNFTWeight @entity {
+  id: ID!
+  totalAppraisals: BigInt!
+  totalFollowed: BigInt!
+  totalFavourites: BigInt!
+  totalMetaverse: BigInt!
+  totalShare: BigInt!
+  totalSkips: BigInt!
+  totalClaps: BigInt!
+}
+
 type GuildWhitelistedNFT @entity {
   id: ID!
   tokenAddress: String!
@@ -96,6 +142,32 @@ type GuildWhitelistedNFT @entity {
 }
 
 type NewPodeGuildWhitelistedNFT @entity {
+  id: ID!
+  tokenAddress: String!
+  owner: String!
+  tokenUri: String!
+  animation: String!
+  image: String
+  name: String!
+  description: String!
+  weight: BigInt
+  timestamp: BigInt
+}
+
+type NewLookGuildWhitelistedNFT @entity {
+  id: ID!
+  tokenAddress: String!
+  owner: String!
+  tokenUri: String!
+  animation: String!
+  image: String
+  name: String!
+  description: String!
+  weight: BigInt
+  timestamp: BigInt
+}
+
+type NewGDNGuildWhitelistedNFT @entity {
   id: ID!
   tokenAddress: String!
   owner: String!
@@ -139,6 +211,34 @@ type NewPodeNFTv2Staker @entity {
   totalShare: BigInt
   clapHistory: [ClapHistory!]
   garments: [PodeNFTv2!]!
+  rewardsClaimed: BigInt!
+  weight: BigInt
+}
+
+type NewLookNFTv2Staker @entity {
+  id: ID!
+  totalAppraisals: BigInt
+  totalStaked: BigInt
+  totalFollowed: BigInt
+  totalFavourites: BigInt
+  totalMetaverse: BigInt
+  totalShare: BigInt
+  clapHistory: [ClapHistory!]
+  garments: [LookGoldenTicket!]!
+  rewardsClaimed: BigInt!
+  weight: BigInt
+}
+
+type NewGDNNFTv2Staker @entity {
+  id: ID!
+  totalAppraisals: BigInt
+  totalStaked: BigInt
+  totalFollowed: BigInt
+  totalFavourites: BigInt
+  totalMetaverse: BigInt
+  totalShare: BigInt
+  clapHistory: [ClapHistory!]
+  garments: [GDNMembership!]!
   rewardsClaimed: BigInt!
   weight: BigInt
 }
