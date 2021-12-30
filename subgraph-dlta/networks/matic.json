@@ -17,5 +17,17 @@
   "NewPodeGuildNFTStakingAddress": "0x8CaF6ceaA682F0569d5Ee83F5022bf1cD6705395",
   "NewPodeGuildNFTStakingStartBlock": 22518129,
   "NewPodeGuildWhitelistedNFTStakingAddress": "0x16218D677e160DDfb398D26508e5f6fB44c06f28",
-  "NewPodeGuildWhitelistedNFTStakingStartBlock": 22518133
+  "NewPodeGuildWhitelistedNFTStakingStartBlock": 22518133,
+  "NewLookGuildNFTStakingWeightV4Address": "0x0eAE037c3fB4e02eac70b0Af331a34a30E30d730",
+  "NewLookGuildNFTStakingWeightV4StartBlock": 23076869,
+  "NewLookGuildNFTStakingAddress": "0x83f92d1aB94B0817Bfe297872dbD11B46DAe3596",
+  "NewLookGuildNFTStakingStartBlock": 23076858,
+  "NewLookGuildWhitelistedNFTStakingAddress": "0xfFc6f1eb06c8248339E9E247D850931D6D58c728",
+  "NewLookGuildWhitelistedNFTStakingStartBlock": 23076863,
+  "NewGDNGuildNFTStakingWeightV4Address": "0x17d11b301575453bf3B2806Dd1f67f317E7D2dD7",
+  "NewGDNGuildNFTStakingWeightV4StartBlock": 23077056,
+  "NewGDNGuildNFTStakingAddress": "0xD750612b4C2653F938f4CA3edEa2a2182AD996f8",
+  "NewGDNGuildNFTStakingStartBlock": 23077050,
+  "NewGDNGuildWhitelistedNFTStakingAddress": "0xB08F4575D1Ab2FBa5463d13395279C134ACE6aF7",
+  "NewGDNGuildWhitelistedNFTStakingStartBlock": 23077051
 }
