@@ -1,6 +1,6 @@
-import { BigInt } from "@graphprotocol/graph-ts";
-import { DigitalaxMonaMarketplaceRevenue } from "../../generated/schema";
-import { ZERO } from "../constants";
+import { BigInt } from '@graphprotocol/graph-ts';
+import { DigitalaxMonaMarketplaceRevenue } from '../../generated/schema';
+import { ZERO } from '../constants';
 
 export function loadOrCreateDigitalaxMarketplaceRevenue(): DigitalaxMonaMarketplaceRevenue | null {
   let marketplaceRevenue = DigitalaxMonaMarketplaceRevenue.load('1');
@@ -10,8 +10,6 @@ export function loadOrCreateDigitalaxMarketplaceRevenue(): DigitalaxMonaMarketpl
     marketplaceRevenue.week = ZERO;
     marketplaceRevenue.totalMonaSharing = ZERO;
     marketplaceRevenue.weeklyMonaSharing = ZERO;
-    marketplaceRevenue.bonusWeeklyMonaSharing = ZERO;
-    marketplaceRevenue.totalBonusMonaSharing = ZERO;
     marketplaceRevenue.save();
   }
 

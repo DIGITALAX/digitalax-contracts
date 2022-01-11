@@ -1025,3 +1025,32 @@ dataSources:
         - event: RewardPaid(indexed address,uint256)
           handler: handleRewardPaid
       file: ./src/DigitalaxGDNSpecialMembershipStaking.mapping.ts
+  - kind: ethereum/contract
+    name: AvatarElementals
+    network: "matic"
+    source:
+      address: "0x6c2a60333442aad9c34e7034fa1d04d7ad0a6f33"
+      abi: AvatarElementals
+      startBlock: 23527404
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - ChildCreated
+        - ChildrenCreated
+        - TransferBatch
+        - TransferSingle
+      abis:
+        - name: AvatarElementals
+          file: ./abis/AvatarElementals.json
+      eventHandlers:
+        - event: ChildCreated(indexed uint256)
+          handler: handleChildCreated
+        - event: ChildrenCreated(uint256[])
+          handler: handleChildrenCreated
+        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
+          handler: handleBatchTransfer
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleSingleTransfer
+      file: ./src/AvatarElementals.mapping.ts

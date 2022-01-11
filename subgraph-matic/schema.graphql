@@ -194,6 +194,18 @@ type DigitalaxMaterialV2 @entity {
   attributes: [GarmentAttribute!]!
 }
 
+type AvatarElemental @entity {
+  id: ID!
+  tokenUri: String!
+  totalSupply: BigInt!
+  image: String!
+  animation: String!
+  name: String!
+  description: String!
+  external: String!
+  attributes: [GarmentAttribute!]!
+}
+
 # Total support of all children
 type DigitalaxBundle @entity {
   id: ID!
@@ -629,9 +641,7 @@ type DigitalaxMonaMarketplaceRevenue @entity {
   id: ID!
   week: BigInt!
   weeklyMonaSharing: BigInt!
-  bonusWeeklyMonaSharing: BigInt!
   totalMonaSharing: BigInt!
-  totalBonusMonaSharing: BigInt!
 }
 
 type DigitalaxMonaStaking @entity {
@@ -643,14 +653,12 @@ type W3FStakingMarketplaceRevenue @entity {
   id: ID!
   week: BigInt!
   weeklyW3FSharing: BigInt!
-  bonusWeeklyW3FSharing: BigInt!
   totalW3FSharing: BigInt!
-  totalBonusW3FSharing: BigInt!
 }
 
 type W3FStaking @entity {
   id: ID!
-  totalW3Ftaked: BigInt!
+  totalW3FStaked: BigInt!
 }
 
 type DigitalaxGenesisV2 @entity {
