@@ -1,35 +1,36 @@
-import { BigInt } from "@graphprotocol/graph-ts";
+import { BigInt, Address } from '@graphprotocol/graph-ts';
 import {
   DepositRevenueSharing,
   WithdrawRevenueSharing,
-} from "../generated/DigitalaxGenesisRewards/DigitalaxNFTRewards";
-import { ZERO } from "./constants";
-import { loadOrCreateDigitalaxMarketplaceRevenue } from "./factory/DigitalaxMarketplaceRevenue.factory";
+} from '../generated/DigitalaxGenesisRewards/DigitalaxNFTRewards';
+import { ZERO } from './constants';
+import { loadOrCreateDigitalaxMarketplaceRevenue } from './factory/DigitalaxMarketplaceRevenue.factory';
+
+const monaTokenAddress: string = '0x6968105460f67c3BF751bE7C15f92F5286Fd0CE5';
 
 export function handleDepositRevenueSharing(
   event: DepositRevenueSharing
 ): void {
   let marketplaceRevenue = loadOrCreateDigitalaxMarketplaceRevenue();
-  let weekSeconds = BigInt.fromI32(604800);
 
   if (marketplaceRevenue.week != event.params._week) {
     marketplaceRevenue.week = event.params._week;
     marketplaceRevenue.weeklyMonaSharing = ZERO;
-    marketplaceRevenue.bonusWeeklyMonaSharing = ZERO;
   }
 
-  marketplaceRevenue.weeklyMonaSharing = marketplaceRevenue.weeklyMonaSharing.plus(
-    event.params.weeklyMonaRevenueSharingPerSecond.times(weekSeconds)
+  let monaTokenIndex = event.params.rewardTokens.findIndex((value) =>
+    value.equals(Address.fromHexString(monaTokenAddress))
   );
+  if (monaTokenIndex == -1) return;
+
+  let rewardAmounts = event.params.rewardAmounts;
+
+  let monaTokenReward = rewardAmounts[monaTokenIndex];
+
+  marketplaceRevenue.weeklyMonaSharing = monaTokenReward;
   marketplaceRevenue.totalMonaSharing = marketplaceRevenue.totalMonaSharing.plus(
-    event.params.weeklyMonaRevenueSharingPerSecond.times(weekSeconds)
+    monaTokenReward
   );
-  // marketplaceRevenue.bonusWeeklyMonaSharing = marketplaceRevenue.bonusWeeklyMonaSharing.plus(
-  //   event.params.bonusWeeklyMonaRevenueSharingPerSecond.times(weekSeconds)
-  // );
-  // marketplaceRevenue.totalBonusMonaSharing = marketplaceRevenue.totalBonusMonaSharing.plus(
-  //   event.params.bonusWeeklyMonaRevenueSharingPerSecond.times(weekSeconds)
-  // );
 
   marketplaceRevenue.save();
 }
@@ -38,26 +39,25 @@ export function handleWithdrawRevenueSharing(
   event: WithdrawRevenueSharing
 ): void {
   let marketplaceRevenue = loadOrCreateDigitalaxMarketplaceRevenue();
-  let weekSeconds = BigInt.fromI32(604800);
 
   if (marketplaceRevenue.week != event.params._week) {
     marketplaceRevenue.week = event.params._week;
     marketplaceRevenue.weeklyMonaSharing = ZERO;
-    marketplaceRevenue.bonusWeeklyMonaSharing = ZERO;
   }
 
-  marketplaceRevenue.weeklyMonaSharing = marketplaceRevenue.weeklyMonaSharing.minus(
-    event.params.weeklyMonaRevenueSharingPerSecond.times(weekSeconds)
+  let monaTokenIndex = event.params.rewardTokens.findIndex((value) =>
+    value.equals(Address.fromHexString(monaTokenAddress))
   );
+  if (monaTokenIndex == -1) return;
+
+  let rewardAmounts = event.params.rewardTokenAmounts;
+
+  let monaTokenReward = rewardAmounts[monaTokenIndex];
+
+  marketplaceRevenue.weeklyMonaSharing = monaTokenReward;
   marketplaceRevenue.totalMonaSharing = marketplaceRevenue.totalMonaSharing.minus(
-    event.params.weeklyMonaRevenueSharingPerSecond.times(weekSeconds)
+    monaTokenReward
   );
-  // marketplaceRevenue.bonusWeeklyMonaSharing = marketplaceRevenue.bonusWeeklyMonaSharing.minus(
-  //   event.params.bonusAmount.times(weekSeconds)
-  // );
-  // marketplaceRevenue.totalBonusMonaSharing = marketplaceRevenue.totalBonusMonaSharing.minus(
-  //   event.params.bonusAmount.times(weekSeconds)
-  // );
 
   marketplaceRevenue.save();
 }

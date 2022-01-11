@@ -1,42 +1,48 @@
-import { DigitalaxMonaStaking as DigitalaxMonaStakingContract, Staked, StakedLP, Unstaked, UnstakedLP } from "../generated/DigitalaxMonaStaking/DigitalaxMonaStaking";
-import { loadOrCreateDigitalaxMonaStaking } from "./factory/DigitalaxMonaStaking.factory";
+import {
+  DigitalaxMonaStaking as DigitalaxW3fStakingContract,
+  Staked,
+  StakedLP,
+  Unstaked,
+  UnstakedLP,
+} from '../generated/W3FStaking/DigitalaxMonaStaking';
+import { loadOrCreateW3FStaking } from './factory/W3FStaking.factory';
 
 export function handleStaked(event: Staked): void {
-  let monaStaking = loadOrCreateDigitalaxMonaStaking();
-  let contract = DigitalaxMonaStakingContract.bind(event.address);
-  let staked = contract.try_stakedValueTotalForPool()
+  let w3fStaking = loadOrCreateW3FStaking();
+  let contract = DigitalaxW3fStakingContract.bind(event.address);
+  let staked = contract.try_stakedValueTotalForPool();
   if (!staked.reverted) {
-    monaStaking.totalMonaStaked = staked.value;
-    monaStaking.save();
+    w3fStaking.totalW3FStaked = staked.value;
+    w3fStaking.save();
   }
 }
 
 export function handleUnstaked(event: Unstaked): void {
-  let monaStaking = loadOrCreateDigitalaxMonaStaking();
-  let contract = DigitalaxMonaStakingContract.bind(event.address);
-  let staked = contract.try_stakedValueTotalForPool()
+  let w3fStaking = loadOrCreateW3FStaking();
+  let contract = DigitalaxW3fStakingContract.bind(event.address);
+  let staked = contract.try_stakedValueTotalForPool();
   if (!staked.reverted) {
-    monaStaking.totalMonaStaked = staked.value;
-    monaStaking.save();
+    w3fStaking.totalW3FStaked = staked.value;
+    w3fStaking.save();
   }
 }
 
 export function handleStakedLP(event: StakedLP): void {
-  let monaStaking = loadOrCreateDigitalaxMonaStaking();
-  let contract = DigitalaxMonaStakingContract.bind(event.address);
-  let staked = contract.try_stakedValueTotalForPool()
+  let w3fStaking = loadOrCreateW3FStaking();
+  let contract = DigitalaxW3fStakingContract.bind(event.address);
+  let staked = contract.try_stakedValueTotalForPool();
   if (!staked.reverted) {
-    monaStaking.totalMonaStaked = staked.value;
-    monaStaking.save();
+    w3fStaking.totalW3FStaked = staked.value;
+    w3fStaking.save();
   }
 }
 
 export function handleUnstakedLP(event: UnstakedLP): void {
-  let monaStaking = loadOrCreateDigitalaxMonaStaking();
-  let contract = DigitalaxMonaStakingContract.bind(event.address);
-  let staked = contract.try_stakedValueTotalForPool()
+  let w3fStaking = loadOrCreateW3FStaking();
+  let contract = DigitalaxW3fStakingContract.bind(event.address);
+  let staked = contract.try_stakedValueTotalForPool();
   if (!staked.reverted) {
-    monaStaking.totalMonaStaked = staked.value;
-    monaStaking.save();
+    w3fStaking.totalW3FStaked = staked.value;
+    w3fStaking.save();
   }
 }

@@ -74,5 +74,7 @@
   "PhoebeHeessAccessControls": "0x9171D986d626ef38eEd60edF878A012D4a900Fa0",
   "PhoebeHeessContributionNFt": "0x08845c47903FEEcabcDAD6b9D3DC071b6ab7d878",
   "ProgressionAccessControls": "0x384e682C27876686792F547381b04e9CfE8b4c29",
-  "ProgressionContributionNFt": "0x6ec95240DC3EB1aeDdc23B91CEFF3E267cC2d037"
+  "ProgressionContributionNFt": "0x6ec95240DC3EB1aeDdc23B91CEFF3E267cC2d037",
+  "AvatarElementalsAddress": "0x6c2a60333442aad9c34e7034fa1d04d7ad0a6f33",
+  "AvatarElementalsStartBlock": "23527404"
 }

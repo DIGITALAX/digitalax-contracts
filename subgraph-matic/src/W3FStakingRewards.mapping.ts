@@ -1,34 +1,35 @@
-import { BigInt } from "@graphprotocol/graph-ts";
+import { BigInt, Address } from '@graphprotocol/graph-ts';
 import {
   DepositRevenueSharing,
   WithdrawRevenueSharing,
-} from "../generated/DigitalaxRewardsV2/DigitalaxRewardsV2";
-import { ZERO } from "./constants";
-import { loadOrCreateDigitalaxMarketplaceRevenue } from "./factory/DigitalaxMarketplaceRevenue.factory";
+} from '../generated/DigitalaxRewardsV2/DigitalaxRewardsV2';
+import { ZERO } from './constants';
+import { loadOrCreateDigitalaxW3fMarketplaceRevenue } from './factory/DigitalaxMarketplaceW3fRevenue.factory';
+
+const w3fTokenAddress: string = '0x54cff88bb36fff8d16a2400c0a78ab37c14db4c6';
 
 export function handleDepositRevenueSharing(
   event: DepositRevenueSharing
 ): void {
-  let marketplaceRevenue = loadOrCreateDigitalaxMarketplaceRevenue();
-  let weekSeconds = BigInt.fromI32(604800);
+  let marketplaceRevenue = loadOrCreateDigitalaxW3fMarketplaceRevenue();
 
   if (marketplaceRevenue.week != event.params.week) {
     marketplaceRevenue.week = event.params.week;
-    marketplaceRevenue.weeklyMonaSharing = ZERO;
-    marketplaceRevenue.bonusWeeklyMonaSharing = ZERO;
+    marketplaceRevenue.weeklyW3FSharing = ZERO;
   }
 
-  marketplaceRevenue.weeklyMonaSharing = marketplaceRevenue.weeklyMonaSharing.plus(
-    event.params.weeklyMonaRevenueSharingPerSecond.times(weekSeconds)
+  let w3fTokenIndex = event.params.rewardTokens.findIndex((value) =>
+    value.equals(Address.fromHexString(w3fTokenAddress))
   );
-  marketplaceRevenue.totalMonaSharing = marketplaceRevenue.totalMonaSharing.plus(
-    event.params.weeklyMonaRevenueSharingPerSecond.times(weekSeconds)
-  );
-  marketplaceRevenue.bonusWeeklyMonaSharing = marketplaceRevenue.bonusWeeklyMonaSharing.plus(
-    event.params.bonusWeeklyMonaRevenueSharingPerSecond.times(weekSeconds)
-  );
-  marketplaceRevenue.totalBonusMonaSharing = marketplaceRevenue.totalBonusMonaSharing.plus(
-    event.params.bonusWeeklyMonaRevenueSharingPerSecond.times(weekSeconds)
+  if (w3fTokenIndex == -1) return;
+
+  let rewardAmounts = event.params.rewardAmounts;
+
+  let w3fTokenReward = rewardAmounts[w3fTokenIndex];
+
+  marketplaceRevenue.weeklyW3FSharing = w3fTokenReward;
+  marketplaceRevenue.totalW3FSharing = marketplaceRevenue.totalW3FSharing.plus(
+    w3fTokenReward
   );
 
   marketplaceRevenue.save();
@@ -37,27 +38,25 @@ export function handleDepositRevenueSharing(
 export function handleWithdrawRevenueSharing(
   event: WithdrawRevenueSharing
 ): void {
-  let marketplaceRevenue = loadOrCreateDigitalaxMarketplaceRevenue();
-  let weekSeconds = BigInt.fromI32(604800);
+  let marketplaceRevenue = loadOrCreateDigitalaxW3fMarketplaceRevenue();
 
   if (marketplaceRevenue.week != event.params.week) {
     marketplaceRevenue.week = event.params.week;
-    marketplaceRevenue.weeklyMonaSharing = ZERO;
-    marketplaceRevenue.bonusWeeklyMonaSharing = ZERO;
+    marketplaceRevenue.weeklyW3FSharing = ZERO;
   }
 
-  marketplaceRevenue.weeklyMonaSharing = marketplaceRevenue.weeklyMonaSharing.minus(
-    event.params.amount.times(weekSeconds)
+  let w3fTokenIndex = event.params.rewardTokens.findIndex((value) =>
+    value.equals(Address.fromHexString(w3fTokenAddress))
   );
-  marketplaceRevenue.totalMonaSharing = marketplaceRevenue.totalMonaSharing.minus(
-    event.params.amount.times(weekSeconds)
-  );
-  marketplaceRevenue.bonusWeeklyMonaSharing = marketplaceRevenue.bonusWeeklyMonaSharing.minus(
-    event.params.bonusAmount.times(weekSeconds)
-  );
-  marketplaceRevenue.totalBonusMonaSharing = marketplaceRevenue.totalBonusMonaSharing.minus(
-    event.params.bonusAmount.times(weekSeconds)
-  );
+  if (w3fTokenIndex == -1) return;
 
+  let rewardAmounts = event.params.rewardTokenAmounts;
+
+  let w3fTokenReward = rewardAmounts[w3fTokenIndex];
+
+  marketplaceRevenue.weeklyW3FSharing = w3fTokenReward;
+  marketplaceRevenue.totalW3FSharing = marketplaceRevenue.totalW3FSharing.minus(
+    w3fTokenReward
+  );
   marketplaceRevenue.save();
 }
