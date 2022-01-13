@@ -307,6 +307,26 @@ dataSources:
           handler: handleTransfer
       file: ./src/GDNMembership.mapping.ts
   - kind: ethereum/contract
+    name: GDNDltaNFT
+    network: "matic"
+    source:
+      address: "0x6003bda42a45412ef7e70caffa2c1650e8eff4ba"
+      abi: GDNMembership
+      startBlock: 19110219
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: GDNMembership
+          file: ./abis/GDNMembership.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/GDNDltaNFT.mapping.ts
+  - kind: ethereum/contract
     name: LookGoldenTicket
     network: "matic"
     source:

@@ -84,7 +84,7 @@ module.exports = {
       gasPrice: 1000000000
     },
     matic: {
-     url: `https://polygon-mainnet.infura.io/v3/6e9690131f584ee0a8b445ebb4740f8b`,
+     url: `https://polygon-rpc.com`,
      //url: `https://matic-mainnet-full-rpc.bwarelabs.com`,
      // url: `https://rpc-mainnet.matic.network`,
    // url: `https://matic-mainnet.chainstacklabs.com`,

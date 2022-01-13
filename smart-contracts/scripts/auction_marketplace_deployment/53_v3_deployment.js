@@ -34,7 +34,13 @@ async function main() {
 
     const decoTokenAddress = "0x200F9621cBcE6ed740071ba34fdE85eE03f2e113";
     const decoOracleAddress = "0xCFB6d9134e2742512883E8D68c6166B480Bf1875";
+
+
     const podeNFTv2TokenAddress = "0x6d4d0b9eacd6197b31bec250c0ad6cec98f8b83f";
+    const lgtTokenAddress = "0xdae2c7570bcafc8157a8395ed19ea6ccbfe10147";
+    const gdnTokenAddress = "0x6A64FfDEfa171437f07b46682622b24f8969400E";
+
+
     console.log('deco deployed');
 
     // Deploy membership guild staking
@@ -85,7 +91,7 @@ async function main() {
 
     const stakingInit = await nftStaking.initStaking(
         decoTokenAddress,
-        podeNFTv2TokenAddress,
+        gdnTokenAddress,
         accessControlsAddress,
         instanceStakingWeight.address,
         trustedForwarderAddress);
@@ -100,12 +106,17 @@ async function main() {
     await instanceStakingWeightStorage.updateWeightContract(instanceStakingWeight.address);
 
     console.log('tokens claimable');
+    const setTokensClaimable2 = await nftStaking.setTokensClaimable(true);
+    await setTokensClaimable2.wait();
+    console.log('minter');
+
+    console.log('tokens claimable');
     const setTokensClaimable = await whitelistedNFTStaking.setTokensClaimable(true);
     await setTokensClaimable.wait();
     console.log('minter');
 
-    const acr2 = await accessControls.addMinterRole(instanceStakingRewards.address);
-    await acr2.wait();
+    // const acr2 = await accessControls.addMinterRole(instanceStakingRewards.address);
+    // await acr2.wait();
 
     console.log('weight points');
     await instanceStakingRewards.setWeightPoints('5000000000000000000000000000000000000', '5000000000000000000000000000000000000');
@@ -119,15 +130,15 @@ async function main() {
     await updateRewardContract2.wait();
 
     console.log('setrewards');
-    const mintedrewards = await instanceStakingRewards.setMintedRewards([0,1,2], Array(14).fill('4128750000000000000000000'));
-    await mintedrewards.wait();
+    // const mintedrewards = await instanceStakingRewards.setMintedRewards([0,1,2], Array(14).fill('4128750000000000000000000'));
+    // await mintedrewards.wait();
 
     const start = await instanceStakingRewards.setStartTime(1639683109);
     await start.wait();
 
     console.log('whitelisting');
-    const whitelisted = await whitelistedNFTStaking.addWhitelistedTokens(tokenWhitelist, Array(tokenWhitelist.length).fill('false'),  Array(tokenWhitelist.length).fill('false'));
-    await whitelisted.wait();
+    // const whitelisted = await whitelistedNFTStaking.addWhitelistedTokens(tokenWhitelist, Array(tokenWhitelist.length).fill('false'),  Array(tokenWhitelist.length).fill('false'));
+    // await whitelisted.wait();
 
   console.log('the tokens have been deployed');
   console.log(`The storage: ${instanceStakingWeightStorage.address} (make sure to update weight contract)`);
@@ -135,6 +146,8 @@ async function main() {
   console.log(`The rewards: ${instanceStakingRewards.address} `);
   console.log(`The nft staking: ${nftStaking.address} `);
   console.log(`The whitelisted nft staking: ${whitelistedNFTStaking.address} `);
+
+  // TODO after add the whitelist of nft tokens, add rewards tokens, approve the token expenditures, check start times, check current week and deposit rewards
 
 }
 
