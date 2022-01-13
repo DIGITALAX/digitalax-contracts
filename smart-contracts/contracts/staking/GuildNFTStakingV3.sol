@@ -160,6 +160,18 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
         emit UpdateAccessControls(address(_accessControls));
     }
 
+    /// @notice Lets admin set the membership Token
+    function setParentNFT(address _addr) external {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "GuildNFTStaking.setRewardsContract: Sender must be admin"
+        );
+        require(nftStakedTotal == 0 && _addr != address(0), "Need to be address and with no nfts staked");
+
+        parentNFT = IERC721(_addr);
+
+    }
+
     /// @notice Lets admin set the Rewards Token
     function setRewardsContract(address _addr) external {
         require(
@@ -515,25 +527,24 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
         Staker storage staker = stakers[_user];
 
 
-        if (staker.rewardsEarned <= staker.rewardsReleased) {
-            return;
+        if (staker.rewardsEarned > staker.rewardsReleased) {
+            uint256 _payableAmount = staker.rewardsEarned.sub(staker.rewardsReleased);
+
+
+            staker.rewardsReleased = staker.rewardsReleased.add(_payableAmount);
+
+
+            /// @dev accounts for dust
+            uint256 rewardBal = rewardsToken.balanceOf(address(this));
+
+            if (_payableAmount > rewardBal) {
+                _payableAmount = rewardBal;
+            }
+
+            rewardsToken.transfer(_user, _payableAmount);
+            emit RewardPaid(_user, _payableAmount);
         }
 
-        uint256 _payableAmount = staker.rewardsEarned.sub(staker.rewardsReleased);
-
-
-        staker.rewardsReleased = staker.rewardsReleased.add(_payableAmount);
-
-
-        /// @dev accounts for dust
-        uint256 rewardBal = rewardsToken.balanceOf(address(this));
-
-        if (_payableAmount > rewardBal) {
-            _payableAmount = rewardBal;
-        }
-
-        rewardsToken.transfer(_user, _payableAmount);
-        emit RewardPaid(_user, _payableAmount);
 
         // Extra tokens
         address[] memory _tokens = IGuildNFTTokenRewards(address(rewardsContract)).getExtraRewardTokens();
@@ -542,9 +553,8 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
         for (uint i=0; i< _tokens.length; i++) {
                             console.log("the tokens are %s", _tokens[i]);
             if (staker.rewardTokensRewardsEarned[_tokens[i]] > staker.rewardTokensRewardsReleased[_tokens[i]]){
-                    uint256 rewardPayableAmount = staker.rewardTokensRewardsEarned[_tokens[i]].sub(staker.rewardTokensRewardsReleased[_tokens[i]]);
-                console.log("the trewardPayableAmount  %s", rewardPayableAmount);
-                staker.rewardTokensRewardsEarned[_tokens[i]] = staker.rewardTokensRewardsReleased[_tokens[i]];
+                uint256 rewardPayableAmount = staker.rewardTokensRewardsEarned[_tokens[i]].sub(staker.rewardTokensRewardsReleased[_tokens[i]]);
+                staker.rewardTokensRewardsReleased[_tokens[i]] = staker.rewardTokensRewardsEarned[_tokens[i]];
                     if (rewardPayableAmount > 0) {
                         /// @dev accounts for dust
                         uint256 tokenRewardBal = IERC20(_tokens[i]).balanceOf(address(this));
@@ -557,6 +567,14 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
                     }
             }
         }
+    }
+
+    function getStakerExtraRewardsEarned(address _staker, address _rewardToken) external view returns (uint256){
+        return stakers[_staker].rewardTokensRewardsEarned[_rewardToken];
+    }
+
+    function getStakerExtraRewardsReleased(address _staker, address _rewardToken) external view returns (uint256){
+        return stakers[_staker].rewardTokensRewardsReleased[_rewardToken];
     }
 
     function onERC721Received(address, address, uint256, bytes calldata data) public returns(bytes4) {
