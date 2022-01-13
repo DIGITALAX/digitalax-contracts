@@ -26,6 +26,16 @@ type GDNMembership @entity {
   attributes: [GarmentAttribute!]!
 }
 
+type GDNDltaNFT @entity {
+  id: ID!
+  owner: Bytes!
+  tokenUri: String!
+  animation: String!
+  name: String!
+  description: String!
+  attributes: [GarmentAttribute!]!
+}
+
 type LookGoldenTicket @entity {
   id: ID!
   owner: Bytes!
@@ -238,7 +248,7 @@ type NewGDNNFTv2Staker @entity {
   totalMetaverse: BigInt
   totalShare: BigInt
   clapHistory: [ClapHistory!]
-  garments: [GDNMembership!]!
+  garments: [GDNDltaNFT!]!
   rewardsClaimed: BigInt!
   weight: BigInt
 }
@@ -256,6 +266,11 @@ type PodeNFTv2Collector @entity {
 type GDNMembershipCollector @entity {
   id: ID!
   parentsOwned: [GDNMembership!]!
+}
+
+type GDNDltaNFTCollector @entity {
+  id: ID!
+  parentsOwned: [GDNDltaNFT!]!
 }
 
 type LookGoldenTicketCollector @entity {

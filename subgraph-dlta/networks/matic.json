@@ -10,6 +10,8 @@
   "LookGoldenTicketStartBlock": 19471997,
   "GDNMembershipAddress": "0x6A64FfDEfa171437f07b46682622b24f8969400E",
   "GDNMembershipStartBlock": 19110219,
+  "GDNDltaNFTAddress": "0x6003bda42a45412ef7e70caffa2c1650e8eff4ba",
+  "GDNDltaNFTStartBlock": 23309532,
   "GuildNFTStakingWeightV2Address": "0xE69E1eD04501b1bE9aEb24aa471F68303137a8eA",
   "GuildNFTStakingWeightV2StartBlock": 19359150,
   "NewPodeGuildNFTStakingWeightV4Address": "0xB574d5843B6898d710addaA409cB43B48b7b06e4",

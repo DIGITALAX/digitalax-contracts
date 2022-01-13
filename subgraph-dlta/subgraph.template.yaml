@@ -288,7 +288,7 @@ dataSources:
       file: ./src/PodeNFTv2.mapping.ts
   - kind: ethereum/contract
     name: GDNMembership
-    network: "matic"
+    network: "{{network}}"
     source:
       address: "{{GDNMembershipAddress}}"
       abi: GDNMembership
@@ -306,6 +306,26 @@ dataSources:
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
       file: ./src/GDNMembership.mapping.ts
+  - kind: ethereum/contract
+    name: GDNDltaNFT
+    network: "{{network}}"
+    source:
+      address: "{{GDNDltaNFTAddress}}"
+      abi: GDNMembership
+      startBlock: {{GDNDltaNFTStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: GDNMembership
+          file: ./abis/GDNMembership.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/GDNDltaNFT.mapping.ts
   - kind: ethereum/contract
     name: LookGoldenTicket
     network: "matic"
