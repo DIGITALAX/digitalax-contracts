@@ -995,6 +995,9 @@ contract GuildNFTStakingWeightV4 {
         owner.lastUpdateDay = _currentDay;
         lastUpdateDay = (_currentDay);
 
+        token.dailyWeight[_currentDay] = 0;
+        token.lastWeight = 0;
+        token.lastUpdateDay = _currentDay;
 
         delete whitelistedNFTTokenOwner[_whitelistedNFT][ _tokenId];
 
