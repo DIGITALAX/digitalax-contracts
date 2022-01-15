@@ -903,7 +903,11 @@ contract GuildNFTStakingWeightV4 {
             totalGuildWeight = (totalGuildWeight.sub(token.lastWeight));
         }
 
-        token.lastWeight = newWeight;
+        // token.lastWeight = newWeight;
+
+        token.dailyWeight[_currentDay] = 0;
+        token.lastWeight = 0;
+        token.lastUpdateDay = _currentDay;
 
         TokenWeight storage guildMember = guildMemberWeight[_tokenOwner];
 
