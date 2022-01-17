@@ -66,6 +66,12 @@ contract GuildWhitelistedNFTStakingV3 is BaseRelayRecipient {
         mapping (address => uint256) rewardTokensRewardsReleased;
     }
 
+    struct StakerInitialTotalRewards {
+        bool joined;
+        uint256 originalTotalRoundRewards;
+        mapping (address => uint256) originalTotalRoundRewardTokenRewards;
+    }
+
     struct StakeRecord {
         uint256 nftStakeTime;
         uint256 nftUnstakeTime;
@@ -96,6 +102,9 @@ contract GuildWhitelistedNFTStakingV3 is BaseRelayRecipient {
 
     /// @notice mapping of a staker to its current properties
     mapping (address => Staker) public stakers;
+
+    /// @notice mapping of a staker to its current properties - initialrewards
+    mapping (address => StakerInitialTotalRewards) public stakerInitialRewards;
 
     /// @notice sets the token to be claimable or not, cannot claim if it set to false
     bool public tokensClaimable;
@@ -368,6 +377,21 @@ contract GuildWhitelistedNFTStakingV3 is BaseRelayRecipient {
         }
 
         Staker storage staker = stakers[_user];
+        StakerInitialTotalRewards storage stakerInitial = stakerInitialRewards[_user];
+
+        // Upgraded logic
+        if(staker.numberNFTStaked > 0 && !stakerInitial.joined){
+            stakerInitial.joined = true;
+        }
+
+        if(!stakerInitial.joined){
+            stakerInitial.originalTotalRoundRewards = totalRoundRewards;
+            address[] memory _tokens = IGuildNFTTokenRewards(address(rewardsContract)).getExtraRewardTokens();
+            for (uint i = 0; i < _tokens.length; i++) {
+                stakerInitial.originalTotalRoundRewardTokenRewards[_tokens[i]] = totalRoundRewardTokenRewards[_tokens[i]];
+            }
+            stakerInitial.joined = true;
+        }
 
         updateReward(_user);
 
@@ -602,7 +626,7 @@ contract GuildWhitelistedNFTStakingV3 is BaseRelayRecipient {
         lastUpdateTime = _getNow();
 
         Staker storage staker = stakers[_user];
-        uint256 _stakerRewards = totalRoundRewards.mul(ownerWeight)
+        uint256 _stakerRewards = getStakerJoinedTotalRoundRewards(_user).mul(ownerWeight)
                                     .div(totalWeight);
 
         if (staker.rewardsReleased >= _stakerRewards) {
@@ -612,7 +636,7 @@ contract GuildWhitelistedNFTStakingV3 is BaseRelayRecipient {
         }
 
         for (uint i=0; i< _tokens.length; i++) {
-                    uint256 specificTokenRewards = totalRoundRewardTokenRewards[_tokens[i]].mul(ownerWeight)
+                    uint256 specificTokenRewards = getStakerJoinedTotalRoundMultiRewards(_user, _tokens[i]).mul(ownerWeight)
                                     .div(totalWeight);
                      if (staker.rewardTokensRewardsReleased[_tokens[i]] >= specificTokenRewards) {
                          staker.rewardTokensRewardsEarned[_tokens[i]] = staker.rewardTokensRewardsReleased[_tokens[i]];
@@ -629,7 +653,7 @@ contract GuildWhitelistedNFTStakingV3 is BaseRelayRecipient {
         }
 
         uint256 newRewards = IGuildNFTRewardsWhitelisted(address(rewardsContract)).WhitelistedNFTRewards(lastUpdateTime, _getNow());
-        uint256 _totalRoundRewards = totalRoundRewards.add(newRewards);
+        uint256 _totalRoundRewards = getStakerJoinedTotalRoundRewards(_user).add(newRewards);
 
         uint256 _totalWeight = weightContract.calcNewTotalWhitelistedNFTWeight();
 
@@ -665,7 +689,7 @@ contract GuildWhitelistedNFTStakingV3 is BaseRelayRecipient {
         }
 
         uint256 _newRewards = IGuildNFTTokenRewards(address(rewardsContract)).WhitelistedTokenRevenueRewards(_rewardToken, lastUpdateTime, _getNow());
-        uint256 _totalRoundRewards = totalRoundRewardTokenRewards[_rewardToken].add(_newRewards);
+        uint256 _totalRoundRewards = getStakerJoinedTotalRoundMultiRewards(_user, _rewardToken).add(_newRewards);
 
         uint256 _totalWeight = weightContract.calcNewTotalWhitelistedNFTWeight();
 
@@ -789,6 +813,24 @@ contract GuildWhitelistedNFTStakingV3 is BaseRelayRecipient {
 
     function getNFTStakedRecord(address _whitelistedNFT, uint256 _tokenId, uint256 _recordIndex) external view returns (uint256, uint256){
         return (nftStakeRecords[_whitelistedNFT][_tokenId][_recordIndex].nftStakeTime, nftStakeRecords[_whitelistedNFT][_tokenId][_recordIndex].nftUnstakeTime);
+    }
+
+    function getStakerJoinedTotalRoundRewards(address _staker) public view returns (uint256){
+        uint256 stakerOriginalRewards = stakerInitialRewards[_staker].originalTotalRoundRewards;
+        if(stakerOriginalRewards <= totalRoundRewards && stakerInitialRewards[_staker].joined) {
+            return totalRoundRewards.sub(stakerOriginalRewards);
+        } else {
+            return 0;
+        }
+    }
+
+    function getStakerJoinedTotalRoundMultiRewards(address _staker, address _rewardToken) public view returns (uint256){
+        uint256 stakerOriginalRewards = stakerInitialRewards[_staker].originalTotalRoundRewardTokenRewards[_rewardToken];
+        if(stakerOriginalRewards <= totalRoundRewardTokenRewards[_rewardToken] && stakerInitialRewards[_staker].joined) {
+            return totalRoundRewardTokenRewards[_rewardToken].sub(stakerOriginalRewards);
+        } else {
+            return 0;
+        }
     }
 
     function sendNFT(address _whitelistedNFT, address _from, address _to, uint256 _tokenId) internal returns (bool){
