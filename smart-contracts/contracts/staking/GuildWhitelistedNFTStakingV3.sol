@@ -103,12 +103,12 @@ contract GuildWhitelistedNFTStakingV3 is BaseRelayRecipient {
     /// @notice mapping of a staker to its current properties
     mapping (address => Staker) public stakers;
 
-    /// @notice mapping of a staker to its current properties - initialrewards
-    mapping (address => StakerInitialTotalRewards) public stakerInitialRewards;
-
     /// @notice sets the token to be claimable or not, cannot claim if it set to false
     bool public tokensClaimable;
     bool initialised;
+
+    /// @notice mapping of a staker to its current properties - initialrewards
+    mapping (address => StakerInitialTotalRewards) public stakerInitialRewards;
 
     // Events
     event AddWhitelistedTokens(
@@ -501,10 +501,6 @@ contract GuildWhitelistedNFTStakingV3 is BaseRelayRecipient {
         }
 
         delete tokenOwner[_whitelistedNFT][_tokenId];
-
-        if (whitelistedNFTStakedTotal == 0) {
-            totalRoundRewards = 0;
-        }
 
         IGuildNFTStakingWeightWhitelisted(address(weightContract)).unstakeWhitelistedNFT(_whitelistedNFT, _tokenId, _msgSender());
 

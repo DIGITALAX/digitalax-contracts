@@ -1923,10 +1923,15 @@ it('successfully deposits many NFT and batch with multiple users, and emergency 
 		  const initialDecoBalance = await this.decoToken.balanceOf(staker);
 		  const initialDecoBalance2 = await this.decoToken.balanceOf(staker2);
 
+
+		   console.log('round rewards before unstake *****');
+
 		  await this.guildWhitelistedNftStaking.unstakeBatch(new Array(2).fill(this.skinsToken.address), ['100001','100002'], {from: staker});
+		  console.log(await this.guildWhitelistedNftStaking.totalRoundRewards());
 		  await this.guildWhitelistedNftStaking.unstakeBatch(new Array(2).fill(this.skinsToken.address), ['100003','100004'], {from: staker2});
 
 		  await this.guildNftStaking.unstakeBatch([TOKEN_1,TOKEN_2],{from: staker});
+		  console.log(await this.guildNftStaking.totalRoundRewards());
 		  await this.guildNftStaking.unstakeBatch([TOKEN_3,TOKEN_4],{from: staker2});
 
 		  const finalDecoBalance = await this.decoToken.balanceOf(staker);
@@ -1957,6 +1962,10 @@ it('successfully deposits many NFT and batch with multiple users, and emergency 
 		 await this.stakingWeight.appraiseWhitelistedNFT(Array(1).fill(this.skinsToken.address), Array(1).fill( '100005'), Array(1).fill('Love'), {from: staker});
 		 await this.guildNftStaking.unstakeBatch([TOKEN_1,TOKEN_2],{from: staker});
 
+		   console.log('round rewards before timeout*****');
+		  console.log(await this.guildNftStaking.totalRoundRewards());
+
+
 		 await this.guildNFTRewards.setNowOverride('3628803'); // next week
 		  await this.guildNftStaking.setNowOverride('3628803'); // next week
 		  await this.guildWhitelistedNftStaking.setNowOverride('3628803'); // next week
@@ -1968,11 +1977,11 @@ it('successfully deposits many NFT and batch with multiple users, and emergency 
 		   expect(finalDecoBalance3).to.be.bignumber.greaterThan(new BN('0'));
 
 		   console.log('round rewards*****');
-		  console.log(await this.guildNftStaking.totalRoundRewards());
-		  console.log(await this.guildWhitelistedNftStaking.totalRoundRewards());
+		  console.log((await this.guildNftStaking.totalRoundRewards()).toString());
+		  console.log((await this.guildWhitelistedNftStaking.totalRoundRewards()).toString());
 
-		  console.log(await this.guildNftStaking.getStakerJoinedTotalRoundRewards(staker3));
-		  console.log(await this.guildWhitelistedNftStaking.getStakerJoinedTotalRoundRewards(staker3));
+		  console.log((await this.guildNftStaking.getStakerJoinedTotalRoundRewards(staker3)).toString());
+		  console.log((await this.guildWhitelistedNftStaking.getStakerJoinedTotalRoundRewards(staker3)).toString());
 	  });
 
 	   it('Successfully claim extra rewards tokens', async () => {
