@@ -72,9 +72,6 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
     /// @notice mapping of a staker to its current properties
     mapping (address => Staker) public stakers;
 
-    /// @notice mapping of a staker to its current properties - initialrewards
-    mapping (address => StakerInitialTotalRewards) public stakerInitialRewards;
-
     // Mapping from token ID to owner address
     mapping (uint256 => address) public tokenOwner;
 
@@ -83,6 +80,10 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
     /// @notice sets the token to be claimable or not, cannot claim if it set to false
     bool public tokensClaimable;
     bool initialised;
+
+    /// @notice mapping of a staker to its current properties - initialrewards
+    mapping (address => StakerInitialTotalRewards) public stakerInitialRewards;
+
 
     /// @notice event emitted when a user has staked a token
     event Staked(address owner, uint256 tokenId);
@@ -371,10 +372,6 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
         delete tokenOwner[_tokenId];
 
         balance = balance.sub(amount);
-
-        if (balance == 0) {
-            totalRoundRewards = 0;
-        }
 
         weightContract.unstake(_tokenId, _user);
 
