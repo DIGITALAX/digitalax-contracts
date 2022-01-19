@@ -325,7 +325,7 @@ contract DigitalaxMarketplaceV3 is ReentrancyGuard, BaseRelayRecipient, Initiali
         // If there are designers specified in the createOffer, then that exact configuration will be respected here
         // So we either have default designer, or multi designers
 
-        if(offer.designersOverride.length > 0){
+        if(offer.designersOverride.length > 0) {
             for (uint i = 0; i < offer.designersOverride.length; i++) {
                 uint256 payoutToDesigner = offer.designerShare[i].mul(amountOfMonaToTransferToDesigner).div(uint256(1000));
                 IERC20(monaErc20Token).transferFrom(_msgSender(),  offer.designersOverride[i], payoutToDesigner);
@@ -650,8 +650,8 @@ contract DigitalaxMarketplaceV3 is ReentrancyGuard, BaseRelayRecipient, Initiali
             designerShare: _designerShare
         });
 
-
         emit OfferCreated(_garmentCollectionId, _primarySalePrice, _startTimestamp, _endTimestamp, _platformFee, 0, _maxAmount);
+        emit UpdateDesignerOverride(_garmentCollectionId, _designersOverride, _designerShare);
     }
 
     /**

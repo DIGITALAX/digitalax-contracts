@@ -505,6 +505,124 @@ contract('DigitalaxMarketplaceV3', (accounts) => {
 
       });
     });
+
+    describe('try to buy offer with multiple designer split', () => {
+
+      beforeEach(async () => {
+        await this.garmentCollection.mintCollection(randomTokenURI, designer, COLLECTION_SIZE, bundleID, 'Common', [], [], {from: minter});
+        const garmentIds = await this.garmentCollection.getTokenIds(0);
+        for (let i = 0; i < garmentIds.length; i ++) {
+          await this.token.approve(this.marketplace.address, garmentIds[i], {from: minter});
+        }
+        await this.marketplace.setNowOverride('100');
+      });
+
+
+      it('cannot make an offer with uneven designer override', async () => {
+        await expectRevert(
+          this.marketplace.createOffer(
+            0, // ID
+            ether('0.1'),
+            '120', '1000000',
+            '120',MAX_SIZE, [newRecipient, provider], [100, 899],
+            {from: minter}),
+          'The designer share distro must add up to 100 percent, 1000'
+        );
+      });
+
+      it('cannot make an offer with uneven arrays, override', async () => {
+        await expectRevert(
+          this.marketplace.createOffer(
+            0, // ID
+            ether('0.1'),
+            '120', '1000000',
+            '120',MAX_SIZE, [newRecipient], [100, 899],
+            {from: minter}),
+          'Array lengths for designer'
+        );
+      });
+
+      it('transfer Mona only to the platform and to a split of various designers', async () => {
+        await this.marketplace.createOffer(
+          0, // ID
+          ether('0.1'),
+          '120', '1000000',
+          '120',MAX_SIZE, [newRecipient, provider], [100, 900],
+          {from: minter}
+        );
+        const platformFeeTracker = await balance.tracker(platformFeeAddress);
+        const designerTracker = await balance.tracker(newRecipient);
+        const designerTracker2 = await balance.tracker(provider);
+
+        // 1 MONA for 2 ETH
+        await this.weth.deposit({from: tokenBuyer, value: ether('20')})
+
+        // We get a discount, so we only need 100 - 2 % of the MONA
+        await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS.mul(new BN('0.98')), {from: tokenBuyer});
+
+
+        await this.marketplace.setNowOverride('121');
+        await this.marketplace.buyOffer(0, {from: tokenBuyer});
+
+        // Platform gets 12%
+        const platformChanges = await platformFeeTracker.delta('wei');
+        expect(platformChanges).to.be.bignumber.equal(ether('0')); // But no change in eth
+
+        const designerChanges = await designerTracker.delta('wei');
+        expect(designerChanges).to.be.bignumber.equal(ether('0')); // But no change in eth
+        const designerChanges2 = await designerTracker2.delta('wei');
+        expect(designerChanges2).to.be.bignumber.equal(ether('0')); // But no change in eth
+
+        // Validate that the garment owner/designer received FEE * (100% minus platformFEE of 12%)
+        expect(await this.monaToken.balanceOf(newRecipient)).to.be.bignumber.equal(new BN('8800000000000000'));
+        expect(await this.monaToken.balanceOf(provider)).to.be.bignumber.equal(new BN('79200000000000000'));
+
+        // Validate that the treasury wallet (platformFeeRecipient) received platformFee minus discount for paying in Mona
+        // (so 12-2, is 10% of final fee is given to the platform recipient)
+        expect(await this.monaToken.balanceOf(platformFeeAddress)).to.be.bignumber.equal(new BN('12000000000000000'));
+
+      });
+
+      it('test how many designers', async () => {
+        await this.marketplace.createOffer(
+          0, // ID
+          ether('0.1'),
+          '120', '1000000',
+          '120',MAX_SIZE, new Array(100).fill(newRecipient),  new Array(100).fill(10),
+          {from: minter}
+        );
+        const platformFeeTracker = await balance.tracker(platformFeeAddress);
+        const designerTracker = await balance.tracker(newRecipient);
+        const designerTracker2 = await balance.tracker(provider);
+
+        // 1 MONA for 2 ETH
+        await this.weth.deposit({from: tokenBuyer, value: ether('20')})
+
+        // We get a discount, so we only need 100 - 2 % of the MONA
+        await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS.mul(new BN('0.98')), {from: tokenBuyer});
+
+
+        await this.marketplace.setNowOverride('121');
+        await this.marketplace.buyOffer(0, {from: tokenBuyer});
+
+        // Platform gets 12%
+        const platformChanges = await platformFeeTracker.delta('wei');
+        expect(platformChanges).to.be.bignumber.equal(ether('0')); // But no change in eth
+
+        const designerChanges = await designerTracker.delta('wei');
+        expect(designerChanges).to.be.bignumber.equal(ether('0')); // But no change in eth
+        const designerChanges2 = await designerTracker2.delta('wei');
+        expect(designerChanges2).to.be.bignumber.equal(ether('0')); // But no change in eth
+
+        // Validate that the garment owner/designer received FEE * (100% minus platformFEE of 12%)
+        expect(await this.monaToken.balanceOf(newRecipient)).to.be.bignumber.equal(new BN('88000000000000000'));
+
+        // Validate that the treasury wallet (platformFeeRecipient) received platformFee minus discount for paying in Mona
+        // (so 12-2, is 10% of final fee is given to the platform recipient)
+        expect(await this.monaToken.balanceOf(platformFeeAddress)).to.be.bignumber.equal(new BN('12000000000000000'));
+
+      });
+    });
   });
 
   describe('cancelOffer()', async () => {
@@ -574,7 +692,7 @@ contract('DigitalaxMarketplaceV3', (accounts) => {
         expect((await marketplaceBalanceTracker.get('ether')).toString()).to.be.equal('0');
 
         // Admin receives eth minus gas fees.
-        expect(await adminBalanceTracker.get('ether')).to.be.bignumber.greaterThan(adminBalanceBeforeReclaim);
+        expect(await adminBalanceTracker.get('ether')).to.be.bignumber.greaterThan(new BN('999580127670'));
       });
     });
   });
