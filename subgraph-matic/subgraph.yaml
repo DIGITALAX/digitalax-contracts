@@ -90,6 +90,34 @@ dataSources:
           handler: handleTokenPriceSaleUpdated
       file: ./src/DigitalaxGarmentNFTv2.mapping.ts
   - kind: ethereum/contract
+    name: DigitalaxModelNFT
+    network: "matic"
+    source:
+      address: "0x89feFfd6807F72209Cf54003e8E20f3759B54D5B"
+      abi: DigitalaxModelNFT
+      startBlock: 23713665
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: DigitalaxModelNFT
+          file: ./abis/DigitalaxModelNFT.json
+        - name: DigitalaxMaterialsV2
+          file: ./abis/DigitalaxMaterialsV2.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: ReceivedChild(indexed address,indexed uint256,indexed address,uint256,uint256)
+          handler: handleChildReceived
+        - event: DigitalaxGarmentTokenUriUpdate(indexed uint256,string)
+          handler: handleUriUpdated
+        - event: TokenPrimarySalePriceSet(indexed uint256,uint256)
+          handler: handleTokenPriceSaleUpdated
+      file: ./src/DigitalaxModelNFT.mapping.ts
+  - kind: ethereum/contract
     name: DigitalaxMaterialsV2
     network: "matic"
     source:
@@ -361,6 +389,29 @@ dataSources:
           handler: handleGarmentCollectionBurned
       file: ./src/DigitalaxGarmentCollectionV2.mapping.ts
   - kind: ethereum/contract
+    name: DigitalaxModelCollection
+    network: "matic"
+    source:
+      address: "0x1fD8531fD5aFc6d0dCE3A506CB09FB97705c2a50"
+      abi: DigitalaxModelCollection
+      startBlock: 23714011
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - MintGarmentCollection
+        - BurnGarmentCollection
+      abis:
+        - name: DigitalaxModelCollection
+          file: ./abis/DigitalaxModelCollection.json
+      eventHandlers:
+        - event: MintGarmentCollection(uint256,uint256,string)
+          handler: handleGarmentCollectionMinted
+        - event: BurnGarmentCollection(uint256)
+          handler: handleGarmentCollectionBurned
+      file: ./src/DigitalaxModelCollection.mapping.ts
+  - kind: ethereum/contract
     name: DigitalaxMarketplace
     network: "matic"
     source:
@@ -436,6 +487,44 @@ dataSources:
         - event: OfferCancelled(indexed uint256)
           handler: handleOfferCancelled
       file: ./src/DigitalaxMarketplaceV2.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxModelMarketplace
+    network: "matic"
+    source:
+      address: "0xd4fcbae356138E6d8c71651e8bD59f441c7DdCE1"
+      abi: DigitalaxModelMarketplace
+      startBlock: 23714137
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - DigitalaxMarketplaceContractDeployed
+        - UpdateMarketplacePlatformFee
+        - UpdateMarketplaceDiscountToPayInErc20
+        - OfferCreated
+        - UpdateOfferPrimarySalePrice
+        - OfferPurchased
+        - OfferCancelled
+      abis:
+        - name: DigitalaxModelMarketplace
+          file: ./abis/DigitalaxModelMarketplace.json
+      eventHandlers:
+        - event: DigitalaxMarketplaceContractDeployed()
+          handler: handleMarketplaceDeployed
+        - event: UpdateMarketplacePlatformFee(indexed uint256,uint256)
+          handler: handleUpdateMarketplacePlatformFee
+        - event: UpdateMarketplaceDiscountToPayInErc20(indexed uint256,uint256)
+          handler: handleUpdateMarketplaceDiscountToPayInErc20
+        - event: OfferCreated(indexed uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleOfferCreated
+        - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
+          handler: handleOfferPrimarySalePriceUpdated
+        - event: OfferPurchased(indexed uint256,indexed uint256,indexed address,uint256,bool,uint256,uint256,uint256)
+          handler: handleOfferPurchased
+        - event: OfferCancelled(indexed uint256)
+          handler: handleOfferCancelled
+      file: ./src/DigitalaxModelMarketplace.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxSubscriptionCollection
     network: "matic"
