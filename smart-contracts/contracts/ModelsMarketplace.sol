@@ -1,13 +1,12 @@
 pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/GSN/Context.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./DigitalaxAccessControls.sol";
 import "./garment/IModelsNFT.sol";
-import "./garment/DigitalaxGarmentCollectionV2.sol";
+import "./garment/ModelsCollection.sol";
 import "./EIP2771/BaseRelayRecipient.sol";
 import "./oracle/IDigitalaxMonaOracle.sol";
 
@@ -16,7 +15,6 @@ import "./oracle/IDigitalaxMonaOracle.sol";
  */
 contract ModelsMarketplace is BaseRelayRecipient {
     using SafeMath for uint256;
-    using Address for address payable;
     /// @notice Event emitted only on construction. To be used by indexers
     event DigitalaxMarketplaceContractDeployed();
     event CollectionPauseToggled(
@@ -115,7 +113,7 @@ contract ModelsMarketplace is BaseRelayRecipient {
     /// @notice Garment ERC721 NFT - the only NFT that can be offered in this contract
     IModelsNFT public garmentNft;
     /// @notice Garment NFT Collection
-    DigitalaxGarmentCollectionV2 public garmentCollection;
+    ModelsCollection public garmentCollection;
     /// @notice oracle for MONA/ETH exchange rate
     IDigitalaxMonaOracle public oracle;
     /// @notice responsible for enforcing admin access
@@ -161,7 +159,7 @@ contract ModelsMarketplace is BaseRelayRecipient {
     function initialize(
         DigitalaxAccessControls _accessControls,
         IModelsNFT _garmentNft,
-        DigitalaxGarmentCollectionV2 _garmentCollection,
+        ModelsCollection _garmentCollection,
         IDigitalaxMonaOracle _oracle,
         address payable _platformFeeRecipient,
         address _monaErc20Token,
@@ -299,6 +297,18 @@ contract ModelsMarketplace is BaseRelayRecipient {
         );
     }
 
+    function isContract(address account) internal view returns (bool) {
+        // This method relies on extcodesize, which returns 0 for contracts in
+        // construction, since the code is only stored at the end of the
+        // constructor execution.
+
+        uint256 size;
+        assembly {
+            size := extcodesize(account)
+        }
+        return size > 0;
+    }
+
     /**
      @notice Buys an open offer with eth or erc20
      @dev Only callable when the offer is open
@@ -309,7 +319,7 @@ contract ModelsMarketplace is BaseRelayRecipient {
      */
     function buyOffer(uint256 _garmentCollectionId) external payable whenNotPaused nonReentrant {
         // Check the offers to see if this is a valid
-        require(_msgSender().isContract() == false, "DigitalaxMarketplace.buyOffer: No contracts permitted");
+        require(isContract(_msgSender()) == false, "DigitalaxMarketplace.buyOffer: No contracts permitted");
         require(_isFinished(_garmentCollectionId) == false, "DigitalaxMarketplace.buyOffer: Sale has been finished");
         require(lastPurchasedTime[_garmentCollectionId][_msgSender()] <= _getNow().sub(cooldown), "DigitalaxMarketplace.buyOffer: Cooldown not reached");
 
