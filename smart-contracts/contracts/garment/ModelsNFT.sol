@@ -17,7 +17,7 @@ import "./DigitalaxMaterialsV2.sol";
  * @title Models NFT
  * @dev Issues ERC-721 tokens as well as being able to hold child 1155 tokens
  */
-contract ModelsNFT is DigitalaxERC721("ModelsNFT", "MNFT"), ERC1155Receiver, IERC998ERC1155TopDown, BaseChildTunnel, BaseRelayRecipient, Initializable {
+contract ModelsNFT is DigitalaxERC721("ModelsNFT", "MNFT"), ERC1155Receiver, IERC998ERC1155TopDown, BaseRelayRecipient, Initializable {
 
     struct ChildNftInventory {
         uint256[] garmentTokenIds;
@@ -110,8 +110,8 @@ contract ModelsNFT is DigitalaxERC721("ModelsNFT", "MNFT"), ERC1155Receiver, IER
         childChain = _childChain;
         trustedForwarder = _trustedForwarder;
         tokenIdPointer = 100000;
-        maxChildrenPerToken = 10;
         BATCH_LIMIT = 20;
+        maxChildrenPerToken = 10;
         emit DigitalaxGarmentNFTContractDeployed();
     }
 
@@ -159,7 +159,7 @@ contract ModelsNFT is DigitalaxERC721("ModelsNFT", "MNFT"), ERC1155Receiver, IER
         );
 
         // Valid args
-        _assertMintingParamsValid(_tokenUri, _designer);
+        _assertMintingParamsValid(_tokenUri, _designer, _model);
 
         tokenIdPointer = tokenIdPointer.add(1);
         uint256 tokenId = tokenIdPointer;
@@ -291,20 +291,6 @@ contract ModelsNFT is DigitalaxERC721("ModelsNFT", "MNFT"), ERC1155Receiver, IER
     // Admin /
     //////////
 
-    /**
-     @notice Updates the token URI of a given token
-     @dev Only admin or smart contract
-     @param _tokenId The ID of the token being updated
-     @param _tokenUri The new URI
-     */
-    function setTokenURI(uint256 _tokenId, string calldata _tokenUri) external {
-        require(
-            accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
-            "DigitalaxGarmentNFT.setTokenURI: Sender must be an authorised contract or admin"
-        );
-        _tokenURIs[_tokenId] = _tokenUri;
-        emit DigitalaxGarmentTokenUriUpdate(_tokenId, _tokenUri);
-    }
 
     /**
      @notice Updates the token URI of a given token
@@ -561,124 +547,127 @@ contract ModelsNFT is DigitalaxERC721("ModelsNFT", "MNFT"), ERC1155Receiver, IER
     /**
      @notice Checks that the URI is not empty
      @param _tokenUri URI supplied on minting
+     @param _designer designer
+     @param _model model
      */
-    function _assertMintingParamsValid(string calldata _tokenUri) pure internal {
+    function _assertMintingParamsValid(string calldata _tokenUri, address _designer, address _model) pure internal {
         require(bytes(_tokenUri).length > 0, "DigitalaxGarmentNFT._assertMintingParamsValid: Token URI is empty");
+        require(_designer != address(0) || _model != address(0), "DigitalaxGarmentNFT._assertMintingParamsValid: There must be either a model or a garment");
     }
 
-
-    /**
-     * @notice called when token is deposited on root chain
-     * @dev Should be callable only by ChildChainManager
-     * Should handle deposit by minting the required tokenId for user
-     * Make sure minting is done only by this function
-     * @param user user address for whom deposit is being done
-     * @param depositData abi encoded tokenId
-     */
-    function deposit(address user, bytes calldata depositData)
-    external
-    onlyChildChain
-    {
-        // deposit single
-        if (depositData.length == 32) {
-            uint256 tokenId = abi.decode(depositData, (uint256));
-            withdrawnTokens[tokenId] = false;
-            _safeMint(user, tokenId);
-
-            // deposit batch
-        } else {
-            uint256[] memory tokenIds = abi.decode(depositData, (uint256[]));
-            uint256 length = tokenIds.length;
-            for (uint256 i; i < length; i++) {
-
-                withdrawnTokens[tokenIds[i]] = false;
-                _safeMint(user, tokenIds[i]);
-            }
-        }
-    }
-
-    /**
-     * @notice called when user wants to withdraw token back to root chain
-     * @dev Should burn user's token. This transaction will be verified when exiting on root chain
-     * @param tokenId tokenId to withdraw
-     */
-    function withdraw(uint256 tokenId) external {
-        burn(tokenId);
-        withdrawnTokens[tokenId] = true;
-    }
-
-    /**
-     * @notice called when user wants to withdraw multiple tokens back to root chain
-     * @dev Should burn user's tokens. This transaction will be verified when exiting on root chain
-     * @param tokenIds tokenId list to withdraw
-     */
-    function withdrawBatch(uint256[] calldata tokenIds) external {
-        uint256 length = tokenIds.length;
-        require(length <= BATCH_LIMIT, "ChildERC721: EXCEEDS_BATCH_LIMIT");
-        for (uint256 i; i < length; i++) {
-            uint256 tokenId = tokenIds[i];
-            burn(tokenId);
-            withdrawnTokens[tokenIds[i]] = true;
-        }
-        emit WithdrawnBatch(_msgSender(), tokenIds);
-    }
-
-    function _processMessageFromRoot(bytes memory message) internal override {
-        uint256[] memory _tokenIds;
-        uint256[] memory _primarySalePrices;
-        address[] memory _garmentDesigners;
-        address[] memory _garmentModels;
-        string[] memory _tokenUris;
-
-        (_tokenIds, _primarySalePrices, _garmentDesigners, _garmentModels, _tokenUris) = abi.decode(message, (uint256[], uint256[], address[], address[], string[]));
-
-        for( uint256 i; i< _tokenIds.length; i++){
-            primarySalePrice[_tokenIds[i]] = _primarySalePrices[i];
-            garmentDesigners[_tokenIds[i]] = _garmentDesigners[i];
-            garmentModels[_tokenIds[i]] = _garmentModels[i];
-            _tokenURIs[_tokenIds[i]] = _tokenUris[i];
-        }
-    }
-
-    // Send the nft to root - if it does not exist then we can handle it on that side
-
-    function sendNFTsToRoot(uint256[] memory _tokenIds) external {
-        uint256 length = _tokenIds.length;
-
-        address[] memory _owners = new address[](length);
-        uint256[] memory _salePrices = new uint256[](length);
-        address[] memory _designers = new address[](length);
-        address[] memory _models = new address[](length);
-        string[] memory _tokenUris = new string[](length);
-        uint256[][] memory childNftIdArray = new uint256[][](length);
-        string[][] memory childNftURIArray = new string[][](length);
-        uint256[][] memory childNftBalanceArray = new uint256[][](length);
-
-        for( uint256 i; i< length; i++){
-            _owners[i] = ownerOf(_tokenIds[i]);
-            require(_owners[i] == _msgSender(), "DigitalaxGarmentNFTv2.sendNFTsToRootNFTs: can only be sent by the same user");
-            _salePrices[i] = primarySalePrice[_tokenIds[i]];
-            _designers[i] = garmentDesigners[_tokenIds[i]];
-            _models[i] = garmentModels[_tokenIds[i]];
-            _tokenUris[i] = tokenURI(_tokenIds[i]);
-
-            childNftIdArray[i] = childIdsForOn(_tokenIds[i], address(childContract));
-            childNftURIArray[i] = childURIsForOn(_tokenIds[i], address(childContract));
-            uint256 len = childNftIdArray[i].length;
-            uint256[] memory garmentAmounts = new uint256[](len);
-            for( uint256 j; j< len; j++){
-                garmentAmounts[j] = childBalance(_tokenIds[i], address(childContract), childNftIdArray[i][j]);
-            }
-            childNftBalanceArray[i] = garmentAmounts;
-            // Same as withdraw
-            burn(_tokenIds[i]);
-            withdrawnTokens[_tokenIds[i]] = true;
-
-            childContract.burnBatch(_msgSender(), childNftIdArray[i], childNftBalanceArray[i]);
-        }
-
-        _sendMessageToRoot(abi.encode(_tokenIds, _owners, _salePrices, _designers, _models, _tokenUris, childNftIdArray, childNftURIArray, childNftBalanceArray));
-    }
+//
+//    /**
+//     * @notice called when token is deposited on root chain
+//     * @dev Should be callable only by ChildChainManager
+//     * Should handle deposit by minting the required tokenId for user
+//     * Make sure minting is done only by this function
+//     * @param user user address for whom deposit is being done
+//     * @param depositData abi encoded tokenId
+//     */
+//    function deposit(address user, bytes calldata depositData)
+//    external
+//    onlyChildChain
+//    {
+//        // deposit single
+//        if (depositData.length == 32) {
+//            uint256 tokenId = abi.decode(depositData, (uint256));
+//            withdrawnTokens[tokenId] = false;
+//            _safeMint(user, tokenId);
+//
+//            // deposit batch
+//        } else {
+//            uint256[] memory tokenIds = abi.decode(depositData, (uint256[]));
+//            uint256 length = tokenIds.length;
+//            for (uint256 i; i < length; i++) {
+//
+//                withdrawnTokens[tokenIds[i]] = false;
+//                _safeMint(user, tokenIds[i]);
+//            }
+//        }
+//    }
+//
+//    /**
+//     * @notice called when user wants to withdraw token back to root chain
+//     * @dev Should burn user's token. This transaction will be verified when exiting on root chain
+//     * @param tokenId tokenId to withdraw
+//     */
+//    function withdraw(uint256 tokenId) external {
+//        burn(tokenId);
+//        withdrawnTokens[tokenId] = true;
+//    }
+//
+//    /**
+//     * @notice called when user wants to withdraw multiple tokens back to root chain
+//     * @dev Should burn user's tokens. This transaction will be verified when exiting on root chain
+//     * @param tokenIds tokenId list to withdraw
+//     */
+//    function withdrawBatch(uint256[] calldata tokenIds) external {
+//        uint256 length = tokenIds.length;
+//        require(length <= BATCH_LIMIT, "ChildERC721: EXCEEDS_BATCH_LIMIT");
+//        for (uint256 i; i < length; i++) {
+//            uint256 tokenId = tokenIds[i];
+//            burn(tokenId);
+//            withdrawnTokens[tokenIds[i]] = true;
+//        }
+//        emit WithdrawnBatch(_msgSender(), tokenIds);
+//    }
+//
+//    function _processMessageFromRoot(bytes memory message) internal override {
+//        uint256[] memory _tokenIds;
+//        uint256[] memory _primarySalePrices;
+//        address[] memory _garmentDesigners;
+//        address[] memory _garmentModels;
+//        string[] memory _tokenUris;
+//
+//        (_tokenIds, _primarySalePrices, _garmentDesigners, _garmentModels, _tokenUris) = abi.decode(message, (uint256[], uint256[], address[], address[], string[]));
+//
+//        for( uint256 i; i< _tokenIds.length; i++){
+//            primarySalePrice[_tokenIds[i]] = _primarySalePrices[i];
+//            garmentDesigners[_tokenIds[i]] = _garmentDesigners[i];
+//            garmentModels[_tokenIds[i]] = _garmentModels[i];
+//            _tokenURIs[_tokenIds[i]] = _tokenUris[i];
+//        }
+//    }
+//
+//    // Send the nft to root - if it does not exist then we can handle it on that side
+//
+//    function sendNFTsToRoot(uint256[] memory _tokenIds) external {
+//        uint256 length = _tokenIds.length;
+//
+//        address[] memory _owners = new address[](length);
+//        uint256[] memory _salePrices = new uint256[](length);
+//        address[] memory _designers = new address[](length);
+//        address[] memory _models = new address[](length);
+//        string[] memory _tokenUris = new string[](length);
+//        uint256[][] memory childNftIdArray = new uint256[][](length);
+//        string[][] memory childNftURIArray = new string[][](length);
+//        uint256[][] memory childNftBalanceArray = new uint256[][](length);
+//
+//        for( uint256 i; i< length; i++){
+//            _owners[i] = ownerOf(_tokenIds[i]);
+//            require(_owners[i] == _msgSender(), "DigitalaxGarmentNFTv2.sendNFTsToRootNFTs: can only be sent by the same user");
+//            _salePrices[i] = primarySalePrice[_tokenIds[i]];
+//            _designers[i] = garmentDesigners[_tokenIds[i]];
+//            _models[i] = garmentModels[_tokenIds[i]];
+//            _tokenUris[i] = tokenURI(_tokenIds[i]);
+//
+//            childNftIdArray[i] = childIdsForOn(_tokenIds[i], address(childContract));
+//            childNftURIArray[i] = childURIsForOn(_tokenIds[i], address(childContract));
+//            uint256 len = childNftIdArray[i].length;
+//            uint256[] memory garmentAmounts = new uint256[](len);
+//            for( uint256 j; j< len; j++){
+//                garmentAmounts[j] = childBalance(_tokenIds[i], address(childContract), childNftIdArray[i][j]);
+//            }
+//            childNftBalanceArray[i] = garmentAmounts;
+//            // Same as withdraw
+//            burn(_tokenIds[i]);
+//            withdrawnTokens[_tokenIds[i]] = true;
+//
+//            childContract.burnBatch(_msgSender(), childNftIdArray[i], childNftBalanceArray[i]);
+//        }
+//
+//        _sendMessageToRoot(abi.encode(_tokenIds, _owners, _salePrices, _designers, _models, _tokenUris, childNftIdArray, childNftURIArray, childNftBalanceArray));
+//    }
 
     // Batch transfer
     /**
