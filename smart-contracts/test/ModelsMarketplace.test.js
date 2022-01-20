@@ -799,7 +799,7 @@ contract('ModelsMarketplace', (accounts) => {
         expect((await marketplaceBalanceTracker.get('ether')).toString()).to.be.equal('0');
 
         // Admin receives eth minus gas fees.
-        expect(await adminBalanceTracker.get('ether')).to.be.bignumber.greaterThan(new BN('999580127670'));
+        expect(await adminBalanceTracker.get('ether')).to.be.bignumber.greaterThan(new BN('99000000000'));
       });
     });
   });
