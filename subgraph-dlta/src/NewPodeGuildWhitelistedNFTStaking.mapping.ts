@@ -17,6 +17,8 @@ import {
   AddWhitelistedTokens,
 } from "../generated/NewPodeGuildWhitelistedNFTStaking/GuildWhitelistedNFTStakingV3";
 
+import { calculateWhitelistedWeights} from "./factory/PodeCalculateWeights.factory";
+
 import { GuildNFTStakingWeightV4 as NewPodeGuildNFTStakingWeightV4Contract } from "../generated/NewPodeGuildWhitelistedNFTStaking/GuildNFTStakingWeightV4";
 
 const GuildNFTSTakingWeightV4Address =
@@ -28,6 +30,8 @@ import {
   NewPodeGuildWhitelistedToken,
 } from "../generated/schema";
 import { ZERO } from "./constants";
+import {GuildNFTStakingWeightV4 as NewPodeGuildNFTStakingWeightContract} from "../generated/NewPodeGuildNFTStakingWeightV4/GuildNFTStakingWeightV4";
+import {calculateWeights} from "./factory/PodeCalculateWeights.factory";
 
 export function handleRewardPaid(event: RewardPaid): void {
   let owner = event.params.user.toHexString();
@@ -37,9 +41,13 @@ export function handleRewardPaid(event: RewardPaid): void {
     staker = new NewPodeGuildWhitelistedNFTStaker(owner);
     staker.garments = new Array<string>();
     staker.rewardsClaimed = ZERO;
+    staker.weight = ZERO;
   }
 
   staker.rewardsClaimed = staker.rewardsClaimed.plus(reward);
+
+  let weightContract = NewPodeGuildNFTStakingWeightContract.bind(Address.fromString(GuildNFTSTakingWeightV4Address));
+  calculateWhitelistedWeights(weightContract,  event.block.timestamp, staker);
   staker.save();
 }
 
@@ -108,6 +116,7 @@ export function handleStaked(event: Staked): void {
     staker.garments = new Array<string>();
     staker.rewardsClaimed = ZERO;
     staker.weight = ZERO;
+    staker.weights = null;
   }
 
   let garmentsStaked = staker.garments;
@@ -120,6 +129,11 @@ export function handleStaked(event: Staked): void {
   if (!tryStakerWeight.reverted) {
     staker.weight = tryStakerWeight.value;
   }
+
+  let weightContract2 = NewPodeGuildNFTStakingWeightContract.bind(
+    Address.fromString(GuildNFTSTakingWeightV4Address)
+  );
+  calculateWhitelistedWeights(weightContract2,  event.block.timestamp, staker);
 
   staker.save();
 }
@@ -150,6 +164,12 @@ export function handleUnstaked(event: Unstaked): void {
   }
 
   staker.garments = newGarments;
+
+  let weightContract2 = NewPodeGuildNFTStakingWeightContract.bind(
+    Address.fromString(GuildNFTSTakingWeightV4Address)
+  );
+  calculateWhitelistedWeights(weightContract2,  event.block.timestamp, staker);
+
   staker.save();
 }
 
@@ -179,6 +199,12 @@ export function handleEmergencyUnstake(event: EmergencyUnstake): void {
     staker.weight = tryStakerWeight.value;
   }
   staker.garments = newGarments;
+
+  let weightContract2 = NewPodeGuildNFTStakingWeightContract.bind(
+    Address.fromString(GuildNFTSTakingWeightV4Address)
+  );
+  calculateWhitelistedWeights(weightContract2,  event.block.timestamp, staker);
+
   staker.save();
 }
 

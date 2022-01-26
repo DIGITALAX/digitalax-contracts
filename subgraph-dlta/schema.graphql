@@ -73,11 +73,26 @@ type GuildWhitelistedNFTStaker @entity {
   weight: BigInt
 }
 
+type PodeGuildWhitelistedStakerWeight @entity {
+  id: ID!
+  day: BigInt
+  lastDailyPersonalWeight: BigInt
+  lastTotalWeight: BigInt
+}
+
 type NewPodeGuildWhitelistedNFTStaker @entity {
   id: ID!
   garments: [NewPodeGuildWhitelistedNFT!]!
   rewardsClaimed: BigInt!
   weight: BigInt
+  weights: [PodeGuildWhitelistedStakerWeight!]
+}
+
+type LookGuildWhitelistedStakerWeight @entity {
+  id: ID!
+  day: BigInt
+  lastDailyPersonalWeight: BigInt
+  lastTotalWeight: BigInt
 }
 
 type NewLookGuildWhitelistedNFTStaker @entity {
@@ -85,6 +100,14 @@ type NewLookGuildWhitelistedNFTStaker @entity {
   garments: [NewLookGuildWhitelistedNFT!]!
   rewardsClaimed: BigInt!
   weight: BigInt
+  weights: [LookGuildWhitelistedStakerWeight!]
+}
+
+type GDNGuildWhitelistedStakerWeight @entity {
+  id: ID!
+  day: BigInt
+  lastDailyPersonalWeight: BigInt
+  lastTotalWeight: BigInt
 }
 
 type NewGDNGuildWhitelistedNFTStaker @entity {
@@ -92,6 +115,7 @@ type NewGDNGuildWhitelistedNFTStaker @entity {
   garments: [NewGDNGuildWhitelistedNFT!]!
   rewardsClaimed: BigInt!
   weight: BigInt
+  weights: [GDNGuildWhitelistedStakerWeight!]
 }
 
 type GuildNFTWeight @entity {
@@ -211,6 +235,13 @@ type PodeNFTv2Staker @entity {
   weight: BigInt
 }
 
+type PodeGuildStakerWeight @entity {
+  id: ID!
+  day: BigInt
+  lastDailyPersonalWeight: BigInt
+  lastTotalWeight: BigInt
+}
+
 type NewPodeNFTv2Staker @entity {
   id: ID!
   totalAppraisals: BigInt
@@ -223,6 +254,14 @@ type NewPodeNFTv2Staker @entity {
   garments: [PodeNFTv2!]!
   rewardsClaimed: BigInt!
   weight: BigInt
+  weights: [PodeGuildStakerWeight!]
+}
+
+type LookGuildStakerWeight @entity {
+  id: ID!
+  day: BigInt
+  lastDailyPersonalWeight: BigInt
+  lastTotalWeight: BigInt
 }
 
 type NewLookNFTv2Staker @entity {
@@ -237,6 +276,14 @@ type NewLookNFTv2Staker @entity {
   garments: [LookGoldenTicket!]!
   rewardsClaimed: BigInt!
   weight: BigInt
+  weights: [LookGuildStakerWeight!]
+}
+
+type GDNGuildStakerWeight @entity {
+  id: ID!
+  day: BigInt
+  lastDailyPersonalWeight: BigInt
+  lastTotalWeight: BigInt
 }
 
 type NewGDNNFTv2Staker @entity {
@@ -251,6 +298,7 @@ type NewGDNNFTv2Staker @entity {
   garments: [GDNDltaNFT!]!
   rewardsClaimed: BigInt!
   weight: BigInt
+  weights: [GDNGuildStakerWeight!]
 }
 
 type PodeNFTv2OGHolder @entity {
