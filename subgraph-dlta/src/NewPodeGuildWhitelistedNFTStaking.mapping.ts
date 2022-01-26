@@ -45,7 +45,7 @@ export function handleRewardPaid(event: RewardPaid): void {
 
 export function handleStaked(event: Staked): void {
   log.info("this is event.params.whitelistedNFT ------------ {}", [
-    event.params.whitelistedNFT.toString(),
+    event.params.whitelistedNFT.toHexString(),
   ]);
   let contract = ERC721.bind(event.params.whitelistedNFT);
   let weightContract = NewPodeGuildNFTStakingWeightV4Contract.bind(
