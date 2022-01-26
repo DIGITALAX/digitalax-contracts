@@ -217,6 +217,31 @@
       },
       {
         "indexed": false,
+        "internalType": "address[]",
+        "name": "designersOverride",
+        "type": "address[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "designerShare",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "UpdateDesignerOverride",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "garmentCollectionId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "discount",
         "type": "uint256"
@@ -242,6 +267,25 @@
       }
     ],
     "name": "UpdateMarketplacePlatformFee",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "garmentCollectionId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "UpdateOfferMaxAmount",
     "type": "event"
   },
   {
@@ -388,12 +432,17 @@
       },
       { "internalType": "uint256", "name": "_endTimestamp", "type": "uint256" },
       { "internalType": "uint256", "name": "_platformFee", "type": "uint256" },
+      { "internalType": "uint256", "name": "_maxAmount", "type": "uint256" },
       {
-        "internalType": "uint256",
-        "name": "_discountToPayERC20",
-        "type": "uint256"
+        "internalType": "address[]",
+        "name": "_designersOverride",
+        "type": "address[]"
       },
-      { "internalType": "uint256", "name": "_maxAmount", "type": "uint256" }
+      {
+        "internalType": "uint256[]",
+        "name": "_designerShare",
+        "type": "uint256[]"
+      }
     ],
     "name": "createOffer",
     "outputs": [],
@@ -412,7 +461,7 @@
     "name": "garmentCollection",
     "outputs": [
       {
-        "internalType": "contract DigitalaxGarmentCollectionV2",
+        "internalType": "contract ModelsCollection",
         "name": "",
         "type": "address"
       }
@@ -424,11 +473,7 @@
     "inputs": [],
     "name": "garmentNft",
     "outputs": [
-      {
-        "internalType": "contract IDigitalaxGarmentNFT",
-        "name": "",
-        "type": "address"
-      }
+      { "internalType": "contract IModelsNFT", "name": "", "type": "address" }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -468,17 +513,32 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_garmentCollectionId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getOfferMaxAmount",
+    "outputs": [
+      { "internalType": "uint256", "name": "_maxAmount", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "contract DigitalaxAccessControls",
         "name": "_accessControls",
         "type": "address"
       },
       {
-        "internalType": "contract IDigitalaxGarmentNFT",
+        "internalType": "contract IModelsNFT",
         "name": "_garmentNft",
         "type": "address"
       },
       {
-        "internalType": "contract DigitalaxGarmentCollectionV2",
+        "internalType": "contract ModelsCollection",
         "name": "_garmentCollection",
         "type": "address"
       },
@@ -718,6 +778,43 @@
       { "internalType": "uint256", "name": "_platformFee", "type": "uint256" }
     ],
     "name": "updateMarketplacePlatformFee",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_garmentCollectionId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_designersOverride",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_designerShare",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "updateOfferDesignerOverrideShare",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_garmentCollectionId",
+        "type": "uint256"
+      },
+      { "internalType": "uint256", "name": "_maxAmount", "type": "uint256" }
+    ],
+    "name": "updateOfferMaxAmount",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
