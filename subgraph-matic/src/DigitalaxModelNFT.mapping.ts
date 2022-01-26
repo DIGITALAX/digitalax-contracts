@@ -19,14 +19,15 @@ import {
 
 import {
   AdditionalSource,
-  DigitalaxModel,
+  DigitalaxModelNFT,
   GarmentAttribute,
 } from "../generated/schema";
-import { loadOrCreateGarmentV2Designer } from "./factory/DigitalaxGarmentV2Designer.factory";
-import { loadOrCreateDigitalaxCollectorV2 } from "./factory/DigitalaxCollectorV2.factory";
+import { loadOrCreateModelNFTDesigner } from "./factory/DigitalaxModelNFTDesigner.factory";
+import { loadOrCreateDigitalaxModelCollector } from "./factory/DigitalaxModelCollector.factory";
 
 import { ZERO_ADDRESS } from "./constants";
-import { loadOrCreateDigitalaxGarmentChildV2 } from "./factory/DigitalaxGarmentV2Child.factory";
+import { loadOrCreateDigitalaxModelChild } from "./factory/DigitalaxModelChild.factory";
+import { loadOrCreateModelNFTModel } from "./factory/DigitalaxModelNFTModel.factory";
 
 export function handleTransfer(event: Transfer): void {
   log.info("Handle Garment Transfer @ Hash {}", [
@@ -37,8 +38,9 @@ export function handleTransfer(event: Transfer): void {
   // This is the birthing of a garment
   if (event.params.from.equals(ZERO_ADDRESS)) {
     let garmentId = event.params.tokenId.toString();
-    let garment = new DigitalaxModel(garmentId);
-    let garmentDesigner = loadOrCreateGarmentV2Designer(garmentId);
+    let garment = new DigitalaxModelNFT(garmentId);
+    let garmentDesigner = loadOrCreateModelNFTDesigner(garmentId);
+    let garmentModel = loadOrCreateModelNFTModel(garmentId);
     garment.tokenUri = contract.tokenURI(event.params.tokenId);
     let owner = contract.try_ownerOf(event.params.tokenId);
     if (!owner.reverted) {
@@ -52,7 +54,7 @@ export function handleTransfer(event: Transfer): void {
     garment.name = "";
     garment.description = "";
     garment.external = "";
-    garment.model = "";
+    garment.model = garmentModel.id;
     garment.attributes = new Array<string>();
     garment.additionalSources = new Array<string>();
 
@@ -154,7 +156,7 @@ export function handleTransfer(event: Transfer): void {
 
     garment.save();
 
-    let collector = loadOrCreateDigitalaxCollectorV2(event.params.to);
+    let collector = loadOrCreateDigitalaxModelCollector(event.params.to);
     let parentsOwned = collector.parentsOwned;
     parentsOwned.push(garmentId);
     collector.parentsOwned = parentsOwned;
@@ -164,17 +166,22 @@ export function handleTransfer(event: Transfer): void {
     garments.push(garmentId);
     garmentDesigner.garments = garments;
     garmentDesigner.save();
+
+    let modelGarments = garmentModel.garments;
+    modelGarments.push(garmentId);
+    garmentModel.garments = modelGarments;
+    garmentModel.save();
   }
 
   // handle burn
   else if (event.params.to.equals(ZERO_ADDRESS)) {
     // TODO come back to this regarding collector vs artist / admin burning
-    store.remove("DigitalaxModel", event.params.tokenId.toString());
+    store.remove("DigitalaxModelNFT", event.params.tokenId.toString());
   }
   // just a transfer
   else {
     // Update garment info
-    let garment = DigitalaxModel.load(event.params.tokenId.toString());
+    let garment = DigitalaxModelNFT.load(event.params.tokenId.toString());
     if (garment) {
       let owner = contract.try_ownerOf(event.params.tokenId);
       if (!owner.reverted) {
@@ -186,7 +193,9 @@ export function handleTransfer(event: Transfer): void {
       garment.save();
 
       // Update garments owned on the `from` and `to` address collectors
-      let fromCollector = loadOrCreateDigitalaxCollectorV2(event.params.from);
+      let fromCollector = loadOrCreateDigitalaxModelCollector(
+        event.params.from
+      );
       let fromGarmentsOwned = fromCollector.parentsOwned;
 
       let updatedGarmentsOwned = new Array<string>();
@@ -199,7 +208,7 @@ export function handleTransfer(event: Transfer): void {
       fromCollector.parentsOwned = updatedGarmentsOwned;
       fromCollector.save();
 
-      let toCollector = loadOrCreateDigitalaxCollectorV2(event.params.to);
+      let toCollector = loadOrCreateDigitalaxModelCollector(event.params.to);
       let parentsOwned = toCollector.parentsOwned;
       parentsOwned.push(event.params.tokenId.toString());
       toCollector.parentsOwned = parentsOwned;
@@ -216,9 +225,9 @@ export function handleChildReceived(event: ReceivedChild): void {
     event.params.toTokenId.toString(),
   ]);
 
-  let garment = DigitalaxModel.load(event.params.toTokenId.toString());
+  let garment = DigitalaxModelNFT.load(event.params.toTokenId.toString());
 
-  let child = loadOrCreateDigitalaxGarmentChildV2(
+  let child = loadOrCreateDigitalaxModelChild(
     event,
     event.params.toTokenId,
     event.params.childTokenId
@@ -235,9 +244,9 @@ export function handleChildReceived(event: ReceivedChild): void {
 
 export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
   let contract = DigitalaxModelNFTContract.bind(event.address);
-  let garment = DigitalaxModel.load(event.params._tokenId.toString());
+  let garment = DigitalaxModelNFT.load(event.params._tokenId.toString());
   if (garment == null) {
-    garment = new DigitalaxModel(event.params._tokenId.toString());
+    garment = new DigitalaxModelNFT(event.params._tokenId.toString());
     garment.designer = contract
       .garmentDesigners(event.params._tokenId)
       .toString();
@@ -248,7 +257,7 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
     garment.animation = "";
     garment.name = "";
     garment.description = "";
-    garment.model = "";
+    garment.model = contract.garmentModels(event.params._tokenId).toString();
     garment.external = "";
     garment.attributes = new Array<string>();
     garment.additionalSources = new Array<string>();
@@ -356,13 +365,14 @@ export function handleTokenPriceSaleUpdated(
   event: TokenPrimarySalePriceSet
 ): void {
   let contract = DigitalaxModelNFTContract.bind(event.address);
-  let garment = DigitalaxModel.load(event.params._tokenId.toString());
+  let garment = DigitalaxModelNFT.load(event.params._tokenId.toString());
 
   if (garment === null) {
-    garment = new DigitalaxModel(event.params._tokenId.toString());
+    garment = new DigitalaxModelNFT(event.params._tokenId.toString());
     garment.designer = contract
       .garmentDesigners(event.params._tokenId)
       .toString();
+    garment.model = contract.garmentModels(event.params._tokenId).toString();
     garment.primarySalePrice = contract.primarySalePrice(event.params._tokenId);
     garment.children = null;
     garment.owner = null;
@@ -371,7 +381,6 @@ export function handleTokenPriceSaleUpdated(
     garment.name = "";
     garment.description = "";
     garment.external = "";
-    garment.model = "";
     garment.attributes = new Array<string>();
     garment.additionalSources = new Array<string>();
 

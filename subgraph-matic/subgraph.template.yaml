@@ -628,6 +628,44 @@ dataSources:
           handler: handleDeveloperGroupRemoved
       file: ./src/DigitalaxIndex.mapping.ts
   - kind: ethereum/contract
+    name: DigitalaxModelIndex
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxModelIndexAddress}}"
+      abi: DigitalaxModelIndex
+      startBlock: {{DigitalaxModelIndexStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - CollectionGroupAdded
+        - CollectionGroupRemoved
+        - CollectionGroupUpdated
+        - ModelGroupAdded
+        - ModelGroupRemoved
+        - DesignerGroupAdded
+        - DesignerGroupRemoved
+      abis:
+        - name: DigitalaxModelIndex
+          file: ./abis/DigitalaxModelIndex.json
+      eventHandlers:
+        - event: CollectionGroupAdded(indexed uint256,uint256[],uint256[],uint256)
+          handler: handleCollectionGroupAdded
+        - event: CollectionGroupRemoved(indexed uint256)
+          handler: handleCollectionGroupRemoved
+        - event: CollectionGroupUpdated(indexed uint256,uint256[],uint256[],uint256)
+          handler: handleCollectionGroupUpdated
+        - event: ModelGroupAdded(address,string,uint256[],uint256[])
+          handler: handleModelGroupAdded
+        - event: ModelGroupRemoved(address)
+          handler: handleModelGroupRemoved
+        - event: DesignerGroupAdded(address,string,uint256[],uint256[])
+          handler: handleDesignerGroupAdded
+        - event: DesignerGroupRemoved(address)
+          handler: handleDesignerGroupRemoved
+      file: ./src/DigitalaxModelIndex.mapping.ts
+  - kind: ethereum/contract
     name: PatronIndex
     network: "{{network}}"
     source:

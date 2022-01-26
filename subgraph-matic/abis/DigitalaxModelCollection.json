@@ -48,7 +48,7 @@
     "name": "accessControls",
     "outputs": [
       {
-        "internalType": "contract DigitalaxAccessControls",
+        "internalType": "contract IDigitalaxAccessControls",
         "name": "",
         "type": "address"
       }
@@ -79,11 +79,7 @@
     "inputs": [],
     "name": "garmentNft",
     "outputs": [
-      {
-        "internalType": "contract IDigitalaxGarmentNFT",
-        "name": "",
-        "type": "address"
-      }
+      { "internalType": "contract IModelsNFT", "name": "", "type": "address" }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -101,7 +97,8 @@
       },
       { "internalType": "uint256", "name": "_amount", "type": "uint256" },
       { "internalType": "string", "name": "_tokenUri", "type": "string" },
-      { "internalType": "address", "name": "_designer", "type": "address" }
+      { "internalType": "address", "name": "_designer", "type": "address" },
+      { "internalType": "address", "name": "_model", "type": "address" }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -143,12 +140,12 @@
   {
     "inputs": [
       {
-        "internalType": "contract DigitalaxAccessControls",
+        "internalType": "contract IDigitalaxAccessControls",
         "name": "_accessControls",
         "type": "address"
       },
       {
-        "internalType": "contract IDigitalaxGarmentNFT",
+        "internalType": "contract IModelsNFT",
         "name": "_garmentNft",
         "type": "address"
       },
@@ -187,6 +184,7 @@
     "inputs": [
       { "internalType": "string", "name": "_tokenUri", "type": "string" },
       { "internalType": "address", "name": "_designer", "type": "address" },
+      { "internalType": "address", "name": "_model", "type": "address" },
       { "internalType": "uint256", "name": "_amount", "type": "uint256" },
       { "internalType": "uint256", "name": "_auctionId", "type": "uint256" },
       { "internalType": "string", "name": "_rarity", "type": "string" },
@@ -276,7 +274,7 @@
   {
     "inputs": [
       {
-        "internalType": "contract DigitalaxAccessControls",
+        "internalType": "contract IDigitalaxAccessControls",
         "name": "_accessControls",
         "type": "address"
       }

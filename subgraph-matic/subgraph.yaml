@@ -93,7 +93,7 @@ dataSources:
     name: DigitalaxModelNFT
     network: "matic"
     source:
-      address: "0x89feFfd6807F72209Cf54003e8E20f3759B54D5B"
+      address: "0x2ffce9b58a788a54b4466b0d5ccc5c6dd00c1b83"
       abi: DigitalaxModelNFT
       startBlock: 23713665
     mapping:
@@ -392,7 +392,7 @@ dataSources:
     name: DigitalaxModelCollection
     network: "matic"
     source:
-      address: "0x1fD8531fD5aFc6d0dCE3A506CB09FB97705c2a50"
+      address: "0xb1487bA03a19f906571BD89a6C154BF58d3299fB"
       abi: DigitalaxModelCollection
       startBlock: 23714011
     mapping:
@@ -491,7 +491,7 @@ dataSources:
     name: DigitalaxModelMarketplace
     network: "matic"
     source:
-      address: "0xd4fcbae356138E6d8c71651e8bD59f441c7DdCE1"
+      address: "0x68FEe8726D617460d717ecCcC35556d7C32696bD"
       abi: DigitalaxModelMarketplace
       startBlock: 23714137
     mapping:
@@ -627,6 +627,44 @@ dataSources:
         - event: DeveloperGroupRemoved(address)
           handler: handleDeveloperGroupRemoved
       file: ./src/DigitalaxIndex.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxModelIndex
+    network: "matic"
+    source:
+      address: "0xc7931d20ed02c571336840f89159abc0e023e529"
+      abi: DigitalaxModelIndex
+      startBlock: 23960820
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - CollectionGroupAdded
+        - CollectionGroupRemoved
+        - CollectionGroupUpdated
+        - ModelGroupAdded
+        - ModelGroupRemoved
+        - DesignerGroupAdded
+        - DesignerGroupRemoved
+      abis:
+        - name: DigitalaxModelIndex
+          file: ./abis/DigitalaxModelIndex.json
+      eventHandlers:
+        - event: CollectionGroupAdded(indexed uint256,uint256[],uint256[],uint256)
+          handler: handleCollectionGroupAdded
+        - event: CollectionGroupRemoved(indexed uint256)
+          handler: handleCollectionGroupRemoved
+        - event: CollectionGroupUpdated(indexed uint256,uint256[],uint256[],uint256)
+          handler: handleCollectionGroupUpdated
+        - event: ModelGroupAdded(address,string,uint256[],uint256[])
+          handler: handleModelGroupAdded
+        - event: ModelGroupRemoved(address)
+          handler: handleModelGroupRemoved
+        - event: DesignerGroupAdded(address,string,uint256[],uint256[])
+          handler: handleDesignerGroupAdded
+        - event: DesignerGroupRemoved(address)
+          handler: handleDesignerGroupRemoved
+      file: ./src/DigitalaxModelIndex.mapping.ts
   - kind: ethereum/contract
     name: PatronIndex
     network: "matic"
