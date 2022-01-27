@@ -22,6 +22,9 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
 
     IERC20 public rewardsToken;
     IDigitalaxNFT public parentNFT;
+
+    // upgrade IDigitalaxNFT[] public extraNFTs;
+
     DigitalaxAccessControls public accessControls;
     IDigitalaxNFTRewards public rewardsContract;
     bool initialised;
@@ -29,6 +32,9 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
 
     /// @notice total ethereum staked currently in the gensesis staking contract
     uint256 public stakedEthTotal;
+
+    // upgrade uint256 public stakedEthTotalOnlyMainNft;
+    // upgrade uint256 public stakedEthTotalExtraNfts;
     uint256 public lastUpdateTime;
 
     uint256 public rewardsPerTokenPoints;
@@ -48,7 +54,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         mapping (uint256 => uint256) tokenIndex;
         uint256 balance;
         uint256 lastRewardPoints;
-         mapping (address => uint256) lastTokenRewardPoints;
+        mapping (address => uint256) lastTokenRewardPoints;
         uint256 rewardsEarned;
         uint256 rewardsReleased;
         mapping (address => uint256) tokenRevenueRewardsEarned;
@@ -61,6 +67,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
 
     /// @notice mapping of a staker to its current properties
     mapping (address => Staker) public stakers;
+    // upgrade mapping (address => ExtraTokenStaker) public extraTokenStakers;
 
     // Mapping from token ID to owner address
     mapping (uint256 => address) public tokenOwner;
@@ -89,6 +96,35 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
 
     /// @notice Admin update of rewards contract
     event RewardsTokenUpdated(address indexed oldRewardsToken, address newRewardsToken );
+
+    // Upgraded with extra tokens feature
+    //////////////////////////////
+    uint256 public stakedEthTotalOnlyMainNft;
+    uint256 public stakedEthTotalExtraNfts;
+    IDigitalaxNFT[] public extraNFTs;
+
+    struct ExtraTokenStaker {
+        mapping (address => uint256[]) tokenIds;
+        mapping (address => mapping (uint256 => uint256)) tokenIndex;
+        mapping (address => uint256) balance;
+    }
+
+    mapping (address => ExtraTokenStaker) extraTokenStakers;
+
+    mapping(address => uint256) public extraTokensIndex;
+    address[] public extraTokens;
+
+    uint256 public MAX_EXTRA_TOKENS;
+
+     // Events
+    event AddExtraTokens(
+        address[] rewardTokens
+    );
+
+    event RemoveExtraTokens(
+        address[] rewardTokens
+    );
+    ////////////////////////////////
 
      /**
      * @dev Single gateway to intialize the staking contract after deploying
@@ -553,5 +589,76 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
 
     function _getNow() internal virtual view returns (uint256) {
         return block.timestamp;
+    }
+
+    /*
+     * @dev Setter functions for contract config custom last rewards time for a pool
+     */
+    function setMaxExtraTokens(
+    uint256 _maxExtraTokensCount) external
+    {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "SetMaxRewardsTokens: Sender must be admin"
+        );
+        MAX_EXTRA_TOKENS = _maxExtraTokensCount;
+
+    }
+
+    function addExtraTokens(address[] memory _extraTokens) public {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "AddExtraTokens: Sender must be admin"
+        );
+        require((_extraTokens.length) > 0, "AddExtraTokens: Empty array not supported");
+        require(MAX_EXTRA_TOKENS >= _extraTokens.length, "AddExtraTokens: Already reached max erc20 supported");
+        for (uint i = 0; i < _extraTokens.length; i++) {
+            if(!checkInExtraTokens(_extraTokens[i])) {
+                uint256 index = extraTokens.length;
+                extraTokens.push(_extraTokens[i]);
+                extraTokensIndex[_extraTokens[i]] = index;
+            }
+        }
+        emit AddExtraTokens(_extraTokens);
+    }
+
+    function removeExtraTokens(address[] memory _extraTokens) public {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "RemoveExtraTokens: Sender must be admin"
+        );
+
+        require((extraTokens.length) > 0, "RemoveExtraTokens: No extra tokens instantiated");
+        require((_extraTokens.length) > 0, "RemoveExtraTokens: Empty array not supported");
+
+        for (uint i = 0; i < _extraTokens.length; i++) {
+            if(checkInExtraTokens(_extraTokens[i])) {
+                uint256 rowToDelete = extraTokensIndex[_extraTokens[i]];
+                address keyToMove = extraTokens[extraTokens.length-1];
+                extraTokens[rowToDelete] = keyToMove;
+                extraTokensIndex[keyToMove] = rowToDelete;
+                extraTokens.pop();
+                delete(extraTokensIndex[_extraTokens[i]]);
+            }
+        }
+
+        emit RemoveExtraTokens(_extraTokens);
+    }
+
+    function checkInExtraTokens(address _extraToken) public view returns (bool isAddress) {
+        if(extraTokens.length == 0) return false;
+        return (extraTokens[extraTokensIndex[_extraToken]] == _extraToken);
+    }
+
+    function getExtraTokens() external view returns (address[] memory returnExtraTokens){
+        return _getExtraTokens();
+    }
+
+    function _getExtraTokens() internal view returns (address[] memory returnExtraTokens){
+        address[] memory a = new address[](extraTokens.length);
+        for (uint i=0; i< extraTokens.length; i++) {
+            a[i] = extraTokens[i];
+        }
+        return a;
     }
 }
