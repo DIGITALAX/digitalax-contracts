@@ -1,15 +1,15 @@
 import {
-    NewPodeGuildWhitelistedNFTStaker,
-    NewPodeNFTv2Staker,
-    PodeGuildStakerWeight,
-    PodeGuildWhitelistedStakerWeight
+    NewLookGuildWhitelistedNFTStaker,
+    NewLookNFTv2Staker,
+    LookGuildStakerWeight,
+    LookGuildWhitelistedStakerWeight
 } from "../../generated/schema";
 import {Address, BigInt} from "@graphprotocol/graph-ts/index";
-import {GuildNFTStakingWeightV4 as NewPodeGuildNFTStakingWeightContract} from "../../generated/NewPodeGuildNFTStakingWeightV4/GuildNFTStakingWeightV4";
+import {GuildNFTStakingWeightV4 as NewLookGuildNFTStakingWeightContract} from "../../generated/NewLookGuildNFTStakingWeightV4/GuildNFTStakingWeightV4";
 import {ZERO} from "../constants";
 
 
-export function calculateWeights(contract: NewPodeGuildNFTStakingWeightContract, timestamp: BigInt, staker: NewPodeNFTv2Staker | null): void {
+export function calculateWeights(contract: NewLookGuildNFTStakingWeightContract, timestamp: BigInt, staker: NewLookNFTv2Staker | null): void {
   if(staker == null){
     return;
   }
@@ -42,9 +42,9 @@ export function calculateWeights(contract: NewPodeGuildNFTStakingWeightContract,
       staker.save();
     }
 
-    let stakeWeightDay = PodeGuildStakerWeight.load(weightId);
+    let stakeWeightDay = LookGuildStakerWeight.load(weightId);
     if(!stakeWeightDay) {
-      stakeWeightDay = new PodeGuildStakerWeight(weightId);
+      stakeWeightDay = new LookGuildStakerWeight(weightId);
     }
 
     stakeWeightDay.day = currentDay;
@@ -76,7 +76,7 @@ export function calculateWeights(contract: NewPodeGuildNFTStakingWeightContract,
   staker.save();
 }
 
-export function calculateWhitelistedWeights(contract: NewPodeGuildNFTStakingWeightContract, timestamp: BigInt, staker: NewPodeGuildWhitelistedNFTStaker | null): void {
+export function calculateWhitelistedWeights(contract: NewLookGuildNFTStakingWeightContract, timestamp: BigInt, staker: NewLookGuildWhitelistedNFTStaker | null): void {
   if(staker == null){
     return;
   }
@@ -108,9 +108,9 @@ export function calculateWhitelistedWeights(contract: NewPodeGuildNFTStakingWeig
       staker.weights = new Array<string>();
     }
 
-    let stakeWeightDay = PodeGuildWhitelistedStakerWeight.load(weightId);
+    let stakeWeightDay = LookGuildWhitelistedStakerWeight.load(weightId);
     if(!stakeWeightDay) {
-      stakeWeightDay = new PodeGuildWhitelistedStakerWeight(weightId);
+      stakeWeightDay = new LookGuildWhitelistedStakerWeight(weightId);
     }
 
     stakeWeightDay.day = currentDay;
