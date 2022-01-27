@@ -43,14 +43,14 @@ export function handleStaked(event: Staked): void {
         staker = new NewPodeNFTv2Staker(owner);
         staker.garments = new Array<string>();
         staker.rewardsClaimed = ZERO;
-        staker.weights = null;
+        // staker.weights = null;
     }
     let garmentsStaked = staker.garments;
     garmentsStaked.push(token);
     staker.garments = garmentsStaked;
 
-    let contract = NewPodeGuildNFTStakingWeightContract.bind(Address.fromString(GuildNFTSTakingWeightV4Address));
-    calculateWeights(contract,  event.block.timestamp, staker);
+    // let contract = NewPodeGuildNFTStakingWeightContract.bind(Address.fromString(GuildNFTSTakingWeightV4Address));
+    // calculateWeights(contract,  event.block.timestamp, staker);
 
     staker.save();
 }
