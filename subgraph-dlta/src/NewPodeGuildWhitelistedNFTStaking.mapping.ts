@@ -53,7 +53,7 @@ export function handleRewardPaid(event: RewardPaid): void {
 
 export function handleStaked(event: Staked): void {
   log.info("this is event.params.whitelistedNFT ------------ {}", [
-    event.params.whitelistedNFT.toHexString(),
+    event.params.whitelistedNFT.toString(),
   ]);
   let contract = ERC721.bind(event.params.whitelistedNFT);
   let weightContract = NewPodeGuildNFTStakingWeightV4Contract.bind(
@@ -116,7 +116,7 @@ export function handleStaked(event: Staked): void {
     staker.garments = new Array<string>();
     staker.rewardsClaimed = ZERO;
     staker.weight = ZERO;
-    staker.weights = null;
+    // staker.weights = null;
   }
 
   let garmentsStaked = staker.garments;
@@ -130,10 +130,10 @@ export function handleStaked(event: Staked): void {
     staker.weight = tryStakerWeight.value;
   }
 
-  let weightContract2 = NewPodeGuildNFTStakingWeightContract.bind(
-    Address.fromString(GuildNFTSTakingWeightV4Address)
-  );
-  calculateWhitelistedWeights(weightContract2,  event.block.timestamp, staker);
+  // let weightContract2 = NewPodeGuildNFTStakingWeightContract.bind(
+  //   Address.fromString(GuildNFTSTakingWeightV4Address)
+  // );
+  // calculateWhitelistedWeights(weightContract2,  event.block.timestamp, staker);
 
   staker.save();
 }
