@@ -23,8 +23,6 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
     IERC20 public rewardsToken;
     IDigitalaxNFT public parentNFT;
 
-    // upgrade IDigitalaxNFT[] public extraNFTs;
-
     DigitalaxAccessControls public accessControls;
     IDigitalaxNFTRewards public rewardsContract;
     bool initialised;
@@ -100,16 +98,17 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
     // Upgraded with extra tokens feature
     //////////////////////////////
     uint256 public stakedEthTotalOnlyMainNft;
-    uint256 public stakedEthTotalExtraNfts;
-    IDigitalaxNFT[] public extraNFTs;
+    mapping(address => uint256) public stakedEthTotalExtraNfts;
 
     struct ExtraTokenStaker {
         mapping (address => uint256[]) tokenIds;
         mapping (address => mapping (uint256 => uint256)) tokenIndex;
-        mapping (address => uint256) balance;
     }
 
     mapping (address => ExtraTokenStaker) extraTokenStakers;
+
+    // Mapping from token ID to owner address
+    mapping (address => mapping (uint256 => address)) public extraTokenOwner;
 
     mapping(address => uint256) public extraTokensIndex;
     address[] public extraTokens;
@@ -124,6 +123,14 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
     event RemoveExtraTokens(
         address[] rewardTokens
     );
+
+    /// @notice event emitted when a user has staked a token
+    event StakedByNFT(address owner, uint256 amount, address token);
+
+    /// @notice event emitted when a user has unstaked a token
+    event UnstakedByNFT(address owner, uint256 amount, address token);
+
+    event EmergencyUnstakeByNFT(address indexed user, uint256 tokenId, address token);
     ////////////////////////////////
 
      /**
@@ -243,6 +250,18 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         return parentNFT.primarySalePrice(_tokenId);
     }
 
+    /// @dev Get the amount a staked nft is valued at ie bought at
+    function getExtraTokenContribution (
+        address _token,
+        uint256 _tokenId
+    )
+        public
+        view
+        returns (uint256)
+    {
+        return IDigitalaxNFT(_token).primarySalePrice(_tokenId);
+    }
+
     /// @notice Stake MONA NFTs and earn reward tokens.
     function stake(
         uint256 tokenId
@@ -283,6 +302,13 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         uint256 amount = getContribution(_tokenId);
         staker.balance = staker.balance.add(amount);
         stakedEthTotal = stakedEthTotal.add(amount);
+
+        if(stakedEthTotalOnlyMainNft == 0){
+            stakedEthTotalOnlyMainNft = stakedEthTotal;
+        } else {
+            stakedEthTotalOnlyMainNft = stakedEthTotalOnlyMainNft.add(amount);
+        }
+
         staker.tokenIds.push(_tokenId);
         staker.tokenIndex[_tokenId] = staker.tokenIds.length.sub(1);
         tokenOwner[_tokenId] = _user;
@@ -340,6 +366,12 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         uint256 amount = getContribution(_tokenId);
         staker.balance = staker.balance.sub(amount);
         stakedEthTotal = stakedEthTotal.sub(amount);
+
+        if(stakedEthTotalOnlyMainNft >= amount){
+            stakedEthTotalOnlyMainNft = stakedEthTotalOnlyMainNft.sub(amount);
+        } else if(stakedEthTotalOnlyMainNft == 0){
+            stakedEthTotalOnlyMainNft = stakedEthTotal;
+        }
 
         uint256 lastIndex = staker.tokenIds.length - 1;
         uint256 lastIndexKey = staker.tokenIds[lastIndex];
@@ -613,7 +645,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         require((_extraTokens.length) > 0, "AddExtraTokens: Empty array not supported");
         require(MAX_EXTRA_TOKENS >= _extraTokens.length, "AddExtraTokens: Already reached max erc20 supported");
         for (uint i = 0; i < _extraTokens.length; i++) {
-            if(!checkInExtraTokens(_extraTokens[i])) {
+            if(!checkInExtraTokens(_extraTokens[i]) && _extraTokens[i] != address(parentNFT)) { // Main nft not supported for now
                 uint256 index = extraTokens.length;
                 extraTokens.push(_extraTokens[i]);
                 extraTokensIndex[_extraTokens[i]] = index;
@@ -660,5 +692,167 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
             a[i] = extraTokens[i];
         }
         return a;
+    }
+
+    // New staking upgrade
+    /// @notice Stake MONA NFTs and earn reward tokens.
+    function stakeByNFT(
+        uint256 tokenId,
+        address token
+    )
+        external
+    {
+        // require();
+        _stakeByNFT(_msgSender(), tokenId, token);
+    }
+
+    /// @notice Stake multiple MONA NFTs and earn reward tokens.
+    function stakeBatchByNFT(uint256[] memory tokenIds, address[] memory tokens)
+        external
+    {
+        require(tokenIds.length == tokens.length, "Arrays must be same length");
+        for (uint i = 0; i < tokenIds.length; i++) {
+            _stakeByNFT(_msgSender(), tokenIds[i], tokens[i]);
+        }
+    }
+
+    /**
+     * @dev All the staking goes through this function
+     * @dev Rewards to be given out is calculated
+     * @dev Balance of stakers are updated as they stake the nfts based on ether price
+    */
+    function _stakeByNFT(
+        address _user,
+        uint256 _tokenId,
+        address _token
+    )
+        internal
+    {
+        Staker storage staker = stakers[_user];
+        ExtraTokenStaker storage extraTokenStaker = extraTokenStakers[_user];
+
+        if (staker.balance == 0 && staker.lastRewardPoints == 0 ) {
+          staker.lastRewardPoints = rewardsPerTokenPoints;
+        }
+
+        updateReward(_user);
+        uint256 amount = getExtraTokenContribution(_token, _tokenId);
+        staker.balance = staker.balance.add(amount);
+        stakedEthTotal = stakedEthTotal.add(amount);
+
+        if(stakedEthTotalOnlyMainNft == 0){
+            stakedEthTotalOnlyMainNft = stakedEthTotal;
+        }
+
+        stakedEthTotalExtraNfts[_token] = stakedEthTotalExtraNfts[_token].add(amount);
+
+        extraTokenStaker.tokenIds[_token].push(_tokenId);
+        extraTokenStaker.tokenIndex[_token][_tokenId] = staker.tokenIds.length.sub(1);
+        extraTokenOwner[_token][_tokenId] = _user;
+        IDigitalaxNFT(_token).safeTransferFrom(
+            _user,
+            address(this),
+            _tokenId
+        );
+
+        emit StakedByNFT(_user, _tokenId, _token);
+    }
+
+    /// @notice Unstake NFTs.
+    function unstakeByNFT(
+        uint256 _tokenId,
+        address _token
+    )
+        external
+    {
+        require(
+            extraTokenOwner[_token][_tokenId] == _msgSender(),
+            "DigitalaxParentStaking._unstake: Sender must have staked tokenID"
+        );
+        claimReward(_msgSender());
+        _unstakeByNFT(_msgSender(), _tokenId, _token);
+    }
+
+    /// @notice Stake multiple MONA NFTs and claim reward tokens.
+    function unstakeBatchByNFT(
+        uint256[] memory tokenIds,
+        address[] memory tokens
+    )
+        external
+    {
+        require(tokenIds.length == tokens.length, "Arrays must be same length");
+        claimReward(_msgSender());
+        for (uint i = 0; i < tokenIds.length; i++) {
+            if (extraTokenOwner[tokens[i]][tokenIds[i]] == _msgSender()) {
+                _unstakeByNFT(_msgSender(), tokenIds[i], tokens[i]);
+            }
+        }
+    }
+
+     /**
+     * @dev All the unstaking goes through this function
+     * @dev Rewards to be given out is calculated
+     * @dev Balance of stakers are updated as they unstake the nfts based on ether price
+    */
+    function _unstakeByNFT(
+        address _user,
+        uint256 _tokenId,
+        address _token
+    )
+        internal
+    {
+
+        Staker storage staker = stakers[_user];
+        ExtraTokenStaker storage extraTokenStaker = extraTokenStakers[_user];
+
+        uint256 amount = getContribution(_tokenId);
+        staker.balance = staker.balance.sub(amount);
+        stakedEthTotal = stakedEthTotal.sub(amount);
+
+        if (stakedEthTotalOnlyMainNft == 0){
+            stakedEthTotalOnlyMainNft = stakedEthTotal;
+        }
+
+        if (stakedEthTotalExtraNfts[_token] >= amount){
+            stakedEthTotalExtraNfts[_token]  = stakedEthTotalExtraNfts[_token].sub(amount);
+        }
+
+        uint256 lastIndex = extraTokenStaker.tokenIds[_token].length - 1;
+        uint256 lastIndexKey = extraTokenStaker.tokenIds[_token][lastIndex];
+        uint256 tokenIdIndex = extraTokenStaker.tokenIndex[_token][_tokenId];
+
+        extraTokenStaker.tokenIds[_token][tokenIdIndex] = lastIndexKey;
+        extraTokenStaker.tokenIndex[_token][lastIndexKey] = tokenIdIndex;
+        if (extraTokenStaker.tokenIds[_token].length > 0) {
+            extraTokenStaker.tokenIds[_token].pop();
+            delete extraTokenStaker.tokenIndex[_token][_tokenId];
+        }
+
+        // TODO ******* PROPERLY SCOPE IF THIS IS OKAY
+//        if (extraTokenStaker.tokenIds[_token].length == 0) {
+//            delete extraTokenStaker.tokenIds[_token];
+//            delete extraTokenStaker.tokenIndex[_token];
+//        }
+        delete extraTokenOwner[_token][_tokenId];
+
+        IDigitalaxNFT(_token).safeTransferFrom(
+            address(this),
+            _user,
+            _tokenId
+        );
+
+        emit UnstakedByNFT(_user, _tokenId, _token);
+
+    }
+
+    // Unstake without caring about rewards. EMERGENCY ONLY.
+    function emergencyUnstakeByNFT(uint256 _tokenId, address _token) public {
+        require(
+            extraTokenOwner[_token][_tokenId] == _msgSender(),
+            "DigitalaxParentStaking._unstakeByNFT: Sender must have staked tokenID"
+        );
+        _unstakeByNFT(_msgSender(), _tokenId, _token);
+        emit EmergencyUnstakeByNFT(_msgSender(), _tokenId, _token);
+
     }
 }
