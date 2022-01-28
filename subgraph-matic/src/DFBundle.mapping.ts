@@ -45,30 +45,30 @@ export function handleChildCreated(event: ChildCreated): void {
       if (tokenBytes) {
         let data = json.try_fromBytes(tokenBytes as Bytes);
         if (data.isOk) {
-          if (data.value.kind === JSONValueKind.OBJECT) {
+          if (data.value.kind == JSONValueKind.OBJECT) {
             let res = data.value.toObject();
-            if (res.get("image").kind === JSONValueKind.STRING) {
+            if (res.get("image").kind == JSONValueKind.STRING) {
               strand.image = res.get("image").toString();
             }
-            if (res.get("Animation").kind === JSONValueKind.STRING) {
+            if (res.get("Animation").kind == JSONValueKind.STRING) {
               strand.animation = res.get("Animation").toString();
             }
-            if (res.get("animation_url").kind === JSONValueKind.STRING) {
+            if (res.get("animation_url").kind == JSONValueKind.STRING) {
               strand.animation = res.get("animation_url").toString();
             }
-            if (res.get("name").kind === JSONValueKind.STRING) {
+            if (res.get("name").kind == JSONValueKind.STRING) {
               strand.name = res.get("name").toString();
             }
-            if (res.get("description").kind === JSONValueKind.STRING) {
+            if (res.get("description").kind == JSONValueKind.STRING) {
               strand.description = res.get("description").toString();
             }
-            if (res.get("external url").kind === JSONValueKind.STRING) {
+            if (res.get("external url").kind == JSONValueKind.STRING) {
               strand.external = res.get("external url").toString();
             }
-            if (res.get("attributes").kind === JSONValueKind.ARRAY) {
+            if (res.get("attributes").kind == JSONValueKind.ARRAY) {
               let attributes = res.get("attributes").toArray();
               for (let i = 0; i < attributes.length; i += 1) {
-                if (attributes[i].kind === JSONValueKind.OBJECT) {
+                if (attributes[i].kind == JSONValueKind.OBJECT) {
                   let attribute = attributes[i].toObject();
                   let garmentAttribute = new GarmentAttribute(
                     "db-bundle-" + strand.id + i.toString()
@@ -77,13 +77,13 @@ export function handleChildCreated(event: ChildCreated): void {
                   garmentAttribute.value = null;
 
                   if (
-                    attribute.get("trait_type").kind === JSONValueKind.STRING
+                    attribute.get("trait_type").kind == JSONValueKind.STRING
                   ) {
                     garmentAttribute.type = attribute
                       .get("trait_type")
                       .toString();
                   }
-                  if (attribute.get("value").kind === JSONValueKind.STRING) {
+                  if (attribute.get("value").kind == JSONValueKind.STRING) {
                     garmentAttribute.value = attribute.get("value").toString();
                   }
                   garmentAttribute.save();
@@ -127,30 +127,30 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
         if (tokenBytes) {
           let data = json.try_fromBytes(tokenBytes as Bytes);
           if (data.isOk) {
-            if (data.value.kind === JSONValueKind.OBJECT) {
+            if (data.value.kind == JSONValueKind.OBJECT) {
               let res = data.value.toObject();
-              if (res.get("image").kind === JSONValueKind.STRING) {
+              if (res.get("image").kind == JSONValueKind.STRING) {
                 strand.image = res.get("image").toString();
               }
-              if (res.get("Animation").kind === JSONValueKind.STRING) {
+              if (res.get("Animation").kind == JSONValueKind.STRING) {
                 strand.animation = res.get("Animation").toString();
               }
-              if (res.get("animation_url").kind === JSONValueKind.STRING) {
+              if (res.get("animation_url").kind == JSONValueKind.STRING) {
                 strand.animation = res.get("animation_url").toString();
               }
-              if (res.get("name").kind === JSONValueKind.STRING) {
+              if (res.get("name").kind == JSONValueKind.STRING) {
                 strand.name = res.get("name").toString();
               }
-              if (res.get("description").kind === JSONValueKind.STRING) {
+              if (res.get("description").kind == JSONValueKind.STRING) {
                 strand.description = res.get("description").toString();
               }
-              if (res.get("external url").kind === JSONValueKind.STRING) {
+              if (res.get("external url").kind == JSONValueKind.STRING) {
                 strand.external = res.get("external url").toString();
               }
-              if (res.get("attributes").kind === JSONValueKind.ARRAY) {
+              if (res.get("attributes").kind == JSONValueKind.ARRAY) {
                 let attributes = res.get("attributes").toArray();
                 for (let i = 0; i < attributes.length; i += 1) {
-                  if (attributes[i].kind === JSONValueKind.OBJECT) {
+                  if (attributes[i].kind == JSONValueKind.OBJECT) {
                     let attribute = attributes[i].toObject();
                     let garmentAttribute = new GarmentAttribute(
                       "db-bundle-" + strand.id + i.toString()
@@ -159,13 +159,13 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
                     garmentAttribute.value = null;
 
                     if (
-                      attribute.get("trait_type").kind === JSONValueKind.STRING
+                      attribute.get("trait_type").kind == JSONValueKind.STRING
                     ) {
                       garmentAttribute.type = attribute
                         .get("trait_type")
                         .toString();
                     }
-                    if (attribute.get("value").kind === JSONValueKind.STRING) {
+                    if (attribute.get("value").kind == JSONValueKind.STRING) {
                       garmentAttribute.value = attribute
                         .get("value")
                         .toString();
@@ -225,7 +225,7 @@ export function handleSingleTransfer(event: TransferSingle): void {
       let compositeId = event.params.from.toHexString() + "-" + id.toString();
 
       // Check that we have an entry for the child
-      if (childTokenId.toString() === compositeId) {
+      if (childTokenId.toString() == compositeId) {
         // Load collector and reduce balance
         let child = loadOrCreateDigitalaxBundleOwner(
           event,
@@ -268,7 +268,7 @@ export function handleSingleTransfer(event: TransferSingle): void {
       for (let k: number = 0; k < totalChildOwned; k++) {
         // Find the matching child
         let currentChildId = childrenOwned[k as i32];
-        if (currentChildId.toString() === compositeId) {
+        if (currentChildId.toString() == compositeId) {
           // Load collector and add to its balance
           let child = loadOrCreateDigitalaxBundleOwner(
             event,
@@ -341,7 +341,7 @@ export function handleBatchTransfer(event: TransferBatch): void {
         let compositeId = event.params.from.toHexString() + "-" + id.toString();
 
         // Check that we have an entry for the child
-        if (childTokenId === compositeId) {
+        if (childTokenId == compositeId) {
           // Load collector and reduce balance
           let child = loadOrCreateDigitalaxBundleOwner(
             event,
@@ -387,7 +387,7 @@ export function handleBatchTransfer(event: TransferBatch): void {
         for (let k: number = 0; k < totalChildOwned; k++) {
           // Find the matching child
           let currentChildId = childrenOwned[k as i32];
-          if (currentChildId === compositeId) {
+          if (currentChildId == compositeId) {
             // Load collector and add to its balance
             let child = loadOrCreateDigitalaxBundleOwner(
               event,
