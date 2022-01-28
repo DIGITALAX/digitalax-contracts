@@ -115,21 +115,21 @@ export function handleDesignerGroupAdded(event: DesignerGroupAdded): void {
   if (designerBytes) {
     let data = json.try_fromBytes(designerBytes as Bytes);
     if (data.isOk) {
-      if (data.value.kind === JSONValueKind.OBJECT) {
+      if (data.value.kind == JSONValueKind.OBJECT) {
         let res = data.value.toObject();
-        if (res.get("Designer ID").kind === JSONValueKind.STRING) {
+        if (res.get("Designer ID").kind == JSONValueKind.STRING) {
           designer.name = res.get("Designer ID").toString();
         }
-        if (res.get("description").kind === JSONValueKind.STRING) {
+        if (res.get("description").kind == JSONValueKind.STRING) {
           designer.description = res.get("description").toString();
         }
-        if (res.get("image_url").kind === JSONValueKind.STRING) {
+        if (res.get("image_url").kind == JSONValueKind.STRING) {
           designer.image = res.get("image_url").toString();
         }
-        if (res.get("instagram").kind === JSONValueKind.STRING) {
+        if (res.get("instagram").kind == JSONValueKind.STRING) {
           designer.instagram = res.get("instagram").toString();
         }
-        if (res.get("twitter").kind === JSONValueKind.STRING) {
+        if (res.get("twitter").kind == JSONValueKind.STRING) {
           designer.twitter = res.get("twitter").toString();
         }
       }
@@ -157,6 +157,9 @@ export function handleModelGroupAdded(event: ModelGroupAdded): void {
   let model = loadOrCreateDigitalaxModel(event.params._address);
   let collectionIds = event.params.collectionIds;
   let collections = new Array<string>();
+  log.info("this is inside handlemodelgroupadded {}", [
+    event.params._address.toHexString(),
+  ]);
   for (let i = 0; i < collectionIds.length; i += 1) {
     let collectionId = collectionIds[i];
     let collection = DigitalaxModelCollection.load(collectionId.toString());
@@ -173,21 +176,21 @@ export function handleModelGroupAdded(event: ModelGroupAdded): void {
   if (modelBytes) {
     let data = json.try_fromBytes(modelBytes as Bytes);
     if (data.isOk) {
-      if (data.value.kind === JSONValueKind.OBJECT) {
+      if (data.value.kind == JSONValueKind.OBJECT) {
         let res = data.value.toObject();
-        if (res.get("Model ID").kind === JSONValueKind.STRING) {
+        if (res.get("Model ID").kind == JSONValueKind.STRING) {
           model.name = res.get("Model ID").toString();
         }
-        if (res.get("description").kind === JSONValueKind.STRING) {
+        if (res.get("description").kind == JSONValueKind.STRING) {
           model.description = res.get("description").toString();
         }
-        if (res.get("image_url").kind === JSONValueKind.STRING) {
+        if (res.get("image_url").kind == JSONValueKind.STRING) {
           model.image = res.get("image_url").toString();
         }
-        if (res.get("instagram").kind === JSONValueKind.STRING) {
+        if (res.get("instagram").kind == JSONValueKind.STRING) {
           model.instagram = res.get("instagram").toString();
         }
-        if (res.get("twitter").kind === JSONValueKind.STRING) {
+        if (res.get("twitter").kind == JSONValueKind.STRING) {
           model.twitter = res.get("twitter").toString();
         }
       }
