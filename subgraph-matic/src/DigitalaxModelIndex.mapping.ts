@@ -157,6 +157,9 @@ export function handleModelGroupAdded(event: ModelGroupAdded): void {
   let model = loadOrCreateDigitalaxModel(event.params._address);
   let collectionIds = event.params.collectionIds;
   let collections = new Array<string>();
+  log.info("this is inside handlemodelgroupadded {}", [
+    event.params._address.toHexString(),
+  ]);
   for (let i = 0; i < collectionIds.length; i += 1) {
     let collectionId = collectionIds[i];
     let collection = DigitalaxModelCollection.load(collectionId.toString());
