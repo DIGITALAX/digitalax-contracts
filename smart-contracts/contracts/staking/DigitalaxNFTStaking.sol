@@ -238,6 +238,17 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         return stakers[_user].tokenIds;
     }
 
+    function getExtraStakedTokens(
+        address _user,
+        address _token
+    )
+        external
+        view
+        returns (uint256[] memory tokenIds)
+    {
+        return extraTokenStakers[_user].tokenIds[_token];
+    }
+
 
     /// @dev Get the amount a staked nft is valued at ie bought at
     function getContribution (
@@ -384,7 +395,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
             delete staker.tokenIndex[_tokenId];
         }
 
-        if (staker.tokenIds.length == 0) {
+        if (staker.balance == 0) { // Fixed in upgrade
             delete stakers[_user];
         }
         delete tokenOwner[_tokenId];
@@ -747,7 +758,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         stakedEthTotalExtraNfts[_token] = stakedEthTotalExtraNfts[_token].add(amount);
 
         extraTokenStaker.tokenIds[_token].push(_tokenId);
-        extraTokenStaker.tokenIndex[_token][_tokenId] = staker.tokenIds.length.sub(1);
+        extraTokenStaker.tokenIndex[_token][_tokenId] = extraTokenStaker.tokenIds[_token].length.sub(1);
         extraTokenOwner[_token][_tokenId] = _user;
         IDigitalaxNFT(_token).safeTransferFrom(
             _user,
@@ -805,7 +816,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         Staker storage staker = stakers[_user];
         ExtraTokenStaker storage extraTokenStaker = extraTokenStakers[_user];
 
-        uint256 amount = getContribution(_tokenId);
+        uint256 amount = getExtraTokenContribution(_token, _tokenId);
         staker.balance = staker.balance.sub(amount);
         stakedEthTotal = stakedEthTotal.sub(amount);
 
@@ -823,16 +834,17 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
 
         extraTokenStaker.tokenIds[_token][tokenIdIndex] = lastIndexKey;
         extraTokenStaker.tokenIndex[_token][lastIndexKey] = tokenIdIndex;
+
         if (extraTokenStaker.tokenIds[_token].length > 0) {
-            extraTokenStaker.tokenIds[_token].pop();
+            delete extraTokenStaker.tokenIds[_token][extraTokenStaker.tokenIds[_token].length -1];
             delete extraTokenStaker.tokenIndex[_token][_tokenId];
         }
 
-        // TODO ******* PROPERLY SCOPE IF THIS IS OKAY
-//        if (extraTokenStaker.tokenIds[_token].length == 0) {
-//            delete extraTokenStaker.tokenIds[_token];
-//            delete extraTokenStaker.tokenIndex[_token];
-//        }
+
+        if(staker.balance == 0){
+            delete stakers[_user];
+        }
+
         delete extraTokenOwner[_token][_tokenId];
 
         IDigitalaxNFT(_token).safeTransferFrom(
