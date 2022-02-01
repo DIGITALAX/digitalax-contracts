@@ -109,6 +109,9 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
 
     // Mapping from token ID to owner address
     mapping (address => mapping (uint256 => address)) public extraTokenOwner;
+    mapping (address => mapping (uint256 => uint256)) public extraTokenLastPurchasePrice;
+
+   mapping (uint256 => uint256) public mainTokenLastPurchasePrice;
 
     mapping(address => uint256) public extraTokensIndex;
     address[] public extraTokens;
@@ -311,6 +314,7 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
 
         updateReward(_user);
         uint256 amount = getContribution(_tokenId);
+
         staker.balance = staker.balance.add(amount);
         stakedEthTotal = stakedEthTotal.add(amount);
 
@@ -375,6 +379,10 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         Staker storage staker = stakers[_user];
 
         uint256 amount = getContribution(_tokenId);
+        if(mainTokenLastPurchasePrice[_tokenId] > 0){
+            differentPrimaryPriceUpdateVariables(_tokenId, amount);
+        }
+
         staker.balance = staker.balance.sub(amount);
         stakedEthTotal = stakedEthTotal.sub(amount);
 
@@ -817,6 +825,10 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         ExtraTokenStaker storage extraTokenStaker = extraTokenStakers[_user];
 
         uint256 amount = getExtraTokenContribution(_token, _tokenId);
+        if(extraTokenLastPurchasePrice[_token][_tokenId] > 0){
+            differentPrimaryPriceUpdateVariablesExtraToken(_tokenId, _token, amount);
+        }
+
         staker.balance = staker.balance.sub(amount);
         stakedEthTotal = stakedEthTotal.sub(amount);
 
@@ -866,5 +878,65 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         _unstakeByNFT(_msgSender(), _tokenId, _token);
         emit EmergencyUnstakeByNFT(_msgSender(), _tokenId, _token);
 
+    }
+
+    // Save the primary sale price so that it updates the appropriate user with this
+    function saveCurrentPrimarySalePrice(uint256 _tokenId) public {
+        // First check  owner
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxNFTStaking.saveCurrentPrimarySalePrice: Sender must be admin"
+        );
+        // Then check if token owner
+        require(tokenOwner[_tokenId] != address(0), "Must be staked in the platform");
+        // Then set the price on new mapping
+        mainTokenLastPurchasePrice[_tokenId] = parentNFT.primarySalePrice(_tokenId); // It is assumed this is the value it had when it entered into the contract.
+    }
+
+    // The following function is used to update the proper balances if the contract has been notified of a change in value using saveCurrentPrimarySalePrice
+    function differentPrimaryPriceUpdateVariables(uint256 _tokenId, uint256 _value) internal {
+        Staker storage staker = stakers[tokenOwner[_tokenId]];
+        if(mainTokenLastPurchasePrice[_tokenId] > _value){ // New value less than the old value
+            uint256 delta = mainTokenLastPurchasePrice[_tokenId].sub(_value);
+            staker.balance = staker.balance.sub(delta);
+            stakedEthTotal = stakedEthTotal.sub(delta);
+            stakedEthTotalOnlyMainNft = stakedEthTotalOnlyMainNft.sub(delta);
+
+        } else if(mainTokenLastPurchasePrice[_tokenId]< _value){ // New value greater than the old value
+            uint256 delta = _value.sub(mainTokenLastPurchasePrice[_tokenId]);
+            staker.balance = staker.balance.add(delta);
+            stakedEthTotal = stakedEthTotal.add(delta);
+            stakedEthTotalOnlyMainNft = stakedEthTotalOnlyMainNft.add(delta);
+        }
+    }
+    // Save the primary sale price so that it updates the appropriate user with this
+    function saveCurrentPrimarySalePriceExtraToken(uint256 _tokenId, address _token) public {
+        // First check  owner
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxNFTStaking.saveCurrentPrimarySalePrice: Sender must be admin"
+        );
+        // Then check if token owner
+        require(extraTokenOwner[_token][_tokenId] != address(0), "Must be staked in the platform");
+        require(_token != address(0), "Token cannot be 0");
+        // Then set the price on new mapping
+        extraTokenLastPurchasePrice[_token][_tokenId] = IDigitalaxNFT(_token).primarySalePrice(_tokenId); // It is assumed this is the value it had when it entered into the contract.
+    }
+
+    // The following function is used to update the proper balances if the contract has been notified of a change in value using saveCurrentPrimarySalePrice
+    function differentPrimaryPriceUpdateVariablesExtraToken(uint256 _tokenId, address _token, uint256 _value) internal {
+        Staker storage staker = stakers[extraTokenOwner[_token][_tokenId]];
+        if(extraTokenLastPurchasePrice[_token][_tokenId] > _value){ // New value less than the old value
+            uint256 delta = extraTokenLastPurchasePrice[_token][_tokenId].sub(_value);
+            staker.balance = staker.balance.sub(delta);
+            stakedEthTotal = stakedEthTotal.sub(delta);
+            stakedEthTotalExtraNfts[_token] = stakedEthTotalExtraNfts[_token].sub(delta);
+
+        } else if(extraTokenLastPurchasePrice[_token][_tokenId]< _value){ // New value greater than the old value
+            uint256 delta = _value.sub(extraTokenLastPurchasePrice[_token][_tokenId]);
+            staker.balance = staker.balance.add(delta);
+            stakedEthTotal = stakedEthTotal.add(delta);
+            stakedEthTotalExtraNfts[_token] = stakedEthTotalExtraNfts[_token].add(delta);
+        }
     }
 }
