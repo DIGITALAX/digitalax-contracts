@@ -11,7 +11,8 @@ async function main() {
       deployerAddress
   );
 
-  const DIGITALAX_STAKING_ADDRESS = "0xd80eeB5aFfd3C419f2Cb05477372778862D26757"
+  //const DIGITALAX_STAKING_ADDRESS = "0xd80eeB5aFfd3C419f2Cb05477372778862D26757"
+  const DIGITALAX_STAKING_ADDRESS = "0x2E4ae1f8E1463f450e9B01F20cee1590Bff4E1fC"
 
 
   const stakingContract =  new ethers.Contract(
@@ -36,8 +37,10 @@ async function main() {
   const metadata = require('./nft_staking_tokens.json');
   //  Data length
   console.log("number of stakers to check:")
-  console.log(metadata.data.digitalaxNFTStakers.length)
-  const datas = metadata.data.digitalaxNFTStakers;
+  // console.log(metadata.data.digitalaxNFTStakers.length)
+  // const datas = metadata.data.digitalaxNFTStakers;
+  console.log(metadata.data.digitalaxGDNMembershipStakers.length)
+  const datas = metadata.data.digitalaxGDNMembershipStakers;
 
   const minting = [];
 

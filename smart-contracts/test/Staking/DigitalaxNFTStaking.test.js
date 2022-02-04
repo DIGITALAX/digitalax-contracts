@@ -524,7 +524,6 @@ const randomURI = 'rand';
     await this.modelsToken.setPrimarySalePrice('100003', TWO_ETH, {from: admin});
     await this.modelsToken.setPrimarySalePrice('100004', TWO_ETH, {from: admin});
 
-
     await this.token.setApprovalForAll(this.nftStaking.address, true, {from: staker});
     await this.token.setApprovalForAll(this.nftStaking.address, true, {from: staker2});
 
@@ -579,6 +578,10 @@ const randomURI = 'rand';
     await this.modelsToken.setPrimarySalePrice('100002', ONE_ETH, {from: admin});
     await this.modelsToken.setPrimarySalePrice('100003', ONE_ETH, {from: admin});
     await this.modelsToken.setPrimarySalePrice('100004', ONE_ETH, {from: admin});
+
+    await this.nftStaking.priceUpdatedTokens(['100001','100002', '100003', '100004'], {from:admin});
+    await this.nftStaking.priceUpdatedExtraTokens(['100001','100002', '100003', '100004'], [this.modelsToken.address, this.modelsToken.address, this.modelsToken.address, this.modelsToken.address], {from:admin});
+
 
     await this.nftStaking.unstakeBatch(['100001','100002'], {from: staker});
     await this.nftStaking.unstakeBatch(['100003','100004'], {from: staker2});
@@ -694,6 +697,7 @@ const randomURI = 'rand';
     await this.modelsToken.setPrimarySalePrice('100003', ONE_ETH, {from: admin});
     await this.modelsToken.setPrimarySalePrice('100004', ONE_ETH, {from: admin});
 
+    await this.nftStaking.priceUpdatedTokens(['100001','100002', '100003', '100004'], {from:admin});
     await this.nftStaking.priceUpdatedExtraTokens(['100001','100002', '100003', '100004'], [this.modelsToken.address, this.modelsToken.address, this.modelsToken.address, this.modelsToken.address], {from:admin});
 
     await this.nftStaking.unstakeBatch(['100001','100002'], {from: staker});
