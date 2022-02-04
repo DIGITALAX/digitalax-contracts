@@ -9,7 +9,6 @@ import "./interfaces/IDigitalaxNFTRewards.sol";
 import "./interfaces/IDigitalaxNFT.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
 import "@openzeppelin/contracts/proxy/Initializable.sol";
-
 /**
  * @title Digitalax Staking
  * @dev Stake NFTs, earn tokens on the Digitalax platform
@@ -110,8 +109,10 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
     // Mapping from token ID to owner address
     mapping (address => mapping (uint256 => address)) public extraTokenOwner;
     mapping (address => mapping (uint256 => uint256)) public extraTokenLastPurchasePrice;
+    mapping (address => mapping (uint256 => bool)) public extraTokenLastPurchasePriceWasZero;
 
    mapping (uint256 => uint256) public mainTokenLastPurchasePrice;
+   mapping (uint256 => bool) public mainTokenLastPurchasePriceWasZero;
 
     mapping(address => uint256) public extraTokensIndex;
     address[] public extraTokens;
@@ -273,6 +274,8 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         view
         returns (uint256)
     {
+
+        console.log("primary sale price is: %s", IDigitalaxNFT(_token).primarySalePrice(_tokenId));
         return IDigitalaxNFT(_token).primarySalePrice(_tokenId);
     }
 
@@ -314,6 +317,11 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
 
         updateReward(_user);
         uint256 amount = getContribution(_tokenId);
+        mainTokenLastPurchasePrice[_tokenId] = amount;
+
+        if(amount == 0){
+            mainTokenLastPurchasePriceWasZero[_tokenId] = true;
+        }
 
         staker.balance = staker.balance.add(amount);
         stakedEthTotal = stakedEthTotal.add(amount);
@@ -379,9 +387,12 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         Staker storage staker = stakers[_user];
 
         uint256 amount = getContribution(_tokenId);
-        if(mainTokenLastPurchasePrice[_tokenId] > 0){
-            differentPrimaryPriceUpdateVariables(_tokenId, amount);
+        if(mainTokenLastPurchasePrice[_tokenId] > 0  ||  mainTokenLastPurchasePriceWasZero[_tokenId]){
+            differentPrimaryPriceUpdateVariables(_tokenId);
         }
+
+        mainTokenLastPurchasePriceWasZero[_tokenId] = false;
+
 
         staker.balance = staker.balance.sub(amount);
         stakedEthTotal = stakedEthTotal.sub(amount);
@@ -509,7 +520,6 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         uint256 rewards = stakers[_user].balance.mul(newRewardPerToken)
                                                 .div(1e18)
                                                 .div(pointMultiplier);
-
 
         return rewards;
     }
@@ -756,6 +766,13 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
 
         updateReward(_user);
         uint256 amount = getExtraTokenContribution(_token, _tokenId);
+
+        extraTokenLastPurchasePrice[_token][_tokenId] = amount;
+
+        if(amount == 0){
+            extraTokenLastPurchasePriceWasZero[_token][_tokenId] = true;
+        }
+
         staker.balance = staker.balance.add(amount);
         stakedEthTotal = stakedEthTotal.add(amount);
 
@@ -825,9 +842,8 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         ExtraTokenStaker storage extraTokenStaker = extraTokenStakers[_user];
 
         uint256 amount = getExtraTokenContribution(_token, _tokenId);
-        if(extraTokenLastPurchasePrice[_token][_tokenId] > 0){
-            differentPrimaryPriceUpdateVariablesExtraToken(_tokenId, _token, amount);
-        }
+
+        extraTokenLastPurchasePriceWasZero[_token][_tokenId] = false;
 
         staker.balance = staker.balance.sub(amount);
         stakedEthTotal = stakedEthTotal.sub(amount);
@@ -875,26 +891,49 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
             extraTokenOwner[_token][_tokenId] == _msgSender(),
             "DigitalaxParentStaking._unstakeByNFT: Sender must have staked tokenID"
         );
+        differentPrimaryPriceUpdateVariablesExtraToken(_tokenId, _token);
         _unstakeByNFT(_msgSender(), _tokenId, _token);
         emit EmergencyUnstakeByNFT(_msgSender(), _tokenId, _token);
 
     }
 
     // Save the primary sale price so that it updates the appropriate user with this
-    function saveCurrentPrimarySalePrice(uint256 _tokenId) public {
+    function saveCurrentPrimarySalePrice(uint256[] memory _tokenIds) public {
         // First check  owner
         require(
             accessControls.hasAdminRole(_msgSender()),
             "DigitalaxNFTStaking.saveCurrentPrimarySalePrice: Sender must be admin"
         );
-        // Then check if token owner
-        require(tokenOwner[_tokenId] != address(0), "Must be staked in the platform");
-        // Then set the price on new mapping
-        mainTokenLastPurchasePrice[_tokenId] = parentNFT.primarySalePrice(_tokenId); // It is assumed this is the value it had when it entered into the contract.
+        for (uint i = 0; i < _tokenIds.length; i++) {
+            // Then check if token owner
+            require(tokenOwner[_tokenIds[i]] != address(0), "Must be staked in the platform");
+            // Then set the price on new mapping
+            mainTokenLastPurchasePrice[_tokenIds[i]] = parentNFT.primarySalePrice(_tokenIds[i]); // It is assumed this is the value it had when it entered into the contract.
+            if(mainTokenLastPurchasePrice[_tokenIds[i]] == 0){
+                mainTokenLastPurchasePriceWasZero[_tokenIds[i]] = true;
+            }
+        }
+    }
+
+
+    // Save the primary sale price so that it updates the appropriate user with this price after you update the price
+    function priceUpdatedTokens(uint256[] memory _tokenIds) public {
+        // First check  owner
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxNFTStaking.saveCurrentPrimarySalePrice: Sender must be admin"
+        );
+
+        for (uint i = 0; i < _tokenIds.length; i++) {
+            // Then check if token owner
+            require(tokenOwner[_tokenIds[i]] != address(0), "Must be staked in the platform");
+            differentPrimaryPriceUpdateVariables(_tokenIds[i]);
+        }
     }
 
     // The following function is used to update the proper balances if the contract has been notified of a change in value using saveCurrentPrimarySalePrice
-    function differentPrimaryPriceUpdateVariables(uint256 _tokenId, uint256 _value) internal {
+    function differentPrimaryPriceUpdateVariables(uint256 _tokenId) internal {
+        uint256 _value = getContribution(_tokenId);
         Staker storage staker = stakers[tokenOwner[_tokenId]];
         if(mainTokenLastPurchasePrice[_tokenId] > _value){ // New value less than the old value
             uint256 delta = mainTokenLastPurchasePrice[_tokenId].sub(_value);
@@ -908,35 +947,71 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
             stakedEthTotal = stakedEthTotal.add(delta);
             stakedEthTotalOnlyMainNft = stakedEthTotalOnlyMainNft.add(delta);
         }
+        if(mainTokenLastPurchasePrice[_tokenId] == 0){
+            mainTokenLastPurchasePriceWasZero[_tokenId] = true;
+        } else {
+            mainTokenLastPurchasePriceWasZero[_tokenId] = false;
+        }
     }
+
     // Save the primary sale price so that it updates the appropriate user with this
-    function saveCurrentPrimarySalePriceExtraToken(uint256 _tokenId, address _token) public {
+    // This only needs to be used at first to save the ones that havent been previously stored.
+    function saveCurrentPrimarySalePriceExtraTokens(uint256[] memory _tokenIds, address[] memory _tokens) public {
+        // First check  owner
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxNFTStaking.saveCurrentPrimarySalePriceExtraToken: Sender must be admin"
+        );
+         for (uint i = 0; i < _tokenIds.length; i++) {
+            // Then check if token owner
+            require(extraTokenOwner[_tokens[i]][_tokenIds[i]] != address(0), "Must be staked in the platform");
+            require(_tokens[i] != address(0), "Token cannot be 0");
+            // Then set the price on new mapping
+            extraTokenLastPurchasePrice[_tokens[i]][_tokenIds[i]] = IDigitalaxNFT(_tokens[i]).primarySalePrice(_tokenIds[i]); // It is assumed this is the value it had when it entered into the contract.
+            if(extraTokenLastPurchasePrice[_tokens[i]][_tokenIds[i]] == 0){
+                extraTokenLastPurchasePriceWasZero[_tokens[i]][_tokenIds[i]] = true;
+            }
+         }
+    }
+
+    // Save the primary sale price so that it updates the appropriate user with this price after you update the price
+    function priceUpdatedExtraTokens(uint256[] memory _tokenIds, address[] memory _tokens) public {
         // First check  owner
         require(
             accessControls.hasAdminRole(_msgSender()),
             "DigitalaxNFTStaking.saveCurrentPrimarySalePrice: Sender must be admin"
         );
-        // Then check if token owner
-        require(extraTokenOwner[_token][_tokenId] != address(0), "Must be staked in the platform");
-        require(_token != address(0), "Token cannot be 0");
-        // Then set the price on new mapping
-        extraTokenLastPurchasePrice[_token][_tokenId] = IDigitalaxNFT(_token).primarySalePrice(_tokenId); // It is assumed this is the value it had when it entered into the contract.
+        require(_tokenIds.length == _tokens.length, "Arrays must be same length");
+        for (uint i = 0; i < _tokenIds.length; i++) {
+            // Then check if token owner
+            require(extraTokenOwner[_tokens[i]][_tokenIds[i]] != address(0), "Must be staked in the platform");
+            require(_tokens[i] != address(0), "Token cannot be 0");
+            differentPrimaryPriceUpdateVariablesExtraToken(_tokenIds[i], _tokens[i]);
+        }
     }
 
     // The following function is used to update the proper balances if the contract has been notified of a change in value using saveCurrentPrimarySalePrice
-    function differentPrimaryPriceUpdateVariablesExtraToken(uint256 _tokenId, address _token, uint256 _value) internal {
-        Staker storage staker = stakers[extraTokenOwner[_token][_tokenId]];
-        if(extraTokenLastPurchasePrice[_token][_tokenId] > _value){ // New value less than the old value
-            uint256 delta = extraTokenLastPurchasePrice[_token][_tokenId].sub(_value);
-            staker.balance = staker.balance.sub(delta);
-            stakedEthTotal = stakedEthTotal.sub(delta);
-            stakedEthTotalExtraNfts[_token] = stakedEthTotalExtraNfts[_token].sub(delta);
+    function differentPrimaryPriceUpdateVariablesExtraToken(uint256 _tokenId, address _token) internal {
+            uint256 _value = getExtraTokenContribution(_token, _tokenId);
+            Staker storage staker = stakers[extraTokenOwner[_token][_tokenId]];
+            if(extraTokenLastPurchasePrice[_token][_tokenId] > _value){ // New value less than the old value
 
-        } else if(extraTokenLastPurchasePrice[_token][_tokenId]< _value){ // New value greater than the old value
-            uint256 delta = _value.sub(extraTokenLastPurchasePrice[_token][_tokenId]);
-            staker.balance = staker.balance.add(delta);
-            stakedEthTotal = stakedEthTotal.add(delta);
-            stakedEthTotalExtraNfts[_token] = stakedEthTotalExtraNfts[_token].add(delta);
-        }
+                uint256 delta = extraTokenLastPurchasePrice[_token][_tokenId].sub(_value);
+                staker.balance = staker.balance.sub(delta);
+                stakedEthTotal = stakedEthTotal.sub(delta);
+                stakedEthTotalExtraNfts[_token] = stakedEthTotalExtraNfts[_token].sub(delta);
+
+            } else if(extraTokenLastPurchasePrice[_token][_tokenId]< _value){ // New value greater than the old value
+                uint256 delta = _value.sub(extraTokenLastPurchasePrice[_token][_tokenId]);
+                staker.balance = staker.balance.add(delta);
+                stakedEthTotal = stakedEthTotal.add(delta);
+                stakedEthTotalExtraNfts[_token] = stakedEthTotalExtraNfts[_token].add(delta);
+            }
+
+            if(extraTokenLastPurchasePrice[_token][_tokenId] == 0){
+                extraTokenLastPurchasePriceWasZero[_token][_tokenId] = true;
+            } else {
+                extraTokenLastPurchasePriceWasZero[_token][_tokenId] = false;
+            }
     }
 }
