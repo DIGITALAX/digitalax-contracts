@@ -274,8 +274,6 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         view
         returns (uint256)
     {
-
-        console.log("primary sale price is: %s", IDigitalaxNFT(_token).primarySalePrice(_tokenId));
         return IDigitalaxNFT(_token).primarySalePrice(_tokenId);
     }
 
