@@ -37,10 +37,10 @@ async function main() {
   const metadata = require('./nft_staking_tokens.json');
   //  Data length
   console.log("number of stakers to check:")
-  // console.log(metadata.data.digitalaxNFTStakers.length)
-  // const datas = metadata.data.digitalaxNFTStakers;
-  console.log(metadata.data.digitalaxGDNMembershipStakers.length)
-  const datas = metadata.data.digitalaxGDNMembershipStakers;
+   console.log(metadata.data.digitalaxNFTStakers.length)
+   const datas = metadata.data.digitalaxNFTStakers;
+  // console.log(metadata.data.digitalaxGDNMembershipStakers.length)
+  // const datas = metadata.data.digitalaxGDNMembershipStakers;
 
   const minting = [];
 

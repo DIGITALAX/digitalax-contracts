@@ -11,8 +11,8 @@ async function main() {
       deployerAddress
   );
 
-  //const DIGITALAX_STAKING_ADDRESS = "0xd80eeB5aFfd3C419f2Cb05477372778862D26757"
-  const DIGITALAX_STAKING_ADDRESS = "0x2E4ae1f8E1463f450e9B01F20cee1590Bff4E1fC"
+  const DIGITALAX_STAKING_ADDRESS = "0xd80eeB5aFfd3C419f2Cb05477372778862D26757"
+  // const DIGITALAX_STAKING_ADDRESS = "0x2E4ae1f8E1463f450e9B01F20cee1590Bff4E1fC"
 
 
   const stakingContract =  new ethers.Contract(
@@ -27,10 +27,10 @@ async function main() {
   console.log("number of tokens to check:")
   console.log(metadata.length)
   const datas = metadata;
-  const MAX_NFT_SINGLE_TX = 20;
+  const MAX_NFT_SINGLE_TX = 100;
   const chunks = _.chunk(datas, MAX_NFT_SINGLE_TX);
 
-  for(let i = 0; i< chunks.length ; i++){
+  for(let i = 1; i< chunks.length ; i++){
     const x = chunks[i];
     const y = x.map((z)=>{return z["id"]});
 

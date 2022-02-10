@@ -8,14 +8,51 @@ import "./interfaces/IERC20.sol";
 import "./interfaces/IDigitalaxNFTRewards.sol";
 import "./interfaces/IDigitalaxNFT.sol";
 import "../EIP2771/BaseRelayRecipient.sol";
-import "@openzeppelin/contracts/proxy/Initializable.sol";
+
 /**
  * @title Digitalax Staking
  * @dev Stake NFTs, earn tokens on the Digitalax platform
  * @author Digitalax Team
  */
 
-contract DigitalaxNFTStaking is BaseRelayRecipient {
+abstract contract Initializable {
+
+    /**
+     * @dev Indicates that the contract has been initialized.
+     */
+    bool private _initialized;
+
+    /**
+     * @dev Indicates that the contract is in the process of being initialized.
+     */
+    bool private _initializing;
+
+    /**
+     * @dev Modifier to protect an initializer function from being invoked twice.
+     */
+    modifier initializer() {
+        require(_initializing || !_initialized, "Initializable: contract is already initialized");
+
+        bool isTopLevelCall = !_initializing;
+        if (isTopLevelCall) {
+            _initializing = true;
+            _initialized = true;
+        }
+
+        _;
+
+        if (isTopLevelCall) {
+            _initializing = false;
+        }
+    }
+
+    /// @dev Returns true if and only if the function is running in the constructor
+    function _isConstructor() private view returns (bool) {
+        return false;
+    }
+}
+
+contract DigitalaxNFTStaking is BaseRelayRecipient, Initializable {
     using SafeMath for uint256;
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
 
@@ -24,7 +61,6 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
 
     DigitalaxAccessControls public accessControls;
     IDigitalaxNFTRewards public rewardsContract;
-    bool initialised;
 
 
     /// @notice total ethereum staked currently in the gensesis staking contract
@@ -147,15 +183,13 @@ contract DigitalaxNFTStaking is BaseRelayRecipient {
         DigitalaxAccessControls _accessControls,
         address _trustedForwarder
     )
-        public
+        public initializer
     {
-        require(!initialised);
         rewardsToken = _rewardsToken;
         parentNFT = _parentNFT;
         accessControls = _accessControls;
         lastUpdateTime = _getNow();
         trustedForwarder = _trustedForwarder;
-        initialised = true;
     }
 
     function setTrustedForwarder(address _trustedForwarder) external  {
