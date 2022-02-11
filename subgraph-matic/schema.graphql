@@ -508,6 +508,11 @@ type DigitalaxNFTStaker @entity {
   rewardsClaimed: BigInt!
 }
 
+type ModelNFTStaker @entity {
+  id: ID!
+  garments: [DigitalaxModelNFT!]!
+}
+
 type DigitalaxOldNFTStaker @entity {
   id: ID!
   garments: [DigitalaxGarmentV2!]!
