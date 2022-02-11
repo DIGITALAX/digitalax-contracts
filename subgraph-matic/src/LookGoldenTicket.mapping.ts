@@ -85,16 +85,17 @@ export function handleTransfer(event: Transfer): void {
         }
       }
     }
-
     gdnNft.save();
   } else if (event.params.to.equals(ZERO_ADDRESS)) {
     store.remove("LookGoldenTicket", event.params.tokenId.toString());
   } else {
     let gdnNft = LookGoldenTicket.load(event.params.tokenId.toString());
-    let owner = contract.try_ownerOf(event.params.tokenId);
-    if (!owner.reverted) {
-      gdnNft.owner = owner.value;
+    if (gdnNft) {
+           let owner = contract.try_ownerOf(event.params.tokenId);
+            if (!owner.reverted) {
+              gdnNft.owner = owner.value;
+            }
+            gdnNft.save();
     }
-    gdnNft.save();
   }
 }
