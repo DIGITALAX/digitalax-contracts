@@ -107,22 +107,22 @@ type DigitalaxGarmentModelChild @entity {
 
 type DigitalaxCollectionGroup @entity {
   id: ID!
-  auctions: [DigitalaxGarmentV2Auction!]!
-  collections: [DigitalaxGarmentV2Collection!]!
-  digiBundle: DigitalaxGarmentV2Collection!
+  auctions: [DigitalaxGarmentV2Auction!]
+  collections: [DigitalaxGarmentV2Collection!]
+  digiBundle: DigitalaxGarmentV2Collection
 }
 
 type DigitalaxModelCollectionGroup @entity {
   id: ID!
-  collections: [DigitalaxModelCollection!]!
-  digiBundle: DigitalaxModelCollection!
+  collections: [DigitalaxModelCollection!]
+  digiBundle: DigitalaxModelCollection
 }
 
 type PatronCollectionGroup @entity {
   id: ID!
-  auctions: [DigitalaxGarmentV2Auction!]!
-  collections: [DigitalaxGarmentV2Collection!]!
-  digiBundle: DigitalaxGarmentV2Collection!
+  auctions: [DigitalaxGarmentV2Auction!]
+  collections: [DigitalaxGarmentV2Collection!]
+  digiBundle: DigitalaxGarmentV2Collection
 }
 
 type DigitalaxSubscriptionChild @entity {
