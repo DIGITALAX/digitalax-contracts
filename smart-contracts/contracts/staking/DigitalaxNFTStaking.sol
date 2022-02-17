@@ -896,10 +896,11 @@ contract DigitalaxNFTStaking is BaseRelayRecipient, Initializable {
         extraTokenStaker.tokenIndex[_token][lastIndexKey] = tokenIdIndex;
 
         if (extraTokenStaker.tokenIds[_token].length > 0) {
-            delete extraTokenStaker.tokenIds[_token][extraTokenStaker.tokenIds[_token].length -1];
+            //delete extraTokenStaker.tokenIds[_token][extraTokenStaker.tokenIds[_token].length -1];
+            // Upgrade
+            extraTokenStaker.tokenIds[_token].pop();
             delete extraTokenStaker.tokenIndex[_token][_tokenId];
         }
-
 
         if(staker.balance == 0){
             delete stakers[_user];
