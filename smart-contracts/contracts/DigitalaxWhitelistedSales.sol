@@ -1,12 +1,14 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
-import "../DigitalaxAccessControls.sol";
+import "./DigitalaxAccessControls.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 interface IDigiCollection {
-    function getCollection(uint256 _collectionId)
-    external
-    view
-    returns (uint256[] memory _garmentTokenIds, uint256 _amount, string memory _tokenUri, address _designer);
+    // Might not be needed
+//    function getCollection(uint256 _collectionId)
+//    external
+//    view
+//    returns (uint256[] memory _garmentTokenIds, uint256 _amount, string memory _tokenUri, address _designer);
 
     function mintCollection(
         string calldata _tokenUri,
@@ -39,11 +41,24 @@ interface IDigiIndex {
  * @dev Issues ERC-721 tokens as well as being able to hold child 1155 tokens
  */
 contract DigitalaxWhitelistedSales{
+    using SafeMath for uint256;
     bool initialized;
     DigitalaxAccessControls accessControls;
     IDigiCollection collection;
     IDigiMarketplace marketplace;
     IDigiIndex index;
+
+    // People that can submit tokens are whitelisters
+    mapping(address => uint256) whitelisterIndex;
+    address[] public whitelisters;
+
+    event AddWhitelister(
+        address user
+    );
+
+    event RemoveWhitelister(
+        address user
+    );
 
     function initialize(DigitalaxAccessControls _accessControls, IDigiCollection _collection, IDigiMarketplace _marketplace, IDigiIndex _index) public {
         require(!initialized);
@@ -78,11 +93,11 @@ contract DigitalaxWhitelistedSales{
 
     //start here
     function addWhitelister(address _user) public {
-        require(_user != address(0), "ESPADEV.addWhitelister: Please add valid address");
-        require(!checkWhitelister(_user), "ESPADEV.removeWhitelister: Whitelister must not exist");
+        require(_user != address(0), "DigitalaxWhitelistedSales.addWhitelister: Please add valid address");
+        require(!checkWhitelister(_user), "DigitalaxWhitelistedSales.removeWhitelister: Whitelister must not exist");
         require(
-            accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
-            "ESPADEV.addWhitelister: Sender must be an authorised contract or admin"
+            accessControls.hasSmartContractRole(msg.sender) || accessControls.hasAdminRole(msg.sender),
+            "DigitalaxWhitelistedSales.addWhitelister: Sender must be an authorised contract or admin"
         );
 
         uint256 index = whitelisters.length;
@@ -92,10 +107,10 @@ contract DigitalaxWhitelistedSales{
     }
 
     function removeWhitelister(address _user) public {
-        require(checkWhitelister(_user), "ESPADEV.removeWhitelister: Whitelister must already exist");
+        require(checkWhitelister(_user), "DigitalaxWhitelistedSales.removeWhitelister: Whitelister must already exist");
         require(
-            accessControls.hasSmartContractRole(_msgSender()) || accessControls.hasAdminRole(_msgSender()),
-            "ESPADEV.removeWhitelister: Sender must be an authorised contract or admin"
+            accessControls.hasSmartContractRole(msg.sender) || accessControls.hasAdminRole(msg.sender),
+            "DigitalaxWhitelistedSales.removeWhitelister: Sender must be an authorised contract or admin"
         );
 
         uint256 rowToDelete = whitelisterIndex[_user];
@@ -125,14 +140,43 @@ contract DigitalaxWhitelistedSales{
        return whitelisters.length;
     }
 
-    // Function that will do all tasks for th
-    function mintAndList(address_designers) public {
-//        require(accessControls.hasMinterRole(msg.sender), "Sender must be minter");
-//        require(_beneficiaries.length == _tokenUris.length);
-//        require(_beneficiaries.length == _designers.length);
-//        for( uint256 i; i< _beneficiaries.length; i++){
-//            IDigiNFT(nft).mint(_beneficiaries[i], _tokenUris[i], _designers[i]);
-//        }
+    // Function that will do all tasks
+    function mintAndList(string calldata _tokenUri,
+        uint256 _amount,
+//        uint256 _auctionId,
+//        string calldata _rarity,
+        uint256[] calldata _childTokenIds,
+        uint256[] calldata _childTokenAmounts,
+        uint256 _primarySalePrice) public {
+        require(checkWhitelister(msg.sender), "Sender must be whitelisted");
+        require(_amount < uint256(21), "Max is 20 items");
+        uint256 collectionId = collection.mintCollection(
+                    _tokenUri,
+                    msg.sender,
+                    _amount,
+                    uint256(0),
+                    "Common", // Need more logic
+                    _childTokenIds,
+                    _childTokenAmounts);
+
+        marketplace.createOffer(
+                    collectionId,
+                    _primarySalePrice,
+                    _getNow(),
+                    _getNow().add(31536000), // Need to configure how long offers will stay
+                    150, // Need to configure platform fee
+                    0,
+                    _amount);
+
+        uint256[] storage empty;
+        uint256[] storage collectionIdArray;
+        collectionIdArray.push(collectionId);
+        index.addCollectionGroup(empty,collectionIdArray, 0);
+
+    }
+
+    function _getNow() internal virtual view returns (uint256) {
+        return block.timestamp;
     }
 
 }
