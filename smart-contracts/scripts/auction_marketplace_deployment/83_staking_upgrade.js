@@ -17,6 +17,7 @@ async function main() {
     // console.log(nix.address);
 
     // Important back up at 0xe78fc90a90aa51cb6c89b89682521d719109dceb
+    // backup at 0xe8fe11af9656792f0c0948dac2282b8d3cdc9029
     const NixFactory2 = await ethers.getContractFactory("DigitalaxNFTStaking");
     const nix2 = await upgrades.upgradeProxy("0xd80eeb5affd3c419f2cb05477372778862d26757", NixFactory2);
     await nix2.deployed();
