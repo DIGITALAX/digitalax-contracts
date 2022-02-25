@@ -86,60 +86,62 @@ export function handleOfferPurchased(event: OfferPurchased): void {
   let collection = DigitalaxGarmentV2Collection.load(
     event.params.garmentCollectionId.toString()
   );
-  let history = new DigitalaxMarketplaceV2PurchaseHistory(
-    event.params.bundleTokenId.toString()
-  );
-  history.eventName = "Purchased";
-  history.timestamp = event.block.timestamp;
-  history.token = event.params.bundleTokenId.toString();
-  history.transactionHash = event.transaction.hash;
-  history.token = event.params.bundleTokenId.toString();
-  history.value = event.params.primarySalePrice;
-  history.buyer = event.params.buyer;
-  history.isPaidWithMona = event.params.paidInErc20;
-  history.monaTransferredAmount = event.params.monaTransferredAmount;
-  history.garmentAuctionId = collection.garmentAuctionID;
-  history.rarity = collection.rarity;
-  history.platformFee = event.params.platformFee;
-  history.monaPerEth = contract.lastOracleQuote();
+  if(collection) {
+    let history = new DigitalaxMarketplaceV2PurchaseHistory(
+        event.params.bundleTokenId.toString()
+    );
+    history.eventName = "Purchased";
+    history.timestamp = event.block.timestamp;
+    history.token = event.params.bundleTokenId.toString();
+    history.transactionHash = event.transaction.hash;
+    history.token = event.params.bundleTokenId.toString();
+    history.value = event.params.primarySalePrice;
+    history.buyer = event.params.buyer;
+    history.isPaidWithMona = event.params.paidInErc20;
+    history.monaTransferredAmount = event.params.monaTransferredAmount;
+    history.garmentAuctionId = collection.garmentAuctionID;
+    history.rarity = collection.rarity;
+    history.platformFee = event.params.platformFee;
+    history.monaPerEth = contract.lastOracleQuote();
 
-  let day = loadDayFromEvent(event);
-  let globalStats = loadOrCreateGarmentNFTV2GlobalStats();
+    let day = loadDayFromEvent(event);
+    let globalStats = loadOrCreateGarmentNFTV2GlobalStats();
 
-  if (history.isPaidWithMona) {
-    globalStats.totalMarketplaceSalesInMona = globalStats.totalMarketplaceSalesInMona.plus(
-      history.monaTransferredAmount
+    if (history.isPaidWithMona) {
+      globalStats.totalMarketplaceSalesInMona = globalStats.totalMarketplaceSalesInMona.plus(
+          history.monaTransferredAmount
+      );
+      day.totalMarketplaceVolumeInMona = day.totalMarketplaceVolumeInMona.plus(
+          history.monaTransferredAmount
+      );
+      history.discountToPayMona = event.params.discountToPayInERC20;
+    } else {
+      globalStats.totalMarketplaceSalesInETH = globalStats.totalMarketplaceSalesInETH.plus(
+          history.value
+      );
+      day.totalMarketplaceVolumeInETH = day.totalMarketplaceVolumeInETH.plus(
+          history.value
+      );
+      history.discountToPayMona = ZERO;
+    }
+
+    globalStats.monaPerEth = contract.lastOracleQuote();
+
+    day.save();
+    history.save();
+    globalStats.save();
+
+    let offer = DigitalaxMarketplaceV2Offer.load(
+        event.params.garmentCollectionId.toString()
     );
-    day.totalMarketplaceVolumeInMona = day.totalMarketplaceVolumeInMona.plus(
-      history.monaTransferredAmount
+    offer.amountSold = offer.amountSold.plus(ONE);
+    offer.save();
+
+    collection.valueSold = collection.valueSold.plus(
+        event.params.primarySalePrice
     );
-    history.discountToPayMona = event.params.discountToPayInERC20;
-  } else {
-    globalStats.totalMarketplaceSalesInETH = globalStats.totalMarketplaceSalesInETH.plus(
-      history.value
-    );
-    day.totalMarketplaceVolumeInETH = day.totalMarketplaceVolumeInETH.plus(
-      history.value
-    );
-    history.discountToPayMona = ZERO;
+    collection.save();
   }
-
-  globalStats.monaPerEth = contract.lastOracleQuote();
-
-  day.save();
-  history.save();
-  globalStats.save();
-
-  let offer = DigitalaxMarketplaceV2Offer.load(
-    event.params.garmentCollectionId.toString()
-  );
-  offer.amountSold = offer.amountSold.plus(ONE);
-  offer.save();
-
-  collection.valueSold = collection.valueSold.plus(
-    event.params.primarySalePrice
-  );
-  collection.save();
 }
 
 export function handleOfferCancelled(event: OfferCancelled): void {

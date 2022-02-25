@@ -55,6 +55,13 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
         mapping (address => uint256) rewardTokensRewardsReleased;
     }
 
+    struct StakerInitialTotalRewards {
+        bool joined;
+        uint256 originalTotalRoundRewards;
+        mapping (address => uint256) originalTotalRoundRewardTokenRewards;
+    }
+
+
     event UpdateAccessControls(
         address indexed accessControls
     );
@@ -73,6 +80,10 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
     /// @notice sets the token to be claimable or not, cannot claim if it set to false
     bool public tokensClaimable;
     bool initialised;
+
+    /// @notice mapping of a staker to its current properties - initialrewards
+    mapping (address => StakerInitialTotalRewards) public stakerInitialRewards;
+
 
     /// @notice event emitted when a user has staked a token
     event Staked(address owner, uint256 tokenId);
@@ -270,6 +281,22 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
 
         Staker storage staker = stakers[_user];
 
+        StakerInitialTotalRewards storage stakerInitial = stakerInitialRewards[_user];
+
+        // Upgraded logic
+        if(staker.balance > 0 && !stakerInitial.joined){
+            stakerInitial.joined = true;
+        }
+
+        if(!stakerInitial.joined){
+            stakerInitial.originalTotalRoundRewards = totalRoundRewards;
+            address[] memory _tokens = IGuildNFTTokenRewards(address(rewardsContract)).getExtraRewardTokens();
+            for (uint i = 0; i < _tokens.length; i++) {
+                stakerInitial.originalTotalRoundRewardTokenRewards[_tokens[i]] = totalRoundRewardTokenRewards[_tokens[i]];
+            }
+            stakerInitial.joined = true;
+        }
+
         updateReward(_user);
         uint256 _primarySalePrice = getContribution(_tokenId);
         staker.balance = staker.balance.add(_primarySalePrice);
@@ -346,10 +373,6 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
 
         balance = balance.sub(amount);
 
-        if (balance == 0) {
-            totalRoundRewards = 0;
-        }
-
         weightContract.unstake(_tokenId, _user);
 
         if(_isApprovedParty){
@@ -418,7 +441,7 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
 
         Staker storage staker = stakers[_user];
 
-        uint256 _stakerRewards = totalRoundRewards.mul(ownerWeight)
+        uint256 _stakerRewards = getStakerJoinedTotalRoundRewards(_user).mul(ownerWeight)
                                     .div(totalWeight);
 
 
@@ -429,7 +452,7 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
         }
 
         for (uint i=0; i< _tokens.length; i++) {
-                    uint256 specificTokenRewards = totalRoundRewardTokenRewards[_tokens[i]].mul(ownerWeight)
+                  uint256 specificTokenRewards = getStakerJoinedTotalRoundMultiRewards(_user, _tokens[i]).mul(ownerWeight)
                                     .div(totalWeight);
 
                   console.log("the specificTokenRewards  %s", specificTokenRewards);
@@ -452,8 +475,7 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
         }
 
         uint256 _newRewards = rewardsContract.DecoRewards(lastUpdateTime, _getNow());
-        uint256 _totalRoundRewards = totalRoundRewards.add(_newRewards);
-
+        uint256 _totalRoundRewards = getStakerJoinedTotalRoundRewards(_user).add(_newRewards);
         uint256 _totalWeight = weightContract.calcNewWeight();
 
         if (_totalWeight == 0) {
@@ -488,7 +510,7 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
         }
 
         uint256 _newRewards = IGuildNFTTokenRewards(address(rewardsContract)).MembershipTokenRevenueRewards(_rewardToken, lastUpdateTime, _getNow());
-        uint256 _totalRoundRewards = totalRoundRewardTokenRewards[_rewardToken].add(_newRewards);
+        uint256 _totalRoundRewards = getStakerJoinedTotalRoundMultiRewards(_user, _rewardToken).add(_newRewards);
 
         uint256 _totalWeight = weightContract.calcNewWeight();
 
@@ -576,6 +598,25 @@ contract GuildNFTStakingV3 is BaseRelayRecipient {
     function getStakerExtraRewardsReleased(address _staker, address _rewardToken) external view returns (uint256){
         return stakers[_staker].rewardTokensRewardsReleased[_rewardToken];
     }
+
+    function getStakerJoinedTotalRoundRewards(address _staker) public view returns (uint256){
+        uint256 stakerOriginalRewards = stakerInitialRewards[_staker].originalTotalRoundRewards;
+        if(stakerOriginalRewards <= totalRoundRewards && stakerInitialRewards[_staker].joined) {
+            return totalRoundRewards.sub(stakerOriginalRewards);
+        } else {
+            return 0;
+        }
+    }
+
+    function getStakerJoinedTotalRoundMultiRewards(address _staker, address _rewardToken) public view returns (uint256){
+        uint256 stakerOriginalRewards = stakerInitialRewards[_staker].originalTotalRoundRewardTokenRewards[_rewardToken];
+        if(stakerOriginalRewards <= totalRoundRewardTokenRewards[_rewardToken] && stakerInitialRewards[_staker].joined) {
+            return totalRoundRewardTokenRewards[_rewardToken].sub(stakerOriginalRewards);
+        } else {
+            return 0;
+        }
+    }
+
 
     function onERC721Received(address, address, uint256, bytes calldata data) public returns(bytes4) {
         return _ERC721_RECEIVED;

@@ -11,6 +11,15 @@ import {
 } from "../generated/schema";
 import {ZERO} from "./constants";
 
+import { Address } from "@graphprotocol/graph-ts";
+
+import { calculateWeights } from "./factory/GDNCalculateWeights.factory";
+
+const GuildNFTSTakingWeightV4Address =
+  "0x17d11b301575453bf3B2806Dd1f67f317E7D2dD7";
+
+import {GuildNFTStakingWeightV4 as NewGDNGuildNFTStakingWeightContract} from "../generated/NewGDNGuildNFTStakingWeightV4/GuildNFTStakingWeightV4";
+
 export function handleRewardPaid(event: RewardPaid): void {
     let owner = event.params.user.toHexString()
     let reward = event.params.reward;
@@ -20,6 +29,9 @@ export function handleRewardPaid(event: RewardPaid): void {
         staker.garments = new Array<string>();
         staker.rewardsClaimed = ZERO;
     }
+
+    let contract = NewGDNGuildNFTStakingWeightContract.bind(Address.fromString(GuildNFTSTakingWeightV4Address));
+    calculateWeights(contract,  event.block.timestamp, staker);
 
     staker.rewardsClaimed = staker.rewardsClaimed.plus(reward);
     staker.save();
@@ -51,6 +63,10 @@ export function handleUnstaked(event: Unstaked): void {
         updatedGarmentsStaked.push(currentStaked[i].toString())
     }
     staker.garments = updatedGarmentsStaked;
+
+    let weightContract = NewGDNGuildNFTStakingWeightContract.bind(Address.fromString(GuildNFTSTakingWeightV4Address));
+    calculateWeights(weightContract,  event.block.timestamp, staker);
+
     staker.save();
 }
 
@@ -66,5 +82,9 @@ export function handleEmergencyUnstake(event: EmergencyUnstake): void {
             updatedGarmentsStaked.push(currentStaked[i].toString())
     }
     staker.garments = updatedGarmentsStaked;
+
+    let weightContract = NewGDNGuildNFTStakingWeightContract.bind(Address.fromString(GuildNFTSTakingWeightV4Address));
+    calculateWeights(weightContract,  event.block.timestamp, staker);
+
     staker.save();
 }
