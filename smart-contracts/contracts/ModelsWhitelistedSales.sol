@@ -7,6 +7,7 @@ interface IDigiCollection {
     function mintCollection(
         string calldata _tokenUri,
         address _designer,
+        address _model,
         uint256 _amount,
         uint256 _auctionId,
         string calldata _rarity,
@@ -50,7 +51,7 @@ interface IERC20 {
  * @title Digitalax Garment NFT a.k.a. parent NFTs
  * @dev Issues ERC-721 tokens as well as being able to hold child 1155 tokens
  */
-contract DigitalaxWhitelistedSales{
+contract ModelsWhitelistedSales{
     using SafeMath for uint256;
     bool initialized;
     DigitalaxAccessControls accessControls;
@@ -192,6 +193,7 @@ contract DigitalaxWhitelistedSales{
 
     // Function that will do all tasks
     function mintAndList(string calldata _tokenUri,
+        address _designer,
         uint256 _amount,
         uint256[] calldata _childTokenIds,
         uint256 _primarySalePrice) public {
@@ -205,6 +207,7 @@ contract DigitalaxWhitelistedSales{
         // string memory rarity;
         uint256 collectionId = collection.mintCollection(
                     _tokenUri,
+                    _designer,
                     msg.sender,
                     _amount,
                     uint256(0),
