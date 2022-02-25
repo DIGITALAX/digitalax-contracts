@@ -1,7 +1,8 @@
 pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
 
-// 
+//
 /*
  * @dev Provides information about the current execution context, including the
  * sender of the transaction and its data. While these are generally available
@@ -25,7 +26,7 @@ abstract contract Context {
 
 //
 
-// 
+//
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
  * checks.
@@ -237,254 +238,7 @@ library SafeMath {
     }
 }
 
-// 
-/**
- * @dev Contract module that helps prevent reentrant calls to a function.
- *
- * Inheriting from `ReentrancyGuard` will make the {nonReentrant} modifier
- * available, which can be applied to functions to make sure there are no nested
- * (reentrant) calls to them.
- *
- * Note that because there is a single `nonReentrant` guard, functions marked as
- * `nonReentrant` may not call one another. This can be worked around by making
- * those functions `private`, and then adding `external` `nonReentrant` entry
- * points to them.
- *
- * TIP: If you would like to learn more about reentrancy and alternative ways
- * to protect against it, check out our blog post
- * https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].
- */
-abstract contract ReentrancyGuard {
-    // Booleans are more expensive than uint256 or any type that takes up a full
-    // word because each write operation emits an extra SLOAD to first read the
-    // slot's contents, replace the bits taken up by the boolean, and then write
-    // back. This is the compiler's defense against contract upgrades and
-    // pointer aliasing, and it cannot be disabled.
-
-    // The values being non-zero value makes deployment a bit more expensive,
-    // but in exchange the refund on every call to nonReentrant will be lower in
-    // amount. Since refunds are capped to a percentage of the total
-    // transaction's gas, it is best to keep them low in cases like this one, to
-    // increase the likelihood of the full refund coming into effect.
-    uint256 private constant _NOT_ENTERED = 1;
-    uint256 private constant _ENTERED = 2;
-
-    uint256 private _status;
-
-    constructor () internal {
-        _status = _NOT_ENTERED;
-    }
-
-    /**
-     * @dev Prevents a contract from calling itself, directly or indirectly.
-     * Calling a `nonReentrant` function from another `nonReentrant`
-     * function is not supported. It is possible to prevent this from happening
-     * by making the `nonReentrant` function external, and make it call a
-     * `private` function that does the actual work.
-     */
-    modifier nonReentrant() {
-        // On the first call to nonReentrant, _notEntered will be true
-        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
-
-        // Any calls to nonReentrant after this point will fail
-        _status = _ENTERED;
-
-        _;
-
-        // By storing the original value once again, a refund is triggered (see
-        // https://eips.ethereum.org/EIPS/eip-2200)
-        _status = _NOT_ENTERED;
-    }
-}
-
-// 
-/**
- * @dev Collection of functions related to the address type
- */
-library Address {
-    /**
-     * @dev Returns true if `account` is a contract.
-     *
-     * [IMPORTANT]
-     * ====
-     * It is unsafe to assume that an address for which this function returns
-     * false is an externally-owned account (EOA) and not a contract.
-     *
-     * Among others, `isContract` will return false for the following
-     * types of addresses:
-     *
-     *  - an externally-owned account
-     *  - a contract in construction
-     *  - an address where a contract will be created
-     *  - an address where a contract lived, but was destroyed
-     * ====
-     */
-    function isContract(address account) internal view returns (bool) {
-        // This method relies on extcodesize, which returns 0 for contracts in
-        // construction, since the code is only stored at the end of the
-        // constructor execution.
-
-        uint256 size;
-        // solhint-disable-next-line no-inline-assembly
-        assembly { size := extcodesize(account) }
-        return size > 0;
-    }
-
-    /**
-     * @dev Replacement for Solidity's `transfer`: sends `amount` wei to
-     * `recipient`, forwarding all available gas and reverting on errors.
-     *
-     * https://eips.ethereum.org/EIPS/eip-1884[EIP1884] increases the gas cost
-     * of certain opcodes, possibly making contracts go over the 2300 gas limit
-     * imposed by `transfer`, making them unable to receive funds via
-     * `transfer`. {sendValue} removes this limitation.
-     *
-     * https://diligence.consensys.net/posts/2019/09/stop-using-soliditys-transfer-now/[Learn more].
-     *
-     * IMPORTANT: because control is transferred to `recipient`, care must be
-     * taken to not create reentrancy vulnerabilities. Consider using
-     * {ReentrancyGuard} or the
-     * https://solidity.readthedocs.io/en/v0.5.11/security-considerations.html#use-the-checks-effects-interactions-pattern[checks-effects-interactions pattern].
-     */
-    function sendValue(address payable recipient, uint256 amount) internal {
-        require(address(this).balance >= amount, "Address: insufficient balance");
-
-        // solhint-disable-next-line avoid-low-level-calls, avoid-call-value
-        (bool success, ) = recipient.call{ value: amount }("");
-        require(success, "Address: unable to send value, recipient may have reverted");
-    }
-
-    /**
-     * @dev Performs a Solidity function call using a low level `call`. A
-     * plain`call` is an unsafe replacement for a function call: use this
-     * function instead.
-     *
-     * If `target` reverts with a revert reason, it is bubbled up by this
-     * function (like regular Solidity function calls).
-     *
-     * Returns the raw returned data. To convert to the expected return value,
-     * use https://solidity.readthedocs.io/en/latest/units-and-global-variables.html?highlight=abi.decode#abi-encoding-and-decoding-functions[`abi.decode`].
-     *
-     * Requirements:
-     *
-     * - `target` must be a contract.
-     * - calling `target` with `data` must not revert.
-     *
-     * _Available since v3.1._
-     */
-    function functionCall(address target, bytes memory data) internal returns (bytes memory) {
-      return functionCall(target, data, "Address: low-level call failed");
-    }
-
-    /**
-     * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`], but with
-     * `errorMessage` as a fallback revert reason when `target` reverts.
-     *
-     * _Available since v3.1._
-     */
-    function functionCall(address target, bytes memory data, string memory errorMessage) internal returns (bytes memory) {
-        return functionCallWithValue(target, data, 0, errorMessage);
-    }
-
-    /**
-     * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`],
-     * but also transferring `value` wei to `target`.
-     *
-     * Requirements:
-     *
-     * - the calling contract must have an ETH balance of at least `value`.
-     * - the called Solidity function must be `payable`.
-     *
-     * _Available since v3.1._
-     */
-    function functionCallWithValue(address target, bytes memory data, uint256 value) internal returns (bytes memory) {
-        return functionCallWithValue(target, data, value, "Address: low-level call with value failed");
-    }
-
-    /**
-     * @dev Same as {xref-Address-functionCallWithValue-address-bytes-uint256-}[`functionCallWithValue`], but
-     * with `errorMessage` as a fallback revert reason when `target` reverts.
-     *
-     * _Available since v3.1._
-     */
-    function functionCallWithValue(address target, bytes memory data, uint256 value, string memory errorMessage) internal returns (bytes memory) {
-        require(address(this).balance >= value, "Address: insufficient balance for call");
-        require(isContract(target), "Address: call to non-contract");
-
-        // solhint-disable-next-line avoid-low-level-calls
-        (bool success, bytes memory returndata) = target.call{ value: value }(data);
-        return _verifyCallResult(success, returndata, errorMessage);
-    }
-
-    /**
-     * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`],
-     * but performing a static call.
-     *
-     * _Available since v3.3._
-     */
-    function functionStaticCall(address target, bytes memory data) internal view returns (bytes memory) {
-        return functionStaticCall(target, data, "Address: low-level static call failed");
-    }
-
-    /**
-     * @dev Same as {xref-Address-functionCall-address-bytes-string-}[`functionCall`],
-     * but performing a static call.
-     *
-     * _Available since v3.3._
-     */
-    function functionStaticCall(address target, bytes memory data, string memory errorMessage) internal view returns (bytes memory) {
-        require(isContract(target), "Address: static call to non-contract");
-
-        // solhint-disable-next-line avoid-low-level-calls
-        (bool success, bytes memory returndata) = target.staticcall(data);
-        return _verifyCallResult(success, returndata, errorMessage);
-    }
-
-    /**
-     * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`],
-     * but performing a delegate call.
-     *
-     * _Available since v3.4._
-     */
-    function functionDelegateCall(address target, bytes memory data) internal returns (bytes memory) {
-        return functionDelegateCall(target, data, "Address: low-level delegate call failed");
-    }
-
-    /**
-     * @dev Same as {xref-Address-functionCall-address-bytes-string-}[`functionCall`],
-     * but performing a delegate call.
-     *
-     * _Available since v3.4._
-     */
-    function functionDelegateCall(address target, bytes memory data, string memory errorMessage) internal returns (bytes memory) {
-        require(isContract(target), "Address: delegate call to non-contract");
-
-        // solhint-disable-next-line avoid-low-level-calls
-        (bool success, bytes memory returndata) = target.delegatecall(data);
-        return _verifyCallResult(success, returndata, errorMessage);
-    }
-
-    function _verifyCallResult(bool success, bytes memory returndata, string memory errorMessage) private pure returns(bytes memory) {
-        if (success) {
-            return returndata;
-        } else {
-            // Look for revert reason and bubble it up if present
-            if (returndata.length > 0) {
-                // The easiest way to bubble the revert reason is using memory via assembly
-
-                // solhint-disable-next-line no-inline-assembly
-                assembly {
-                    let returndata_size := mload(returndata)
-                    revert(add(32, returndata), returndata_size)
-                }
-            } else {
-                revert(errorMessage);
-            }
-        }
-    }
-}
-
-// 
+//
 /**
  * @dev Interface of the ERC20 standard as defined in the EIP.
  */
@@ -559,7 +313,7 @@ interface IERC20 {
     event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
-// 
+//
 /**
  * @dev Library for managing
  * https://en.wikipedia.org/wiki/Set_(abstract_data_type)[sets] of primitive
@@ -854,7 +608,194 @@ library EnumerableSet {
     }
 }
 
-// 
+//
+/**
+ * @dev Collection of functions related to the address type
+ */
+library Address {
+    /**
+     * @dev Returns true if `account` is a contract.
+     *
+     * [IMPORTANT]
+     * ====
+     * It is unsafe to assume that an address for which this function returns
+     * false is an externally-owned account (EOA) and not a contract.
+     *
+     * Among others, `isContract` will return false for the following
+     * types of addresses:
+     *
+     *  - an externally-owned account
+     *  - a contract in construction
+     *  - an address where a contract will be created
+     *  - an address where a contract lived, but was destroyed
+     * ====
+     */
+    function isContract(address account) internal view returns (bool) {
+        // This method relies on extcodesize, which returns 0 for contracts in
+        // construction, since the code is only stored at the end of the
+        // constructor execution.
+
+        uint256 size;
+        // solhint-disable-next-line no-inline-assembly
+        assembly { size := extcodesize(account) }
+        return size > 0;
+    }
+
+    /**
+     * @dev Replacement for Solidity's `transfer`: sends `amount` wei to
+     * `recipient`, forwarding all available gas and reverting on errors.
+     *
+     * https://eips.ethereum.org/EIPS/eip-1884[EIP1884] increases the gas cost
+     * of certain opcodes, possibly making contracts go over the 2300 gas limit
+     * imposed by `transfer`, making them unable to receive funds via
+     * `transfer`. {sendValue} removes this limitation.
+     *
+     * https://diligence.consensys.net/posts/2019/09/stop-using-soliditys-transfer-now/[Learn more].
+     *
+     * IMPORTANT: because control is transferred to `recipient`, care must be
+     * taken to not create reentrancy vulnerabilities. Consider using
+     * {ReentrancyGuard} or the
+     * https://solidity.readthedocs.io/en/v0.5.11/security-considerations.html#use-the-checks-effects-interactions-pattern[checks-effects-interactions pattern].
+     */
+    function sendValue(address payable recipient, uint256 amount) internal {
+        require(address(this).balance >= amount, "Address: insufficient balance");
+
+        // solhint-disable-next-line avoid-low-level-calls, avoid-call-value
+        (bool success, ) = recipient.call{ value: amount }("");
+        require(success, "Address: unable to send value, recipient may have reverted");
+    }
+
+    /**
+     * @dev Performs a Solidity function call using a low level `call`. A
+     * plain`call` is an unsafe replacement for a function call: use this
+     * function instead.
+     *
+     * If `target` reverts with a revert reason, it is bubbled up by this
+     * function (like regular Solidity function calls).
+     *
+     * Returns the raw returned data. To convert to the expected return value,
+     * use https://solidity.readthedocs.io/en/latest/units-and-global-variables.html?highlight=abi.decode#abi-encoding-and-decoding-functions[`abi.decode`].
+     *
+     * Requirements:
+     *
+     * - `target` must be a contract.
+     * - calling `target` with `data` must not revert.
+     *
+     * _Available since v3.1._
+     */
+    function functionCall(address target, bytes memory data) internal returns (bytes memory) {
+      return functionCall(target, data, "Address: low-level call failed");
+    }
+
+    /**
+     * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`], but with
+     * `errorMessage` as a fallback revert reason when `target` reverts.
+     *
+     * _Available since v3.1._
+     */
+    function functionCall(address target, bytes memory data, string memory errorMessage) internal returns (bytes memory) {
+        return functionCallWithValue(target, data, 0, errorMessage);
+    }
+
+    /**
+     * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`],
+     * but also transferring `value` wei to `target`.
+     *
+     * Requirements:
+     *
+     * - the calling contract must have an ETH balance of at least `value`.
+     * - the called Solidity function must be `payable`.
+     *
+     * _Available since v3.1._
+     */
+    function functionCallWithValue(address target, bytes memory data, uint256 value) internal returns (bytes memory) {
+        return functionCallWithValue(target, data, value, "Address: low-level call with value failed");
+    }
+
+    /**
+     * @dev Same as {xref-Address-functionCallWithValue-address-bytes-uint256-}[`functionCallWithValue`], but
+     * with `errorMessage` as a fallback revert reason when `target` reverts.
+     *
+     * _Available since v3.1._
+     */
+    function functionCallWithValue(address target, bytes memory data, uint256 value, string memory errorMessage) internal returns (bytes memory) {
+        require(address(this).balance >= value, "Address: insufficient balance for call");
+        require(isContract(target), "Address: call to non-contract");
+
+        // solhint-disable-next-line avoid-low-level-calls
+        (bool success, bytes memory returndata) = target.call{ value: value }(data);
+        return _verifyCallResult(success, returndata, errorMessage);
+    }
+
+    /**
+     * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`],
+     * but performing a static call.
+     *
+     * _Available since v3.3._
+     */
+    function functionStaticCall(address target, bytes memory data) internal view returns (bytes memory) {
+        return functionStaticCall(target, data, "Address: low-level static call failed");
+    }
+
+    /**
+     * @dev Same as {xref-Address-functionCall-address-bytes-string-}[`functionCall`],
+     * but performing a static call.
+     *
+     * _Available since v3.3._
+     */
+    function functionStaticCall(address target, bytes memory data, string memory errorMessage) internal view returns (bytes memory) {
+        require(isContract(target), "Address: static call to non-contract");
+
+        // solhint-disable-next-line avoid-low-level-calls
+        (bool success, bytes memory returndata) = target.staticcall(data);
+        return _verifyCallResult(success, returndata, errorMessage);
+    }
+
+    /**
+     * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`],
+     * but performing a delegate call.
+     *
+     * _Available since v3.4._
+     */
+    function functionDelegateCall(address target, bytes memory data) internal returns (bytes memory) {
+        return functionDelegateCall(target, data, "Address: low-level delegate call failed");
+    }
+
+    /**
+     * @dev Same as {xref-Address-functionCall-address-bytes-string-}[`functionCall`],
+     * but performing a delegate call.
+     *
+     * _Available since v3.4._
+     */
+    function functionDelegateCall(address target, bytes memory data, string memory errorMessage) internal returns (bytes memory) {
+        require(isContract(target), "Address: delegate call to non-contract");
+
+        // solhint-disable-next-line avoid-low-level-calls
+        (bool success, bytes memory returndata) = target.delegatecall(data);
+        return _verifyCallResult(success, returndata, errorMessage);
+    }
+
+    function _verifyCallResult(bool success, bytes memory returndata, string memory errorMessage) private pure returns(bytes memory) {
+        if (success) {
+            return returndata;
+        } else {
+            // Look for revert reason and bubble it up if present
+            if (returndata.length > 0) {
+                // The easiest way to bubble the revert reason is using memory via assembly
+
+                // solhint-disable-next-line no-inline-assembly
+                assembly {
+                    let returndata_size := mload(returndata)
+                    revert(add(32, returndata), returndata_size)
+                }
+            } else {
+                revert(errorMessage);
+            }
+        }
+    }
+}
+
+//
 /**
  * @dev Contract module that allows children to implement role-based access
  * control mechanisms.
@@ -1065,7 +1006,7 @@ abstract contract AccessControl is Context {
     }
 }
 
-// 
+//
 /**
  * @notice Access Controls contract for the Digitalax Platform
  * @author BlockRocket.tech
@@ -1253,7 +1194,7 @@ contract DigitalaxAccessControls is AccessControl {
     }
 }
 
-// 
+//
 /**
  * @dev Interface of the ERC165 standard, as defined in the
  * https://eips.ethereum.org/EIPS/eip-165[EIP].
@@ -1275,7 +1216,7 @@ interface IERC165 {
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 }
 
-// 
+//
 /**
  * @dev Required interface of an ERC721 compliant contract.
  */
@@ -1400,7 +1341,7 @@ interface IERC721 is IERC165 {
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) external;
 }
 
-// 
+//
 interface IModelsNFT is IERC721 {
     function isApproved(uint256 _tokenId, address _operator) external view returns (bool);
     function setPrimarySalePrice(uint256 _tokenId, uint256 _salePrice) external;
@@ -1410,7 +1351,7 @@ interface IModelsNFT is IERC721 {
     function burn(uint256 _tokenId) external;
 }
 
-// 
+//
 /**
  * @title ERC721 token receiver interface
  * @dev Interface for any contract that wants to support safeTransfers
@@ -1429,7 +1370,7 @@ interface IERC721Receiver {
     function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data) external returns (bytes4);
 }
 
-// 
+//
 /**
  * _Available since v3.1._
  */
@@ -1482,121 +1423,31 @@ interface IERC1155Receiver is IERC165 {
         returns(bytes4);
 }
 
-// 
-/**
- * @dev Implementation of the {IERC165} interface.
- *
- * Contracts may inherit from this and call {_registerInterface} to declare
- * their support of an interface.
- */
-abstract contract ERC165 is IERC165 {
-    /*
-     * bytes4(keccak256('supportsInterface(bytes4)')) == 0x01ffc9a7
+//
+interface IDigitalaxAccessControls {
+    /**
+     * @notice Used to check whether an address has the admin role
+     * @param _address EOA or contract being checked
+     * @return bool True if the account has the role or false if it does not
      */
-    bytes4 private constant _INTERFACE_ID_ERC165 = 0x01ffc9a7;
+    function hasAdminRole(address _address) external view returns (bool);
+
+    function hasMinterRole(address _address) external view returns (bool);
+
+    function hasVerifiedMinterRole(address _address)
+        external
+        view
+        returns (bool);
 
     /**
-     * @dev Mapping of interface ids to whether or not it's supported.
+     * @notice Used to check whether an address has the smart contract role
+     * @param _address EOA or contract being checked
+     * @return bool True if the account has the role or false if it does not
      */
-    mapping(bytes4 => bool) private _supportedInterfaces;
-
-    constructor () internal {
-        // Derived contracts need only register support for their own interfaces,
-        // we register support for ERC165 itself here
-        _registerInterface(_INTERFACE_ID_ERC165);
-    }
-
-    /**
-     * @dev See {IERC165-supportsInterface}.
-     *
-     * Time complexity O(1), guaranteed to always use less than 30 000 gas.
-     */
-    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return _supportedInterfaces[interfaceId];
-    }
-
-    /**
-     * @dev Registers the contract as an implementer of the interface defined by
-     * `interfaceId`. Support of the actual ERC165 interface is automatic and
-     * registering its interface id is not required.
-     *
-     * See {IERC165-supportsInterface}.
-     *
-     * Requirements:
-     *
-     * - `interfaceId` cannot be the ERC165 invalid interface (`0xffffffff`).
-     */
-    function _registerInterface(bytes4 interfaceId) internal virtual {
-        require(interfaceId != 0xffffffff, "ERC165: invalid interface id");
-        _supportedInterfaces[interfaceId] = true;
-    }
+    function hasSmartContractRole(address _address) external view returns (bool);
 }
 
-// 
-/**
- * @dev _Available since v3.1._
- */
-abstract contract ERC1155Receiver is ERC165, IERC1155Receiver {
-    constructor() internal {
-        _registerInterface(
-            ERC1155Receiver(address(0)).onERC1155Received.selector ^
-            ERC1155Receiver(address(0)).onERC1155BatchReceived.selector
-        );
-    }
-}
-
-// 
-// solhint-disable-next-line compiler-version
-/**
- * @dev This is a base contract to aid in writing upgradeable contracts, or any kind of contract that will be deployed
- * behind a proxy. Since a proxied contract can't have a constructor, it's common to move constructor logic to an
- * external initializer function, usually called `initialize`. It then becomes necessary to protect this initializer
- * function so it can only be called once. The {initializer} modifier provided by this contract will have this effect.
- *
- * TIP: To avoid leaving the proxy in an uninitialized state, the initializer function should be called as early as
- * possible by providing the encoded function call as the `_data` argument to {UpgradeableProxy-constructor}.
- *
- * CAUTION: When used with inheritance, manual care must be taken to not invoke a parent initializer twice, or to ensure
- * that all initializers are idempotent. This is not verified automatically as constructors are by Solidity.
- */
-abstract contract Initializable {
-
-    /**
-     * @dev Indicates that the contract has been initialized.
-     */
-    bool private _initialized;
-
-    /**
-     * @dev Indicates that the contract is in the process of being initialized.
-     */
-    bool private _initializing;
-
-    /**
-     * @dev Modifier to protect an initializer function from being invoked twice.
-     */
-    modifier initializer() {
-        require(_initializing || _isConstructor() || !_initialized, "Initializable: contract is already initialized");
-
-        bool isTopLevelCall = !_initializing;
-        if (isTopLevelCall) {
-            _initializing = true;
-            _initialized = true;
-        }
-
-        _;
-
-        if (isTopLevelCall) {
-            _initializing = false;
-        }
-    }
-
-    /// @dev Returns true if and only if the function is running in the constructor
-    function _isConstructor() private view returns (bool) {
-        return !Address.isContract(address(this));
-    }
-}
-
-// 
+//
 /**
  * @dev Required interface of an ERC1155 compliant contract, as defined in the
  * https://eips.ethereum.org/EIPS/eip-1155[EIP].
@@ -1695,7 +1546,7 @@ interface IERC1155 is IERC165 {
     function safeBatchTransferFrom(address from, address to, uint256[] calldata ids, uint256[] calldata amounts, bytes calldata data) external;
 }
 
-// 
+//
 interface IDigitalaxMaterials is IERC1155 {
     function createChild(string calldata _uri) external returns (uint256);
     function batchCreateChildren(string[] calldata _uris) external returns (uint256[] memory);
@@ -1703,22 +1554,11 @@ interface IDigitalaxMaterials is IERC1155 {
     function batchMintChildren(uint256[] calldata _childTokenIds, uint256[] calldata _amounts, address _beneficiary, bytes calldata _data) external;
 }
 
-// 
-interface IDigitalaxGarmentNFT is IERC721 {
-    function isApproved(uint256 _tokenId, address _operator) external view returns (bool);
-    function setPrimarySalePrice(uint256 _tokenId, uint256 _salePrice) external;
-    function garmentDesigners(uint256 _tokenId) external view returns (address);
-    function mint(address _beneficiary, string calldata _tokenUri, address _designer) external returns (uint256);
-    function burn(uint256 _tokenId) external;
-}
-
-// 
 /**
  * @notice Collection contract for Digitalax NFTs
  */
-contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiver, ERC1155Receiver, Initializable {
+contract ModelsCollection is Context, IERC721Receiver, IERC1155Receiver {
     using SafeMath for uint256;
-    using Address for address payable;
 
     /// @notice Event emitted only on construction. To be used by indexers
     event DigitalaxGarmentCollectionContractDeployed();
@@ -1737,13 +1577,14 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
         uint256 garmentAmount;
         string metadata;
         address designer;
+        address model;
         uint256 auctionTokenId;
         string rarity;
     }
     /// @notice Garment ERC721 NFT - the only NFT that can be offered in this contract
-    IDigitalaxGarmentNFT public garmentNft;
+    IModelsNFT public garmentNft;
     /// @notice responsible for enforcing admin access
-    DigitalaxAccessControls public accessControls;
+    IDigitalaxAccessControls public accessControls;
     /// @dev Array of garment collections
     Collection[] private garmentCollections;
     /// @notice the child ERC1155 strand tokens
@@ -1751,24 +1592,44 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
 
     /// @dev max ERC721 Garments a Collection can hold
     /// @dev if admin configuring this value, should test previously how many parents x children can do in one call due to gas
-    uint256 public maxGarmentsPerCollection = 25;
+    uint256 public maxGarmentsPerCollection;
+    bytes4 private constant _INTERFACE_ID_ERC165 = 0x01ffc9a7;
+    bool initialized;
+    mapping(bytes4 => bool) private _supportedInterfaces;
 
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return _supportedInterfaces[interfaceId];
+    }
+
+    function _registerInterface(bytes4 interfaceId) internal virtual {
+        require(interfaceId != 0xffffffff, "ERC165: invalid interface id");
+        _supportedInterfaces[interfaceId] = true;
+    }
     /**
      @param _accessControls Address of the Digitalax access control contract
      @param _garmentNft Garment NFT token address
      */
     function initialize(
-        DigitalaxAccessControls _accessControls,
-        IDigitalaxGarmentNFT _garmentNft,
+        IDigitalaxAccessControls _accessControls,
+        IModelsNFT _garmentNft,
         IDigitalaxMaterials _materials
-    ) public initializer{
+    ) public {
+        require(!initialized);
+         _registerInterface(
+            IERC1155Receiver(address(0)).onERC1155Received.selector ^
+            IERC1155Receiver(address(0)).onERC1155BatchReceived.selector
+         );
+
+        _registerInterface(_INTERFACE_ID_ERC165);
+
         require(address(_accessControls) != address(0), "DigitalaxGarmentCollection: Invalid Access Controls");
         require(address(_garmentNft) != address(0), "DigitalaxGarmentCollection: Invalid NFT");
         require(address(_materials) != address(0), "DigitalaxGarmentCollection: Invalid Child ERC1155 address");
         accessControls = _accessControls;
         garmentNft = _garmentNft;
         materials = _materials;
-
+        maxGarmentsPerCollection = 25;
+        initialized = true;
         emit DigitalaxGarmentCollectionContractDeployed();
     }
 
@@ -1781,6 +1642,7 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
     function mintCollection(
         string calldata _tokenUri,
         address _designer,
+        address _model,
         uint256 _amount,
         uint256 _auctionId,
         string calldata _rarity,
@@ -1797,12 +1659,12 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
             "DigitalaxGarmentCollection.mintCollection: Amount cannot exceed maxGarmentsPerCollection"
         );
 
-        Collection memory _newCollection = Collection(new uint256[](0), _amount, _tokenUri, _designer, _auctionId, _rarity);
+        Collection memory _newCollection = Collection(new uint256[](0), _amount, _tokenUri, _designer, _model, _auctionId, _rarity);
         uint256 _collectionId = garmentCollections.length;
         garmentCollections.push(_newCollection);
 
         for (uint i = 0; i < _amount; i ++) {
-            uint256 _mintedTokenId = garmentNft.mint(_msgSender(), _newCollection.metadata, _newCollection.designer);
+            uint256 _mintedTokenId = garmentNft.mint(_msgSender(), _newCollection.metadata, _newCollection.designer, _newCollection.model);
 
             // Batch mint child tokens and assign to generated 721 token ID
             if(_childTokenIds.length > 0){
@@ -1838,7 +1700,7 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
         Collection storage _collection = garmentCollections[_collectionId];
 
         for (uint i = 0; i < _amount; i ++) {
-            uint256 _mintedTokenId = garmentNft.mint(_msgSender(), _collection.metadata, _collection.designer);
+            uint256 _mintedTokenId = garmentNft.mint(_msgSender(), _collection.metadata, _collection.designer, _collection.model);
 
             // Batch mint child tokens and assign to generated 721 token ID
             if(_childTokenIds.length > 0){
@@ -1886,13 +1748,14 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
     function getCollection(uint256 _collectionId)
     external
     view
-    returns (uint256[] memory _garmentTokenIds, uint256 _amount, string memory _tokenUri, address _designer) {
+    returns (uint256[] memory _garmentTokenIds, uint256 _amount, string memory _tokenUri, address _designer, address _model) {
         Collection memory collection = garmentCollections[_collectionId];
         return (
             collection.garmentTokenIds,
             collection.garmentAmount,
             collection.metadata,
-            collection.designer
+            collection.designer,
+            collection.model
         );
     }
 
@@ -1954,7 +1817,7 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
      @dev Only admin
      @param _accessControls Address of the new access controls contract
      */
-    function updateAccessControls(DigitalaxAccessControls _accessControls) external {
+    function updateAccessControls(IDigitalaxAccessControls _accessControls) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentCollection.updateAccessControls: Sender must be admin");
         accessControls = _accessControls;
     }
@@ -1983,7 +1846,7 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
     /**
      @notice Batch ERC1155 receiver callback hook, used to enforce child token bindings to a given parent token ID
      */
-    function onERC1155BatchReceived(address _operator, address _from, uint256[] memory _ids, uint256[] memory _values, bytes memory _data)
+    function onERC1155BatchReceived(addressdig _operator, address _from, uint256[] memory _ids, uint256[] memory _values, bytes memory _data)
     virtual
     external
     override
@@ -1992,7 +1855,6 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
     }
 }
 
-// SPDX-License-Identifier:MIT
 /**
  * a contract must implement this interface in order to support relayed transaction.
  * It is better to inherit the BaseRelayRecipient as its implementation.
@@ -2018,7 +1880,6 @@ abstract contract IRelayRecipient {
     function versionRecipient() external virtual view returns (string memory);
 }
 
-// SPDX-License-Identifier:MIT
 /**
  * A base contract to be inherited by any contract that want to receive relayed transactions
  * A subclass must use "_msgSender()" instead of "msg.sender"
@@ -2062,7 +1923,7 @@ abstract contract BaseRelayRecipient is IRelayRecipient {
     }
 }
 
-// 
+//
 interface IDigitalaxMonaOracle {
     function getData() external returns (uint256, bool);
 }
@@ -2070,9 +1931,8 @@ interface IDigitalaxMonaOracle {
 /**
  * @notice Marketplace contract for Digitalax NFTs
  */
-contract ModelsMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable {
+contract ModelsMarketplace is BaseRelayRecipient {
     using SafeMath for uint256;
-    using Address for address payable;
     /// @notice Event emitted only on construction. To be used by indexers
     event DigitalaxMarketplaceContractDeployed();
     event CollectionPauseToggled(
@@ -2171,7 +2031,7 @@ contract ModelsMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable
     /// @notice Garment ERC721 NFT - the only NFT that can be offered in this contract
     IModelsNFT public garmentNft;
     /// @notice Garment NFT Collection
-    DigitalaxGarmentCollectionV2 public garmentCollection;
+    ModelsCollection public garmentCollection;
     /// @notice oracle for MONA/ETH exchange rate
     IDigitalaxMonaOracle public oracle;
     /// @notice responsible for enforcing admin access
@@ -2185,25 +2045,45 @@ contract ModelsMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable
     /// @notice for freezing mona payment option
     bool public freezeMonaERC20Payment;
     /// @notice Cool down period
-    uint256 public cooldown = 60;
+    uint256 public cooldown;
     /// @notice for storing information from oracle
-    uint256 public lastOracleQuote = 1e18;
+    uint256 public lastOracleQuote;
+
+    uint256 private constant _NOT_ENTERED = 1;
+    uint256 private constant _ENTERED = 2;
+    bool initialized;
+
+    uint256 private _status;
+
+    modifier nonReentrant() {
+        // On the first call to nonReentrant, _notEntered will be true
+        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
+
+        // Any calls to nonReentrant after this point will fail
+        _status = _ENTERED;
+
+        _;
+
+        _status = _NOT_ENTERED;
+    }
 
     modifier whenNotPaused() {
         require(!isPaused, "Function is currently paused");
         _;
     }
+
     receive() external payable {
     }
     function initialize(
         DigitalaxAccessControls _accessControls,
         IModelsNFT _garmentNft,
-        DigitalaxGarmentCollectionV2 _garmentCollection,
+        ModelsCollection _garmentCollection,
         IDigitalaxMonaOracle _oracle,
         address payable _platformFeeRecipient,
         address _monaErc20Token,
         address _trustedForwarder
-    ) public initializer {
+    ) public {
+        require(!initialized);
         require(address(_accessControls) != address(0), "DigitalaxMarketplace: Invalid Access Controls");
         require(address(_garmentNft) != address(0), "DigitalaxMarketplace: Invalid NFT");
         require(address(_garmentCollection) != address(0), "DigitalaxMarketplace: Invalid Collection");
@@ -2217,7 +2097,11 @@ contract ModelsMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable
         monaErc20Token = _monaErc20Token;
         platformFeeRecipient = _platformFeeRecipient;
         trustedForwarder = _trustedForwarder;
+        cooldown = 60;
+        lastOracleQuote = 1e18;
+        _status = _NOT_ENTERED;
 
+        initialized = true;
         emit DigitalaxMarketplaceContractDeployed();
     }
 
@@ -2331,6 +2215,18 @@ contract ModelsMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable
         );
     }
 
+    function isContract(address account) internal view returns (bool) {
+        // This method relies on extcodesize, which returns 0 for contracts in
+        // construction, since the code is only stored at the end of the
+        // constructor execution.
+
+        uint256 size;
+        assembly {
+            size := extcodesize(account)
+        }
+        return size > 0;
+    }
+
     /**
      @notice Buys an open offer with eth or erc20
      @dev Only callable when the offer is open
@@ -2341,7 +2237,7 @@ contract ModelsMarketplace is ReentrancyGuard, BaseRelayRecipient, Initializable
      */
     function buyOffer(uint256 _garmentCollectionId) external payable whenNotPaused nonReentrant {
         // Check the offers to see if this is a valid
-        require(_msgSender().isContract() == false, "DigitalaxMarketplace.buyOffer: No contracts permitted");
+        require(isContract(_msgSender()) == false, "DigitalaxMarketplace.buyOffer: No contracts permitted");
         require(_isFinished(_garmentCollectionId) == false, "DigitalaxMarketplace.buyOffer: Sale has been finished");
         require(lastPurchasedTime[_garmentCollectionId][_msgSender()] <= _getNow().sub(cooldown), "DigitalaxMarketplace.buyOffer: Cooldown not reached");
 

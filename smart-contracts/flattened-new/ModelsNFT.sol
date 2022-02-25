@@ -2,7 +2,7 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 
-// 
+//
 /**
  * @dev Interface of the ERC165 standard, as defined in the
  * https://eips.ethereum.org/EIPS/eip-165[EIP].
@@ -24,7 +24,7 @@ interface IERC165 {
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 }
 
-// 
+//
 /**
  * @dev Required interface of an ERC721 compliant contract.
  */
@@ -149,7 +149,7 @@ interface IERC721 is IERC165 {
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) external;
 }
 
-// 
+//
 /**
  * @title ERC-721 Non-Fungible Token Standard, optional metadata extension
  * @dev See https://eips.ethereum.org/EIPS/eip-721
@@ -172,7 +172,7 @@ interface IERC721Metadata is IERC721 {
     function tokenURI(uint256 tokenId) external view returns (string memory);
 }
 
-// 
+//
 /**
  * @title ERC-721 Non-Fungible Token Standard, optional enumeration extension
  * @dev See https://eips.ethereum.org/EIPS/eip-721
@@ -197,7 +197,7 @@ interface IERC721Enumerable is IERC721 {
     function tokenByIndex(uint256 index) external view returns (uint256);
 }
 
-// 
+//
 /**
  * @title ERC721 token receiver interface
  * @dev Interface for any contract that wants to support safeTransfers
@@ -216,7 +216,7 @@ interface IERC721Receiver {
     function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data) external returns (bytes4);
 }
 
-// 
+//
 /**
  * @dev Implementation of the {IERC165} interface.
  *
@@ -266,7 +266,7 @@ abstract contract ERC165 is IERC165 {
     }
 }
 
-// 
+//
 /*
  * @dev Provides information about the current execution context, including the
  * sender of the transaction and its data. While these are generally available
@@ -288,7 +288,7 @@ abstract contract Context {
     }
 }
 
-// 
+//
 /**
  * @dev Collection of functions related to the address type
  */
@@ -475,7 +475,7 @@ library Address {
     }
 }
 
-// 
+//
 /**
  * @dev Library for managing
  * https://en.wikipedia.org/wiki/Set_(abstract_data_type)[sets] of primitive
@@ -770,7 +770,7 @@ library EnumerableSet {
     }
 }
 
-// 
+//
 /**
  * @dev Library for managing an enumerable variant of Solidity's
  * https://solidity.readthedocs.io/en/latest/types.html#mapping-types[`mapping`]
@@ -1034,7 +1034,7 @@ library EnumerableMap {
     }
 }
 
-// 
+//
 /**
  * @dev String operations.
  */
@@ -1066,7 +1066,7 @@ library Strings {
     }
 }
 
-// 
+//
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
  * checks.
@@ -1278,7 +1278,7 @@ library SafeMath {
     }
 }
 
-// 
+//
 // This file taken from solc 6 version of Open Zeppelin - modified to allow for custom tokenUri to be preset by admins
 /**
  * @title ERC721 Non-Fungible Token Standard basic implementation
@@ -1743,7 +1743,7 @@ contract DigitalaxERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721En
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual { }
 }
 
-// 
+//
 /**
  * _Available since v3.1._
  */
@@ -1796,7 +1796,7 @@ interface IERC1155Receiver is IERC165 {
         returns(bytes4);
 }
 
-// 
+//
 /**
  * @dev _Available since v3.1._
  */
@@ -1809,7 +1809,7 @@ abstract contract ERC1155Receiver is ERC165, IERC1155Receiver {
     }
 }
 
-// 
+//
 // solhint-disable-next-line compiler-version
 /**
  * @dev This is a base contract to aid in writing upgradeable contracts, or any kind of contract that will be deployed
@@ -1860,7 +1860,7 @@ abstract contract Initializable {
     }
 }
 
-// 
+//
 // Based on: https://github.com/rocksideio/ERC998-ERC1155-TopDown/blob/695963195606304374015c49d166ab2fbeb42ea9/contracts/IERC998ERC1155TopDown.sol
 interface IERC998ERC1155TopDown is IERC1155Receiver {
 
@@ -1920,7 +1920,6 @@ abstract contract BaseChildTunnel {
     function _processMessageFromRoot(bytes memory message) virtual internal;
 }
 
-// SPDX-License-Identifier:MIT
 /**
  * a contract must implement this interface in order to support relayed transaction.
  * It is better to inherit the BaseRelayRecipient as its implementation.
@@ -1946,7 +1945,7 @@ abstract contract IRelayRecipient {
     function versionRecipient() external virtual view returns (string memory);
 }
 
-// SPDX-License-Identifier:MIT
+
 /**
  * A base contract to be inherited by any contract that want to receive relayed transactions
  * A subclass must use "_msgSender()" instead of "msg.sender"
@@ -1990,7 +1989,7 @@ abstract contract BaseRelayRecipient is IRelayRecipient {
     }
 }
 
-// 
+//
 /**
  * @dev Contract module that allows children to implement role-based access
  * control mechanisms.
@@ -2201,7 +2200,7 @@ abstract contract AccessControl is Context {
     }
 }
 
-// 
+//
 /**
  * @notice Access Controls contract for the Digitalax Platform
  * @author BlockRocket.tech
@@ -2389,7 +2388,7 @@ contract DigitalaxAccessControls is AccessControl {
     }
 }
 
-// 
+//
 /**
  * @dev Required interface of an ERC1155 compliant contract, as defined in the
  * https://eips.ethereum.org/EIPS/eip-1155[EIP].
@@ -2488,7 +2487,7 @@ interface IERC1155 is IERC165 {
     function safeBatchTransferFrom(address from, address to, uint256[] calldata ids, uint256[] calldata amounts, bytes calldata data) external;
 }
 
-// 
+//
 /**
  * @dev Interface of the optional ERC1155MetadataExtension interface, as defined
  * in the https://eips.ethereum.org/EIPS/eip-1155#metadata-extensions[EIP].
@@ -2509,7 +2508,7 @@ interface IERC1155MetadataURI is IERC1155 {
 
 // Contract based from the following:
 // https://github.com/OpenZeppelin/openzeppelin-contracts/blob/aaa5ef81cf75454d1c337dc3de03d12480849ad1/contracts/token/ERC1155/ERC1155.sol
-// 
+//
 /**
  *
  * @dev Implementation of the basic standard multi-token.
@@ -2901,7 +2900,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
 }
 
 //imported from: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/aaa5ef81cf75454d1c337dc3de03d12480849ad1/contracts/token/ERC1155/ERC1155Burnable.sol
-// 
+//
 /**
  * @dev Extension of {ERC1155} that allows token holders to destroy both their
  * own tokens and those that they have been approved to use.
@@ -2912,7 +2911,7 @@ abstract contract ERC1155BurnableV2 is ERC1155 {
 
     // Set smart contract for garmentNft
     address public garmentNFTApproved;
-    
+
     function burn(address account, uint256 id, uint256 amount) public virtual {
         require(
             account == _msgSender() || isApprovedForAll(account, _msgSender()),
@@ -2932,7 +2931,7 @@ abstract contract ERC1155BurnableV2 is ERC1155 {
     }
 }
 
-// 
+//
 /**
  * @title Digitalax Materials NFT a.k.a. child NFTs
  * @dev Issues ERC-1155 tokens which can be held by the parent ERC-721 contract
@@ -3188,7 +3187,7 @@ contract DigitalaxMaterialsV2 is ERC1155BurnableV2, BaseRelayRecipient {
 
 }
 
-// 
+//
 /**
  * @title Models NFT
  * @dev Issues ERC-721 tokens as well as being able to hold child 1155 tokens
