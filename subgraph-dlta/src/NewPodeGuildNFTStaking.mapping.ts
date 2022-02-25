@@ -6,13 +6,20 @@ import {
     GuildNFTStakingV3 as NewPodeGuildNFTStakingContract
 } from "../generated/NewPodeGuildNFTStaking/GuildNFTStakingV3";
 
+import { Address } from "@graphprotocol/graph-ts";
+
+import { calculateWeights } from "./factory/PodeCalculateWeights.factory";
+
+const GuildNFTSTakingWeightV4Address =
+  "0xB574d5843B6898d710addaA409cB43B48b7b06e4";
 import {
     NewPodeNFTv2Staker,
 } from "../generated/schema";
 import {ZERO} from "./constants";
+import {GuildNFTStakingWeightV4 as NewPodeGuildNFTStakingWeightContract} from "../generated/NewPodeGuildNFTStakingWeightV4/GuildNFTStakingWeightV4";
 
 export function handleRewardPaid(event: RewardPaid): void {
-    let owner = event.params.user.toHexString()
+     let owner = event.params.user.toHexString()
     let reward = event.params.reward;
     let staker = NewPodeNFTv2Staker.load(owner);
     if (staker == null) {
@@ -20,6 +27,9 @@ export function handleRewardPaid(event: RewardPaid): void {
         staker.garments = new Array<string>();
         staker.rewardsClaimed = ZERO;
     }
+
+    let contract = NewPodeGuildNFTStakingWeightContract.bind(Address.fromString(GuildNFTSTakingWeightV4Address));
+    calculateWeights(contract,  event.block.timestamp, staker);
 
     staker.rewardsClaimed = staker.rewardsClaimed.plus(reward);
     staker.save();
@@ -33,10 +43,15 @@ export function handleStaked(event: Staked): void {
         staker = new NewPodeNFTv2Staker(owner);
         staker.garments = new Array<string>();
         staker.rewardsClaimed = ZERO;
+        // staker.weights = null;
     }
     let garmentsStaked = staker.garments;
     garmentsStaked.push(token);
     staker.garments = garmentsStaked;
+
+    // let contract = NewPodeGuildNFTStakingWeightContract.bind(Address.fromString(GuildNFTSTakingWeightV4Address));
+    // calculateWeights(contract,  event.block.timestamp, staker);
+
     staker.save();
 }
 
@@ -51,6 +66,10 @@ export function handleUnstaked(event: Unstaked): void {
         updatedGarmentsStaked.push(currentStaked[i].toString())
     }
     staker.garments = updatedGarmentsStaked;
+
+    let weightContract = NewPodeGuildNFTStakingWeightContract.bind(Address.fromString(GuildNFTSTakingWeightV4Address));
+    calculateWeights(weightContract,  event.block.timestamp, staker);
+
     staker.save();
 }
 
@@ -66,5 +85,9 @@ export function handleEmergencyUnstake(event: EmergencyUnstake): void {
             updatedGarmentsStaked.push(currentStaked[i].toString())
     }
     staker.garments = updatedGarmentsStaked;
+
+    let weightContract = NewPodeGuildNFTStakingWeightContract.bind(Address.fromString(GuildNFTSTakingWeightV4Address));
+    calculateWeights(weightContract,  event.block.timestamp, staker);
+
     staker.save();
 }

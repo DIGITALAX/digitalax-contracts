@@ -1,4 +1,4 @@
-import { BigInt, log } from "@graphprotocol/graph-ts";
+import { BigInt, log, Address } from "@graphprotocol/graph-ts";
 import {
   AppraiseGuildMember,
   GuildNFTStakingWeightV4 as NewGDNGuildNFTStakingWeightContract,
@@ -8,8 +8,12 @@ import {
   ClapHistory,
   NewGDNGuildNFTWeight,
   NewGDNNFTv2Staker,
+  NewGDNGuildWhitelistedNFTStaker,
+  GDNGuildStakerWeight,
+  GDNGuildWhitelistedStakerWeight
 } from "../generated/schema";
 import { ONE, ZERO } from "./constants";
+import {calculateWeights, calculateWhitelistedWeights} from "./factory/GDNCalculateWeights.factory";
 
 export function handleAppraiseGuildMember(event: AppraiseGuildMember): void {
   let contract = NewGDNGuildNFTStakingWeightContract.bind(event.address);
@@ -25,13 +29,21 @@ export function handleAppraiseGuildMember(event: AppraiseGuildMember): void {
     gdnStaker.totalMetaverse = ZERO;
     gdnStaker.totalShare = ZERO;
     gdnStaker.weight = ZERO;
+    gdnStaker.weights = null;
   }
 
   let tryWeight = contract.try_calcNewOwnerWeight(event.params.guildMember);
   if (!tryWeight.reverted) {
     gdnStaker.weight = tryWeight.value;
   }
-  gdnStaker.save();
+    calculateWeights(contract, event.block.timestamp, gdnStaker);
+    gdnStaker.save();
+
+    let appraiser = NewGDNNFTv2Staker.load(event.transaction.from.toHexString());
+    if(appraiser){
+      calculateWeights(contract, event.block.timestamp, appraiser);
+    appraiser.save();
+  }
 }
 
 export function handleWhitelistedNFTReaction(
@@ -63,6 +75,7 @@ export function handleWhitelistedNFTReaction(
     gdnStaker.totalShare = ZERO;
     gdnStaker.weight = ZERO;
     gdnStaker.clapHistory = null;
+    gdnStaker.weights = null;
   }
 
   if (!nftWeights) {
@@ -144,7 +157,17 @@ export function handleWhitelistedNFTReaction(
   }
 
   nftWeights.save();
+
+  calculateWeights(contract, event.block.timestamp, gdnStaker);
+
   gdnStaker.save();
+  let whitelistStaker = NewGDNGuildWhitelistedNFTStaker.load(event.transaction.from.toHexString());
+  if (whitelistStaker) {
+      calculateWhitelistedWeights(contract, event.block.timestamp, whitelistStaker);
+      whitelistStaker.save();
+  }
+
+
   log.info("this is nftWeights.id ------------ {}", [nftWeights.id]);
   log.info("this is nftWeights.totalAppraisals ------------ {}", [
     nftWeights.totalAppraisals.toString(),

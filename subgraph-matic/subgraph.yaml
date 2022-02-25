@@ -718,6 +718,9 @@ dataSources:
         - Staked
         - Unstaked
         - EmergencyUnstake
+        - StakedByNFT
+        - UnstakedByNFT
+        - EmergencyUnstakeByNFT
         - RewardPaid
       abis:
         - name: DigitalaxNFTStaking
@@ -729,6 +732,12 @@ dataSources:
           handler: handleUnstaked
         - event: EmergencyUnstake(indexed address,uint256)
           handler: handleEmergencyUnstake
+        - event: StakedByNFT(address,uint256,address)
+          handler: handleStakedByNFT
+        - event: UnstakedByNFT(address,uint256,address)
+          handler: handleUnstakedByNFT
+        - event: EmergencyUnstakeByNFT(indexed address,uint256,address)
+          handler: handleEmergencyUnstakeByNFT
         - event: RewardPaid(indexed address,uint256)
           handler: handleRewardPaid
       file: ./src/DigitalaxNFTStaking.mapping.ts

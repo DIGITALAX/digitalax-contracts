@@ -553,7 +553,8 @@ contract GuildNFTStakingWeightV4 {
         // This means that they provided a reaction
         owner.totalWhitelistedNFTAppraisals = owner.totalWhitelistedNFTAppraisals.add(1);
 
-        if(_currentDay > 0){
+        if(_currentDay > 0 &&
+            owner.dailyWeight[_currentDay].add(token.dailyWeight[_currentDay]) >= token.dailyWeight[_currentDay.sub(1)]){
             owner.dailyWeight[_currentDay] = owner.dailyWeight[_currentDay]
                 .add(token.dailyWeight[_currentDay]).sub(token.dailyWeight[_currentDay.sub(1)]);
         } else{
@@ -561,8 +562,12 @@ contract GuildNFTStakingWeightV4 {
                 .add(token.dailyWeight[_currentDay]);
         }
 
-        totalWhitelistedNFTTokenWeight = (totalWhitelistedNFTTokenWeight.sub(owner.lastWeight)
+        totalWhitelistedNFTTokenWeight = (totalWhitelistedNFTTokenWeight
         .add(owner.dailyWeight[_currentDay]));
+
+        if(owner.lastWeight < totalWhitelistedNFTTokenWeight){
+             totalWhitelistedNFTTokenWeight = (totalWhitelistedNFTTokenWeight).sub(owner.lastWeight);
+        }
 
         token.lastWeight = token.dailyWeight[_currentDay];
         owner.lastWeight = owner.dailyWeight[_currentDay];
@@ -591,8 +596,10 @@ contract GuildNFTStakingWeightV4 {
 
         owner.dailyGuildMemberWeight[_currentDay] = _guildMemberWeight.dailyWeight[_currentDay];
 
-        totalGuildWeight = (totalGuildWeight.sub(owner.lastGuildMemberWeight)
-        .add(owner.dailyGuildMemberWeight[_currentDay]));
+        totalGuildWeight = (totalGuildWeight).add(owner.dailyGuildMemberWeight[_currentDay]);
+        if(owner.lastGuildMemberWeight < totalGuildWeight){
+            totalGuildWeight = (totalGuildWeight).sub(owner.lastGuildMemberWeight);
+        }
 
         _guildMemberWeight.lastWeight = _guildMemberWeight.dailyWeight[_currentDay];
         owner.lastGuildMemberWeight = owner.dailyGuildMemberWeight[_currentDay];
@@ -903,7 +910,11 @@ contract GuildNFTStakingWeightV4 {
             totalGuildWeight = (totalGuildWeight.sub(token.lastWeight));
         }
 
-        token.lastWeight = newWeight;
+        // token.lastWeight = newWeight;
+
+        token.dailyWeight[_currentDay] = 0;
+        token.lastWeight = 0;
+        token.lastUpdateDay = _currentDay;
 
         TokenWeight storage guildMember = guildMemberWeight[_tokenOwner];
 
@@ -995,6 +1006,9 @@ contract GuildNFTStakingWeightV4 {
         owner.lastUpdateDay = _currentDay;
         lastUpdateDay = (_currentDay);
 
+        token.dailyWeight[_currentDay] = 0;
+        token.lastWeight = 0;
+        token.lastUpdateDay = _currentDay;
 
         delete whitelistedNFTTokenOwner[_whitelistedNFT][ _tokenId];
 

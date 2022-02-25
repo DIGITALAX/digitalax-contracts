@@ -23,6 +23,8 @@ dataSources:
       abis:
         - name: GuildNFTStakingV3
           file: ./abis/GuildNFTStakingV3.json
+        - name: GuildNFTStakingWeightV4
+          file: ./abis/GuildNFTStakingWeightV4.json
       eventHandlers:
         - event: Staked(address,uint256)
           handler: handleStaked
@@ -52,6 +54,8 @@ dataSources:
       abis:
         - name: GuildNFTStakingV3
           file: ./abis/GuildNFTStakingV3.json
+        - name: GuildNFTStakingWeightV4
+          file: ./abis/GuildNFTStakingWeightV4.json
       eventHandlers:
         - event: Staked(address,uint256)
           handler: handleStaked
@@ -81,6 +85,8 @@ dataSources:
       abis:
         - name: GuildNFTStakingV3
           file: ./abis/GuildNFTStakingV3.json
+        - name: GuildNFTStakingWeightV4
+          file: ./abis/GuildNFTStakingWeightV4.json
       eventHandlers:
         - event: Staked(address,uint256)
           handler: handleStaked
