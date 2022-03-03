@@ -1,6 +1,5 @@
-const { ethers, upgrades } = require("hardhat");
-const GarmentArtifact = require('../../artifacts/contracts/garment/DigitalaxGarmentNFTv2.sol/DigitalaxGarmentNFTv2.json');
-const BurnerArtifact = require('../../artifacts/contracts/utils/DigitalaxGarmentNFTV2Burner.sol/DigitalaxGarmentNFTv2Burner.json');
+const GarmentArtifact = require('../../artifacts/contracts/garment/ModelsNFT.sol/ModelsNFT.json');
+const BurnerArtifact = require('../../artifacts/contracts/utils/ModelsNFTBurner.sol/ModelsNFTBurner.json');
 const _ = require('lodash');
 
 async function main() {
@@ -14,7 +13,9 @@ async function main() {
   MAX_NFT_SINGLE_TX = 19;
 
 
-  const {ERC721_GARMENT_ADDRESS, SKINS_BURNER_ADDRESS} = process.env;
+  const SKINS_BURNER_ADDRESS = "0xb371f24067e9b48363A34f70a757BC3A9169bb39";
+  const ERC721_GARMENT_ADDRESS = "0x2ffce9b58a788a54b4466b0d5ccc5c6dd00c1b83";
+
   console.log(`BURNER_ADDRESS found [${SKINS_BURNER_ADDRESS}]`);
 
   const garment = new ethers.Contract(
@@ -35,7 +36,7 @@ async function main() {
   // const approveToken = await garment.setApprovalForAll(SKINS_BURNER_ADDRESS, true);
   // await approveToken.wait();
 
-  const metadata = require('./allburntokens.json');
+  const metadata = require('./modelsburntokens.json');
   //  Data length
   console.log("number of tokens to burn:")
   console.log(metadata.data.length)
