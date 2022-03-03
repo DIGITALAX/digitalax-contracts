@@ -1,5 +1,5 @@
-const GarmentArtifact = require('../../artifacts/DigitalaxGarmentNFTv2.json');
-const BurnerArtifact = require('../../artifacts/DigitalaxGarmentNFTv2Burner.json');
+const GarmentArtifact = require('../../artifacts/contracts/garment/DigitalaxGarmentNFTv2.sol/DigitalaxGarmentNFTv2.json');
+const BurnerArtifact = require('../../artifacts/contracts/utils/DigitalaxGarmentNFTV2Burner.sol/DigitalaxGarmentNFTv2Burner.json');
 const _ = require('lodash');
 
 async function main() {
