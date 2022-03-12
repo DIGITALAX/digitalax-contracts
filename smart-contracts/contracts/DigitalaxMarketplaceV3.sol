@@ -298,11 +298,18 @@ contract DigitalaxMarketplaceV3 is ReentrancyGuard, BaseRelayRecipient, Initiali
         require(!offer.paused, "DigitalaxMarketplace.buyOffer: Can't purchase when paused");
 
         uint256[] memory bundleTokenIds = garmentCollection.getTokenIds(_garmentCollectionId);
+
         uint256 bundleTokenId = bundleTokenIds[offer.availableIndex];
+        require(offer.availableIndex < bundleTokenIds.length, "Offer not available");
         uint256 maxShare = 1000;
 
         // Ensure this contract is still approved to move the token
-        require(garmentNft.isApproved(bundleTokenId, address(this)), "DigitalaxMarketplace.buyOffer: offer not approved");
+        while(!garmentNft.isApproved(bundleTokenId, address(this))){
+            offer.availableIndex = offer.availableIndex.add(1);
+            bundleTokenId = bundleTokenId.add(1);
+            require(offer.availableIndex < bundleTokenIds.length, "Offer sold out");
+        }
+
         require(_getNow() >= offer.startTime, "DigitalaxMarketplace.buyOffer: Purchase outside of the offer window");
 
         uint256 feeInMona = offer.primarySalePrice.mul(offer.platformFee).div(maxShare);
