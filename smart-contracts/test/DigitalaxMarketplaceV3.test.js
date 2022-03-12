@@ -412,12 +412,13 @@ contract('DigitalaxMarketplaceV3', (accounts) => {
       it('buys the offer', async () => {
         await this.marketplace.setNowOverride('120');
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
+        await this.token.batchTransferFrom(minter, tokenBuyer, [100001, 100002], {from: minter});
         await this.marketplace.buyOffer(0, {from: tokenBuyer});
         const {_primarySalePrice, _startTime, _availableAmount, _platformFee, _discountToPayERC20} = await this.marketplace.getOffer(0);
         expect(_primarySalePrice).to.be.bignumber.equal(ether('0.1'));
         expect(_startTime).to.be.bignumber.equal('120');
         expect(_startTime).to.be.bignumber.equal('120');
-        expect(_availableAmount).to.be.bignumber.equal('9');
+        expect(_availableAmount).to.be.bignumber.equal('7');
         expect(_platformFee).to.be.bignumber.equal('120');
       });
 
@@ -692,7 +693,7 @@ contract('DigitalaxMarketplaceV3', (accounts) => {
         expect((await marketplaceBalanceTracker.get('ether')).toString()).to.be.equal('0');
 
         // Admin receives eth minus gas fees.
-        expect(await adminBalanceTracker.get('ether')).to.be.bignumber.greaterThan(new BN('999580127670'));
+        expect(await adminBalanceTracker.get('ether')).to.be.bignumber.greaterThan(new BN('999580078603'));
       });
     });
   });
