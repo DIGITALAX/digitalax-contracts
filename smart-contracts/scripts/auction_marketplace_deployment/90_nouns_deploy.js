@@ -14,15 +14,15 @@ async function main() {
     const accessControls = "0xbe5c84e6b036cb41a7a6b5008b9427a5f4f1c9f5";
     const childContract = "0x6c2a60333442aad9c34e7034fa1d04d7ad0a6f33";
 
-
-  const contractFactory = await ethers.getContractFactory("NounsToken");
-  const nounsToken = await upgrades.deployProxy(contractFactory, [deployerAddress, deployerAddress, '0x58807baD0B376efc12F5AD86aAc70E78ed67deaE']);
-  await nounsToken.deployed();
-
-  console.log(`nounsToken at: ${nounsToken.address} `);
-
-  await nounsToken.setDailyUris([1,2,3,4,5,6,7,8,9,10], Array(10).fill("https://digitalax.mypinata.cloud/ipfs/QmbPQrHcGGANeXKWTVQqYtreEntnofmMDa9jvR7N3iyb1m"));
-  await nounsToken.setNextDaoNFTUri("https://digitalax.mypinata.cloud/ipfs/QmTc8thZRnEVHAAkhQnRVqTjNxVLyHbwpRGWCYuKnTigw3");
+  const nounsTokenaddress = "0x781feacf4ce415b950f4fe538301edc48150c4f9";
+  // const contractFactory = await ethers.getContractFactory("NounsToken");
+  // const nounsToken = await upgrades.deployProxy(contractFactory, [deployerAddress, deployerAddress, '0x58807baD0B376efc12F5AD86aAc70E78ed67deaE']);
+  // await nounsToken.deployed();
+  //
+  // console.log(`nounsToken at: ${nounsToken.address} `);
+  //
+  // await nounsToken.setDailyUris([1,2,3,4,5,6,7,8,9,10], Array(10).fill("https://digitalax.mypinata.cloud/ipfs/QmbPQrHcGGANeXKWTVQqYtreEntnofmMDa9jvR7N3iyb1m"));
+  // await nounsToken.setNextDaoNFTUri("https://digitalax.mypinata.cloud/ipfs/QmTc8thZRnEVHAAkhQnRVqTjNxVLyHbwpRGWCYuKnTigw3");
 
   const contractFactory2 = await ethers.getContractFactory("NounsAuctionHouse");
   //      .addOptionalParam('auctionTimeBuffer', 'The auction time buffer (seconds)', 30, types.int) // Default: 30 seconds
@@ -35,12 +35,12 @@ async function main() {
   // )
   // .addOptionalParam('auctionDuration', 'The auction duration (seconds)', 60 * 2, types.int) // Default: 2 minutes
 
-  const nounsTokenAuction = await upgrades.deployProxy(contractFactory2, [nounsToken.address, "0xefd3d060ddcfed7903806503440db1089031af3a", 30, 1, 5, 120]);
+  const nounsTokenAuction = await upgrades.deployProxy(contractFactory2, [nounsTokenaddress, "0xa6fa4fb5f76172d178d61b04b0ecd319c5d1c0aa", 30, 1, 5, 86400]);
   await nounsTokenAuction.deployed();
 
   await nounsTokenAuction.updateMonaToken("0xefd3d060ddcfed7903806503440db1089031af3a");
   await nounsTokenAuction.updateOracle("0x79Af5034F575eAA57DF52E00BAE80543e5Dca6B7");
-
+// oracle price 1000000000000000000
 
   console.log(`nounsToken at: ${nounsTokenAuction.address} `);
 
