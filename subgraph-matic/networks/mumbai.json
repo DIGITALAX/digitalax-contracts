@@ -41,5 +41,7 @@
   "DripMarketplaceAddress": "0x39063224d8BF0b7f1cE012E246F0d951E337FC46",
   "DripMarketplaceStartBlock": 12000000,
   "DigitalaxGenesisV2Address": "0x96fde2760489d19ec587b83ce2cb0b60cea9e761",
-  "DigitalaxGenesisV2StartBlock": 22081004
+  "DigitalaxGenesisV2StartBlock": 22081004,
+  "DigitalaxMarketplaceV3Address": "0x347a68594913B61914C8333353D3D33cAa9d16ba ",
+  "DigitalaxMarketplaceV3StartBlock": 25609367
 }
