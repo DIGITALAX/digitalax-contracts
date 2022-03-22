@@ -25,6 +25,8 @@ const UniswapV2Factory = artifacts.require('UniswapV2Factory');
 const UniswapV2Pair = artifacts.require('UniswapV2Pair');
 const WethToken = artifacts.require('WethToken');
 
+const DripOracle = artifacts.require('DripOracle');
+
 // 1,000 * 10 ** 18
 const ONE_THOUSAND_TOKENS = '1000000000000000000000';
 const TWO_HUNDRED_TOKENS = new BN('200000000000000000000');
@@ -126,12 +128,26 @@ contract('DigitalaxMarketplaceV3', (accounts) => {
         {from: admin}
     );
 
+      this.dripOracle = await DripOracle.new();
+    await this.dripOracle.initialize(
+        '86400',
+        this.accessControls.address,
+        {from: admin}
+    );
+
+   await this.dripOracle.addProvider(provider, {from: admin})
+
+    await this.dripOracle.addPayableTokensWithReports(
+        [this.monaToken.address, "0x0000000000000000000000000000000000001010", this.weth.address],
+        [EXCHANGE_RATE, EXCHANGE_RATE, EXCHANGE_RATE], {from: provider});
+    await time.increase(time.duration.seconds(120));
+
     this.marketplace = await DigitalaxMarketplaceV3.new();
     await this.marketplace.initialize(
       this.accessControls.address,
       this.token.address,
       this.garmentCollection.address,
-        this.oracle.address,
+        this.dripOracle.address,
       platformFeeAddress,
       this.monaToken.address,
         constants.ZERO_ADDRESS,
@@ -258,22 +274,22 @@ contract('DigitalaxMarketplaceV3', (accounts) => {
       })
     });
 
-    describe('toggleFreezeMonaERC20Payment()', () => {
+    describe('toggleFreezeERC20Payment()', () => {
       it('can successfully toggle as admin', async () => {
-        expect(await this.marketplace.freezeMonaERC20Payment()).to.be.false;
+        expect(await this.marketplace.freezeERC20Payment()).to.be.false;
 
-        const {receipt} = await this.marketplace.toggleFreezeMonaERC20Payment({from: admin});
-        await expectEvent(receipt, 'FreezeMonaERC20PaymentToggled', {
-          freezeMonaERC20Payment: true
+        const {receipt} = await this.marketplace.toggleFreezeERC20Payment({from: admin});
+        await expectEvent(receipt, 'FreezeERC20PaymentToggled', {
+          freezeERC20Payment: true
         });
 
-        expect(await this.marketplace.freezeMonaERC20Payment()).to.be.true;
+        expect(await this.marketplace.freezeERC20Payment()).to.be.true;
       })
 
       it('reverts when not admin', async () => {
         await expectRevert(
-          this.marketplace.toggleFreezeMonaERC20Payment({from: tokenBuyer}),
-          "DigitalaxMarketplace.toggleFreezeMonaERC20Payment: Sender must be admin"
+          this.marketplace.toggleFreezeERC20Payment({from: tokenBuyer}),
+          "DigitalaxMarketplace.toggleFreezeERC20Payment: Sender must be admin"
         );
       })
     });
@@ -384,7 +400,7 @@ contract('DigitalaxMarketplaceV3', (accounts) => {
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await this.marketplace.toggleIsPaused({from: admin});
         await expectRevert(
-          this.marketplace.buyOffer(TOKEN_ONE_ID, {from: tokenBuyer}),
+          this.marketplace.buyOffer(TOKEN_ONE_ID, this.monaToken.address, 0, 0, {from: tokenBuyer}),
           "Function is currently paused"
         );
       });
@@ -413,7 +429,7 @@ contract('DigitalaxMarketplaceV3', (accounts) => {
         await this.marketplace.setNowOverride('120');
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await this.token.batchTransferFrom(minter, tokenBuyer, [100001, 100002], {from: minter});
-        await this.marketplace.buyOffer(0, {from: tokenBuyer});
+        await this.marketplace.buyOffer(0, this.monaToken.address, 0, 0, {from: tokenBuyer});
         const {_primarySalePrice, _startTime, _availableAmount, _platformFee, _discountToPayERC20} = await this.marketplace.getOffer(0);
         expect(_primarySalePrice).to.be.bignumber.equal(ether('0.1'));
         expect(_startTime).to.be.bignumber.equal('120');
@@ -421,23 +437,23 @@ contract('DigitalaxMarketplaceV3', (accounts) => {
         expect(_availableAmount).to.be.bignumber.equal('7');
         expect(_platformFee).to.be.bignumber.equal('120');
       });
-
-      it('will fail when cooldown not reached', async () => {
-        await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
-        await this.marketplace.setNowOverride('120');
-        await this.marketplace.buyOffer(0, {from: tokenBuyer});
-        await expectRevert(
-            this.marketplace.buyOffer(0, {from: tokenBuyer}),
-            "DigitalaxMarketplace.buyOffer: Cooldown not reached"
-        );
-      })
+      //
+      // it('will fail when cooldown not reached', async () => {
+      //   await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
+      //   await this.marketplace.setNowOverride('120');
+      //   await this.marketplace.buyOffer(0, this.monaToken.address, 0, 0, {from: tokenBuyer});
+      //   await expectRevert(
+      //       this.marketplace.buyOffer(0, this.monaToken.address, 0, 0, {from: tokenBuyer}),
+      //       "DigitalaxMarketplace.buyOffer: Cooldown not reached"
+      //   );
+      // })
 
       it('will fail if mona payments are frozen', async () => {
         await this.marketplace.setNowOverride('120');
-        await this.marketplace.toggleFreezeMonaERC20Payment({from: admin});
+        await this.marketplace.toggleFreezeERC20Payment({from: admin});
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await expectRevert(
-            this.marketplace.buyOffer(0, {from: tokenBuyer}),
+            this.marketplace.buyOffer(0, this.monaToken.address, 0, 0, {from: tokenBuyer}),
             "DigitalaxMarketplace.buyOffer: mona erc20 payments currently frozen"
         );
       });
@@ -450,7 +466,7 @@ contract('DigitalaxMarketplaceV3', (accounts) => {
         expect(_endTime).to.be.bignumber.equal('1000');
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await expectRevert(
-            this.marketplace.buyOffer(0, {from: tokenBuyer}),
+            this.marketplace.buyOffer(0, this.monaToken.address, 0, 0, {from: tokenBuyer}),
             "DigitalaxMarketplace.buyOffer: Purchase outside of the offer window"
         );
       });
@@ -458,18 +474,18 @@ contract('DigitalaxMarketplaceV3', (accounts) => {
       it('will fail if mona erc20 payments are frozen', async () => {
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await this.marketplace.setNowOverride('120');
-        await this.marketplace.toggleFreezeMonaERC20Payment({from: admin});
+        await this.marketplace.toggleFreezeERC20Payment({from: admin});
         await expectRevert(
-            this.marketplace.buyOffer(0, {from: tokenBuyer}),
+            this.marketplace.buyOffer(0, this.monaToken.address, 0, 0, {from: tokenBuyer}),
             "DigitalaxMarketplace.buyOffer: mona erc20 payments currently frozen"
         );
-        await this.marketplace.toggleFreezeMonaERC20Payment({from: admin});
+        await this.marketplace.toggleFreezeERC20Payment({from: admin});
       });
 
       it('records primary sale price on garment NFT', async () => {
         await this.monaToken.approve(this.marketplace.address, TWO_HUNDRED_TOKENS, {from: tokenBuyer});
         await this.marketplace.setNowOverride('121');
-        await this.marketplace.buyOffer(0, {from: tokenBuyer});
+        await this.marketplace.buyOffer(0, this.monaToken.address, 0, 0, {from: tokenBuyer});
 
         const primarySalePrice = await this.token.primarySalePrice(100001);
         expect(primarySalePrice).to.be.bignumber.equal(ether('0.1'));
@@ -487,7 +503,7 @@ contract('DigitalaxMarketplaceV3', (accounts) => {
 
 
         await this.marketplace.setNowOverride('121');
-        await this.marketplace.buyOffer(0, {from: tokenBuyer});
+        await this.marketplace.buyOffer(0, this.monaToken.address, 0, 0, {from: tokenBuyer});
 
         // Platform gets 12%
         const platformChanges = await platformFeeTracker.delta('wei');
@@ -563,7 +579,7 @@ contract('DigitalaxMarketplaceV3', (accounts) => {
 
 
         await this.marketplace.setNowOverride('121');
-        await this.marketplace.buyOffer(0, {from: tokenBuyer});
+        await this.marketplace.buyOffer(0, this.monaToken.address, 0, 0, {from: tokenBuyer});
 
         // Platform gets 12%
         const platformChanges = await platformFeeTracker.delta('wei');
@@ -604,7 +620,7 @@ contract('DigitalaxMarketplaceV3', (accounts) => {
 
 
         await this.marketplace.setNowOverride('121');
-        await this.marketplace.buyOffer(0, {from: tokenBuyer});
+        await this.marketplace.buyOffer(0, this.monaToken.address, 0, 0, {from: tokenBuyer});
 
         // Platform gets 12%
         const platformChanges = await platformFeeTracker.delta('wei');

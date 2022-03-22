@@ -89,13 +89,14 @@ contract DigitalaxMarketplaceV3 is ReentrancyGuard, BaseRelayRecipient, Initiali
         uint256 indexed garmentCollectionId,
         address indexed buyer,
         uint256 monaTransferredAmount,
-        uint256 platformFee,
-        uint256 discountToPayInERC20
+        uint256 orderId
     );
 
     event OfferPurchasedWithPaymentToken(
         uint256 indexed bundleTokenId,
-        address paymentToken
+        address paymentToken,
+        uint256 discountToPayInERC20,
+        uint256 platformFee
     );
 
 
@@ -309,7 +310,7 @@ contract DigitalaxMarketplaceV3 is ReentrancyGuard, BaseRelayRecipient, Initiali
         );
     }
 
- function batchBuyOffer(uint256[] memory _garmentCollectionIds, address _paymentToken, uint256 _orderId, uint256 _shippingUSD) external payable whenNotPaused nonReentrant {
+ function batchBuyOffer(uint256[] memory _garmentCollectionIds, address _paymentToken, uint256 _orderId, uint256 _shippingUSD) external payable nonReentrant {
         require(_msgSender().isContract() == false, "DripMarketplace.buyOffer: No contracts permitted");
         require(_paymentToken != address(0), "DripMarketplace.buyOffer: Payment token cannot be zero address");
 
@@ -327,7 +328,7 @@ contract DigitalaxMarketplaceV3 is ReentrancyGuard, BaseRelayRecipient, Initiali
      @dev The sale must have started (start time) to make a successful buy
      @param _garmentCollectionId Collection ID of the garment being offered
      */
-    function buyOffer(uint256 _garmentCollectionId, address _paymentToken, uint256 _orderId, uint256 _shippingUSD) internal {
+    function buyOffer(uint256 _garmentCollectionId, address _paymentToken, uint256 _orderId, uint256 _shippingUSD) public whenNotPaused {
         // Check the offers to see if this is a valid
         require(_msgSender().isContract() == false, "DigitalaxMarketplace.buyOffer: No contracts permitted");
         require(_isFinished(_garmentCollectionId) == false, "DigitalaxMarketplace.buyOffer: Sale has been finished");
@@ -400,8 +401,8 @@ contract DigitalaxMarketplaceV3 is ReentrancyGuard, BaseRelayRecipient, Initiali
         lastPurchasedTime[_garmentCollectionId][_msgSender()] = _getNow();
 
         paymentTokenHistory[bundleTokenId] = _paymentToken;
-        emit OfferPurchased(bundleTokenId, _garmentCollectionId, _msgSender(), offerPriceInPaymentToken.add(shippingPriceInPaymentToken), offer.platformFee, offer.discountToPayERC20);
-        emit OfferPurchasedWithPaymentToken(bundleTokenId, _paymentToken);
+        emit OfferPurchased(bundleTokenId, _garmentCollectionId, _msgSender(), offerPriceInPaymentToken.add(shippingPriceInPaymentToken), _orderId);
+        emit OfferPurchasedWithPaymentToken(bundleTokenId, _paymentToken, offer.discountToPayERC20, offer.platformFee);
     }
     /**
      @notice Cancels an inflight and un-resulted offer
@@ -448,7 +449,7 @@ contract DigitalaxMarketplaceV3 is ReentrancyGuard, BaseRelayRecipient, Initiali
      @dev Only admin
      */
     function toggleFreezeERC20Payment() external {
-        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.toggleFreezeMonaERC20Payment: Sender must be admin");
+        require(accessControls.hasAdminRole(_msgSender()), "DigitalaxMarketplace.toggleFreezeERC20Payment: Sender must be admin");
         freezeERC20Payment = !freezeERC20Payment;
         emit FreezeERC20PaymentToggled(freezeERC20Payment);
     }

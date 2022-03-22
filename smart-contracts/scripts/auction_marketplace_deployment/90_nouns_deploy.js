@@ -15,14 +15,14 @@ async function main() {
     const childContract = "0x6c2a60333442aad9c34e7034fa1d04d7ad0a6f33";
 
   const nounsTokenaddress = "0x781feacf4ce415b950f4fe538301edc48150c4f9";
-  // const contractFactory = await ethers.getContractFactory("NounsToken");
-  // const nounsToken = await upgrades.deployProxy(contractFactory, [deployerAddress, deployerAddress, '0x58807baD0B376efc12F5AD86aAc70E78ed67deaE']);
-  // await nounsToken.deployed();
-  //
-  // console.log(`nounsToken at: ${nounsToken.address} `);
-  //
-  // await nounsToken.setDailyUris([1,2,3,4,5,6,7,8,9,10], Array(10).fill("https://digitalax.mypinata.cloud/ipfs/QmbPQrHcGGANeXKWTVQqYtreEntnofmMDa9jvR7N3iyb1m"));
-  // await nounsToken.setNextDaoNFTUri("https://digitalax.mypinata.cloud/ipfs/QmTc8thZRnEVHAAkhQnRVqTjNxVLyHbwpRGWCYuKnTigw3");
+  const contractFactory = await ethers.getContractFactory("NounsToken");
+  const nounsToken = await upgrades.deployProxy(contractFactory, [deployerAddress, deployerAddress, '0x58807baD0B376efc12F5AD86aAc70E78ed67deaE']);
+  await nounsToken.deployed();
+
+  console.log(`nounsToken at: ${nounsToken.address} `);
+
+  await nounsToken.setDailyUris([1,2,3,4,5,6,7,8,9,10], Array(10).fill("https://digitalax.mypinata.cloud/ipfs/QmbPQrHcGGANeXKWTVQqYtreEntnofmMDa9jvR7N3iyb1m"));
+  await nounsToken.setNextDaoNFTUri("https://digitalax.mypinata.cloud/ipfs/QmTc8thZRnEVHAAkhQnRVqTjNxVLyHbwpRGWCYuKnTigw3");
 
   const contractFactory2 = await ethers.getContractFactory("NounsAuctionHouse");
   //      .addOptionalParam('auctionTimeBuffer', 'The auction time buffer (seconds)', 30, types.int) // Default: 30 seconds
