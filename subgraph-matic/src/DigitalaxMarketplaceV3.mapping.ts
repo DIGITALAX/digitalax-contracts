@@ -102,7 +102,8 @@ export function handleOfferPurchased(event: OfferPurchased): void {
       history.token = event.params.bundleTokenId.toString();
       history.value = onChainOffer.value.value0;
       history.buyer = event.params.buyer;
-      history.paymentTokenTransferredAmount = event.params.monaTransferredAmount;
+      history.paymentTokenTransferredAmount =
+        event.params.monaTransferredAmount;
       history.garmentCollectionId = event.params.garmentCollectionId;
       history.rarity = collection.rarity;
       let weth = contract.wethERC20Token();
@@ -112,8 +113,12 @@ export function handleOfferPurchased(event: OfferPurchased): void {
 
       let globalStats = loadOrCreateDripGlobalStats();
 
-      globalStats.totalMarketplaceSalesInUSD = globalStats.totalMarketplaceSalesInUSD.plus(history.value);
-      day.totalMarketplaceVolumeInUSD = day.totalMarketplaceVolumeInUSD.plus(history.value);
+      globalStats.totalMarketplaceSalesInUSD = globalStats.totalMarketplaceSalesInUSD.plus(
+        history.value
+      );
+      day.totalMarketplaceVolumeInUSD = day.totalMarketplaceVolumeInUSD.plus(
+        history.value
+      );
 
       globalStats.usdETHConversion = contract.lastOracleQuote(weth);
 
@@ -135,7 +140,9 @@ export function handleOfferPurchased(event: OfferPurchased): void {
   }
 }
 
-export function handleOfferPurchasedWithPaymentTOken(event: OfferPurchasedWithPaymentToken): void {
+export function handleOfferPurchasedWithPaymentToken(
+  event: OfferPurchasedWithPaymentToken
+): void {
   let contract = DigitalaxMarketplaceV3Contract.bind(event.address);
   let history = loadOrCreateDigitalaxMarketplaceV3PurchaseHistory(
     event.params.bundleTokenId.toString()
