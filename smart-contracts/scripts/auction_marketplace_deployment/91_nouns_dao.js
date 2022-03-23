@@ -12,27 +12,6 @@ async function main() {
     console.log('Deploying nouns dao as upgradeable');
 
 
-  // deploy logic contract
-  // deploy proxy with the previous 2 address + token address
-
-
-    //  executor
-  //   const TIME_LOCK_DELAY = 172800; // 2 days
-  //
-  // address timelock_,-- executor
-  //         address nouns_,
-  //         address vetoer_, -- 0
-  //         address admin_, -- executor
-  //         address implementation_, -- logic
-  //   5760
-  //   1
-  // const PROPOSAL_THRESHOLD_BPS = 500; // 5%
-  // const QUORUM_VOTES_BPS = 1_000; // 10%
-
-    const accessControls = "0xbe5c84e6b036cb41a7a6b5008b9427a5f4f1c9f5";
-    const childContract = "0x6c2a60333442aad9c34e7034fa1d04d7ad0a6f33";
-
-
   const contractFactory = await ethers.getContractFactory("NounsDAOExecutor");
   const executor = await upgrades.deployProxy(contractFactory, [deployerAddress, 172800]);
   await executor.deployed();
@@ -44,7 +23,7 @@ async function main() {
   await logic.deployed();
   await logic.initialize(
       executor.address,
-    '0x781feAcf4Ce415b950f4fe538301EDC48150c4F9',
+    '0x46ef874D5a7A56c8D3376438B1405322c6cB01E6',
     '0x0000000000000000000000000000000000000000',
     5760,
     1,
@@ -67,7 +46,7 @@ async function main() {
 
   await proxy.deployed();
 
-  console.log(`proxy at: ${logic.address} `);
+  console.log(`proxy at: ${proxy.address} `);
 
 }
 

@@ -760,6 +760,10 @@ contract NounsAuctionHouse is INounsAuctionHouse, PausableUpgradeable, Reentranc
         _auction.endTime = endTime;
     }
 
+    function updateDuration(uint256 _duration) external onlyOwner {
+        duration = _duration;
+    }
+
      /**
      @notice Method for updating oracle
      @dev Only admin
@@ -848,7 +852,6 @@ contract NounsAuctionHouse is INounsAuctionHouse, PausableUpgradeable, Reentranc
      * catch the revert and pause this contract.
      */
     function _createAuction() internal {
-    //try nouns.mint() returns (uint256 nounId) {
             uint256 startTime = block.timestamp;
             uint256 endTime = startTime + duration;
 
@@ -865,9 +868,6 @@ contract NounsAuctionHouse is INounsAuctionHouse, PausableUpgradeable, Reentranc
             auctionIndex = auctionIndex + 1;
 
             emit AuctionCreated(auction.nounId, startTime, endTime);
-//        } catch Error(string memory) {
-//            _pause();
-//        }
     }
 
     /**
@@ -934,3 +934,4 @@ contract NounsAuctionHouse is INounsAuctionHouse, PausableUpgradeable, Reentranc
         return (_amountInERC20 * oraclePrice) / (1e18);
     }
 }
+
