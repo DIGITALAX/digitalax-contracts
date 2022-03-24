@@ -21,23 +21,24 @@ async function main() {
   const contractFactory2 = await ethers.getContractFactory("NounsDAOLogicV1");
   const logic = await contractFactory2.deploy();
   await logic.deployed();
-  await logic.initialize(
+  const initTx = await logic.initialize(
       executor.address,
-    '0x46ef874D5a7A56c8D3376438B1405322c6cB01E6',
+    '0x9C41EaA62D0bd49fC43F7057E0a9077F6CbF07e9',
     '0x0000000000000000000000000000000000000000',
     5760,
     1,
     500,
     1000);
+  await initTx.wait();
 
   console.log(`logic at: ${logic.address} `);
 
   const contractFactory3 = await ethers.getContractFactory("NounsDAOProxy");
   const proxy = await contractFactory3.deploy(
       executor.address,
-    '0x781feAcf4Ce415b950f4fe538301EDC48150c4F9',
+    '0x9C41EaA62D0bd49fC43F7057E0a9077F6CbF07e9',
     '0x0000000000000000000000000000000000000000',
-    executor.address,
+    deployerAddress,
     logic.address,
     5760,
     1,
