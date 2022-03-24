@@ -1437,6 +1437,14 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     }
 
     /**
+     * @notice Set the token starttime
+     * @dev Only callable by the owner when not locked.
+     */
+    function setStartTime(uint256 _startTime) external onlyOwner {
+        startTime = _startTime;
+    }
+
+    /**
      * @notice Lock the minter.
      * @dev This cannot be reversed and is only callable by the owner when not locked.
      */
@@ -1478,5 +1486,10 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
 
     function getTodaysDay() external view returns (uint day) {
         return diffDays(startTime, block.timestamp);
+    }
+
+    function anticipateNoun(uint timestamp) external view returns (string memory uri) {
+        uint day = diffDays(startTime, timestamp);
+        uri = dailyUris[day];
     }
 }

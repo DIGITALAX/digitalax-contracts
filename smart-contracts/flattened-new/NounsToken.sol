@@ -1344,7 +1344,7 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
      * @notice The IPFS URI of contract-level metadata.
      */
     function contractURI() public view returns (string memory) {
-        return string(abi.encodePacked('ipfs://QmZi1n79FqWt2tTLwCqiy6nLM6xLGRsEPQ5JmReJQKNNzX'));
+        return string(abi.encodePacked('ipfs://', 'Contract'));
     }
 
     /**
@@ -1415,7 +1415,6 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     }
 
 
-
     function setDailyUris(uint256[] memory selectDays, string[] memory dailyUriSet) external onlyNoundersDAO {
         require(selectDays.length == dailyUriSet.length, "Lengths must match");
         for (uint256 i = 0; i < selectDays.length; i++) {
@@ -1435,6 +1434,14 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         minter = _minter;
 
         emit MinterUpdated(_minter);
+    }
+
+    /**
+     * @notice Set the token starttime
+     * @dev Only callable by the owner when not locked.
+     */
+    function setStartTime(uint256 _startTime) external onlyOwner {
+        startTime = _startTime;
     }
 
     /**
@@ -1474,6 +1481,15 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
 
     function getTodaysUri() external view returns (string memory uri) {
         uint day = diffDays(startTime, block.timestamp);
+        uri = dailyUris[day];
+    }
+
+    function getTodaysDay() external view returns (uint day) {
+        return diffDays(startTime, block.timestamp);
+    }
+
+    function anticipateNoun(uint timestamp) external view returns (string memory uri) {
+        uint day = diffDays(startTime, timestamp);
         uri = dailyUris[day];
     }
 }

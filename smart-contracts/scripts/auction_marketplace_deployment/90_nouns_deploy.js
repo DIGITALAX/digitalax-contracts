@@ -18,7 +18,7 @@ async function main() {
 
   console.log(`nounsToken at: ${nounsToken.address} `);
 
-  const tx1 = await nounsToken.setDailyUris([1,2,3,4,5,6,7,8,9,10], Array(10).fill("https://digitalax.mypinata.cloud/ipfs/QmbPQrHcGGANeXKWTVQqYtreEntnofmMDa9jvR7N3iyb1m"));
+  const tx1 = await nounsToken.setDailyUris([0,1,2,3,4,5,6,7,8,9,10], Array(11).fill("https://digitalax.mypinata.cloud/ipfs/QmbPQrHcGGANeXKWTVQqYtreEntnofmMDa9jvR7N3iyb1m"));
   await tx1.wait();
   const tx2 = await nounsToken.setNextDaoNFTUri("https://digitalax.mypinata.cloud/ipfs/QmTc8thZRnEVHAAkhQnRVqTjNxVLyHbwpRGWCYuKnTigw3");
   await tx2.wait();
@@ -34,6 +34,7 @@ async function main() {
   // )
   // .addOptionalParam('auctionDuration', 'The auction duration (seconds)', 60 * 2, types.int) // Default: 2 minutes
 
+// WILL BE 0.1 ETH not 1 WEI
   const nounsTokenAuction = await upgrades.deployProxy(contractFactory2, [nounsToken.address, "0xa6fa4fb5f76172d178d61b04b0ecd319c5d1c0aa", 30, 1, 5, 0]);
   await nounsTokenAuction.deployed();
 
