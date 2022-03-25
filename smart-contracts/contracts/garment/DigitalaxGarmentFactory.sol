@@ -8,13 +8,14 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./DigitalaxGarmentNFT.sol";
 import "./DigitalaxMaterials.sol";
 import "../DigitalaxAccessControls.sol";
+import "@openzeppelin/contracts/proxy/Initializable.sol";
 
 /**
  * @title Digitalax Garment Factory
  * @dev To facilitate the creation of child and parents NFTs
  * @dev This contract needs to be given the smart contract role in order to be given access to mint tokens
  */
-contract DigitalaxGarmentFactory is Context, ReentrancyGuard {
+contract DigitalaxGarmentFactory is Context, ReentrancyGuard, Initializable {
 
     // @notice event emitted on garment creation
     event GarmentCreated(
@@ -30,11 +31,11 @@ contract DigitalaxGarmentFactory is Context, ReentrancyGuard {
     // @notice access controls
     DigitalaxAccessControls public accessControls;
 
-    constructor(
+    function initialize (
         DigitalaxGarmentNFT _garmentToken,
         DigitalaxMaterials _materials,
         DigitalaxAccessControls _accessControls
-    ) public {
+    ) public initializer {
         garmentToken = _garmentToken;
         materials = _materials;
         accessControls = _accessControls;

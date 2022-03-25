@@ -5,12 +5,13 @@ pragma experimental ABIEncoderV2;
 
 import "../ERC1155/ERC1155Burnable.sol";
 import "../DigitalaxAccessControls.sol";
+import "../EIP2771/BaseRelayRecipient.sol";
 
 /**
  * @title Digitalax Materials NFT a.k.a. child NFTs
  * @dev Issues ERC-1155 tokens which can be held by the parent ERC-721 contract
  */
-contract DigitalaxMaterials is ERC1155Burnable {
+contract DigitalaxMaterials is ERC1155Burnable, BaseRelayRecipient {
 
     // @notice event emitted on contract creation
     event DigitalaxMaterialsDeployed();
@@ -34,15 +35,57 @@ contract DigitalaxMaterials is ERC1155Burnable {
     // @notice enforcing access controls
     DigitalaxAccessControls public accessControls;
 
+    address public childChain;
+
+    modifier onlyChildChain() {
+        require(
+            _msgSender() == childChain,
+            "Child token: caller is not the child chain contract"
+        );
+        _;
+    }
+
     constructor(
         string memory _name,
         string memory _symbol,
-        DigitalaxAccessControls _accessControls
+        DigitalaxAccessControls _accessControls,
+        address _childChain,
+        address _trustedForwarder
     ) public {
         name = _name;
         symbol = _symbol;
         accessControls = _accessControls;
+        trustedForwarder = _trustedForwarder;
+        childChain = _childChain;
         emit DigitalaxMaterialsDeployed();
+    }
+
+    /**
+     * Override this function.
+     * This version is to keep track of BaseRelayRecipient you are using
+     * in your contract.
+     */
+    function versionRecipient() external view override returns (string memory) {
+        return "1";
+    }
+
+    function setTrustedForwarder(address _trustedForwarder) external  {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "DigitalaxMaterials.setTrustedForwarder: Sender must be admin"
+        );
+        trustedForwarder = _trustedForwarder;
+    }
+
+    // This is to support Native meta transactions
+    // never use msg.sender directly, use _msgSender() instead
+    function _msgSender()
+    internal
+    override
+    view
+    returns (address payable sender)
+    {
+        return BaseRelayRecipient.msgSender();
     }
 
     ///////////////////////////
@@ -162,5 +205,48 @@ contract DigitalaxMaterials is ERC1155Burnable {
         );
 
         accessControls = _accessControls;
+    }
+
+    /**
+    * @notice called when tokens are deposited on root chain
+    * @dev Should be callable only by ChildChainManager
+    * Should handle deposit by minting the required tokens for user
+    * Make sure minting is done only by this function
+    * @param user user address for whom deposit is being done
+    * @param depositData abi encoded ids array and amounts array
+    */
+    function deposit(address user, bytes calldata depositData)
+    external
+    onlyChildChain
+    {
+        (
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+        ) = abi.decode(depositData, (uint256[], uint256[], bytes));
+        require(user != address(0x0), "DigitalaxMaterials: INVALID_DEPOSIT_USER");
+        _mintBatch(user, ids, amounts, data);
+    }
+
+    /**
+     * @notice called when user wants to withdraw single token back to root chain
+     * @dev Should burn user's tokens. This transaction will be verified when exiting on root chain
+     * @param id id to withdraw
+     * @param amount amount to withdraw
+     */
+    function withdrawSingle(uint256 id, uint256 amount) external {
+        _burn(_msgSender(), id, amount);
+    }
+
+    /**
+     * @notice called when user wants to batch withdraw tokens back to root chain
+     * @dev Should burn user's tokens. This transaction will be verified when exiting on root chain
+     * @param ids ids to withdraw
+     * @param amounts amounts to withdraw
+     */
+    function withdrawBatch(uint256[] calldata ids, uint256[] calldata amounts)
+    external
+    {
+        _burnBatch(_msgSender(), ids, amounts);
     }
 }

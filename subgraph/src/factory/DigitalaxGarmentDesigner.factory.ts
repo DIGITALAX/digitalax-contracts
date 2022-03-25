@@ -25,6 +25,34 @@ export function loadOrCreateGarmentDesigner(tokenId: string): DigitalaxGarmentDe
         garmentDesignerId = '2';
     } else if (tokenId == '42') {
         garmentDesignerId = '12';
+    } else if (tokenId == '90') {
+        garmentDesignerId = '29';
+    } else if (tokenId == '91') {
+        garmentDesignerId = '29';
+    } else if (tokenId == '92') {
+        garmentDesignerId = '29';
+    } else if (tokenId == '93') {
+        garmentDesignerId = '29';
+    } else if (tokenId == '94') {
+        garmentDesignerId = '28';
+    } else if (tokenId == '95') {
+        garmentDesignerId = '3';
+    } else if (tokenId == '96') {
+        garmentDesignerId = '6';
+    } else if (tokenId == '97') {
+        garmentDesignerId = '27';
+    } else if (tokenId == '98') {
+        garmentDesignerId = '24';
+    } else if (tokenId == '99') {
+        garmentDesignerId = '1';
+    } else if (tokenId == '100') {
+        garmentDesignerId = '18';
+    } else if (tokenId == '101') {
+        garmentDesignerId = '4';
+    } else if (tokenId == '102') {
+        garmentDesignerId = '22';
+    } else if (tokenId == '103') {
+        garmentDesignerId = '30';
     }
 
     let garmentDesigner = DigitalaxGarmentDesigner.load(garmentDesignerId);

@@ -6,9 +6,9 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DigitalaxGenesisNFT
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxGenesisNFTAddress}}'
+      address: "{{DigitalaxGenesisNFTAddress}}"
       abi: DigitalaxGenesisNFT
       startBlock: {{DigitalaxGenesisNFTStartBlock}}
     mapping:
@@ -19,6 +19,7 @@ dataSources:
         - GenesisPurchased
         - ContributionIncreased
         - DigitalaxGenesisNFTContractDeployed
+        - Transfer
       abis:
         - name: DigitalaxGenesisNFT
           file: ./abis/DigitalaxGenesisNFT.json
@@ -29,12 +30,14 @@ dataSources:
           handler: handleContributionIncreased
         - event: DigitalaxGenesisNFTContractDeployed()
           handler: handleGenesisDeployed
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
       file: ./src/DigitalaxGenesisNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentNFT
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxGarmentNFTAddress}}'
+      address: "{{DigitalaxGarmentNFTAddress}}"
       abi: DigitalaxGarmentNFT
       startBlock: {{DigitalaxGarmentNFTStartBlock}}
     mapping:
@@ -58,9 +61,9 @@ dataSources:
       file: ./src/DigitalaxGarmentNFT.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMaterials
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxMaterialsAddress}}'
+      address: "{{DigitalaxMaterialsAddress}}"
       abi: DigitalaxMaterials
       startBlock: {{DigitalaxMaterialsStartBlock}}
     mapping:
@@ -87,9 +90,9 @@ dataSources:
       file: ./src/DigitalaxMaterials.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAuction
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxAuctionAddress}}'
+      address: "{{DigitalaxAuctionAddress}}"
       abi: DigitalaxAuction
       startBlock: {{DigitalaxAuctionStartBlock}}
     mapping:
@@ -136,9 +139,9 @@ dataSources:
       file: ./src/DigitalaxAuction.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxAccessControls
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxAccessControlsAddress}}'
+      address: "{{DigitalaxAccessControlsAddress}}"
       abi: DigitalaxAccessControls
       startBlock: {{DigitalaxAccessControlsStartBlock}}
     mapping:
@@ -177,9 +180,9 @@ dataSources:
       file: ./src/DigitalaxAccessControls.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxGarmentCollection
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxGarmentCollectionAddress}}'
+      address: "{{DigitalaxGarmentCollectionAddress}}"
       abi: DigitalaxGarmentCollection
       startBlock: {{DigitalaxGarmentCollectionStartBlock}}
     mapping:
@@ -200,9 +203,9 @@ dataSources:
       file: ./src/DigitalaxGarmentCollection.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMarketplace
-    network: '{{network}}'
+    network: "{{network}}"
     source:
-      address: '{{DigitalaxMarketplaceAddress}}'
+      address: "{{DigitalaxMarketplaceAddress}}"
       abi: DigitalaxMarketplace
       startBlock: {{DigitalaxMarketplaceStartBlock}}
     mapping:
@@ -223,10 +226,6 @@ dataSources:
       eventHandlers:
         - event: DigitalaxMarketplaceContractDeployed()
           handler: handleMarketplaceDeployed
-        - event: UpdateMarketplacePlatformFee(uint256)
-          handler: handleUpdateMarketplacePlatformFee
-        - event: UpdateMarketplaceDiscountToPayInErc20(uint256)
-          handler: handleUpdateMarketplaceDiscountToPayInErc20
         - event: OfferCreated(indexed uint256)
           handler: handleOfferCreated
         - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
@@ -236,3 +235,133 @@ dataSources:
         - event: OfferCancelled(indexed uint256)
           handler: handleOfferCancelled
       file: ./src/DigitalaxMarketplace.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxPodePortal
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxPodePortalAddress}}"
+      abi: DigitalaxPodePortal
+      startBlock: {{DigitalaxPodePortalStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - DigitalaxPodePortalMetadataAdded
+      abis:
+        - name: DigitalaxPodePortal
+          file: ./abis/DigitalaxPodePortal.json
+      eventHandlers:
+        - event: DigitalaxPodePortalMetadataAdded(uint256,string)
+          handler: handleMetadataAdded
+      file: ./src/DigitalaxPodePortal.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxIndex
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxIndexAddress}}"
+      abi: DigitalaxIndex
+      startBlock: {{DigitalaxIndexStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - AuctionSetAdded
+        - AuctionSetRemoved
+        - AuctionSetUpdated
+        - DesignerSetAdded
+        - DesignerSetRemoved
+        - DesignerSetUpdated
+        - DesignerInfoUpdated
+      abis:
+        - name: DigitalaxIndex
+          file: ./abis/DigitalaxIndex.json
+      eventHandlers:
+        - event: AuctionSetAdded(indexed uint256,uint256[])
+          handler: handleAuctionSetAdded
+        - event: AuctionSetRemoved(indexed uint256)
+          handler: handleAuctionSetRemoved
+        - event: AuctionSetUpdated(indexed uint256,uint256[])
+          handler: handleAuctionSetUpdated
+        - event: DesignerSetAdded(indexed uint256,uint256[])
+          handler: handleDesignerSetAdded
+        - event: DesignerSetRemoved(indexed uint256)
+          handler: handleDesignerSetRemoved
+        - event: DesignerSetUpdated(indexed uint256,uint256[])
+          handler: handleDesignerSetUpdated
+        - event: DesignerInfoUpdated(indexed uint256,string)
+          handler: handleDesignerInfoUpdated
+      file: ./src/DigitalaxIndex.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxGenesisStaking
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxGenesisStakingAddress}}"
+      abi: DigitalaxGenesisStaking
+      startBlock: {{DigitalaxGenesisStakingStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+      abis:
+        - name: DigitalaxGenesisStaking
+          file: ./abis/DigitalaxGenesisStaking.json
+      eventHandlers:
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,uint256)
+          handler: handleEmergencyUnstake
+      file: ./src/DigitalaxGenesisStaking.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxNFTStaking
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxNFTStakingAddress}}"
+      abi: DigitalaxNFTStaking
+      startBlock: {{DigitalaxNFTStakingStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+      abis:
+        - name: DigitalaxNFTStaking
+          file: ./abis/DigitalaxNFTStaking.json
+      eventHandlers:
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,uint256)
+          handler: handleEmergencyUnstake
+      file: ./src/DigitalaxNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxLookNFT
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxLookNFTAddress}}"
+      abi: DigitalaxLookNFT
+      startBlock: {{DigitalaxLookNFTStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: DigitalaxLookNFT
+          file: ./abis/DigitalaxLookNFT.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/DigitalaxLookNFT.mapping.ts

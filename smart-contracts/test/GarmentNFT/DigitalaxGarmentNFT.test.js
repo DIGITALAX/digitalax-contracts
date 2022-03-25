@@ -30,16 +30,21 @@ contract('Core ERC721 tests for DigitalaxGarmentNFT', function ([admin, minter, 
           'DigitalaxMaterials',
           'DXM',
           this.accessControls.address,
+            '0xb5505a6d998549090530911180f38aC5130101c6',
+            constants.ZERO_ADDRESS,
           {from: owner}
         );
 
         this.token = await DigitalaxGarmentNFT.new(
           this.accessControls.address,
           this.digitalaxMaterials.address,
+            '0xb5505a6d998549090530911180f38aC5130101c6',
+            constants.ZERO_ADDRESS,
           {from: admin}
         );
 
-        this.factory = await DigitalaxGarmentFactory.new(
+        this.factory = await DigitalaxGarmentFactory.new()
+        await this.factory.initialize(
           this.token.address,
           this.digitalaxMaterials.address,
           this.accessControls.address,

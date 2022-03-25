@@ -31,16 +31,21 @@ contract('DigitalaxGarmentFactory', function ([admin, minter, tokenHolder, desig
       name,
       symbol,
       this.accessControls.address,
+        '0xb5505a6d998549090530911180f38aC5130101c6',
+        constants.ZERO_ADDRESS,
       {from: admin}
     );
 
     this.garment = await DigitalaxGarmentNFT.new(
       this.accessControls.address,
       this.digitalaxMaterials.address,
+        '0xb5505a6d998549090530911180f38aC5130101c6',
+        constants.ZERO_ADDRESS,
       {from: admin}
     );
 
-    this.factory = await DigitalaxGarmentFactoryTest.new(
+    this.factory = await DigitalaxGarmentFactoryTest.new();
+    await this.factory.initialize(
       this.garment.address,
       this.digitalaxMaterials.address,
       this.accessControls.address,

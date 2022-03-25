@@ -1,0 +1,447 @@
+specVersion: 0.0.2
+description: Digitalax Smart Contract Indexing
+repository: https://github.com/DIGITALAX/digitalax-contracts/tree/main/subgraph
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: NewPodeGuildNFTStaking
+    network: "matic"
+    source:
+      address: "0x8CaF6ceaA682F0569d5Ee83F5022bf1cD6705395"
+      abi: GuildNFTStakingV3
+      startBlock: 22518129
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+      abis:
+        - name: GuildNFTStakingV3
+          file: ./abis/GuildNFTStakingV3.json
+        - name: GuildNFTStakingWeightV4
+          file: ./abis/GuildNFTStakingWeightV4.json
+      eventHandlers:
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+      file: ./src/NewPodeGuildNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: NewLookGuildNFTStaking
+    network: "matic"
+    source:
+      address: "0x83f92d1aB94B0817Bfe297872dbD11B46DAe3596"
+      abi: GuildNFTStakingV3
+      startBlock: 23076858
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+      abis:
+        - name: GuildNFTStakingV3
+          file: ./abis/GuildNFTStakingV3.json
+        - name: GuildNFTStakingWeightV4
+          file: ./abis/GuildNFTStakingWeightV4.json
+      eventHandlers:
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+      file: ./src/NewLookGuildNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: NewGDNGuildNFTStaking
+    network: "matic"
+    source:
+      address: "0xD750612b4C2653F938f4CA3edEa2a2182AD996f8"
+      abi: GuildNFTStakingV3
+      startBlock: 23077050
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+      abis:
+        - name: GuildNFTStakingV3
+          file: ./abis/GuildNFTStakingV3.json
+        - name: GuildNFTStakingWeightV4
+          file: ./abis/GuildNFTStakingWeightV4.json
+      eventHandlers:
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+      file: ./src/NewGDNGuildNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: GuildNFTStaking
+    network: "matic"
+    source:
+      address: "0xf0815348F626B0f4f434CAF9C5984694D85B50A1"
+      abi: GuildNFTStaking
+      startBlock: 16610377
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+      abis:
+        - name: GuildNFTStaking
+          file: ./abis/GuildNFTStaking.json
+      eventHandlers:
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+      file: ./src/GuildNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: GuildWhitelistedNFTStaking
+    network: "matic"
+    source:
+      address: "0x8A7D6A39c22F2aD96eDA06AdBA77E4A0a73e40E7"
+      abi: GuildWhitelistedNFTStaking
+      startBlock: 19359122
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+        - AddWhitelistedTokens
+      abis:
+        - name: GuildWhitelistedNFTStaking
+          file: ./abis/GuildWhitelistedNFTStaking.json
+        - name: ERC721
+          file: ./abis/ERC721.json
+        - name: GuildNFTStakingWeightV2
+          file: ./abis/GuildNFTStakingWeightV2.json
+      eventHandlers:
+        - event: Staked(address,address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+        - event: AddWhitelistedTokens(address[])
+          handler: handleAddWhitelistedTokens
+      file: ./src/GuildWhitelistedNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: NewPodeGuildWhitelistedNFTStaking
+    network: "matic"
+    source:
+      address: "0x16218D677e160DDfb398D26508e5f6fB44c06f28"
+      abi: GuildWhitelistedNFTStakingV3
+      startBlock: 22518133
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+        - AddWhitelistedTokens
+      abis:
+        - name: GuildWhitelistedNFTStakingV3
+          file: ./abis/GuildWhitelistedNFTStakingV3.json
+        - name: ERC721
+          file: ./abis/ERC721.json
+        - name: GuildNFTStakingWeightV4
+          file: ./abis/GuildNFTStakingWeightV4.json
+      eventHandlers:
+        - event: Staked(address,address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+        - event: AddWhitelistedTokens(address[],bool[],bool[])
+          handler: handleAddWhitelistedTokens
+      file: ./src/NewPodeGuildWhitelistedNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: NewLookGuildWhitelistedNFTStaking
+    network: "matic"
+    source:
+      address: "0xfFc6f1eb06c8248339E9E247D850931D6D58c728"
+      abi: GuildWhitelistedNFTStakingV3
+      startBlock: 23076863
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+        - AddWhitelistedTokens
+      abis:
+        - name: GuildWhitelistedNFTStakingV3
+          file: ./abis/GuildWhitelistedNFTStakingV3.json
+        - name: ERC721
+          file: ./abis/ERC721.json
+        - name: GuildNFTStakingWeightV4
+          file: ./abis/GuildNFTStakingWeightV4.json
+      eventHandlers:
+        - event: Staked(address,address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+        - event: AddWhitelistedTokens(address[],bool[],bool[])
+          handler: handleAddWhitelistedTokens
+      file: ./src/NewLookGuildWhitelistedNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: NewGDNGuildWhitelistedNFTStaking
+    network: "matic"
+    source:
+      address: "0xB08F4575D1Ab2FBa5463d13395279C134ACE6aF7"
+      abi: GuildWhitelistedNFTStakingV3
+      startBlock: 23077051
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Unstaked
+        - EmergencyUnstake
+        - RewardPaid
+        - AddWhitelistedTokens
+      abis:
+        - name: GuildWhitelistedNFTStakingV3
+          file: ./abis/GuildWhitelistedNFTStakingV3.json
+        - name: ERC721
+          file: ./abis/ERC721.json
+        - name: GuildNFTStakingWeightV4
+          file: ./abis/GuildNFTStakingWeightV4.json
+      eventHandlers:
+        - event: Staked(address,address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,address,uint256)
+          handler: handleUnstaked
+        - event: EmergencyUnstake(indexed address,address,uint256)
+          handler: handleEmergencyUnstake
+        - event: RewardPaid(indexed address,uint256)
+          handler: handleRewardPaid
+        - event: AddWhitelistedTokens(address[],bool[],bool[])
+          handler: handleAddWhitelistedTokens
+      file: ./src/NewGDNGuildWhitelistedNFTStaking.mapping.ts
+  - kind: ethereum/contract
+    name: PodeNFTv2
+    network: "matic"
+    source:
+      address: "0x6d4d0b9EaCd6197B31Bec250C0aD6ceC98f8b83f"
+      abi: PodeNFTv2
+      startBlock: 16153025
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: PodeNFTv2
+          file: ./abis/PodeNFTv2.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: TokenPrimarySalePriceSet(indexed uint256,uint256)
+          handler: handleTokenPriceSaleUpdated
+      file: ./src/PodeNFTv2.mapping.ts
+  - kind: ethereum/contract
+    name: GDNMembership
+    network: "matic"
+    source:
+      address: "0x6A64FfDEfa171437f07b46682622b24f8969400E"
+      abi: GDNMembership
+      startBlock: 19110219
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: GDNMembership
+          file: ./abis/GDNMembership.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/GDNMembership.mapping.ts
+  - kind: ethereum/contract
+    name: GDNDltaNFT
+    network: "matic"
+    source:
+      address: "0x6003bda42a45412ef7e70caffa2c1650e8eff4ba"
+      abi: GDNMembership
+      startBlock: 19110219
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: GDNMembership
+          file: ./abis/GDNMembership.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/GDNDltaNFT.mapping.ts
+  - kind: ethereum/contract
+    name: LookGoldenTicket
+    network: "matic"
+    source:
+      address: "0xdae2c7570bcafc8157a8395ed19ea6ccbfe10147"
+      abi: LookGoldenTicket
+      startBlock: 19471997
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: LookGoldenTicket
+          file: ./abis/LookGoldenTicket.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/LookGoldenTicket.mapping.ts
+  - kind: ethereum/contract
+    name: GuildNFTStakingWeightV2
+    network: "matic"
+    source:
+      address: "0xE69E1eD04501b1bE9aEb24aa471F68303137a8eA"
+      abi: GuildNFTStakingWeightV2
+      startBlock: 19359150
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - AppraiseGuildMember
+        - WhitelistedNFTReaction
+      abis:
+        - name: GuildNFTStakingWeightV2
+          file: ./abis/GuildNFTStakingWeightV2.json
+      eventHandlers:
+        - event: AppraiseGuildMember(string,address)
+          handler: handleAppraiseGuildMember
+        - event: WhitelistedNFTReaction(string,uint256,address,uint256)
+          handler: handleWhitelistedNFTReaction
+      file: ./src/GuildNFTStakingWeightV2.mapping.ts
+  - kind: ethereum/contract
+    name: NewPodeGuildNFTStakingWeightV4
+    network: "matic"
+    source:
+      address: "0xB574d5843B6898d710addaA409cB43B48b7b06e4"
+      abi: GuildNFTStakingWeightV4
+      startBlock: 22518143
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - AppraiseGuildMember
+        - WhitelistedNFTReaction
+      abis:
+        - name: GuildNFTStakingWeightV4
+          file: ./abis/GuildNFTStakingWeightV4.json
+      eventHandlers:
+        - event: AppraiseGuildMember(string,address)
+          handler: handleAppraiseGuildMember
+        - event: WhitelistedNFTReaction(string,uint256,address,uint256)
+          handler: handleWhitelistedNFTReaction
+      file: ./src/NewPodeGuildNFTStakingWeightV4.mapping.ts
+  - kind: ethereum/contract
+    name: NewLookGuildNFTStakingWeightV4
+    network: "matic"
+    source:
+      address: "0x0eAE037c3fB4e02eac70b0Af331a34a30E30d730"
+      abi: GuildNFTStakingWeightV4
+      startBlock: 23076869
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - AppraiseGuildMember
+        - WhitelistedNFTReaction
+      abis:
+        - name: GuildNFTStakingWeightV4
+          file: ./abis/GuildNFTStakingWeightV4.json
+      eventHandlers:
+        - event: AppraiseGuildMember(string,address)
+          handler: handleAppraiseGuildMember
+        - event: WhitelistedNFTReaction(string,uint256,address,uint256)
+          handler: handleWhitelistedNFTReaction
+      file: ./src/NewLookGuildNFTStakingWeightV4.mapping.ts
+  - kind: ethereum/contract
+    name: NewGDNGuildNFTStakingWeightV4
+    network: "matic"
+    source:
+      address: "0x17d11b301575453bf3B2806Dd1f67f317E7D2dD7"
+      abi: GuildNFTStakingWeightV4
+      startBlock: 23077056
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - AppraiseGuildMember
+        - WhitelistedNFTReaction
+      abis:
+        - name: GuildNFTStakingWeightV4
+          file: ./abis/GuildNFTStakingWeightV4.json
+      eventHandlers:
+        - event: AppraiseGuildMember(string,address)
+          handler: handleAppraiseGuildMember
+        - event: WhitelistedNFTReaction(string,uint256,address,uint256)
+          handler: handleWhitelistedNFTReaction
+      file: ./src/NewGDNGuildNFTStakingWeightV4.mapping.ts
+

@@ -50,9 +50,21 @@ yarn test
 ```
 yarn run coverage
 ```
+Example run of coverage with specific options:
+
+```
+yarn run coverage --testfiles "test/Staking/GuildNFTStakingV3.test.js"
+```
 
 ### Deployment scripts
 
 ```
 npx buidler run --network rinkeby scripts/1_deploy_access_controls.js
 ```
+npx hardhat run --network mumbai scripts/auction_marketplace_deployment/18_round_8_create_subscription.js
+
+Upgrade with
+npx hardhat run --network matic scripts/auction_marketplace_deployment/52_v3_upgrade.js
+
+Flatten with
+sol-merger --export-plugin SPDXLicenseRemovePlugin "contracts/Nix.sol" ./flattened-new
