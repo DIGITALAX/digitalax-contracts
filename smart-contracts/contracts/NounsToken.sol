@@ -1286,6 +1286,8 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     // Whether the minter can be updated
     bool public isMinterLocked;
 
+    string public contractURIString;
+
     uint256 public startTime;
     mapping(uint256 => string) public dailyUris;
     string public nextDaoUri;
@@ -1329,7 +1331,7 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     ) external{
         require(!initialized);
 
-        initializeERC721('Nouns', 'NOUN');
+        initializeERC721('CC0 Daily Public Auctions', 'CC0PUB');
         initializeOwner();
 
         noundersDAO = _noundersDAO;
@@ -1337,6 +1339,7 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         minter = _minter;
         startTime = block.timestamp;
         initialized = true;
+        contractURIString = 'TODO';
     }
 
     //TODO
@@ -1344,7 +1347,7 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
      * @notice The IPFS URI of contract-level metadata.
      */
     function contractURI() public view returns (string memory) {
-        return string(abi.encodePacked('ipfs://', 'Contract'));
+        return contractURIString;
     }
 
     /**
@@ -1443,6 +1446,11 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     function setStartTime(uint256 _startTime) external onlyOwner {
         startTime = _startTime;
     }
+
+    function setContractURI(uint256 _uri) external onlyOwner {
+        contractURIString = string(abi.encodePacked('ipfs://', _uri));
+    }
+
 
     /**
      * @notice Lock the minter.
