@@ -633,7 +633,7 @@ type DigitalaxMarketplaceV3PurchaseHistory @entity {
   transactionHash: Bytes!
   token: DigitalaxGarmentV2!
   buyer: Bytes!
-  orderId: BigInt!
+  orderId: BigInt
   value: BigInt! # USD Value
   shippingUsd: BigInt!
   paymentTokenTransferredAmount: BigInt!

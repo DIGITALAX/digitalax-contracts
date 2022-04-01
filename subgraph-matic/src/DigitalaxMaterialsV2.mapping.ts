@@ -303,121 +303,121 @@ export function handleBatchTransfer(event: TransferBatch): void {
     BigInt.fromI32(event.params.values.length).toString(),
   ]);
 
-  let contract: DigitalaxMaterialsV2Contract = DigitalaxMaterialsV2Contract.bind(
-    event.address
-  );
+  // let contract: DigitalaxMaterialsV2Contract = DigitalaxMaterialsV2Contract.bind(
+  //   event.address
+  // );
 
-  let allValuesInBatch = event.params.values;
-  let allIdsInBatch = event.params.ids;
-  let totalIdsTransferred = allIdsInBatch.length;
+  // let allValuesInBatch = event.params.values;
+  // let allIdsInBatch = event.params.ids;
+  // let totalIdsTransferred = allIdsInBatch.length;
 
-  // Model total supply - Ensure total supply is correct in cases of birthing or burning
-  for (let i: number = 0; i < totalIdsTransferred; i++) {
-    let childId: BigInt = allIdsInBatch[i as i32];
-    let child: DigitalaxMaterialV2 | null = DigitalaxMaterialV2.load(
-      childId.toString()
-    );
-    if (child) {
-      child.totalSupply = contract.tokenTotalSupply(childId);
-      child.save();
-    }
-  }
+  // // Model total supply - Ensure total supply is correct in cases of birthing or burning
+  // for (let i: number = 0; i < totalIdsTransferred; i++) {
+  //   let childId: BigInt = allIdsInBatch[i as i32];
+  //   let child: DigitalaxMaterialV2 | null = DigitalaxMaterialV2.load(
+  //     childId.toString()
+  //   );
+  //   if (child) {
+  //     child.totalSupply = contract.tokenTotalSupply(childId);
+  //     child.save();
+  //   }
+  // }
 
-  // Update "from" balances
-  if (!event.params.from.equals(ZERO_ADDRESS)) {
-    let fromCollector = loadOrCreateDigitalaxCollectorV2(event.params.from);
+  // // Update "from" balances
+  // if (!event.params.from.equals(ZERO_ADDRESS)) {
+  //   let fromCollector = loadOrCreateDigitalaxCollectorV2(event.params.from);
 
-    let childrenOwned = fromCollector.childrenOwned;
-    let totalChildrenOwned = childrenOwned.length;
-    let updatedChildren = childrenOwned;
+  //   let childrenOwned = fromCollector.childrenOwned;
+  //   let totalChildrenOwned = childrenOwned.length;
+  //   let updatedChildren = childrenOwned;
 
-    // Iterate all children currently owned
-    for (let j: number = 0; j < totalChildrenOwned; j++) {
-      let childTokenId = childrenOwned[j as i32];
+  //   // Iterate all children currently owned
+  //   for (let j: number = 0; j < totalChildrenOwned; j++) {
+  //     let childTokenId = childrenOwned[j as i32];
 
-      // For each ID being transferred
-      for (let k: number = 0; k < totalIdsTransferred; k++) {
-        let id: BigInt = allIdsInBatch[k as i32];
-        let amount: BigInt = allValuesInBatch[k as i32];
+  //     // For each ID being transferred
+  //     for (let k: number = 0; k < totalIdsTransferred; k++) {
+  //       let id: BigInt = allIdsInBatch[k as i32];
+  //       let amount: BigInt = allValuesInBatch[k as i32];
 
-        // Expected child owner ID
-        let compositeId = event.params.from.toHexString() + "-" + id.toString();
+  //       // Expected child owner ID
+  //       let compositeId = event.params.from.toHexString() + "-" + id.toString();
 
-        // Check that we have an entry for the child
-        if (childTokenId == compositeId) {
-          // Load collector and reduce balance
-          let child = loadOrCreateDigitalaxChildV2Owner(
-            event,
-            event.params.from,
-            id
-          );
-          child.amount = child.amount.minus(amount);
-          child.save();
+  //       // Check that we have an entry for the child
+  //       if (childTokenId == compositeId) {
+  //         // Load collector and reduce balance
+  //         let child = loadOrCreateDigitalaxChildV2Owner(
+  //           event,
+  //           event.params.from,
+  //           id
+  //         );
+  //         child.amount = child.amount.minus(amount);
+  //         child.save();
 
-          // keep track of child if balance positive
-          if (child.amount.equals(ZERO)) {
-            updatedChildren.splice(j as i32, 1);
-          }
-        }
-      }
-    }
+  //         // keep track of child if balance positive
+  //         if (child.amount.equals(ZERO)) {
+  //           updatedChildren.splice(j as i32, 1);
+  //         }
+  //       }
+  //     }
+  //   }
 
-    // assign the newly owned children
-    fromCollector.childrenOwned = updatedChildren;
-    fromCollector.save();
-  }
+  //   // assign the newly owned children
+  //   fromCollector.childrenOwned = updatedChildren;
+  //   fromCollector.save();
+  // }
 
-  // Update "to" balances
-  if (!event.params.to.equals(ZERO_ADDRESS)) {
-    let toCollector = loadOrCreateDigitalaxCollectorV2(event.params.to);
-    let childrenOwned = toCollector.childrenOwned; // 0x123-123
-    let totalChildOwned = childrenOwned.length;
-    let updatedChildren = childrenOwned;
+  // // Update "to" balances
+  // if (!event.params.to.equals(ZERO_ADDRESS)) {
+  //   let toCollector = loadOrCreateDigitalaxCollectorV2(event.params.to);
+  //   let childrenOwned = toCollector.childrenOwned; // 0x123-123
+  //   let totalChildOwned = childrenOwned.length;
+  //   let updatedChildren = childrenOwned;
 
-    // for each ID being transferred
-    for (let j: number = 0; j < totalIdsTransferred; j++) {
-      let id: BigInt = allIdsInBatch[j as i32];
-      let amount: BigInt = allValuesInBatch[j as i32];
+  //   // for each ID being transferred
+  //   for (let j: number = 0; j < totalIdsTransferred; j++) {
+  //     let id: BigInt = allIdsInBatch[j as i32];
+  //     let amount: BigInt = allValuesInBatch[j as i32];
 
-      // Expected child owner ID
-      let compositeId = event.params.to.toHexString() + "-" + id.toString();
+  //     // Expected child owner ID
+  //     let compositeId = event.params.to.toHexString() + "-" + id.toString();
 
-      // If we already have a child allocated to the collector
-      if (isChildInList(compositeId, childrenOwned)) {
-        // Iterate all children currently owned
-        for (let k: number = 0; k < totalChildOwned; k++) {
-          // Find the matching child
-          let currentChildId = childrenOwned[k as i32];
-          if (currentChildId == compositeId) {
-            // Load collector and add to its balance
-            let child = loadOrCreateDigitalaxChildV2Owner(
-              event,
-              event.params.to,
-              id
-            );
-            child.amount = child.amount.plus(amount);
-            child.save();
+  //     // If we already have a child allocated to the collector
+  //     if (isChildInList(compositeId, childrenOwned)) {
+  //       // Iterate all children currently owned
+  //       for (let k: number = 0; k < totalChildOwned; k++) {
+  //         // Find the matching child
+  //         let currentChildId = childrenOwned[k as i32];
+  //         if (currentChildId == compositeId) {
+  //           // Load collector and add to its balance
+  //           let child = loadOrCreateDigitalaxChildV2Owner(
+  //             event,
+  //             event.params.to,
+  //             id
+  //           );
+  //           child.amount = child.amount.plus(amount);
+  //           child.save();
 
-            updatedChildren[k as i32] = child.id;
-          }
-        }
-      } else {
-        // If we dont already own it, load and increment
-        let child = loadOrCreateDigitalaxChildV2Owner(
-          event,
-          event.params.to,
-          id
-        );
-        child.amount = child.amount.plus(amount);
-        child.save();
+  //           updatedChildren[k as i32] = child.id;
+  //         }
+  //       }
+  //     } else {
+  //       // If we dont already own it, load and increment
+  //       let child = loadOrCreateDigitalaxChildV2Owner(
+  //         event,
+  //         event.params.to,
+  //         id
+  //       );
+  //       child.amount = child.amount.plus(amount);
+  //       child.save();
 
-        // keep track of child
-        updatedChildren.push(child.id);
-      }
-    }
+  //       // keep track of child
+  //       updatedChildren.push(child.id);
+  //     }
+  //   }
 
-    // assign the newly owned children
-    toCollector.childrenOwned = updatedChildren;
-    toCollector.save();
-  }
+  //   // assign the newly owned children
+  //   toCollector.childrenOwned = updatedChildren;
+  //   toCollector.save();
+  // }
 }
