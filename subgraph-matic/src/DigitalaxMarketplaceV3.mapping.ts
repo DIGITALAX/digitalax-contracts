@@ -102,6 +102,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
       history.token = event.params.bundleTokenId.toString();
       history.value = onChainOffer.value.value0;
       history.buyer = event.params.buyer;
+      history.orderId = event.params.orderId;
       history.paymentTokenTransferredAmount =
         event.params.monaTransferredAmount;
       history.garmentCollectionId = event.params.garmentCollectionId;
