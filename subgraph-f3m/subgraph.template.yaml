@@ -1,0 +1,135 @@
+specVersion: 0.0.2
+description: Digitalax Smart Contract Indexing
+repository: https://github.com/DIGITALAX/digitalax-contracts/tree/main/subgraph
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: DigitalaxF3MNFT
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxF3MNFTAddress}}"
+      abi: DigitalaxF3MNFT
+      startBlock: {{DigitalaxF3MNFTStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: DigitalaxF3MNFT
+          file: ./abis/DigitalaxF3MNFT.json
+        - name: DigitalaxMaterialsV2
+          file: ./abis/DigitalaxMaterialsV2.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: ReceivedChild(indexed address,indexed uint256,indexed address,uint256,uint256)
+          handler: handleChildReceived
+        - event: DigitalaxGarmentTokenUriUpdate(indexed uint256,string)
+          handler: handleUriUpdated
+        - event: TokenPrimarySalePriceSet(indexed uint256,uint256)
+          handler: handleTokenPriceSaleUpdated
+      file: ./src/DigitalaxF3MNFT.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxF3MMarketplace
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxF3MMarketplaceAddress}}"
+      abi: DigitalaxF3MMarketplace
+      startBlock: {{DigitalaxF3MMarketplaceStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - DigitalaxMarketplaceContractDeployed
+        - UpdateMarketplacePlatformFee
+        - UpdateMarketplaceDiscountToPayInErc20
+        - OfferCreated
+        - UpdateOfferPrimarySalePrice
+        - OfferPurchased
+        - OfferCancelled
+      abis:
+        - name: DigitalaxF3MMarketplace
+          file: ./abis/DigitalaxF3MMarketplace.json
+      eventHandlers:
+        - event: DigitalaxMarketplaceContractDeployed()
+          handler: handleMarketplaceDeployed
+        - event: UpdateMarketplacePlatformFee(indexed uint256,uint256)
+          handler: handleUpdateMarketplacePlatformFee
+        - event: UpdateMarketplaceDiscountToPayInErc20(indexed uint256,uint256)
+          handler: handleUpdateMarketplaceDiscountToPayInErc20
+        - event: OfferCreated(indexed uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleOfferCreated
+        - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
+          handler: handleOfferPrimarySalePriceUpdated
+        - event: OfferPurchased(indexed uint256,indexed uint256,indexed address,uint256,uint256)
+          handler: handleOfferPurchased
+        - event: OfferPurchasedWithPaymentToken(indexed uint256,address,uint256,uint256)
+          handler: handleOfferPurchasedWithPaymentToken
+        - event: OfferCancelled(indexed uint256)
+          handler: handleOfferCancelled
+      file: ./src/DigitalaxF3MMarketplace.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxF3MIndex
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxF3MIndexAddress}}"
+      abi: DigitalaxF3MIndex
+      startBlock: {{DigitalaxF3MIndexStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - CollectionGroupAdded
+        - CollectionGroupRemoved
+        - CollectionGroupUpdated
+        - DesignerGroupAdded
+        - DesignerGroupRemoved
+        - DeveloperGroupAdded
+        - DeveloperGroupRemoved
+      abis:
+        - name: DigitalaxF3MIndex
+          file: ./abis/DigitalaxF3MIndex.json
+      eventHandlers:
+        - event: CollectionGroupAdded(indexed uint256,uint256[],uint256[],uint256)
+          handler: handleCollectionGroupAdded
+        - event: CollectionGroupRemoved(indexed uint256)
+          handler: handleCollectionGroupRemoved
+        - event: CollectionGroupUpdated(indexed uint256,uint256[],uint256[],uint256)
+          handler: handleCollectionGroupUpdated
+        - event: DesignerGroupAdded(address,string,uint256[],uint256[])
+          handler: handleDesignerGroupAdded
+        - event: DesignerGroupRemoved(address)
+          handler: handleDesignerGroupRemoved
+        - event: DeveloperGroupAdded(address,string,uint256[],uint256[])
+          handler: handleDeveloperGroupAdded
+        - event: DeveloperGroupRemoved(address)
+          handler: handleDeveloperGroupRemoved
+      file: ./src/DigitalaxF3MIndex.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxF3MCollection
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxF3MCollectionAddress}}"
+      abi: DigitalaxF3MCollection
+      startBlock: {{DigitalaxF3MCollectionStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - MintGarmentCollection
+        - BurnGarmentCollection
+      abis:
+        - name: DigitalaxF3MCollection
+          file: ./abis/DigitalaxF3MCollection.json
+      eventHandlers:
+        - event: MintGarmentCollection(uint256,uint256,string)
+          handler: handleGarmentCollectionMinted
+        - event: BurnGarmentCollection(uint256)
+          handler: handleGarmentCollectionBurned
+      file: ./src/DigitalaxF3MCollection.mapping.ts
