@@ -1,0 +1,156 @@
+type GarmentAttribute @entity {
+  id: ID!
+  type: String!
+  value: String!
+}
+
+type AdditionalSource @entity {
+  id: ID!
+  type: String!
+  url: String!
+}
+
+type DigitalaxF3MChildren @entity {
+  id: ID! # {parent-token-id}-{child-token-id}
+  parentId: BigInt! # parent token ID
+  childId: BigInt! # child token ID
+  amount: BigInt!
+  contract: Bytes!
+  tokenUri: String!
+  rarity: String!
+}
+
+type DigitalaxDesigner @entity {
+  id: ID!
+  name: String!
+  description: String!
+  image: String!
+  instagram: String
+  twitter: String
+  collections: [DigitalaxF3MNFTCollection!]!
+}
+
+
+type DigitalaxDeveloper @entity {
+  id: ID!
+  name: String!
+  description: String!
+  image: String!
+  collections: [DigitalaxF3MNFTCollection!]!
+}
+
+
+type DigitalaxF3MNFTCollection @entity {
+  id: ID!
+  garments: [DigitalaxF3MNFT!]!
+  rarity: String!
+  valueSold: BigInt!
+  designer: DigitalaxDesigner
+}
+
+type DigitalaxF3MNFT @entity {
+  id: ID!
+  designer: String!
+  owner: Bytes!
+  primarySalePrice: BigInt!
+  tokenUri: String!
+  image: String!
+  animation: String!
+  name: String!
+  description: String!
+  external: String!
+  additionalSources: [AdditionalSource!]
+  attributes: [GarmentAttribute!]!
+  children: [DigitalaxF3MChildren!]!
+}
+
+type DigitalaxF3MCollectionGroup @entity {
+  id: ID!
+  collections: [DigitalaxF3MNFTCollection!]
+}
+
+type DigitalaxF3MDesigner @entity {
+  id: ID!
+  garments: [DigitalaxF3MNFT!]!
+  # sold
+}
+
+# Total support of all children
+type DigitalaxMaterialV2 @entity {
+  id: ID!
+  tokenUri: String!
+  totalSupply: BigInt!
+  image: String!
+  animation: String!
+  name: String!
+  description: String!
+  external: String!
+  attributes: [GarmentAttribute!]!
+}
+
+type DigitalaxF3MChildOwner @entity {
+  id: ID! # {parent-token-id-holder}-{child-token-id}
+  childId: BigInt! # the child token ID
+  owner: Bytes! # token owner
+  amount: BigInt!
+  contract: Bytes!
+  tokenUri: String!
+  token: DigitalaxMaterialV2!
+}
+
+type DigitalaxF3MCollector @entity {
+  id: ID!
+  parentsOwned: [DigitalaxF3MNFT!]! # only parents owned by the
+  childrenOwned: [DigitalaxF3MChildOwner!]! # only given children when a parent is burnt
+}
+
+type DigitalaxMarketplaceV3PurchaseHistory @entity {
+  id: ID!
+  eventName: String!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  token: DigitalaxF3MNFT!
+  buyer: Bytes!
+  orderId: BigInt
+  value: BigInt! # USD Value
+  shippingUsd: BigInt!
+  paymentTokenTransferredAmount: BigInt!
+  paymentToken: Bytes!
+  garmentCollectionId: BigInt!
+  discountToPayERC20: BigInt!
+  platformFee: BigInt!
+  rarity: String!
+  usdEthExchange: BigInt! # Eth for every USD in wei at the time of the tx
+  usdPaymentTokenExchange: BigInt! # Payment Token for every USD in wei at the time of the tx
+}
+
+type DigitalaxF3MMarketplaceOffer @entity {
+  id: ID!
+  garmentCollection: DigitalaxF3MNFTCollection!
+  primarySalePrice: BigInt!
+  startTime: BigInt!
+  endTime: BigInt!
+  amountSold: BigInt!
+  marketplacePlatformFee: BigInt!
+  discountToPayMona: BigInt!
+}
+
+type DripDay @entity {
+  id: ID!
+  totalMarketplaceVolumeInUSD: BigInt!
+}
+
+type DripGlobalStat @entity {
+  id: ID!
+  totalMarketplaceSalesInUSD: BigInt! # USD value collected in WEI across all marketplace
+  usdETHConversion: BigInt! # USD FOR ETH IN WEI
+}
+
+type DigitalaxF3MGlobalStat @entity {
+  id: ID!
+  totalSalesValue: BigInt! # Eth value in WEI accross all successful auctions
+  totalActiveBidsValue: BigInt! # Eth value of the active aggregate bids across all in flight auctions
+  totalMarketplaceSalesInETH: BigInt! # Eth value collected in WEI across all marketplace
+  totalMarketplaceSalesInMona: BigInt! # Mona value collected in WEI across all marketplace
+  monaPerEth: BigInt! # Mona for every eth in wei
+}
