@@ -16,13 +16,14 @@ async function main() {
   const nounsToken = await upgrades.deployProxy(contractFactory, [deployerAddress, deployerAddress, '0x58807baD0B376efc12F5AD86aAc70E78ed67deaE']);
   await nounsToken.deployed();
 
-  console.log(`nounsToken at: ${nounsToken.address} `);
+  const nounsTokenAddress = nounsToken.address; //'0xEA11d04DEc0B6aec34fF49f1811F86417b0d952C';
+  console.log(`nounsToken at: ${nounsTokenAddress} `);
 
   // TODO
   const tx1 = await nounsToken.setDailyUris([1], Array(1).fill("https://digitalax.mypinata.cloud/ipfs/QmbF8aj3BoaLFQTxgYJa71TnZcG1mHSp7x6fmzSFXESBq9"));
   await tx1.wait();
   // TODO
-  const tx2 = await nounsToken.setNextDaoNFTUri("https://digitalax.mypinata.cloud/ipfs/QmbF8aj3BoaLFQTxgYJa71TnZcG1mHSp7x6fmzSFXESBq9");
+  const tx2 = await nounsToken.setNextDaoNFTUri("https://digitalax.mypinata.cloud/ipfs/Qmanarwy9GpHGwGiRzjTJLiumfL4o1xuhg4MgnbznM5pgk");
   await tx2.wait();
 
   const contractFactory2 = await ethers.getContractFactory("NounsAuctionHouse");
@@ -38,45 +39,48 @@ async function main() {
 
 // WILL BE 0.1 ETH not 1 WEI
   // TODO
-  const nounsTokenAuction = await upgrades.deployProxy(contractFactory2, [nounsToken.address, "0xa6fa4fb5f76172d178d61b04b0ecd319c5d1c0aa", 30, '100000000000000000', 5, 0]);
+  const nounsTokenAuction = await upgrades.deployProxy(contractFactory2, [nounsTokenAddress, "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619", 30, '10000000000000000000', 5, 0]);
   await nounsTokenAuction.deployed();
 
-  const tx3 = await nounsTokenAuction.updateMonaToken("0x6968105460f67c3BF751bE7C15f92F5286Fd0CE5");
+  const tx3 = await nounsTokenAuction.updateMonaToken("0x91Dbd2951310e887940C29D9828556086a52c54A");
   await tx3.wait();
-  const tx4 = await nounsTokenAuction.updateOraclePrice('89797570000000000'); // TODO
+  const tx4 = await nounsTokenAuction.updateOraclePrice('1000000000000000000'); // TODO
   await tx4.wait();
   // const tx5 = await nounsTokenAuction.toggleFreezeETHBid();
   // await tx5.wait();
   const tx6 = await nounsTokenAuction.unpause();
   await tx6.wait();
-  const tx7 = await nounsToken.setMinter(nounsTokenAuction.address);
-  await tx7.wait();
 
-  const startTx = await nounsToken.setStartTime(1648670400);
-  await startTx.wait();
 
   // const date = (Date.now() / 1000)
   // console.log('it is currently');
   // const dateFuture = 1648756800;
 // TODO
-  const tx8 = await nounsTokenAuction.updateDuration(234050);
+  const tx8 = await nounsTokenAuction.updateDuration('104800');
   await tx8.wait();
   const tx9 = await nounsTokenAuction.settleCurrentAndCreateNewAuction();
   await tx9.wait();
 
-  const txDurationFix = await nounsTokenAuction.updateDuration(86400);
+  const txDurationFix = await nounsTokenAuction.updateDuration('86400');
   await txDurationFix.wait();
 
   const tx10 = await nounsTokenAuction.transferOwnership('0x713c95BC55d5FD1a7d54C21CF980406cc973f27b');
   await tx10.wait();
 
+   const tx7 = await nounsToken.setMinter(nounsTokenAuction.address);
+  await tx7.wait();
+
+  const startTx = await nounsToken.setStartTime('1648756800');
+  await startTx.wait();
   const tx11 = await nounsToken.setNoundersDAO('0x713c95BC55d5FD1a7d54C21CF980406cc973f27b');
   await tx11.wait();
 
   const tx12 = await nounsToken.transferOwnership('0x713c95BC55d5FD1a7d54C21CF980406cc973f27b');
   await tx12.wait();
 
-  console.log(`nounsToken at: ${nounsToken.address} `);
+
+
+  console.log(`nounsToken at: ${nounsTokenAddress} `);
   console.log(`nounsTokenAuction at: ${nounsTokenAuction.address} `);
 
 }

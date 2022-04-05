@@ -1342,72 +1342,13 @@ interface IERC721 is IERC165 {
 }
 
 //
-interface IDigitalaxGarmentNFT is IERC721 {
+interface IModelsNFT is IERC721 {
     function isApproved(uint256 _tokenId, address _operator) external view returns (bool);
     function setPrimarySalePrice(uint256 _tokenId, uint256 _salePrice) external;
     function garmentDesigners(uint256 _tokenId) external view returns (address);
-    function mint(address _beneficiary, string calldata _tokenUri, address _designer) external returns (uint256);
+    function garmentModels(uint256 _tokenId) external view returns (address);
+    function mint(address _beneficiary, string calldata _tokenUri, address _designer, address _model) external returns (uint256);
     function burn(uint256 _tokenId) external;
-}
-
-//
-/**
- * @dev Contract module that helps prevent reentrant calls to a function.
- *
- * Inheriting from `ReentrancyGuard` will make the {nonReentrant} modifier
- * available, which can be applied to functions to make sure there are no nested
- * (reentrant) calls to them.
- *
- * Note that because there is a single `nonReentrant` guard, functions marked as
- * `nonReentrant` may not call one another. This can be worked around by making
- * those functions `private`, and then adding `external` `nonReentrant` entry
- * points to them.
- *
- * TIP: If you would like to learn more about reentrancy and alternative ways
- * to protect against it, check out our blog post
- * https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].
- */
-abstract contract ReentrancyGuard {
-    // Booleans are more expensive than uint256 or any type that takes up a full
-    // word because each write operation emits an extra SLOAD to first read the
-    // slot's contents, replace the bits taken up by the boolean, and then write
-    // back. This is the compiler's defense against contract upgrades and
-    // pointer aliasing, and it cannot be disabled.
-
-    // The values being non-zero value makes deployment a bit more expensive,
-    // but in exchange the refund on every call to nonReentrant will be lower in
-    // amount. Since refunds are capped to a percentage of the total
-    // transaction's gas, it is best to keep them low in cases like this one, to
-    // increase the likelihood of the full refund coming into effect.
-    uint256 private constant _NOT_ENTERED = 1;
-    uint256 private constant _ENTERED = 2;
-
-    uint256 private _status;
-
-    constructor () internal {
-        _status = _NOT_ENTERED;
-    }
-
-    /**
-     * @dev Prevents a contract from calling itself, directly or indirectly.
-     * Calling a `nonReentrant` function from another `nonReentrant`
-     * function is not supported. It is possible to prevent this from happening
-     * by making the `nonReentrant` function external, and make it call a
-     * `private` function that does the actual work.
-     */
-    modifier nonReentrant() {
-        // On the first call to nonReentrant, _notEntered will be true
-        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
-
-        // Any calls to nonReentrant after this point will fail
-        _status = _ENTERED;
-
-        _;
-
-        // By storing the original value once again, a refund is triggered (see
-        // https://eips.ethereum.org/EIPS/eip-2200)
-        _status = _NOT_ENTERED;
-    }
 }
 
 //
@@ -1483,117 +1424,27 @@ interface IERC1155Receiver is IERC165 {
 }
 
 //
-/**
- * @dev Implementation of the {IERC165} interface.
- *
- * Contracts may inherit from this and call {_registerInterface} to declare
- * their support of an interface.
- */
-abstract contract ERC165 is IERC165 {
-    /*
-     * bytes4(keccak256('supportsInterface(bytes4)')) == 0x01ffc9a7
+interface IDigitalaxAccessControls {
+    /**
+     * @notice Used to check whether an address has the admin role
+     * @param _address EOA or contract being checked
+     * @return bool True if the account has the role or false if it does not
      */
-    bytes4 private constant _INTERFACE_ID_ERC165 = 0x01ffc9a7;
+    function hasAdminRole(address _address) external view returns (bool);
+
+    function hasMinterRole(address _address) external view returns (bool);
+
+    function hasVerifiedMinterRole(address _address)
+        external
+        view
+        returns (bool);
 
     /**
-     * @dev Mapping of interface ids to whether or not it's supported.
+     * @notice Used to check whether an address has the smart contract role
+     * @param _address EOA or contract being checked
+     * @return bool True if the account has the role or false if it does not
      */
-    mapping(bytes4 => bool) private _supportedInterfaces;
-
-    constructor () internal {
-        // Derived contracts need only register support for their own interfaces,
-        // we register support for ERC165 itself here
-        _registerInterface(_INTERFACE_ID_ERC165);
-    }
-
-    /**
-     * @dev See {IERC165-supportsInterface}.
-     *
-     * Time complexity O(1), guaranteed to always use less than 30 000 gas.
-     */
-    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return _supportedInterfaces[interfaceId];
-    }
-
-    /**
-     * @dev Registers the contract as an implementer of the interface defined by
-     * `interfaceId`. Support of the actual ERC165 interface is automatic and
-     * registering its interface id is not required.
-     *
-     * See {IERC165-supportsInterface}.
-     *
-     * Requirements:
-     *
-     * - `interfaceId` cannot be the ERC165 invalid interface (`0xffffffff`).
-     */
-    function _registerInterface(bytes4 interfaceId) internal virtual {
-        require(interfaceId != 0xffffffff, "ERC165: invalid interface id");
-        _supportedInterfaces[interfaceId] = true;
-    }
-}
-
-//
-/**
- * @dev _Available since v3.1._
- */
-abstract contract ERC1155Receiver is ERC165, IERC1155Receiver {
-    constructor() internal {
-        _registerInterface(
-            ERC1155Receiver(address(0)).onERC1155Received.selector ^
-            ERC1155Receiver(address(0)).onERC1155BatchReceived.selector
-        );
-    }
-}
-
-//
-// solhint-disable-next-line compiler-version
-/**
- * @dev This is a base contract to aid in writing upgradeable contracts, or any kind of contract that will be deployed
- * behind a proxy. Since a proxied contract can't have a constructor, it's common to move constructor logic to an
- * external initializer function, usually called `initialize`. It then becomes necessary to protect this initializer
- * function so it can only be called once. The {initializer} modifier provided by this contract will have this effect.
- *
- * TIP: To avoid leaving the proxy in an uninitialized state, the initializer function should be called as early as
- * possible by providing the encoded function call as the `_data` argument to {UpgradeableProxy-constructor}.
- *
- * CAUTION: When used with inheritance, manual care must be taken to not invoke a parent initializer twice, or to ensure
- * that all initializers are idempotent. This is not verified automatically as constructors are by Solidity.
- */
-abstract contract Initializable {
-
-    /**
-     * @dev Indicates that the contract has been initialized.
-     */
-    bool private _initialized;
-
-    /**
-     * @dev Indicates that the contract is in the process of being initialized.
-     */
-    bool private _initializing;
-
-    /**
-     * @dev Modifier to protect an initializer function from being invoked twice.
-     */
-    modifier initializer() {
-        require(_initializing || _isConstructor() || !_initialized, "Initializable: contract is already initialized");
-
-        bool isTopLevelCall = !_initializing;
-        if (isTopLevelCall) {
-            _initializing = true;
-            _initialized = true;
-        }
-
-        _;
-
-        if (isTopLevelCall) {
-            _initializing = false;
-        }
-    }
-
-    /// @dev Returns true if and only if the function is running in the constructor
-    function _isConstructor() private view returns (bool) {
-        return !Address.isContract(address(this));
-    }
+    function hasSmartContractRole(address _address) external view returns (bool);
 }
 
 //
@@ -1703,13 +1554,11 @@ interface IDigitalaxMaterials is IERC1155 {
     function batchMintChildren(uint256[] calldata _childTokenIds, uint256[] calldata _amounts, address _beneficiary, bytes calldata _data) external;
 }
 
-//
 /**
  * @notice Collection contract for Digitalax NFTs
  */
-contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiver, ERC1155Receiver, Initializable {
+contract ModelsCollection is Context, IERC721Receiver, IERC1155Receiver {
     using SafeMath for uint256;
-    using Address for address payable;
 
     /// @notice Event emitted only on construction. To be used by indexers
     event DigitalaxGarmentCollectionContractDeployed();
@@ -1728,13 +1577,14 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
         uint256 garmentAmount;
         string metadata;
         address designer;
+        address model;
         uint256 auctionTokenId;
         string rarity;
     }
     /// @notice Garment ERC721 NFT - the only NFT that can be offered in this contract
-    IDigitalaxGarmentNFT public garmentNft;
+    IModelsNFT public garmentNft;
     /// @notice responsible for enforcing admin access
-    DigitalaxAccessControls public accessControls;
+    IDigitalaxAccessControls public accessControls;
     /// @dev Array of garment collections
     Collection[] private garmentCollections;
     /// @notice the child ERC1155 strand tokens
@@ -1742,24 +1592,44 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
 
     /// @dev max ERC721 Garments a Collection can hold
     /// @dev if admin configuring this value, should test previously how many parents x children can do in one call due to gas
-    uint256 public maxGarmentsPerCollection = 25;
+    uint256 public maxGarmentsPerCollection;
+    bytes4 private constant _INTERFACE_ID_ERC165 = 0x01ffc9a7;
+    bool initialized;
+    mapping(bytes4 => bool) private _supportedInterfaces;
 
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return _supportedInterfaces[interfaceId];
+    }
+
+    function _registerInterface(bytes4 interfaceId) internal virtual {
+        require(interfaceId != 0xffffffff, "ERC165: invalid interface id");
+        _supportedInterfaces[interfaceId] = true;
+    }
     /**
      @param _accessControls Address of the Digitalax access control contract
      @param _garmentNft Garment NFT token address
      */
     function initialize(
-        DigitalaxAccessControls _accessControls,
-        IDigitalaxGarmentNFT _garmentNft,
+        IDigitalaxAccessControls _accessControls,
+        IModelsNFT _garmentNft,
         IDigitalaxMaterials _materials
-    ) public initializer{
+    ) public {
+        require(!initialized);
+         _registerInterface(
+            IERC1155Receiver(address(0)).onERC1155Received.selector ^
+            IERC1155Receiver(address(0)).onERC1155BatchReceived.selector
+         );
+
+        _registerInterface(_INTERFACE_ID_ERC165);
+
         require(address(_accessControls) != address(0), "DigitalaxGarmentCollection: Invalid Access Controls");
         require(address(_garmentNft) != address(0), "DigitalaxGarmentCollection: Invalid NFT");
         require(address(_materials) != address(0), "DigitalaxGarmentCollection: Invalid Child ERC1155 address");
         accessControls = _accessControls;
         garmentNft = _garmentNft;
         materials = _materials;
-
+        maxGarmentsPerCollection = 25;
+        initialized = true;
         emit DigitalaxGarmentCollectionContractDeployed();
     }
 
@@ -1772,6 +1642,7 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
     function mintCollection(
         string calldata _tokenUri,
         address _designer,
+        address _model,
         uint256 _amount,
         uint256 _auctionId,
         string calldata _rarity,
@@ -1788,12 +1659,12 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
             "DigitalaxGarmentCollection.mintCollection: Amount cannot exceed maxGarmentsPerCollection"
         );
 
-        Collection memory _newCollection = Collection(new uint256[](0), _amount, _tokenUri, _designer, _auctionId, _rarity);
+        Collection memory _newCollection = Collection(new uint256[](0), _amount, _tokenUri, _designer, _model, _auctionId, _rarity);
         uint256 _collectionId = garmentCollections.length;
         garmentCollections.push(_newCollection);
 
         for (uint i = 0; i < _amount; i ++) {
-            uint256 _mintedTokenId = garmentNft.mint(_msgSender(), _newCollection.metadata, _newCollection.designer);
+            uint256 _mintedTokenId = garmentNft.mint(_msgSender(), _newCollection.metadata, _newCollection.designer, _newCollection.model);
 
             // Batch mint child tokens and assign to generated 721 token ID
             if(_childTokenIds.length > 0){
@@ -1829,7 +1700,7 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
         Collection storage _collection = garmentCollections[_collectionId];
 
         for (uint i = 0; i < _amount; i ++) {
-            uint256 _mintedTokenId = garmentNft.mint(_msgSender(), _collection.metadata, _collection.designer);
+            uint256 _mintedTokenId = garmentNft.mint(_msgSender(), _collection.metadata, _collection.designer, _collection.model);
 
             // Batch mint child tokens and assign to generated 721 token ID
             if(_childTokenIds.length > 0){
@@ -1877,13 +1748,14 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
     function getCollection(uint256 _collectionId)
     external
     view
-    returns (uint256[] memory _garmentTokenIds, uint256 _amount, string memory _tokenUri, address _designer) {
+    returns (uint256[] memory _garmentTokenIds, uint256 _amount, string memory _tokenUri, address _designer, address _model) {
         Collection memory collection = garmentCollections[_collectionId];
         return (
             collection.garmentTokenIds,
             collection.garmentAmount,
             collection.metadata,
-            collection.designer
+            collection.designer,
+            collection.model
         );
     }
 
@@ -1945,7 +1817,7 @@ contract DigitalaxGarmentCollectionV2 is Context, ReentrancyGuard, IERC721Receiv
      @dev Only admin
      @param _accessControls Address of the new access controls contract
      */
-    function updateAccessControls(DigitalaxAccessControls _accessControls) external {
+    function updateAccessControls(IDigitalaxAccessControls _accessControls) external {
         require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentCollection.updateAccessControls: Sender must be admin");
         accessControls = _accessControls;
     }
@@ -2062,7 +1934,7 @@ interface IDripOracle {
 /**
  * @notice Marketplace contract for Digitalax NFTs
  */
-contract DigitalaxMarketplaceV3 is BaseRelayRecipient {
+contract ModelsMarketplaceV3 is BaseRelayRecipient {
     using SafeMath for uint256;
     /// @notice Event emitted only on construction. To be used by indexers
     event DigitalaxMarketplaceContractDeployed();
@@ -2176,10 +2048,10 @@ contract DigitalaxMarketplaceV3 is BaseRelayRecipient {
     /// @notice Garment Collection ID -> Buyer -> Last purhcased time
     mapping(uint256 => mapping(address => uint256)) public lastPurchasedTime;
     /// @notice Garment ERC721 NFT - the only NFT that can be offered in this contract
-    IDigitalaxGarmentNFT public garmentNft;
+    IModelsNFT public garmentNft;
     /// @notice Garment NFT Collection
-    DigitalaxGarmentCollectionV2 public garmentCollection;
-    /// @notice oracle for TOKEN/USDT exchange rate
+    ModelsCollection public garmentCollection;
+    /// @notice oracle for MONA/ETH exchange rate
     IDripOracle public oracle;
     /// @notice responsible for enforcing admin access
     DigitalaxAccessControls public accessControls;
@@ -2223,8 +2095,8 @@ contract DigitalaxMarketplaceV3 is BaseRelayRecipient {
     }
     function initialize(
         DigitalaxAccessControls _accessControls,
-        IDigitalaxGarmentNFT _garmentNft,
-        DigitalaxGarmentCollectionV2 _garmentCollection,
+        IModelsNFT _garmentNft,
+        ModelsCollection _garmentCollection,
         IDripOracle _oracle,
         address payable _platformFeeRecipient,
         address _wethERC20Token,
@@ -2429,7 +2301,6 @@ contract DigitalaxMarketplaceV3 is BaseRelayRecipient {
         }
 
         require(_getNow() >= offer.startTime, "DigitalaxMarketplace.buyOffer: Purchase outside of the offer window");
-		// todo FINISH CALCULATING HOW MUCH FEE IS AND PUTTING THROUGH MUTLIPLE PAYMENT TOKEN WITH THE MULTIPLE RECIPIENTS
 
         uint offerPriceInPaymentToken = _estimateTokenAmount(_paymentToken, offer.primarySalePrice);
         uint shippingPriceInPaymentToken = _estimateTokenAmount(_paymentToken, _shippingUSD);
@@ -2458,7 +2329,17 @@ contract DigitalaxMarketplaceV3 is BaseRelayRecipient {
                 IERC20(_paymentToken).transferFrom(_msgSender(),  offer.designersOverride[i], payoutToDesigner);
             }
         } else{
-            IERC20(_paymentToken).transferFrom(_msgSender(), garmentNft.garmentDesigners(bundleTokenId), amountOfERC20ToTransferToDesigner);
+            //IERC20(_paymentToken).transferFrom(_msgSender(), garmentNft.garmentDesigners(bundleTokenId), amountOfERC20ToTransferToDesigner);
+            // If there is no garment model, send to designer address
+            if(garmentNft.garmentModels(bundleTokenId) == address(0)){
+                IERC20(_paymentToken).transferFrom(_msgSender(), garmentNft.garmentDesigners(bundleTokenId), amountOfERC20ToTransferToDesigner);
+            } // If there is no designer address, send to model
+            else if(garmentNft.garmentDesigners(bundleTokenId) == address(0)) {
+                IERC20(_paymentToken).transferFrom(_msgSender(), garmentNft.garmentModels(bundleTokenId), amountOfERC20ToTransferToDesigner);
+            } else { // Or else send them 50/50
+                IERC20(_paymentToken).transferFrom(_msgSender(), garmentNft.garmentDesigners(bundleTokenId), amountOfERC20ToTransferToDesigner.div(uint256(2)));
+                IERC20(_paymentToken).transferFrom(_msgSender(), garmentNft.garmentModels(bundleTokenId), amountOfERC20ToTransferToDesigner.div(uint256(2)));
+            }
         }
 
         IERC20(_paymentToken).transferFrom(_msgSender(), platformFeeRecipient, amountOfERC20ToTransferAsFees);

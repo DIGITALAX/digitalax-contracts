@@ -1331,7 +1331,7 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     ) external{
         require(!initialized);
 
-        initializeERC721('CC0 Daily Public Auctions', 'CC0PUB');
+        initializeERC721('CC0 Daily Private Auctions', 'CC0PRI');
         initializeOwner();
 
         noundersDAO = _noundersDAO;
@@ -1339,7 +1339,7 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         minter = _minter;
         startTime = block.timestamp;
         initialized = true;
-        contractURIString = 'TODO';
+        contractURIString = 'QmVfat9Pd6tchVWdVMfSwKDLJ1gpHVL5s2QMPhYd7yuXEJ';
     }
 
     //TODO
