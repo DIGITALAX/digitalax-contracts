@@ -4,49 +4,58 @@ const {
 const GarmentCollectionArtifact = require('../../artifacts/contracts/garment/DigitalaxGarmentCollectionV2.sol/DigitalaxGarmentCollectionV2.json');
 const DigitalaxMarketplaceV2Artifact = require('../../artifacts/contracts/DigitalaxMarketplaceV2.sol/DigitalaxMarketplaceV2.json');
 const DigitalaxMarketplaceV3Artifact = require('../../artifacts/contracts/DigitalaxMarketplaceV3.sol/DigitalaxMarketplaceV3.json');
-import { createRaribleSdk } from "@rarible/sdk";
-import FormData from "form-data"
-import fetch from "node-fetch"
+const DigitalaxGarmentV2Artifact = require('../../artifacts/contracts/garment/DigitalaxGarmentNFTv2.sol/DigitalaxGarmentNFTv2.json');
+const RaribleSDK = require("@rarible/sdk");
+const fetchy = require ("node-fetch").default;
+const Web3ProviderEngine = require("web3-provider-engine");
 
-import { toContractAddress, toItemId, toOrderId } from "@rarible/types";
-import Web3ProviderEngine from "web3-provider-engine"
-import Wallet from "ethereumjs-wallet"
-import { TestSubprovider } from "@rarible/test-provider"
+const ethjswallet = require( "ethereumjs-wallet").default;
+const TestSubprovider = require( "@rarible/test-provider").TestSubprovider;
 // @ts-ignore
-import RpcSubprovider from "web3-provider-engine/subproviders/rpc"
-import { EthereumWallet } from "@rarible/sdk-wallet"
-import { ethers } from "ethers"
-import { EthersEthereum } from "@rarible/ethers-ethereum"
+const RpcSubprovider = require( "web3-provider-engine/subproviders/rpc");
 
-export const getCurrency = (address) => ({
+const raribleTypes = require ("@rarible/types");
+
+const sdkwallet = require( "@rarible/sdk-wallet")
+const EthersEthereum = require("@rarible/ethers-ethereum").EthersEthereum;
+
+
+const getCurrency = (address) => ({
   "@type": "ERC20",
-  contract: toContractAddress(
+  contract: raribleTypes.toContractAddress(
     // WETH address on Rinkeby/Ropsten testnets
     `POLYGON:${address}`
   ),
 });
 
-export const getTokenAddress = (id) => `POLYGON:${id}`;
+const getTokenAddress = (id) => `POLYGON:${id}`;
+function initNodeProvider(pk, config) {
+	const provider = new Web3ProviderEngine({ pollingInterval: 100 })
+	const privateKey = pk.startsWith("0x") ? pk.substring(2) : pk
 
-export function initWallet(privateKey) {
-	if (
-		process.env["ETHEREUM_RPC_URL"] === undefined ||
-    process.env["ETHEREUM_NETWORK_ID"] === undefined
-	) {
-		throw new Error("Provide ETHEREUM_RPC_URL, ETHEREUM_NETWORK_ID as environment variables!")
-	}
+    const wallet = new ethjswallet(Buffer.from(privateKey, "hex"));
+	provider.addProvider(new TestSubprovider(wallet, { networkId: config.networkId, chainId: config.networkId }))
+	provider.addProvider(new RpcSubprovider({ rpcUrl: config.rpcUrl }))
+	provider.start()
+	return provider
+}
+function initWallet(privateKey) {
+
 	const provider = initNodeProvider(privateKey, {
-		rpcUrl: process.env["ETHEREUM_RPC_URL"],
-		networkId: +process.env["ETHEREUM_NETWORK_ID"],
+		rpcUrl: "https://polygon-rpc.com",
+		networkId: 137,
 	})
 	//@ts-ignore
 	const raribleEthers = new ethers.providers.Web3Provider(provider)
 
 	//@ts-ignore
 	const raribleProvider = new EthersEthereum(new ethers.Wallet(privateKey, raribleEthers))
-	return new EthereumWallet(raribleProvider)
+	return new sdkwallet.EthereumWallet(raribleProvider)
 }
 
+const getMonaContractAddress= () => {
+  return "0x6968105460f67c3BF751bE7C15f92F5286Fd0CE5";
+};
 
 
 async function main() {
@@ -65,6 +74,11 @@ async function main() {
   const MARKETPLACE_ADDRESS = '0x8F235A04cC541efF19Fd42EFBfF0FCACAdd09DBC';
   const V3_ADDRESS = '0x498bbac12E88C95ef97c95d9F75fC4860c7BE1cc';
 
+  const nft = new ethers.Contract(
+      ERC721_GARMENT_ADDRESS,
+      DigitalaxGarmentV2Artifact.abi,
+      deployer
+  );
   const garmentCollection = new ethers.Contract(
       GARMENT_COLLECTION_ADDRESS,
       GarmentCollectionArtifact.abi,
@@ -83,74 +97,73 @@ async function main() {
   );
 
 
-  //// SETTINGS
-
-  const reservePrice_conversion = 1886792452830188; // $1 of mona // TODO
-
- // const test_startTime = '1606347000'; // 11/25/2020 @ 11:30pm (UTC) | 3:30pm pst November 25th
-
-  const mainnet_startTime = '1648652451';
-  const mainnet_endTime = '1711825251';
-
-  for (let i = 625; i <= 900; i++) {
+  for (let i = 16; i <= 20; i++) {
 
     const collection = await garmentCollection.getCollection(i);
-    console.log("---------"); // TODO start here
-    console.log(i); // TODO start here
-    console.log('collection length'); // TODO start here
-    console.log(collection[0].length); // TODO start here
 
     const offer = await marketplace.getOffer(i);
     console.log('offer');
     console.log(offer);
-    //    offer.primarySalePrice,
-    //             offer.startTime,
-    //             offer.endTime,
-    //             availableAmount,
-    //             offer.platformFee,
-    //             offer.discountToPayERC20
-    const price = (new BN(offer[0].toString()).mul(new BN('367'))).toString();
+
+    const price = (new BN(offer[0].toString()).mul(new BN('1'))).toString();
     console.log(price);
     console.log('here we go');
     if(price === '0'){
       console.log('no price, no offer');
     }
     if (collection[0].length > 0 && price !== '0') {
-      try {
+
         console.log('creating the offer');
         // Create a marketplace offer for this exclusive parent nft
 
         console.log(`created offer ${i}`);
 
       //index = supply - max amount
+      console.log("price");
+      console.log(offer[0]);
+      console.log("platform fee");
+      const fee = parseFloat(offer[4].toString()) * 10;
+      const designerCut = 10000 - fee;
+
       console.log(offer[4]);
+      console.log(fee);
       console.log(offer[4].toString());
       // const availableIndex = collection[0].length - Number.parseInt(offer[4].toString());
       const availableIndex = await marketplace.offers(i);
       console.log('availableIndex');
       console.log(availableIndex[3]);
 
-
-      } catch(e){
-        console.log(i);
-        console.log(e);
-      }
-
+    for(let j=0; j <collection[0].length; j++) {
+      try {
+        const tokenId = 101480; // This
+        const nftDesigner = await nft.garmentDesigners(tokenId);
+        console.log('nftDesigner');
+        console.log(nftDesigner);
 
       const raribleSdkWallet = initWallet(PRIVATE_KEY)
-		//@ts-ignore
-		const raribleSdk = createRaribleSdk(raribleSdkWallet, "prod", { fetchApi: fetch })
 
-      const address = await getMonaContractAddressByChainId(chainId);
-      const tokenMultichainAddress = getTokenAddress(tokenId);
+		const raribleSdk = RaribleSDK.createRaribleSdk(raribleSdkWallet, "prod", { fetchApi: fetchy.fetch })
+
+      const address = await getMonaContractAddress();
+      const tokenMultichainAddress = getTokenAddress(ERC721_GARMENT_ADDRESS + ":" + tokenId);
       const currency = getCurrency(address);
       const amount = 1;
+      console.log('creating order');
+      console.log(price);
+      console.log(currency);
+      console.log(currency);
 
       const orderRequest = {
-          itemId: toItemId(tokenMultichainAddress),
+          itemId: raribleTypes.toItemId(tokenMultichainAddress),
         };
 
+      console.log('orderRequest');
+      console.log(orderRequest);
+
         const orderResponse = await raribleSdk.order.sell(orderRequest);
+
+
+        console.log('got order response');
         const response = await orderResponse.submit({
           amount,
           price,
@@ -158,17 +171,28 @@ async function main() {
           //2 years expiry
           expirationDate: new Date(Date.now() + 60 * 60 * 1000 * 8760 * 2),
           payouts: [{
-            account: toUnionAddress("<PAYOUT_ADDRESS>"),
+            account: raribleTypes.toUnionAddress("0xAA3e5ee4fdC831e5274FE7836c95D670dC2502e6"), // Emma receiving address
             //85%
-            value: 8500,
+            value: fee,
         },
               {
-            account: toUnionAddress("<PAYOUT_ADDRESS>"),
+            account: raribleTypes.toUnionAddress(nftDesigner),
             //15%
-            value: 1500,
+            value: designerCut,
         }
         ],
         });
+        console.log("order submitted");
+
+      } catch (e) {
+        console.log("error submitting order"
+        );
+        console.log(j);
+        console.log(e);
+      }
+    }
+
+
 
       console.log(`----------------------`);
     }
