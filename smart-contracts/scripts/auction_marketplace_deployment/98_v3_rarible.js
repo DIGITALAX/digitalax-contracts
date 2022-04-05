@@ -155,6 +155,8 @@ async function main() {
           amount,
           price,
           currency,
+          //2 years expiry
+          expirationDate: new Date(Date.now() + 60 * 60 * 1000 * 8760 * 2),
           payouts: [{
             account: toUnionAddress("<PAYOUT_ADDRESS>"),
             //85%
