@@ -16,7 +16,7 @@ async function main() {
     const childChain = '0x6c2a60333442aad9c34e7034fa1d04d7ad0a6f33';
     const trustedForwarderAddress = "0x86C80a8aa58e0A4fa09A69624c31Ab2a6CAD56b8";
 
-    const monaTokenAddress = '0x6968105460f67c3BF751bE7C15f92F5286Fd0CE5';
+    const monaTokenAddress = '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619';
 
     const oracleAddress = '0x850068534c72317a762f0340500dee727ea85e29';
 

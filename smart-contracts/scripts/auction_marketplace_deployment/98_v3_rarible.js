@@ -16,6 +16,7 @@ const TestSubprovider = require( "@rarible/test-provider").TestSubprovider;
 const RpcSubprovider = require( "web3-provider-engine/subproviders/rpc");
 
 const raribleTypes = require ("@rarible/types");
+const LogsLevel = require('@rarible/sdk/build/domain').LogsLevel;
 
 const sdkwallet = require( "@rarible/sdk-wallet")
 const EthersEthereum = require("@rarible/ethers-ethereum").EthersEthereum;
@@ -47,14 +48,16 @@ function initNodeProvider(pk, config) {
 
     const wallet = new ethjswallet(Buffer.from(privateKey, "hex"));
 	provider.addProvider(new TestSubprovider(wallet, { networkId: config.networkId, chainId: config.networkId }))
-	provider.addProvider(new RpcSubprovider({ rpcUrl: config.rpcUrl }))
+	provider.addProvider(new RpcSubprovider({ rpcUrl: config.rpcUrl }));
 	provider.start()
 	return provider
 }
 function initWallet(privateKey) {
 
 	const provider = initNodeProvider(privateKey, {
-		rpcUrl: "https://polygon-rpc.com",
+		// rpcUrl: "https://polygon-rpc.com",
+		// rpcUrl: "https://matic-mainnet.chainstacklabs.com",
+		rpcUrl: "https://node-mainnet-polygon.rarible.com",
 		networkId: 137,
 	})
 	//@ts-ignore
@@ -110,6 +113,13 @@ async function main() {
 
   updateNodeGlobalVars();
 
+   const raribleSdkWallet = initWallet(PRIVATE_KEY)
+
+  const raribleSdk = RaribleSDK.createRaribleSdk(raribleSdkWallet, "prod",  {logs: LogsLevel.DISABLED});
+
+   //const raribleSdk = RaribleSDK.createRaribleSdk(raribleSdkWallet, "prod", { fetchApi: fetchy })
+
+
 
   for (let i = 16; i <= 20; i++) {
 
@@ -153,10 +163,6 @@ async function main() {
         const nftDesigner = await nft.garmentDesigners(tokenId);
         console.log('nftDesigner');
         console.log(nftDesigner);
-
-      const raribleSdkWallet = initWallet(PRIVATE_KEY)
-
-		const raribleSdk = RaribleSDK.createRaribleSdk(raribleSdkWallet, "prod", { fetchApi: fetchy })
 
       const address = await getMonaContractAddress();
       const tokenMultichainAddress = getTokenAddress(ERC721_GARMENT_ADDRESS + ":" + tokenId);
