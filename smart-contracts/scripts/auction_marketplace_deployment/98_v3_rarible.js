@@ -7,6 +7,7 @@ const DigitalaxMarketplaceV3Artifact = require('../../artifacts/contracts/Digita
 const DigitalaxGarmentV2Artifact = require('../../artifacts/contracts/garment/DigitalaxGarmentNFTv2.sol/DigitalaxGarmentNFTv2.json');
 const RaribleSDK = require("@rarible/sdk");
 const fetchy = require ("node-fetch").default;
+const FormData = require ("form-data");
 const Web3ProviderEngine = require("web3-provider-engine");
 
 const ethjswallet = require( "ethereumjs-wallet").default;
@@ -27,6 +28,17 @@ const getCurrency = (address) => ({
     `POLYGON:${address}`
   ),
 });
+
+function updateNodeGlobalVars() {
+	(global).FormData = FormData;
+	(global).window = {
+		fetch: fetchy,
+		dispatchEvent: () => {},
+	};
+	(global).CustomEvent = function CustomEvent() {
+		return
+	}
+}
 
 const getTokenAddress = (id) => `POLYGON:${id}`;
 function initNodeProvider(pk, config) {
@@ -96,6 +108,8 @@ async function main() {
       deployer
   );
 
+  updateNodeGlobalVars();
+
 
   for (let i = 16; i <= 20; i++) {
 
@@ -142,7 +156,7 @@ async function main() {
 
       const raribleSdkWallet = initWallet(PRIVATE_KEY)
 
-		const raribleSdk = RaribleSDK.createRaribleSdk(raribleSdkWallet, "prod", { fetchApi: fetchy.fetch })
+		const raribleSdk = RaribleSDK.createRaribleSdk(raribleSdkWallet, "prod", { fetchApi: fetchy })
 
       const address = await getMonaContractAddress();
       const tokenMultichainAddress = getTokenAddress(ERC721_GARMENT_ADDRESS + ":" + tokenId);
@@ -171,12 +185,12 @@ async function main() {
           //2 years expiry
           expirationDate: new Date(Date.now() + 60 * 60 * 1000 * 8760 * 2),
           payouts: [{
-            account: raribleTypes.toUnionAddress("0xAA3e5ee4fdC831e5274FE7836c95D670dC2502e6"), // Emma receiving address
+            account: raribleTypes.toUnionAddress("ETHEREUM:0xaa3e5ee4fdc831e5274fe7836c95d670dc2502e6"), // Emma receiving address
             //85%
             value: fee,
         },
               {
-            account: raribleTypes.toUnionAddress(nftDesigner),
+            account: raribleTypes.toUnionAddress("ETHEREUM:" + nftDesigner),
             //15%
             value: designerCut,
         }
