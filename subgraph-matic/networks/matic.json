@@ -84,7 +84,14 @@
   "ProgressionAccessControls": "0x384e682C27876686792F547381b04e9CfE8b4c29",
   "ProgressionContributionNFt": "0x6ec95240DC3EB1aeDdc23B91CEFF3E267cC2d037",
   "AvatarElementalsAddress": "0x6c2a60333442aad9c34e7034fa1d04d7ad0a6f33",
-  "AvatarElementalsStartBlock": "23527404",
-  "DigitalaxMarketplaceV3Address": "0x498bbac12E88C95ef97c95d9F75fC4860c7BE1cc",
-  "DigitalaxMarketplaceV3StartBlock": 26542481
+  "AvatarElementalsStartBlock": 23527404,
+  "DigitalaxMarketplaceV3Address": "0x498bbac12e88c95ef97c95d9f75fc4860c7be1cc",
+  "DigitalaxMarketplaceV3StartBlock": 26542481,
+  "NounsToken": "0x9F8475Da44D8E96a9b2d8284a02Fb14a0772854C",
+  "NounsAuctionHouse": "0x45967a5E5207986FD0F27C88047F5cd776D74F06",
+  "ModelsMarketplaceV3": "0x62114DAdF3204499772E80abE80933575Ab9A136",
+  "CC0NFT": "0x78957e3394155721562fa64920ddcf173b18eeb3",
+  "CC0NFTCollection": "0xffe651a1d83107b198703faab2e0041aacd585aa",
+  "CC0Index": "0x2Ef039CAF5BF4288931Af1d200145649e72e3879",
+  "CC0Marketplace": "0x7df9E877c019Dd6adcc2A28f0B410854581a9F73"
 }
