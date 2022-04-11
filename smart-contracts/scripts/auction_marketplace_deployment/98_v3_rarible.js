@@ -11,7 +11,7 @@ const FormData = require ("form-data");
 const Web3ProviderEngine = require("web3-provider-engine");
 
 const ethjswallet = require( "ethereumjs-wallet").default;
-const TestSubprovider = require( "@rarible/test-provider").TestSubprovider;
+const HDWalletProvider = require('@truffle/hdwallet-provider');
 // @ts-ignore
 const RpcSubprovider = require( "web3-provider-engine/subproviders/rpc");
 
@@ -43,14 +43,16 @@ function updateNodeGlobalVars() {
 
 const getTokenAddress = (id) => `POLYGON:${id}`;
 function initNodeProvider(pk, config) {
-	const provider = new Web3ProviderEngine({ pollingInterval: 100 })
+	//const provider = new Web3ProviderEngine({ pollingInterval: 100 })
 	const privateKey = pk.startsWith("0x") ? pk.substring(2) : pk
 
-    const wallet = new ethjswallet(Buffer.from(privateKey, "hex"));
-	provider.addProvider(new TestSubprovider(wallet, { networkId: config.networkId, chainId: config.networkId }))
-	provider.addProvider(new RpcSubprovider({ rpcUrl: config.rpcUrl }));
-	provider.start()
-	return provider
+   // const wallet = new ethjswallet(Buffer.from(privateKey, "hex"));
+	const provider = new HDWalletProvider(privateKey, config.rpcUrl)
+
+
+	// provider.addProvider(new RpcSubprovider({ rpcUrl: config.rpcUrl }));
+	//provider.start()
+	return provider;
 }
 function initWallet(privateKey) {
 
