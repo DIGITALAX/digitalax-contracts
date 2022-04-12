@@ -468,6 +468,7 @@ dataSources:
         - UpdateOfferPrimarySalePrice
         - OfferPurchased
         - OfferCancelled
+        - UpdateAvailableIndex
       abis:
         - name: DigitalaxMarketplaceV3
           file: ./abis/DigitalaxMarketplaceV3.json
@@ -488,6 +489,8 @@ dataSources:
           handler: handleOfferPurchasedWithPaymentToken
         - event: OfferCancelled(indexed uint256)
           handler: handleOfferCancelled
+        - event: UpdateOfferAvailableIndex(indexed uint256,uint256)
+          handler: handleUpdateAvailableIndex
       file: ./src/DigitalaxMarketplaceV3.mapping.ts
   - kind: ethereum/contract
     name: DigitalaxMarketplaceV2

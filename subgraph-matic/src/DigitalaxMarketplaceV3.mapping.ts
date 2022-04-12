@@ -11,6 +11,7 @@ import {
   UpdateMarketplacePlatformFee,
   UpdateMarketplaceDiscountToPayInErc20,
   OfferPurchasedWithPaymentToken,
+  UpdateOfferAvailableIndex
 } from "../generated/DigitalaxMarketplaceV3/DigitalaxMarketplaceV3";
 
 import {
@@ -23,6 +24,7 @@ import { ZERO } from "./constants";
 import { loadDayFromEvent } from "./factory/DripDay.factory";
 import { loadOrCreateDripGlobalStats } from "./factory/DripGlobalStats.factory";
 import { loadOrCreateDigitalaxMarketplaceV3PurchaseHistory } from "./factory/DigitalaxMarketplaceV3PurchaseHistory.factory";
+
 
 export function handleMarketplaceDeployed(
   event: DigitalaxMarketplaceContractDeployed
@@ -156,11 +158,43 @@ export function handleOfferPurchasedWithPaymentToken(
 
 export function handleOfferCancelled(event: OfferCancelled): void {
   let offer = DigitalaxMarketplaceV3Offer.load(
-    event.params.bundleTokenId.toString()
+      event.params.bundleTokenId.toString()
   );
   if (offer) {
     offer.primarySalePrice = null;
     offer.garmentCollection = null;
     offer.save();
+  }
+}
+
+  export function handleUpdateAvailableIndex(event: UpdateOfferAvailableIndex): void {
+  let contract = DigitalaxMarketplaceV3Contract.bind(event.address);
+  let collection = DigitalaxGarmentV2Collection.load(
+    event.params.garmentCollectionId.toString()
+  );
+  if(collection) {
+    const onChainOffer = contract.try_getOffer(event.params.garmentCollectionId);
+    if (!onChainOffer.reverted) {
+      const offerValue = onChainOffer.value.value0;
+
+      let globalStats = loadOrCreateDripGlobalStats();
+
+      globalStats.totalMarketplaceSalesInUSD = globalStats.totalMarketplaceSalesInUSD.plus(
+          offerValue
+      );
+
+      globalStats.save();
+
+      let offer = DigitalaxMarketplaceV3Offer.load(
+          event.params.garmentCollectionId.toString()
+      );
+      offer.amountSold = offer.amountSold.plus(ONE);
+      offer.save();
+
+      collection.valueSold = collection.valueSold.plus(
+          onChainOffer.value.value0
+      );
+      collection.save();
+    }
   }
 }
