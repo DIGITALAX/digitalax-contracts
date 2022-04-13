@@ -562,6 +562,17 @@ type DigitalaxModelMarketplaceOffer @entity {
   discountToPayMona: BigInt!
 }
 
+type DigitalaxModelMarketplaceV3Offer @entity {
+  id: ID!
+  garmentCollection: DigitalaxModelCollection!
+  primarySalePrice: BigInt!
+  startTime: BigInt!
+  endTime: BigInt!
+  amountSold: BigInt!
+  marketplacePlatformFee: BigInt!
+  discountToPayMona: BigInt!
+}
+
 type DigitalaxSubscriptionMarketplaceOffer @entity {
   id: ID!
   subscriptionCollection: DigitalaxSubscriptionCollection!
@@ -661,6 +672,27 @@ type DigitalaxModelMarketplacePurchaseHistory @entity {
   discountToPayMona: BigInt!
   rarity: String!
   monaPerEth: BigInt! # Mona for every eth in wei at the time of the tx
+}
+
+type DigitalaxModelMarketplaceV3PurchaseHistory @entity {
+  id: ID!
+  eventName: String!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  token: DigitalaxModelNFT!
+  orderId: BigInt
+  buyer: Bytes!
+  value: BigInt!
+  isPaidWithMona: Boolean!
+  paymentTokenTransferredAmount: BigInt!
+  garmentCollectionId: BigInt!
+  platformFee: BigInt!
+  discountToPayERC20: BigInt!
+  rarity: String!
+  paymentToken: Bytes!
+  monaPerEth: BigInt! # Mona for every eth in wei at the time of the tx
+  usdEthExchange: BigInt! # Eth for every USD in wei at the time of the tx
+  usdPaymentTokenExchange: BigInt! # Payment Token for every USD in wei at the time of the tx
 }
 
 type DigitalaxSubscriptionPurchaseHistory @entity {
