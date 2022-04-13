@@ -40,6 +40,8 @@
   "DigitalaxMarketplaceV2StartBlock": 15377622,
   "DigitalaxModelMarketplaceAddress": "0x68FEe8726D617460d717ecCcC35556d7C32696bD",
   "DigitalaxModelMarketplaceStartBlock": 23714137,
+  "DigitalaxModelMarketplaceV3Address": "0x62114DAdF3204499772E80abE80933575Ab9A136",
+  "DigitalaxModelMarketplaceV3StartBlock": 26740449,
   "DigitalaxNFTStakingAddress": "0xd80eeB5aFfd3C419f2Cb05477372778862D26757",
   "DigitalaxNFTStakingStartBlock": 21938451,
   "DigitalaxOldNFTStakingAddress": "0xa7cf890C70817D57ea355C2F4B4BF23B064D91F7",
