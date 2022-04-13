@@ -5,8 +5,8 @@ import "@openzeppelin/contracts/GSN/Context.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./DigitalaxAccessControls.sol";
-import "./garment/IDigitalaxGarmentNFT.sol";
-import "./garment/DigitalaxGarmentCollectionV2.sol";
+import "./garment/IModelsNFT.sol";
+import "./garment/ModelsCollection.sol";
 import "./EIP2771/BaseRelayRecipient.sol";
 import "./oracle/IDripOracle.sol";
 
@@ -127,10 +127,10 @@ contract DigitalaxMarketplaceV3 is BaseRelayRecipient {
     /// @notice Garment Collection ID -> Buyer -> Last purhcased time
     mapping(uint256 => mapping(address => uint256)) public lastPurchasedTime;
     /// @notice Garment ERC721 NFT - the only NFT that can be offered in this contract
-    IDigitalaxGarmentNFT public garmentNft;
+    IModelsNFT public garmentNft;
     /// @notice Garment NFT Collection
-    DigitalaxGarmentCollectionV2 public garmentCollection;
-    /// @notice oracle for TOKEN/USDT exchange rate
+    ModelsCollection public garmentCollection;
+    /// @notice oracle for MONA/ETH exchange rate
     IDripOracle public oracle;
     /// @notice responsible for enforcing admin access
     DigitalaxAccessControls public accessControls;
@@ -174,8 +174,8 @@ contract DigitalaxMarketplaceV3 is BaseRelayRecipient {
     }
     function initialize(
         DigitalaxAccessControls _accessControls,
-        IDigitalaxGarmentNFT _garmentNft,
-        DigitalaxGarmentCollectionV2 _garmentCollection,
+        IModelsNFT _garmentNft,
+        ModelsCollection _garmentCollection,
         IDripOracle _oracle,
         address payable _platformFeeRecipient,
         address _wethERC20Token,
@@ -380,8 +380,7 @@ contract DigitalaxMarketplaceV3 is BaseRelayRecipient {
         }
 
         require(_getNow() >= offer.startTime, "DigitalaxMarketplace.buyOffer: Purchase outside of the offer window");
-		// todo FINISH CALCULATING HOW MUCH FEE IS AND PUTTING THROUGH MUTLIPLE PAYMENT TOKEN WITH THE MULTIPLE RECIPIENTS
-
+		
         uint offerPriceInPaymentToken = _estimateTokenAmount(_paymentToken, offer.primarySalePrice);
         uint shippingPriceInPaymentToken = _estimateTokenAmount(_paymentToken, _shippingUSD);
 
@@ -409,7 +408,17 @@ contract DigitalaxMarketplaceV3 is BaseRelayRecipient {
                 IERC20(_paymentToken).transferFrom(_msgSender(),  offer.designersOverride[i], payoutToDesigner);
             }
         } else{
-            IERC20(_paymentToken).transferFrom(_msgSender(), garmentNft.garmentDesigners(bundleTokenId), amountOfERC20ToTransferToDesigner);
+            //IERC20(_paymentToken).transferFrom(_msgSender(), garmentNft.garmentDesigners(bundleTokenId), amountOfERC20ToTransferToDesigner);
+            // If there is no garment model, send to designer address
+            if(garmentNft.garmentModels(bundleTokenId) == address(0)){
+                IERC20(_paymentToken).transferFrom(_msgSender(), garmentNft.garmentDesigners(bundleTokenId), amountOfERC20ToTransferToDesigner);
+            } // If there is no designer address, send to model
+            else if(garmentNft.garmentDesigners(bundleTokenId) == address(0)) {
+                IERC20(_paymentToken).transferFrom(_msgSender(), garmentNft.garmentModels(bundleTokenId), amountOfERC20ToTransferToDesigner);
+            } else { // Or else send them 50/50
+                IERC20(_paymentToken).transferFrom(_msgSender(), garmentNft.garmentDesigners(bundleTokenId), amountOfERC20ToTransferToDesigner.div(uint256(2)));
+                IERC20(_paymentToken).transferFrom(_msgSender(), garmentNft.garmentModels(bundleTokenId), amountOfERC20ToTransferToDesigner.div(uint256(2)));
+            }
         }
 
         IERC20(_paymentToken).transferFrom(_msgSender(), platformFeeRecipient, amountOfERC20ToTransferAsFees);

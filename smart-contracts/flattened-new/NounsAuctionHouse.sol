@@ -374,7 +374,7 @@ interface INounsAuctionHouse {
 
     }
 
-    event AuctionCreated(uint256 indexed nounId, uint256 startTime, uint256 endTime);
+    event AuctionCreated(uint256 indexed nounId, uint256 startTime, uint256 endTime, string anticipatedNoun);
 
     event AuctionBid(uint256 indexed nounId, address sender, uint256 value, bool extended);
     event AuctionBidERC20(uint256 indexed nounId, address sender, uint256 value, bool extended);
@@ -382,6 +382,7 @@ interface INounsAuctionHouse {
     event AuctionExtended(uint256 indexed nounId, uint256 endTime);
 
     event AuctionSettled(uint256 indexed nounId, address winner, uint256 amount);
+    event AuctionTokenMinted(uint256 indexed nounId, uint256 indexed nounMintedTokenId);
 
     event AuctionTimeBufferUpdated(uint256 timeBuffer);
 
@@ -571,6 +572,8 @@ interface INounsToken is IERC721 {
     function setMinter(address minter) external;
 
     function lockMinter() external;
+
+    function anticipateNoun(uint timestamp) external view returns (string memory uri);
 }
 
 interface IWETH {
@@ -758,6 +761,11 @@ contract NounsAuctionHouse is INounsAuctionHouse, PausableUpgradeable, Reentranc
     function updateAuctionEndTime(uint256 endTime) external onlyOwner {
         INounsAuctionHouse.Auction storage _auction = auction;
         _auction.endTime = endTime;
+        emit AuctionExtended(_auction.nounId, _auction.endTime);
+    }
+
+    function updateDuration(uint256 _duration) external onlyOwner {
+        duration = _duration;
     }
 
      /**
@@ -848,7 +856,6 @@ contract NounsAuctionHouse is INounsAuctionHouse, PausableUpgradeable, Reentranc
      * catch the revert and pause this contract.
      */
     function _createAuction() internal {
-    //try nouns.mint() returns (uint256 nounId) {
             uint256 startTime = block.timestamp;
             uint256 endTime = startTime + duration;
 
@@ -863,11 +870,8 @@ contract NounsAuctionHouse is INounsAuctionHouse, PausableUpgradeable, Reentranc
             });
 
             auctionIndex = auctionIndex + 1;
-
-            emit AuctionCreated(auction.nounId, startTime, endTime);
-//        } catch Error(string memory) {
-//            _pause();
-//        }
+            string memory anticipatedNoun = nouns.anticipateNoun(endTime + uint256(1));
+            emit AuctionCreated(auction.nounId, startTime, endTime, anticipatedNoun);
     }
 
     /**
@@ -886,6 +890,7 @@ contract NounsAuctionHouse is INounsAuctionHouse, PausableUpgradeable, Reentranc
         if (_auction.bidder != address(0)) {
             uint256 mintToken = nouns.mint();
             nouns.transferFrom(address(this), _auction.bidder, mintToken);
+            emit AuctionTokenMinted(_auction.nounId, mintToken);
         }
 
         if (_auction.amount > 0) {
