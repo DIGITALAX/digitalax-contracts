@@ -133,3 +133,38 @@ dataSources:
         - event: BurnGarmentCollection(uint256)
           handler: handleGarmentCollectionBurned
       file: ./src/DigitalaxF3MCollection.mapping.ts
+  - kind: ethereum/contract
+    name: DripF3MMarketplace
+    network: "{{network}}"
+    source:
+      address: "{{DripF3MMarketplaceAddress}}"
+      abi: DripF3MMarketplace
+      startBlock: {{DripF3MMarketplaceStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - DigitalaxMarketplaceContractDeployed
+        - UpdateMarketplaceDiscountToPayInErc20
+        - OfferCreated
+        - UpdateOfferPrimarySalePrice
+        - OfferPurchased
+        - OfferCancelled
+      abis:
+        - name: DripF3MMarketplace
+          file: ./abis/DripF3MMarketplace.json
+      eventHandlers:
+        - event: DigitalaxMarketplaceContractDeployed()
+          handler: handleMarketplaceDeployed
+        - event: UpdateMarketplaceDiscountToPayInErc20(indexed uint256,uint256)
+          handler: handleUpdateMarketplaceDiscountToPayInErc20
+        - event: OfferCreated(indexed uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleOfferCreated
+        - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
+          handler: handleOfferPrimarySalePriceUpdated
+        - event: OfferPurchased(uint256,uint256,uint256,uint256,uint256)
+          handler: handleOfferPurchased
+        - event: OfferCancelled(indexed uint256)
+          handler: handleOfferCancelled
+      file: ./src/DripF3MMarketplace.mapping.ts
