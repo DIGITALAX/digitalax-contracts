@@ -48,6 +48,35 @@ type DigitalaxF3MNFTCollection @entity {
   designer: DigitalaxDesigner
 }
 
+type DripF3MMarketplaceOffer @entity {
+  id: ID!
+  garmentCollection: DigitalaxF3MNFTCollection!
+  primarySalePrice: BigInt!
+  startTime: BigInt!
+  endTime: BigInt!
+  amountSold: BigInt!
+  discountToPayERC20: BigInt!
+}
+
+type DripF3MMarketplacePurchaseHistory @entity {
+  id: ID!
+  eventName: String!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  token: DigitalaxF3MNFT!
+  buyer: Bytes!
+  orderId: BigInt!
+  value: BigInt! # USD Value
+  shippingUsd: BigInt!
+  paymentTokenTransferredAmount: BigInt!
+  paymentToken: String!
+  garmentCollectionId: BigInt!
+  discountToPayERC20: BigInt!
+  rarity: String!
+  usdEthExchange: BigInt! # Eth for every USD in wei at the time of the tx
+  usdPaymentTokenExchange: BigInt! # Payment Token for every USD in wei at the time of the tx
+}
+
 type DigitalaxF3MNFT @entity {
   id: ID!
   designer: String!
