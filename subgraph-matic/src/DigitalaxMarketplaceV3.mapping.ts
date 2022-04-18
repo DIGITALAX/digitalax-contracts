@@ -20,7 +20,7 @@ import {
   DigitalaxGarmentV2Collection,
 } from "../generated/schema";
 import { loadOrCreateGarmentNFTV2GlobalStats } from "./factory/DigitalaxGarmentNFTV2GlobalStats.factory";
-import { ZERO } from "./constants";
+import { ZERO, MONA_ON_MATIC, ETH_IN_WEI } from "./constants";
 import { loadDayFromEvent } from "./factory/DripDay.factory";
 import { loadOrCreateDripGlobalStats } from "./factory/DripGlobalStats.factory";
 import { loadOrCreateDigitalaxMarketplaceV3PurchaseHistory } from "./factory/DigitalaxMarketplaceV3PurchaseHistory.factory";
@@ -97,12 +97,17 @@ export function handleOfferPurchased(event: OfferPurchased): void {
       let history = loadOrCreateDigitalaxMarketplaceV3PurchaseHistory(
         event.params.bundleTokenId.toString()
       );
+      let monaQuote = contract.lastOracleQuote(MONA_ON_MATIC);
+
+      let monaPrice = onChainOffer.value.value0.times(monaQuote).div(ETH_IN_WEI);
+
       history.eventName = "Purchased";
       history.timestamp = event.block.timestamp;
       history.token = event.params.bundleTokenId.toString();
       history.transactionHash = event.transaction.hash;
       history.token = event.params.bundleTokenId.toString();
-      history.value = onChainOffer.value.value0;
+      //history.value = onChainOffer.value.value0;
+      history.value = monaPrice;
       history.buyer = event.params.buyer;
       history.orderId = event.params.orderId;
       history.paymentTokenTransferredAmount =
@@ -169,18 +174,22 @@ export function handleOfferCancelled(event: OfferCancelled): void {
 
   export function handleUpdateAvailableIndex(event: UpdateOfferAvailableIndex): void {
   let contract = DigitalaxMarketplaceV3Contract.bind(event.address);
+  let soldNumber = event.params.availableIndex;
   let collection = DigitalaxGarmentV2Collection.load(
     event.params.garmentCollectionId.toString()
   );
   if(collection) {
     const onChainOffer = contract.try_getOffer(event.params.garmentCollectionId);
     if (!onChainOffer.reverted) {
-      const offerValue = onChainOffer.value.value0;
+
+      let monaQuote = contract.lastOracleQuote(MONA_ON_MATIC);
+
+      let offerValue = onChainOffer.value.value0.times(monaQuote).div(ETH_IN_WEI);
 
       let globalStats = loadOrCreateDripGlobalStats();
 
       globalStats.totalMarketplaceSalesInUSD = globalStats.totalMarketplaceSalesInUSD.plus(
-          offerValue
+          offerValue.times(soldNumber)
       );
 
       globalStats.save();
@@ -188,11 +197,11 @@ export function handleOfferCancelled(event: OfferCancelled): void {
       let offer = DigitalaxMarketplaceV3Offer.load(
           event.params.garmentCollectionId.toString()
       );
-      offer.amountSold = offer.amountSold.plus(ONE);
+      offer.amountSold = offer.amountSold.plus(soldNumber);
       offer.save();
 
       collection.valueSold = collection.valueSold.plus(
-          onChainOffer.value.value0
+          offerValue.times(soldNumber)
       );
       collection.save();
     }
