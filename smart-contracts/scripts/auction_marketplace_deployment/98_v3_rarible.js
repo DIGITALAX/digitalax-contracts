@@ -20,6 +20,9 @@ const LogsLevel = require('@rarible/sdk/build/domain').LogsLevel;
 
 const sdkwallet = require( "@rarible/sdk-wallet")
 const EthersEthereum = require("@rarible/ethers-ethereum").EthersEthereum;
+const Web3 = require("web3");
+const Web3Ethereum = require("@rarible/web3-ethereum").Web3Ethereum;
+
 
 
 const getCurrency = (address) => ({
@@ -74,6 +77,21 @@ const getMonaContractAddress= () => {
   return "0x6968105460f67c3BF751bE7C15f92F5286Fd0CE5";
 };
 
+async function initWalletWeb3(privateKey) {
+  const provider = new HDWalletProvider(privateKey, "https://polygon-rpc.com")
+  const web3 = new Web3(provider)
+
+  const account = await web3.eth.accounts.privateKeyToAccount(privateKey);
+  await web3.eth.accounts.wallet.add(account);
+  web3.eth.defaultAccount = account.address
+  console.log(await web3.eth.getAccounts())
+  const web3Ethereum = new Web3Ethereum({
+    web3,
+    gas: 500000
+  })
+  return new sdkwallet.EthereumWallet(web3Ethereum)
+}
+
 
 async function main() {
 
@@ -83,12 +101,12 @@ async function main() {
       'Deploying and setting up collections on marketplace with the following address:',
       deployerAddress
   );
-
-  const {ERC721_GARMENT_ADDRESS, PRIVATE_KEY} = process.env;
+  const ERC721_GARMENT_ADDRESS = "0x7b2a989c4d1ad1b79a84ce2eb79da5d8d9c2b7a7";
+  const { PRIVATE_KEY} = process.env;
   console.log(`ERC721_GARMENT_ADDRESS found [${ERC721_GARMENT_ADDRESS}]`);
 
   const GARMENT_COLLECTION_ADDRESS = '0x721f7c76e447174141a761ce3e80ad88e5e07047';
-  const MARKETPLACE_ADDRESS = '0x8F235A04cC541efF19Fd42EFBfF0FCACAdd09DBC';
+  const MARKETPLACE_ADDRESS = '0x8F235A04cC541efF19Fd42EFBfF0FCACAdd09DBC'; // Currently migrating from v2 marketplace MONA values
   const V3_ADDRESS = '0x498bbac12E88C95ef97c95d9F75fC4860c7BE1cc';
 
   const nft = new ethers.Contract(
@@ -115,25 +133,28 @@ async function main() {
 
   updateNodeGlobalVars();
 
-   const raribleSdkWallet = initWallet(PRIVATE_KEY)
+   const raribleSdkWallet = await initWallet(PRIVATE_KEY)
 
   const raribleSdk = RaribleSDK.createRaribleSdk(raribleSdkWallet, "prod",  {logs: LogsLevel.DISABLED});
 
    //const raribleSdk = RaribleSDK.createRaribleSdk(raribleSdkWallet, "prod", { fetchApi: fetchy })
 
-
-
-  for (let i = 16; i <= 20; i++) {
+  // TODO *************************** change the collection number here below - it is garment collection v2 collection
+  const FIRST_COLLECTION = 16;
+  const LAST_COLLECTION = 20;
+  for (let i = FIRST_COLLECTION; i <= LAST_COLLECTION; i++) {
 
     const collection = await garmentCollection.getCollection(i);
 
     const offer = await marketplace.getOffer(i);
-    console.log('offer');
-    console.log(offer);
+    console.log('------------');
+    console.log('Collection number');
+    console.log(i);
 
-    const price = (new BN(offer[0].toString()).mul(new BN('1'))).toString();
-    console.log(price);
-    console.log('here we go');
+    const price = (new BN(offer[0].toString())).toString();
+    let priceNum = parseFloat(price) / 1000000000000000000;
+
+    console.log(priceNum);
     if(price === '0'){
       console.log('no price, no offer');
     }
@@ -142,70 +163,71 @@ async function main() {
         console.log('creating the offer');
         // Create a marketplace offer for this exclusive parent nft
 
-        console.log(`created offer ${i}`);
-
       //index = supply - max amount
       console.log("price");
       console.log(offer[0]);
-      console.log("platform fee");
-      const fee = parseFloat(offer[4].toString()) * 10;
-      const designerCut = 10000 - fee;
 
-      console.log(offer[4]);
-      console.log(fee);
-      console.log(offer[4].toString());
-      // const availableIndex = collection[0].length - Number.parseInt(offer[4].toString());
-      const availableIndex = await marketplace.offers(i);
-      console.log('availableIndex');
-      console.log(availableIndex[3]);
+      let fee = parseFloat(offer[4].toString()) * 10;
+      let designerCut = 10000 - fee;
 
     for(let j=0; j <collection[0].length; j++) {
       try {
-        const tokenId = 101480; // This
+        let tokenId = collection[0][j];
+
+        const priceValue = priceNum.toString()
+
+        console.log('tokenId');
+        console.log(tokenId.toString());
         const nftDesigner = await nft.garmentDesigners(tokenId);
         console.log('nftDesigner');
         console.log(nftDesigner);
 
-      const address = await getMonaContractAddress();
-      const tokenMultichainAddress = getTokenAddress(ERC721_GARMENT_ADDRESS + ":" + tokenId);
-      const currency = getCurrency(address);
-      const amount = 1;
-      console.log('creating order');
-      console.log(price);
-      console.log(currency);
-      console.log(currency);
+        console.log("platform fee %");
+        console.log(fee / 100);
+        console.log("designer fee %");
+        console.log(designerCut / 100);
 
-      const orderRequest = {
-          itemId: raribleTypes.toItemId(tokenMultichainAddress),
-        };
+        const owner = await nft.ownerOf(tokenId);
+        if(owner == deployerAddress){
+           const address = await getMonaContractAddress();
+          const tokenMultichainAddress = getTokenAddress(ERC721_GARMENT_ADDRESS + ":" + tokenId);
+          console.log(tokenMultichainAddress);
+          const currency = getCurrency(address);
+          const amount = 1;
+          console.log('creating order, price in MONA is:');
+          console.log(priceNum);
 
-      console.log('orderRequest');
-      console.log(orderRequest);
+          const orderRequest = {
+              itemId: raribleTypes.toItemId(tokenMultichainAddress),
+            };
 
-        const orderResponse = await raribleSdk.order.sell(orderRequest);
 
+            const orderResponse = await raribleSdk.order.sell(orderRequest);
 
-        console.log('got order response');
-        const response = await orderResponse.submit({
-          amount,
-          price,
-          currency,
-          //2 years expiry
-          expirationDate: new Date(Date.now() + 60 * 60 * 1000 * 8760 * 2),
-          payouts: [{
-            account: raribleTypes.toUnionAddress("ETHEREUM:0xaa3e5ee4fdc831e5274fe7836c95d670dc2502e6"), // Emma receiving address
-            //85%
-            value: fee,
-        },
-              {
-            account: raribleTypes.toUnionAddress("ETHEREUM:" + nftDesigner),
-            //15%
-            value: designerCut,
+            const response = await orderResponse.submit({
+              amount,
+              price: priceValue,
+              currency,
+              //2 years expiry
+              expirationDate: new Date(Date.now() + 60 * 60 * 1000 * 8760 * 2),
+              payouts: [{
+                account: raribleTypes.toUnionAddress("ETHEREUM:0xaa3e5ee4fdc831e5274fe7836c95d670dc2502e6"), // Emma receiving address
+                value: fee,
+            },
+                  {
+                account: raribleTypes.toUnionAddress("ETHEREUM:" + nftDesigner),
+                //15%
+                value: designerCut,
+            }
+            ],
+            });
+            console.log("order submitted");
+
+        } else{
+          console.log("not owner, moving on...");
         }
-        ],
-        });
-        console.log("order submitted");
 
+        console.log("----------------------");
       } catch (e) {
         console.log("error submitting order"
         );
