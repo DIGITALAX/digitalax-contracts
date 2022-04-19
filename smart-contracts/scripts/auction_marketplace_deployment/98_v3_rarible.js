@@ -175,9 +175,11 @@ async function main() {
         let tokenId = collection[0][j];
 
         const priceValue = priceNum.toString()
-
+        console.log('Collection id');
+        console.log(i);
         console.log('tokenId');
         console.log(tokenId.toString());
+
         const nftDesigner = await nft.garmentDesigners(tokenId);
         console.log('nftDesigner');
         console.log(nftDesigner);
