@@ -6,7 +6,7 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   const deployerAddress = await deployer.getAddress();
   console.log(
-      'Burning with following address',
+      'Updating oracle with following address',
       deployerAddress
   );
 
@@ -29,6 +29,7 @@ async function main() {
       autoRetry: true,
     });
 
+    console.log('------------------------------');
     const price = await client.simplePrice({ids: 'monavale', vs_currencies:'eth'});
     console.log(price);
     monaEthPrice = parseFloat(price.monavale.eth);
@@ -42,6 +43,10 @@ async function main() {
 
     const tx2 = await oracle.pushReport(monaEthPrice);
     await tx2.wait();
+
+    console.log('Report pushed');
+
+    console.log('------------------------------');
 
     const currencies =
         [
@@ -93,10 +98,11 @@ async function main() {
     console.log(names);
     console.log(contractAddresses);
     console.log(prices);
-    
+
     console.log('Pushing Report to drip oracle');
-    const tx3 = await oracle.pushReports(contractAddresses, prices);
+    const tx3 = await dripOracle.pushReports(contractAddresses, prices);
     await tx3.wait();
+    console.log('Complete');
 }
 
 // We recommend this pattern to be able to use async/await everywhere
