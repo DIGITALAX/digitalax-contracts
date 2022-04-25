@@ -1,0 +1,13 @@
+{
+  "network": "matic",
+  "DigitalaxF3MNFTAddress": "0x32a89d8c7e511bd3c21d9e4e6ef6044033231490",
+  "DigitalaxF3MNFTStartBlock": 26619942,
+  "DigitalaxF3MCollectionAddress": "0x33b97da79fe456d14e4528931c6a013e20b41da8",
+  "DigitalaxF3MCollectionStartBlock": 26619857,
+  "DigitalaxF3MMarketplaceAddress": "0x019e14E4eb7A9bA47BA48aE7ADD21e64E008484e",
+  "DigitalaxF3MMarketplaceStartBlock": 26620162,
+  "DigitalaxF3MIndexAddress": "0xc869f8fdd4825c39726e31e80bc737654192a254",
+  "DigitalaxF3MIndexStartBlock": 26738342,
+  "DripF3MMarketplaceAddress": "0x641c4edc9ef092c71062fc3426e98125b702ec0a",
+  "DripF3MMarketplaceStartBlock": 27097394
+}
