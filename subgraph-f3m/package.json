@@ -1,0 +1,20 @@
+{
+  "name": "digitalax",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "graph build",
+    "codegen": "graph codegen",
+    "prep:matic": "mustache networks/matic.json subgraph.template.yaml > subgraph.yaml && yarn codegen",
+    "prep:mumbai": "mustache networks/mumbai.json subgraph.template.mumbai.yaml > subgraph.yaml && yarn codegen",
+    "create": "graph create digitalax/digitalaxmatic --node https://api.thegraph.com/deploy/",
+    "create-local": "graph create blockrockettech/digitalax --node http://127.0.0.1:8020",
+    "deploy:mumbai": "yarn prep:mumbai; graph deploy --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/ digitalax/digitalaxmumbai",
+    "deploy:matic": "yarn prep:mainnet; graph deploy --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/ digitalax/digitalaxmatic",
+    "deploy-local": "graph deploy blockrockettech/digitalax --ipfs http://localhost:5001 --node http://127.0.0.1:8020"
+  },
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "^0.18.0",
+    "@graphprotocol/graph-ts": "^0.18.0",
+    "mustache": "^4.0.1"
+  }
+}
