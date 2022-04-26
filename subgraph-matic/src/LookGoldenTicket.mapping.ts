@@ -41,36 +41,36 @@ export function handleTransfer(event: Transfer): void {
           if (data.isOk) {
             if (data.value.kind == JSONValueKind.OBJECT) {
               let res = data.value.toObject();
-              if (res.get("animation_url").kind == JSONValueKind.STRING) {
+              if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
                 gdnNft.animation = res.get("animation_url").toString();
               }
-              if (res.get("name").kind == JSONValueKind.STRING) {
+              if (res.get("name")!.kind == JSONValueKind.STRING) {
                 gdnNft.name = res.get("name").toString();
               }
-              if (res.get("description").kind == JSONValueKind.STRING) {
+              if (res.get("description")!.kind == JSONValueKind.STRING) {
                 gdnNft.description = res.get("description").toString();
               }
-              if (res.get("attributes").kind == JSONValueKind.ARRAY) {
-                let attributes = res.get("attributes").toArray();
+              if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
+                let attributes = res.get("attributes")!.toArray();
                 for (let i = 0; i < attributes.length; i += 1) {
                   if (attributes[i].kind == JSONValueKind.OBJECT) {
                     let attribute = attributes[i].toObject();
                     let garmentAttribute = new GarmentAttribute(
                       "look-" + gdnNft.id + i.toString()
                     );
-                    garmentAttribute.type = null;
-                    garmentAttribute.value = null;
+                    // garmentAttribute.type = null;
+                    // garmentAttribute.value = null;
 
                     if (
-                      attribute.get("trait_type").kind == JSONValueKind.STRING
+                      attribute.get("trait_type")!.kind == JSONValueKind.STRING
                     ) {
                       garmentAttribute.type = attribute
-                        .get("trait_type")
+                        .get("trait_type")!
                         .toString();
                     }
-                    if (attribute.get("value").kind == JSONValueKind.STRING) {
+                    if (attribute.get("value")!.kind == JSONValueKind.STRING) {
                       garmentAttribute.value = attribute
-                        .get("value")
+                        .get("value")!
                         .toString();
                     }
                     garmentAttribute.save();

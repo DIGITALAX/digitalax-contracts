@@ -1,7 +1,7 @@
 type GarmentAttribute @entity {
   id: ID!
-  type: String!
-  value: String!
+  type: String
+  value: String
 }
 
 type AdditionalSource @entity {

@@ -120,7 +120,7 @@ export function handleDesignerGroupAdded(event: DesignerGroupAdded): void {
         if (res.get("Designer ID").kind == JSONValueKind.STRING) {
           designer.name = res.get("Designer ID").toString();
         }
-        if (res.get("description").kind == JSONValueKind.STRING) {
+        if (res.get("description")!.kind == JSONValueKind.STRING) {
           designer.description = res.get("description").toString();
         }
         if (res.get("image_url").kind == JSONValueKind.STRING) {
@@ -181,7 +181,7 @@ export function handleModelGroupAdded(event: ModelGroupAdded): void {
         if (res.get("Model ID").kind == JSONValueKind.STRING) {
           model.name = res.get("Model ID").toString();
         }
-        if (res.get("description").kind == JSONValueKind.STRING) {
+        if (res.get("description")!.kind == JSONValueKind.STRING) {
           model.description = res.get("description").toString();
         }
         if (res.get("image_url").kind == JSONValueKind.STRING) {

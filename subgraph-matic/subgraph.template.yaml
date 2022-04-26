@@ -1,4 +1,4 @@
-specVersion: 0.0.2
+specVersion: 0.0.3
 description: Digitalax Smart Contract Indexing
 repository: https://github.com/DIGITALAX/digitalax-contracts/tree/main/subgraph
 schema:
@@ -13,7 +13,7 @@ dataSources:
       startBlock: {{DigitalaxGarmentNFTStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -41,7 +41,7 @@ dataSources:
       startBlock: {{DigitalaxMaterialsStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - ChildCreated
@@ -70,7 +70,7 @@ dataSources:
       startBlock: {{DigitalaxGarmentNFTv2StartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -98,7 +98,7 @@ dataSources:
       startBlock: {{DigitalaxModelNFTStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -126,7 +126,7 @@ dataSources:
       startBlock: {{DigitalaxMaterialsV2StartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - ChildCreated
@@ -155,7 +155,7 @@ dataSources:
       startBlock: {{DigitalaxSubscriptionNFTStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -183,7 +183,7 @@ dataSources:
       startBlock: {{DFBundleStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - ChildCreated
@@ -212,7 +212,7 @@ dataSources:
       startBlock: {{DigitalaxAuctionStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - AuctionCreated
@@ -261,7 +261,7 @@ dataSources:
       startBlock: {{DigitalaxAuctionV2StartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - AuctionCreated
@@ -310,7 +310,7 @@ dataSources:
       startBlock: {{DigitalaxAccessControlsStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - AdminRoleGranted
@@ -351,7 +351,7 @@ dataSources:
       startBlock: {{DigitalaxGarmentCollectionStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - MintGarmentCollection
@@ -374,7 +374,7 @@ dataSources:
       startBlock: {{DigitalaxGarmentCollectionV2StartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - MintGarmentCollection
@@ -397,7 +397,7 @@ dataSources:
       startBlock: {{DigitalaxModelCollectionStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - MintGarmentCollection
@@ -420,7 +420,7 @@ dataSources:
       startBlock: {{DigitalaxMarketplaceStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - DigitalaxMarketplaceContractDeployed
@@ -458,7 +458,7 @@ dataSources:
       startBlock: {{DigitalaxMarketplaceV3StartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - DigitalaxMarketplaceContractDeployed
@@ -501,7 +501,7 @@ dataSources:
       startBlock: {{DigitalaxMarketplaceV2StartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - DigitalaxMarketplaceContractDeployed
@@ -539,7 +539,7 @@ dataSources:
       startBlock: {{DigitalaxModelMarketplaceStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - DigitalaxMarketplaceContractDeployed
@@ -577,7 +577,7 @@ dataSources:
       startBlock: {{DigitalaxModelMarketplaceV3StartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - DigitalaxMarketplaceContractDeployed
@@ -618,7 +618,7 @@ dataSources:
       startBlock: {{DigitalaxSubscriptionCollectionStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - MintSubscriptionCollection
@@ -641,7 +641,7 @@ dataSources:
       startBlock: {{DigitalaxSubscriptionMarketplaceStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - DigitalaxSubscriptionMarketplaceContractDeployed
@@ -682,7 +682,7 @@ dataSources:
       startBlock: {{DigitalaxIndexStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - CollectionGroupAdded
@@ -720,7 +720,7 @@ dataSources:
       startBlock: {{DigitalaxModelIndexStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - CollectionGroupAdded
@@ -796,7 +796,7 @@ dataSources:
       startBlock: {{DigitalaxNFTStakingStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -825,7 +825,7 @@ dataSources:
       startBlock: {{DigitalaxOldNFTStakingStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked

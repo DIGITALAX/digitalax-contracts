@@ -92,16 +92,16 @@ export function handleStaked(event: Staked): void {
           if (data.value.kind === JSONValueKind.OBJECT) {
             let res = data.value.toObject();
             if (res.get("animation_url").kind === JSONValueKind.STRING) {
-              garment.animation = res.get("animation_url").toString();
+              garment.animation = res.get("animation_url")!.toString();
             }
             if (res.get("description").kind === JSONValueKind.STRING) {
-              garment.description = res.get("description").toString();
+              garment.description = res.get("description")!.toString();
             }
             if (res.get("name").kind === JSONValueKind.STRING) {
-              garment.name = res.get("name").toString();
+              garment.name = res.get("name")!.toString();
             }
-            if (res.get("image").kind == JSONValueKind.STRING) {
-              garment.image = res.get("image").toString();
+            if (res.get("image")!.kind == JSONValueKind.STRING) {
+              garment.image = res.get("image")!.toString();
             }
           }
         }

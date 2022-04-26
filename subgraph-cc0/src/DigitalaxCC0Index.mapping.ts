@@ -157,7 +157,7 @@ export function handleDesignerGroupAdded(event: DesignerGroupAdded): void {
         if (res.get("Resident ID").kind == JSONValueKind.STRING) {
           resident.name = res.get("Resident ID").toString();
         }
-        if (res.get("description").kind == JSONValueKind.STRING) {
+        if (res.get("description")!.kind == JSONValueKind.STRING) {
           resident.description = res.get("description").toString();
         }
         if (res.get("image_url").kind == JSONValueKind.STRING) {
@@ -238,10 +238,10 @@ export function handleDeveloperGroupAdded(event: DesignerGroupAdded): void {
   //   if (data.isOk) {
   //     if (data.value.kind == JSONValueKind.OBJECT) {
   //       let res = data.value.toObject();
-  //       if (res.get("name").kind == JSONValueKind.STRING) {
+  //       if (res.get("name")!.kind == JSONValueKind.STRING) {
   //         developer.name = res.get("name").toString();
   //       }
-  //       if (res.get("description").kind == JSONValueKind.STRING) {
+  //       if (res.get("description")!.kind == JSONValueKind.STRING) {
   //         developer.description = res.get("description").toString();
   //       }
   //       if (res.get("image_url").kind == JSONValueKind.STRING) {

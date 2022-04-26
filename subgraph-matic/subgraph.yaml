@@ -1,4 +1,4 @@
-specVersion: 0.0.2
+specVersion: 0.0.3
 description: Digitalax Smart Contract Indexing
 repository: https://github.com/DIGITALAX/digitalax-contracts/tree/main/subgraph
 schema:
@@ -13,7 +13,7 @@ dataSources:
       startBlock: 12226595
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -41,7 +41,7 @@ dataSources:
       startBlock: 12187338
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - ChildCreated
@@ -70,7 +70,7 @@ dataSources:
       startBlock: 13894238
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -98,7 +98,7 @@ dataSources:
       startBlock: 23713665
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -126,7 +126,7 @@ dataSources:
       startBlock: 13894111
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - ChildCreated
@@ -155,7 +155,7 @@ dataSources:
       startBlock: 14490566
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -183,7 +183,7 @@ dataSources:
       startBlock: 14490232
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - ChildCreated
@@ -212,7 +212,7 @@ dataSources:
       startBlock: 12296646
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - AuctionCreated
@@ -261,7 +261,7 @@ dataSources:
       startBlock: 15337325
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - AuctionCreated
@@ -310,7 +310,7 @@ dataSources:
       startBlock: 12186275
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - AdminRoleGranted
@@ -351,7 +351,7 @@ dataSources:
       startBlock: 12303825
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - MintGarmentCollection
@@ -374,7 +374,7 @@ dataSources:
       startBlock: 15377450
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - MintGarmentCollection
@@ -397,7 +397,7 @@ dataSources:
       startBlock: 23714011
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - MintGarmentCollection
@@ -420,7 +420,7 @@ dataSources:
       startBlock: 12339027
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - DigitalaxMarketplaceContractDeployed
@@ -458,7 +458,7 @@ dataSources:
       startBlock: 26542481
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - DigitalaxMarketplaceContractDeployed
@@ -501,7 +501,7 @@ dataSources:
       startBlock: 15377622
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - DigitalaxMarketplaceContractDeployed
@@ -539,7 +539,7 @@ dataSources:
       startBlock: 23714137
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - DigitalaxMarketplaceContractDeployed
@@ -577,7 +577,7 @@ dataSources:
       startBlock: 26740449
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - DigitalaxMarketplaceContractDeployed
@@ -618,7 +618,7 @@ dataSources:
       startBlock: 14491998
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - MintSubscriptionCollection
@@ -641,7 +641,7 @@ dataSources:
       startBlock: 14492134
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - DigitalaxSubscriptionMarketplaceContractDeployed
@@ -682,7 +682,7 @@ dataSources:
       startBlock: 16447919
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - CollectionGroupAdded
@@ -720,7 +720,7 @@ dataSources:
       startBlock: 23960820
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - CollectionGroupAdded
@@ -758,7 +758,7 @@ dataSources:
       startBlock: 21758787
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - CollectionGroupAdded
@@ -796,7 +796,7 @@ dataSources:
       startBlock: 21938451
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -825,7 +825,7 @@ dataSources:
       startBlock: 15296127
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -854,7 +854,7 @@ dataSources:
       startBlock: 16891723
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - ProviderReportsPushed
@@ -874,7 +874,7 @@ dataSources:
       startBlock: 17224622
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - DigitalaxMarketplaceContractDeployed
@@ -909,7 +909,7 @@ dataSources:
       startBlock: 21760884
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - DigitalaxMarketplaceContractDeployed
@@ -944,7 +944,7 @@ dataSources:
       startBlock: 19110218
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasam/assemblyscript
       entities:
         - Transfer
@@ -964,7 +964,7 @@ dataSources:
       startBlock: 19471996
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasam/assemblyscript
       entities:
         - Transfer
@@ -984,7 +984,7 @@ dataSources:
       startBlock: 20645895
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasam/assemblyscript
       entities:
         - AddRewardTokens
@@ -1009,7 +1009,7 @@ dataSources:
       startBlock: 21991327
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasam/assemblyscript
       entities:
         - DepositRevenueSharing
@@ -1032,7 +1032,7 @@ dataSources:
       startBlock: 21992128
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasam/assemblyscript
       entities:
         - DepositRevenueSharing
@@ -1055,7 +1055,7 @@ dataSources:
       startBlock: 21991315
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasam/assemblyscript
       entities:
         - Staked
@@ -1084,7 +1084,7 @@ dataSources:
       startBlock: 21957039
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -1106,7 +1106,7 @@ dataSources:
       startBlock: 21992122
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -1135,7 +1135,7 @@ dataSources:
       startBlock: 22367748
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasam/assemblyscript
       entities:
         - DepositRevenueSharing
@@ -1158,7 +1158,7 @@ dataSources:
       startBlock: 22367745
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasam/assemblyscript
       entities:
         - Staked
@@ -1187,7 +1187,7 @@ dataSources:
       startBlock: 22755957
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -1216,7 +1216,7 @@ dataSources:
       startBlock: 22756208
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -1245,7 +1245,7 @@ dataSources:
       startBlock: 23527404
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - ChildCreated

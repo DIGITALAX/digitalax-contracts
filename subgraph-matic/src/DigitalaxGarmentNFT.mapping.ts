@@ -57,42 +57,42 @@ export function handleTransfer(event: Transfer): void {
           if (data.isOk) {
             if (data.value.kind == JSONValueKind.OBJECT) {
               let res = data.value.toObject();
-              if (res.get("image").kind == JSONValueKind.STRING) {
-                garment.image = res.get("image").toString();
+              if (res.get("image")!.kind == JSONValueKind.STRING) {
+                garment.image = res.get("image")!.toString();
               }
-              if (res.get("animation_url").kind == JSONValueKind.STRING) {
-                garment.animation = res.get("animation_url").toString();
+              if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
+                garment.animation = res.get("animation_url")!.toString();
               }
-              if (res.get("name").kind == JSONValueKind.STRING) {
-                garment.name = res.get("name").toString();
+              if (res.get("name")!.kind == JSONValueKind.STRING) {
+                garment.name = res.get("name")!.toString();
               }
-              if (res.get("description").kind == JSONValueKind.STRING) {
-                garment.description = res.get("description").toString();
+              if (res.get("description")!.kind == JSONValueKind.STRING) {
+                garment.description = res.get("description")!.toString();
               }
-              if (res.get("external url").kind == JSONValueKind.STRING) {
-                garment.external = res.get("external url").toString();
+              if (res.get("external url")!.kind == JSONValueKind.STRING) {
+                garment.external = res.get("external url")!.toString();
               }
-              if (res.get("attributes").kind == JSONValueKind.ARRAY) {
-                let attributes = res.get("attributes").toArray();
+              if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
+                let attributes = res.get("attributes")!.toArray();
                 for (let i = 0; i < attributes.length; i += 1) {
                   if (attributes[i].kind == JSONValueKind.OBJECT) {
                     let attribute = attributes[i].toObject();
                     let garmentAttribute = new GarmentAttribute(
                       "digitalaxV1-" + garment.id + i.toString()
                     );
-                    garmentAttribute.type = null;
-                    garmentAttribute.value = null;
+                   // garmentAttribute.type = null;
+                   // garmentAttribute.value = null;
 
                     if (
-                      attribute.get("trait_type").kind == JSONValueKind.STRING
+                      attribute.get("trait_type")!.kind == JSONValueKind.STRING
                     ) {
                       garmentAttribute.type = attribute
-                        .get("trait_type")
+                        .get("trait_type")!
                         .toString();
                     }
-                    if (attribute.get("value").kind == JSONValueKind.STRING) {
+                    if (attribute.get("value")!.kind == JSONValueKind.STRING) {
                       garmentAttribute.value = attribute
-                        .get("value")
+                        .get("value")!
                         .toString();
                     }
                     garmentAttribute.save();
@@ -135,10 +135,10 @@ export function handleTransfer(event: Transfer): void {
     let garment = DigitalaxGarment.load(event.params.tokenId.toString());
     let owner = contract.try_ownerOf(event.params.tokenId);
     if (!owner.reverted) {
-      garment.owner = owner.value;
+      garment!.owner = owner.value;
     }
-    garment.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
-    garment.save();
+    garment!.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
+    garment!.save();
 
     // Update garments owned on the `from` and `to` address collectors
     let fromCollector = loadOrCreateDigitalaxCollector(event.params.from);
@@ -180,11 +180,11 @@ export function handleChildReceived(event: ReceivedChild): void {
   child.amount = child.amount.plus(event.params.amount);
   child.save();
 
-  let children = garment.children;
+  let children = garment!.children;
   children.push(child.id);
-  garment.children = children;
+  garment!.children = children;
 
-  garment.save();
+  garment!.save();
 }
 
 export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
@@ -207,42 +207,42 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
           if (data.isOk) {
             if (data.value.kind == JSONValueKind.OBJECT) {
               let res = data.value.toObject();
-              if (res.get("image").kind == JSONValueKind.STRING) {
-                garment.image = res.get("image").toString();
+              if (res.get("image")!.kind == JSONValueKind.STRING) {
+                garment.image = res.get("image")!.toString();
               }
-              if (res.get("animation_url").kind == JSONValueKind.STRING) {
-                garment.animation = res.get("animation_url").toString();
+              if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
+                garment.animation = res.get("animation_url")!.toString();
               }
-              if (res.get("name").kind == JSONValueKind.STRING) {
-                garment.name = res.get("name").toString();
+              if (res.get("name")!.kind == JSONValueKind.STRING) {
+                garment.name = res.get("name")!.toString();
               }
-              if (res.get("description").kind == JSONValueKind.STRING) {
-                garment.description = res.get("description").toString();
+              if (res.get("description")!.kind == JSONValueKind.STRING) {
+                garment.description = res.get("description")!.toString();
               }
-              if (res.get("external url").kind == JSONValueKind.STRING) {
-                garment.external = res.get("external url").toString();
+              if (res.get("external url")!.kind == JSONValueKind.STRING) {
+                garment.external = res.get("external url")!.toString();
               }
-              if (res.get("attributes").kind == JSONValueKind.ARRAY) {
-                let attributes = res.get("attributes").toArray();
+              if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
+                let attributes = res.get("attributes")!.toArray();
                 for (let i = 0; i < attributes.length; i += 1) {
                   if (attributes[i].kind == JSONValueKind.OBJECT) {
                     let attribute = attributes[i].toObject();
                     let garmentAttribute = new GarmentAttribute(
                       "digitalaxV1-" + garment.id + i.toString()
                     );
-                    garmentAttribute.type = null;
-                    garmentAttribute.value = null;
+                   // garmentAttribute.type = null;
+                   // garmentAttribute.value = null;
 
                     if (
-                      attribute.get("trait_type").kind == JSONValueKind.STRING
+                      attribute.get("trait_type")!.kind == JSONValueKind.STRING
                     ) {
                       garmentAttribute.type = attribute
-                        .get("trait_type")
+                        .get("trait_type")!
                         .toString();
                     }
-                    if (attribute.get("value").kind == JSONValueKind.STRING) {
+                    if (attribute.get("value")!.kind == JSONValueKind.STRING) {
                       garmentAttribute.value = attribute
-                        .get("value")
+                        .get("value")!
                         .toString();
                     }
                     garmentAttribute.save();
@@ -272,8 +272,8 @@ export function handleTokenPriceSaleUpdated(
       .garmentDesigners(event.params._tokenId)
       .toString();
     garment.primarySalePrice = contract.primarySalePrice(event.params._tokenId);
-    garment.children = null;
-    garment.owner = null;
+    // garment.children = null;
+    // garment.owner = null;
     garment.image = "";
     garment.animation = "";
     garment.name = "";
@@ -292,42 +292,42 @@ export function handleTokenPriceSaleUpdated(
           if (data.isOk) {
             if (data.value.kind == JSONValueKind.OBJECT) {
               let res = data.value.toObject();
-              if (res.get("image").kind == JSONValueKind.STRING) {
-                garment.image = res.get("image").toString();
+              if (res.get("image")!.kind == JSONValueKind.STRING) {
+                garment.image = res.get("image")!.toString();
               }
-              if (res.get("animation_url").kind == JSONValueKind.STRING) {
-                garment.animation = res.get("animation_url").toString();
+              if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
+                garment.animation = res.get("animation_url")!.toString();
               }
-              if (res.get("name").kind == JSONValueKind.STRING) {
-                garment.name = res.get("name").toString();
+              if (res.get("name")!.kind == JSONValueKind.STRING) {
+                garment.name = res.get("name")!.toString();
               }
-              if (res.get("description").kind == JSONValueKind.STRING) {
-                garment.description = res.get("description").toString();
+              if (res.get("description")!.kind == JSONValueKind.STRING) {
+                garment.description = res.get("description")!.toString();
               }
-              if (res.get("external url").kind == JSONValueKind.STRING) {
-                garment.external = res.get("external url").toString();
+              if (res.get("external url")!.kind == JSONValueKind.STRING) {
+                garment.external = res.get("external url")!.toString();
               }
-              if (res.get("attributes").kind == JSONValueKind.ARRAY) {
-                let attributes = res.get("attributes").toArray();
+              if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
+                let attributes = res.get("attributes")!.toArray();
                 for (let i = 0; i < attributes.length; i += 1) {
                   if (attributes[i].kind == JSONValueKind.OBJECT) {
                     let attribute = attributes[i].toObject();
                     let garmentAttribute = new GarmentAttribute(
                       "digitalaxV1-" + garment.id + i.toString()
                     );
-                    garmentAttribute.type = null;
-                    garmentAttribute.value = null;
+                   // garmentAttribute.type = null;
+                   // garmentAttribute.value = null;
 
                     if (
-                      attribute.get("trait_type").kind == JSONValueKind.STRING
+                      attribute.get("trait_type")!.kind == JSONValueKind.STRING
                     ) {
                       garmentAttribute.type = attribute
-                        .get("trait_type")
+                        .get("trait_type")!
                         .toString();
                     }
-                    if (attribute.get("value").kind == JSONValueKind.STRING) {
+                    if (attribute.get("value")!.kind == JSONValueKind.STRING) {
                       garmentAttribute.value = attribute
-                        .get("value")
+                        .get("value")!
                         .toString();
                     }
                     garmentAttribute.save();

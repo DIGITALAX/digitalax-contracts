@@ -55,8 +55,8 @@ export function handleTransfer(event: Transfer): void {
                                     if (attributes[i].kind === JSONValueKind.OBJECT) {
                                         let attribute = attributes[i].toObject();
                                         let garmentAttribute = new GarmentAttribute(garment.id + i.toString());
-                                        garmentAttribute.type = null;
-                                        garmentAttribute.value = null;
+                                        // garmentAttribute.type = null;
+                    // garmentAttribute.value = null;
 
                                         if (attribute.get('trait_type').kind === JSONValueKind.STRING) {
                                             garmentAttribute.type = attribute.get('trait_type').toString();
