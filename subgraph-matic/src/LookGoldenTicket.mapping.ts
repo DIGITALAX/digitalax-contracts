@@ -42,13 +42,13 @@ export function handleTransfer(event: Transfer): void {
             if (data.value.kind == JSONValueKind.OBJECT) {
               let res = data.value.toObject();
               if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
-                gdnNft.animation = res.get("animation_url").toString();
+                gdnNft.animation = res.get("animation_url")!.toString();
               }
               if (res.get("name")!.kind == JSONValueKind.STRING) {
-                gdnNft.name = res.get("name").toString();
+                gdnNft.name = res.get("name")!.toString();
               }
               if (res.get("description")!.kind == JSONValueKind.STRING) {
-                gdnNft.description = res.get("description").toString();
+                gdnNft.description = res.get("description")!.toString();
               }
               if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
                 let attributes = res.get("attributes")!.toArray();

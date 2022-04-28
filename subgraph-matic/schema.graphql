@@ -165,7 +165,7 @@ type AdditionalSource @entity {
 type DigitalaxGarmentV2 @entity {
   id: ID!
   designer: String!
-  owner: Bytes!
+  owner: Bytes
   primarySalePrice: BigInt!
   tokenUri: String!
   image: String!
@@ -175,7 +175,7 @@ type DigitalaxGarmentV2 @entity {
   external: String!
   additionalSources: [AdditionalSource!]
   attributes: [GarmentAttribute!]!
-  children: [DigitalaxGarmentChildV2!]!
+  children: [DigitalaxGarmentChildV2!]
 }
 
 type DigitalaxModelNFT @entity {
@@ -198,7 +198,7 @@ type DigitalaxModelNFT @entity {
 type DigitalaxSubscription @entity {
   id: ID!
   designer: String!
-  owner: Bytes!
+  owner: Bytes
   primarySalePrice: BigInt!
   tokenUri: String!
   image: String!
@@ -207,7 +207,7 @@ type DigitalaxSubscription @entity {
   description: String!
   external: String!
   attributes: [GarmentAttribute!]!
-  children: [DigitalaxGarmentChild!]!
+  children: [DigitalaxGarmentChild!]
 }
 
 # Total support of all children

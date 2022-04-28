@@ -109,10 +109,10 @@ export function handleTransfer(event: Transfer): void {
         let garment = PodeNFTv2.load(event.params.tokenId.toString());
         let owner = contract.try_ownerOf(event.params.tokenId);
         if (!owner.reverted) {
-            garment.owner = owner.value;
-        }
-        garment.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
-        garment.save();
+            garment!.owner = owner.value;
+    }
+    garment!.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
+    garment!.save();
 
         // Update garments owned on the `from` and `to` address collectors
         let fromCollector = loadOrCreatePodeNFTv2Collector(event.params.from);

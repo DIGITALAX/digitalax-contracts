@@ -23,7 +23,7 @@ export function loadOrCreateDigitalaxChildOwner(
         materialOwner.contract = event.address;
         materialOwner.tokenUri = childContract.uri(childTokenId);
         materialOwner.amount = ZERO;
-        materialOwner.token = DigitalaxMaterial.load(childTokenId.toString()).id.toString();
+        materialOwner.token = DigitalaxMaterial.load(childTokenId.toString())!.id.toString();
     }
     materialOwner.save();
 

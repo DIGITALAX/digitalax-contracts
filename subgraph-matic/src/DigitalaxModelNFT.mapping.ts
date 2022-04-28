@@ -74,8 +74,9 @@ export function handleTransfer(event: Transfer): void {
                 garment.animation = res.get("animation_url")!.toString();
               }
               for (let i = 1; i <= 4; i += 1) {
+                let iString = i.toString();
                 if (
-                  res.get("image_" + i.toString() + "_url").kind ==
+                  res.get("image_" + iString + "_url")!.kind ==
                   JSONValueKind.STRING
                 ) {
                   let additionalSource = new AdditionalSource(
@@ -83,29 +84,30 @@ export function handleTransfer(event: Transfer): void {
                   );
                   additionalSource.type = "image";
                   additionalSource.url = res
-                    .get("image_" + i.toString() + "_url")
+                    .get("image_" + iString+ "_url")!
                     .toString();
                   additionalSource.save();
                   let additionalSources = garment.additionalSources;
-                  additionalSources.push(additionalSource.id);
+                  additionalSources!.push(additionalSource.id);
                   garment.additionalSources = additionalSources;
                 }
               }
               for (let i = 1; i <= 4; i += 1) {
+              let iString = i.toString();
                 if (
-                  res.get("animation_" + i.toString() + "_url").kind ==
+                  res.get("animation_" + iString + "_url")!.kind ==
                   JSONValueKind.STRING
                 ) {
                   let additionalSource = new AdditionalSource(
-                    garment.id + "-animation-" + i.toString()
+                    garment.id + "-animation-" + iString
                   );
                   additionalSource.type = "animation";
                   additionalSource.url = res
-                    .get("animation_" + i.toString() + "_url")
-                    .toString();
+                    .get("animation_" + iString + "_url")!
+                    .toString()
                   additionalSource.save();
                   let additionalSources = garment.additionalSources;
-                  additionalSources.push(additionalSource.id);
+                  additionalSources!.push(additionalSource.id);
                   garment.additionalSources = additionalSources;
                 }
               }
@@ -235,11 +237,11 @@ export function handleChildReceived(event: ReceivedChild): void {
   child.amount = child.amount.plus(event.params.amount);
   child.save();
 
-  let children = garment.children;
+  let children = garment!.children;
   children.push(child.id);
-  garment.children = children;
+  garment!.children = children;
 
-  garment.save();
+  garment!.save();
 }
 
 export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
@@ -251,8 +253,8 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
       .garmentDesigners(event.params._tokenId)
       .toString();
     garment.primarySalePrice = contract.primarySalePrice(event.params._tokenId);
-    garment.children = null;
-    garment.owner = null;
+    // garment.children = null;
+    // garment.owner = null;
     garment.image = "";
     garment.animation = "";
     garment.name = "";
@@ -280,8 +282,9 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
               garment.animation = res.get("animation_url")!.toString();
             }
             for (let i = 1; i <= 4; i += 1) {
+              let iString = i.toString();
               if (
-                res.get("image_" + i.toString() + "_url").kind ==
+                res.get("image_" + iString + "_url")!.kind ==
                 JSONValueKind.STRING
               ) {
                 let additionalSource = new AdditionalSource(
@@ -289,29 +292,30 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
                 );
                 additionalSource.type = "image";
                 additionalSource.url = res
-                  .get("image_" + i.toString() + "_url")
+                    .get("image_" + iString+ "_url")!
                   .toString();
                 additionalSource.save();
                 let additionalSources = garment.additionalSources;
-                additionalSources.push(additionalSource.id);
+                additionalSources!.push(additionalSource.id);
                 garment.additionalSources = additionalSources;
               }
             }
             for (let i = 1; i <= 4; i += 1) {
+              let iString = i.toString();
               if (
-                res.get("animation_" + i.toString() + "_url").kind ==
+                res.get("animation_" + iString + "_url")!.kind ==
                 JSONValueKind.STRING
               ) {
                 let additionalSource = new AdditionalSource(
-                  garment.id + "-animation-" + i.toString()
+                  garment.id + "-animation-" + iString
                 );
                 additionalSource.type = "animation";
                 additionalSource.url = res
-                  .get("animation_" + i.toString() + "_url")
-                  .toString();
+                  .get("animation_" + iString + "_url")!
+                    .toString()
                 additionalSource.save();
                 let additionalSources = garment.additionalSources;
-                additionalSources.push(additionalSource.id);
+                additionalSources!.push(additionalSource.id);
                 garment.additionalSources = additionalSources;
               }
             }
@@ -343,7 +347,7 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
                         .toString();
                   }
                   if (attribute.get("value")!.kind == JSONValueKind.STRING) {
-                    garmentAttribute.value = attribute.get("value").toString();
+                    garmentAttribute.value = attribute.get("value")!.toString();
                   }
                   garmentAttribute.save();
                   let attrs = garment.attributes;
@@ -374,8 +378,8 @@ export function handleTokenPriceSaleUpdated(
       .toString();
     garment.model = contract.garmentModels(event.params._tokenId).toString();
     garment.primarySalePrice = contract.primarySalePrice(event.params._tokenId);
-    garment.children = null;
-    garment.owner = null;
+    // garment.children = null;
+    // garment.owner = null;
     garment.image = "";
     garment.animation = "";
     garment.name = "";
@@ -402,8 +406,9 @@ export function handleTokenPriceSaleUpdated(
                 garment.animation = res.get("animation_url")!.toString();
               }
               for (let i = 1; i <= 4; i += 1) {
+              let iString = i.toString();
                 if (
-                  res.get("image_" + i.toString() + "_url").kind ==
+                  res.get("image_" + iString + "_url")!.kind ==
                   JSONValueKind.STRING
                 ) {
                   let additionalSource = new AdditionalSource(
@@ -411,29 +416,30 @@ export function handleTokenPriceSaleUpdated(
                   );
                   additionalSource.type = "image";
                   additionalSource.url = res
-                    .get("image_" + i.toString() + "_url")
+                    .get("image_" + iString+ "_url")!
                     .toString();
                   additionalSource.save();
                   let additionalSources = garment.additionalSources;
-                  additionalSources.push(additionalSource.id);
+                  additionalSources!.push(additionalSource.id);
                   garment.additionalSources = additionalSources;
                 }
               }
               for (let i = 1; i <= 4; i += 1) {
+              let iString = i.toString();
                 if (
-                  res.get("animation_" + i.toString() + "_url").kind ==
+                  res.get("animation_" + iString + "_url")!.kind ==
                   JSONValueKind.STRING
                 ) {
                   let additionalSource = new AdditionalSource(
-                    garment.id + "-animation-" + i.toString()
+                    garment.id + "-animation-" + iString
                   );
                   additionalSource.type = "animation";
                   additionalSource.url = res
-                    .get("animation_" + i.toString() + "_url")
-                    .toString();
+                    .get("animation_" + iString + "_url")!
+                    .toString()
                   additionalSource.save();
                   let additionalSources = garment.additionalSources;
-                  additionalSources.push(additionalSource.id);
+                  additionalSources!.push(additionalSource.id);
                   garment.additionalSources = additionalSources;
                 }
               }

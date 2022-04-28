@@ -149,13 +149,13 @@ export function handleDesignerGroupAdded(event: DesignerGroupAdded): void {
     if (data.isOk) {
       if (data.value.kind == JSONValueKind.OBJECT) {
         let res = data.value.toObject();
-        if (res.get("Designer ID").kind == JSONValueKind.STRING) {
-          designer.name = res.get("Designer ID").toString();
+        if (res.get("Designer ID")!.kind == JSONValueKind.STRING) {
+          designer.name = res.get("Designer ID")!.toString();
         }
         if (res.get("description")!.kind == JSONValueKind.STRING) {
-          designer.description = res.get("description").toString();
+          designer.description = res.get("description")!.toString();
         }
-        if (res.get("image_url").kind == JSONValueKind.STRING) {
+        if (res.get("image_url")!.kind == JSONValueKind.STRING) {
           designer.image = res.get("image_url").toString();
         }
         if (res.get("instagram").kind == JSONValueKind.STRING) {
@@ -232,12 +232,12 @@ export function handleDeveloperGroupAdded(event: DesignerGroupAdded): void {
       if (data.value.kind == JSONValueKind.OBJECT) {
         let res = data.value.toObject();
         if (res.get("name")!.kind == JSONValueKind.STRING) {
-          developer.name = res.get("name").toString();
+          developer.name = res.get("name")!.toString();
         }
         if (res.get("description")!.kind == JSONValueKind.STRING) {
-          developer.description = res.get("description").toString();
+          developer.description = res.get("description")!.toString();
         }
-        if (res.get("image_url").kind == JSONValueKind.STRING) {
+        if (res.get("image_url")!.kind == JSONValueKind.STRING) {
           developer.image = res.get("image_url").toString();
         }
       }

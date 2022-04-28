@@ -50,32 +50,32 @@ export function handleChildCreated(event: ChildCreated): void {
             if (res.get("image")!.kind == JSONValueKind.STRING) {
               strand.image = res.get("image")!.toString();
             }
-            if (res.get("image_url").kind == JSONValueKind.STRING) {
-              strand.image = res.get("image_url").toString();
+            if (res.get("image_url")!.kind == JSONValueKind.STRING) {
+              strand.image = res.get("image_url")!.toString();
             }
             if (res.get("3D_File").kind == JSONValueKind.STRING) {
               strand.animation = res.get("3D_File").toString();
             }
-            if (res.get("Animation").kind == JSONValueKind.STRING) {
-              strand.animation = res.get("Animation").toString();
+            if (res.get("Animation")!.kind == JSONValueKind.STRING) {
+              strand.animation = res.get("Animation")!.toString();
             }
             if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
-              strand.animation = res.get("animation_url").toString();
+              strand.animation = res.get("animation_url")!.toString();
             }
             if (res.get("name")!.kind == JSONValueKind.STRING) {
-              strand.name = res.get("name").toString();
+              strand.name = res.get("name")!.toString();
             }
-            if (res.get("Designer ID").kind == JSONValueKind.STRING) {
-              strand.name = res.get("Designer ID").toString();
+            if (res.get("Designer ID")!.kind == JSONValueKind.STRING) {
+              strand.name = res.get("Designer ID")!.toString();
             }
             if (res.get("description")!.kind == JSONValueKind.STRING) {
-              strand.description = res.get("description").toString();
+              strand.description = res.get("description")!.toString();
             }
             if (res.get("external url")!.kind == JSONValueKind.STRING) {
-              strand.external = res.get("external url").toString();
+              strand.external = res.get("external url")!.toString();
             }
-            if (res.get("external_url").kind == JSONValueKind.STRING) {
-              strand.external = res.get("external_url").toString();
+            if (res.get("external_url")!.kind == JSONValueKind.STRING) {
+              strand.external = res.get("external_url")!.toString();
             }
             if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
               let attributes = res.get("attributes")!.toArray();
@@ -96,7 +96,7 @@ export function handleChildCreated(event: ChildCreated): void {
                         .toString();
                   }
                   if (attribute.get("value")!.kind == JSONValueKind.STRING) {
-                    garmentAttribute.value = attribute.get("value").toString();
+                    garmentAttribute.value = attribute.get("value")!.toString();
                   }
                   garmentAttribute.save();
                   let attrs = strand.attributes;
@@ -145,32 +145,32 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
               if (res.get("image")!.kind == JSONValueKind.STRING) {
                 strand.image = res.get("image")!.toString();
               }
-              if (res.get("image_url").kind == JSONValueKind.STRING) {
-                strand.image = res.get("image_url").toString();
+              if (res.get("image_url")!.kind == JSONValueKind.STRING) {
+                strand.image = res.get("image_url")!.toString();
               }
               if (res.get("3D_File").kind == JSONValueKind.STRING) {
                 strand.animation = res.get("3D_File").toString();
               }
-              if (res.get("Animation").kind == JSONValueKind.STRING) {
-                strand.animation = res.get("Animation").toString();
+              if (res.get("Animation")!.kind == JSONValueKind.STRING) {
+                strand.animation = res.get("Animation")!.toString();
               }
               if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
-                strand.animation = res.get("animation_url").toString();
+                strand.animation = res.get("animation_url")!.toString();
               }
               if (res.get("name")!.kind == JSONValueKind.STRING) {
-                strand.name = res.get("name").toString();
+                strand.name = res.get("name")!.toString();
               }
-              if (res.get("Designer ID").kind == JSONValueKind.STRING) {
-                strand.name = res.get("Designer ID").toString();
+              if (res.get("Designer ID")!.kind == JSONValueKind.STRING) {
+                strand.name = res.get("Designer ID")!.toString();
               }
               if (res.get("description")!.kind == JSONValueKind.STRING) {
-                strand.description = res.get("description").toString();
+                strand.description = res.get("description")!.toString();
               }
               if (res.get("external url")!.kind == JSONValueKind.STRING) {
-                strand.external = res.get("external url").toString();
+                strand.external = res.get("external url")!.toString();
               }
-              if (res.get("external_url").kind == JSONValueKind.STRING) {
-                strand.external = res.get("external_url").toString();
+              if (res.get("external_url")!.kind == JSONValueKind.STRING) {
+                strand.external = res.get("external_url")!.toString();
               }
               if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
                 let attributes = res.get("attributes")!.toArray();
@@ -228,8 +228,8 @@ export function handleSingleTransfer(event: TransferSingle): void {
   let childToken: AvatarElemental | null = AvatarElemental.load(
     childId.toString()
   );
-  childToken.totalSupply = contract.tokenTotalSupply(childId);
-  childToken.save();
+  childToken!.totalSupply = contract.tokenTotalSupply(childId);
+  childToken!.save();
 
   // Update "from" balances
   if (!event.params.from.equals(ZERO_ADDRESS)) {
@@ -342,8 +342,8 @@ export function handleBatchTransfer(event: TransferBatch): void {
       childId.toString()
     );
     if (child) {
-      child.totalSupply = contract.tokenTotalSupply(childId);
-      child.save();
+      child!.totalSupply = contract.tokenTotalSupply(childId);
+      child!.save();
     }
   }
 

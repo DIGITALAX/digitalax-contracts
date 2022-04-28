@@ -80,7 +80,7 @@ type DripF3MMarketplacePurchaseHistory @entity {
 type DigitalaxF3MNFT @entity {
   id: ID!
   designer: String!
-  owner: Bytes!
+  owner: Bytes
   primarySalePrice: BigInt!
   tokenUri: String!
   image: String!
@@ -90,7 +90,7 @@ type DigitalaxF3MNFT @entity {
   external: String!
   additionalSources: [AdditionalSource!]
   attributes: [GarmentAttribute!]!
-  children: [DigitalaxF3MChildren!]!
+  children: [DigitalaxF3MChildren!]
 }
 
 type DigitalaxF3MCollectionGroup @entity {
