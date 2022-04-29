@@ -20,7 +20,7 @@ export function handleGarmentCollectionMinted(
   let mintedGarments = new Array<string>();
   for (let i = 0; i < collectionData.value1.toI32(); i++) {
     let garmentToken = DigitalaxModelNFT.load(collectionData.value0[i].toString());
-    mintedGarments.push(garmentToken.id);
+    mintedGarments.push(garmentToken!.id);
   }
   collection.garments = mintedGarments;
   collection.garmentAuctionID = event.params.auctionTokenId;
@@ -35,8 +35,8 @@ export function handleGarmentCollectionBurned(
   let collection = DigitalaxModelCollection.load(
     event.params.collectionId.toString()
   );
-  collection.garments = null;
-  collection.garmentAuctionID = null;
-  collection.rarity = null;
+ // collection.garments = null;
+// collection.garmentAuctionID = null;
+//  collection.rarity = null;
   collection.save();
 }

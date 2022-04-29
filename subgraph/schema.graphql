@@ -58,14 +58,14 @@ type DigitalaxGarmentChild @entity {
 
 type GarmentAttribute @entity {
   id: ID!
-  type: String!
-  value: String!
+  type: String
+  value: String
 }
 
 type DigitalaxGarment @entity {
   id: ID!
   designer: String!
-  owner: Bytes!
+  owner: Bytes
   primarySalePrice: BigInt!
   tokenUri: String!
   image: String!
@@ -74,7 +74,7 @@ type DigitalaxGarment @entity {
   description: String!
   external: String!
   attributes: [GarmentAttribute!]!
-  children: [DigitalaxGarmentChild!]!
+  children: [DigitalaxGarmentChild!]
 }
 
 # Total support of all children

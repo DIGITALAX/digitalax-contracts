@@ -19,7 +19,7 @@ export function handleSubscriptionCollectionMinted(event: MintSubscriptionCollec
     let mintedGarments = new Array<string>();
     for(let i = 0; i < collectionData.value1.toI32(); i++) {
         let garmentToken = DigitalaxSubscription.load(collectionData.value0[i].toString());
-        mintedGarments.push(garmentToken.id);
+        mintedGarments.push(garmentToken!.id);
     }
     collection.garments = mintedGarments;
     collection.rarity = event.params.rarity;

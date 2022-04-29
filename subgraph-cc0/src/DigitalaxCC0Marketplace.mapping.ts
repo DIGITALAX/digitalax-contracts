@@ -28,7 +28,7 @@ export function handleMarketplaceDeployed(
 ): void {
   let contract = DigitalaxCC0MarketplaceContract.bind(event.address);
   let globalStats = loadOrCreateCC0GlobalStats();
-  globalStats.save();
+  globalStats!.save();
 }
 
 export function handleUpdateMarketplacePlatformFee(
@@ -123,7 +123,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
 
       day.save();
       history.save();
-      globalStats.save();
+      globalStats!.save();
 
       let offer = DigitalaxCC0MarketplaceOffer.load(
         event.params.garmentCollectionId.toString()

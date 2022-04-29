@@ -93,27 +93,27 @@ export function handleBidPlaced(event: BidPlaced): void {
 
     let topBidder = contract.getHighestBidder(event.params.garmentTokenId)
     let bidDeltaWithPreviousBid = ZERO;
-    if (!auction.topBidder) {
-        bidDeltaWithPreviousBid = day.totalBidValue.plus(topBidder.value1);
+    if (!auction!.topBidder) {
+        bidDeltaWithPreviousBid = day!.totalBidValue.plus(topBidder.value1);
     } else {
         // This is key - we want to record the difference between the last highest bid and this new bid on this day
-        bidDeltaWithPreviousBid = day.totalBidValue.plus(topBidder.value1.minus((auction.topBid as BigInt)));
+        bidDeltaWithPreviousBid = day!.totalBidValue.plus(topBidder.value1.minus((auction!.topBid as BigInt)));
     }
 
-    day.totalBidValue = bidDeltaWithPreviousBid;
-    day.totalNetBidActivity = day.totalBidValue.minus(day.totalWithdrawalValue);
+    day!.totalBidValue = bidDeltaWithPreviousBid;
+    day!.totalNetBidActivity = day!.totalBidValue.minus(day!.totalWithdrawalValue);
 
-    day.save();
+    day!.save();
 
     let globalStats = loadOrCreateGarmentNFTV2GlobalStats();
-    globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue.plus(bidDeltaWithPreviousBid);
-    globalStats.save();
+    globalStats!.totalActiveBidsValue = globalStats!.totalActiveBidsValue.plus(bidDeltaWithPreviousBid);
+    globalStats!.save();
 
     // Record top bidder
-    auction.topBidder = loadOrCreateDigitalaxCollectorV2(event.params.bidder).id
-    auction.topBid = topBidder.value1
-    auction.lastBidTime = topBidder.value2
-    auction.save()
+    auction!.topBidder = loadOrCreateDigitalaxCollectorV2(event.params.bidder).id
+    auction!.topBid = topBidder.value1
+    auction!.lastBidTime = topBidder.value2
+    auction!.save()
 
     let eventId = tokenId.toString()
         .concat("-")
@@ -123,7 +123,7 @@ export function handleBidPlaced(event: BidPlaced): void {
 
     // Record event
     let auctionEvent = new DigitalaxGarmentV2AuctionHistory(eventId);
-    auctionEvent.token = DigitalaxGarmentV2.load(event.params.garmentTokenId.toString()).id
+    auctionEvent.token = DigitalaxGarmentV2.load(event.params.garmentTokenId.toString())!.id
     auctionEvent.eventName = "BidPlaced"
     auctionEvent.bidder = loadOrCreateDigitalaxCollectorV2(event.params.bidder).id
     auctionEvent.timestamp = event.block.timestamp
@@ -142,7 +142,7 @@ export function handleBidWithdrawn(event: BidWithdrawn): void {
         .concat(event.transaction.index.toString());
 
     let auctionEvent = new DigitalaxGarmentV2AuctionHistory(eventId);
-    auctionEvent.token = DigitalaxGarmentV2.load(event.params.garmentTokenId.toString()).id
+    auctionEvent.token = DigitalaxGarmentV2.load(event.params.garmentTokenId.toString())!.id
     auctionEvent.eventName = "BidWithdrawn"
     auctionEvent.bidder = loadOrCreateDigitalaxCollectorV2(event.params.bidder).id
     auctionEvent.timestamp = event.block.timestamp
@@ -152,20 +152,20 @@ export function handleBidWithdrawn(event: BidWithdrawn): void {
 
     // Clear down bids
     let auction = DigitalaxGarmentV2Auction.load(tokenId.toString());
-    auction.topBidder = null
-    auction.topBid = null
-    auction.lastBidTime = null
-    auction.save();
+ //   auction.topBidder = null
+//    auction.topBid = null
+//    auction.lastBidTime = null
+    auction!.save();
 
     // Record withdrawal as part of day
     let day = loadDayFromEvent(event);
-    day.totalWithdrawalValue = day.totalWithdrawalValue.plus(event.params.bid);
-    day.totalNetBidActivity = day.totalBidValue.minus(day.totalWithdrawalValue);
-    day.save();
+    day!.totalWithdrawalValue = day!.totalWithdrawalValue.plus(event.params.bid);
+    day!.totalNetBidActivity = day!.totalBidValue.minus(day!.totalWithdrawalValue);
+    day!.save();
 
     let globalStats = loadOrCreateGarmentNFTV2GlobalStats();
-    globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue.minus(event.params.bid);
-    globalStats.save();
+    globalStats!.totalActiveBidsValue = globalStats!.totalActiveBidsValue.minus(event.params.bid);
+    globalStats!.save();
 }
 
 export function handleAuctionResulted(event: AuctionResulted): void {
@@ -178,7 +178,7 @@ export function handleAuctionResulted(event: AuctionResulted): void {
         .concat(event.transaction.index.toString());
 
     let auctionEvent = new DigitalaxGarmentV2AuctionHistory(eventId);
-    auctionEvent.token = DigitalaxGarmentV2.load(event.params.garmentTokenId.toString()).id
+    auctionEvent.token = DigitalaxGarmentV2.load(event.params.garmentTokenId.toString())!.id
     auctionEvent.eventName = "AuctionResulted"
     auctionEvent.bidder = loadOrCreateDigitalaxCollectorV2(event.params.winner).id
     auctionEvent.timestamp = event.block.timestamp
@@ -188,34 +188,34 @@ export function handleAuctionResulted(event: AuctionResulted): void {
 
     // Record winning bid
     let auctionConfig = DigitalaxAuctionV2Contract.load(event.address.toHexString());
-    auctionConfig.totalSales = auctionConfig.totalSales.plus(event.params.winningBid)
+    auctionConfig!.totalSales = auctionConfig!.totalSales.plus(event.params.winningBid)
 
     // Result the auction
     let auction = DigitalaxGarmentV2Auction.load(tokenId.toString());
-    auction.resulted = true
-    auction.resultedTime = event.block.timestamp
-    auction.save();
+    auction!.resulted = true
+    auction!.resultedTime = event.block.timestamp
+    auction!.save();
 
     // Record global stats
     let globalStats = loadOrCreateGarmentNFTV2GlobalStats();
-    globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue.minus(event.params.winningBid);
-    globalStats.totalSalesValue = globalStats.totalSalesValue.plus(event.params.winningBid);
-    globalStats.save();
+    globalStats!.totalActiveBidsValue = globalStats!.totalActiveBidsValue.minus(event.params.winningBid);
+    globalStats!.totalSalesValue = globalStats!.totalSalesValue.plus(event.params.winningBid);
+    globalStats!.save();
 }
 
 export function handleAuctionCancelled(event: AuctionCancelled): void {
     let tokenId = event.params.garmentTokenId;
-  
+
     let eventId = tokenId.toString()
         .concat("-")
         .concat(event.transaction.hash.toHexString())
         .concat("-")
         .concat(event.transaction.index.toString());
-  
+
     let auctionEvent = new DigitalaxGarmentV2AuctionHistory(eventId);
     let garment = DigitalaxGarmentV2.load(event.params.garmentTokenId.toString());
     if (garment) {
-        auctionEvent.token = DigitalaxGarmentV2.load(event.params.garmentTokenId.toString()).id
+        auctionEvent.token = DigitalaxGarmentV2.load(event.params.garmentTokenId.toString())!.id
         auctionEvent.eventName = "AuctionCancelled"
         auctionEvent.timestamp = event.block.timestamp
         auctionEvent.transactionHash = event.transaction.hash
@@ -228,13 +228,13 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
       if (auction.topBid) {
           // adjust global stats
           let globalStats = loadOrCreateGarmentNFTV2GlobalStats();
-          globalStats.totalActiveBidsValue = globalStats.totalActiveBidsValue.minus((auction.topBid as BigInt));
-          globalStats.save();
+          globalStats!.totalActiveBidsValue = globalStats!.totalActiveBidsValue.minus((auction.topBid as BigInt));
+          globalStats!.save();
       }
-    
-      auction.topBidder = null
-      auction.topBid = null
-      auction.lastBidTime = null
+
+   //   auction.topBidder = null
+//    auction.topBid = null
+//    auction.lastBidTime = null
       auction.save();
     }
 }
@@ -246,8 +246,8 @@ export function handleUpdateBidWithdrawalLockTime(event: UpdateBidWithdrawalLock
     );
  */
     let auctionConfig = DigitalaxAuctionV2Contract.load(event.address.toHexString());
-    auctionConfig.bidWithdrawalLockTime = event.params.bidWithdrawalLockTime;
-    auctionConfig.save();
+    auctionConfig!.bidWithdrawalLockTime = event.params.bidWithdrawalLockTime;
+    auctionConfig!.save();
 }
 
 export function handleUpdateMinBidIncrement(event: UpdateMinBidIncrement): void {
@@ -257,8 +257,8 @@ export function handleUpdateMinBidIncrement(event: UpdateMinBidIncrement): void 
     );
  */
     let auctionConfig = DigitalaxAuctionV2Contract.load(event.address.toHexString());
-    auctionConfig.minBidIncrement = event.params.minBidIncrement;
-    auctionConfig.save();
+    auctionConfig!.minBidIncrement = event.params.minBidIncrement;
+    auctionConfig!.save();
 }
 
 export function handleUpdateAuctionReservePrice(event: UpdateAuctionReservePrice): void {
@@ -269,8 +269,8 @@ export function handleUpdateAuctionReservePrice(event: UpdateAuctionReservePrice
     );
  */
     let auction = DigitalaxGarmentV2Auction.load(event.params.garmentTokenId.toString());
-    auction.reservePrice = event.params.reservePrice
-    auction.save();
+    auction!.reservePrice = event.params.reservePrice;
+    auction!.save();
 }
 
 export function handleUpdateAuctionStartTime(event: UpdateAuctionStartTime): void {
@@ -281,8 +281,8 @@ export function handleUpdateAuctionStartTime(event: UpdateAuctionStartTime): voi
     );
  */
     let auction = DigitalaxGarmentV2Auction.load(event.params.garmentTokenId.toString());
-    auction.startTime = event.params.startTime
-    auction.save();
+    auction!.startTime = event.params.startTime
+    auction!.save();
 }
 
 export function handleUpdateAuctionEndTime(event: UpdateAuctionEndTime): void {
@@ -293,8 +293,8 @@ export function handleUpdateAuctionEndTime(event: UpdateAuctionEndTime): void {
     );
  */
     let auction = DigitalaxGarmentV2Auction.load(event.params.garmentTokenId.toString());
-    auction.endTime = event.params.endTime
-    auction.save();
+    auction!.endTime = event.params.endTime
+    auction!.save();
 }
 
 export function handleUpdatePlatformFee(event: UpdatePlatformFee): void {
@@ -304,8 +304,8 @@ event UpdatePlatformFee(
 );
  */
     let auctionConfig = DigitalaxAuctionV2Contract.load(event.address.toHexString());
-    auctionConfig.platformFee = event.params.platformFee;
-    auctionConfig.save();
+    auctionConfig!.platformFee = event.params.platformFee;
+    auctionConfig!.save();
 }
 
 export function handleUpdatePlatformFeeRecipient(event: UpdatePlatformFeeRecipient): void {
@@ -315,6 +315,6 @@ export function handleUpdatePlatformFeeRecipient(event: UpdatePlatformFeeRecipie
     );
  */
     let auctionConfig = DigitalaxAuctionV2Contract.load(event.address.toHexString());
-    auctionConfig.platformFeeRecipient = event.params.platformFeeRecipient;
-    auctionConfig.save();
+    auctionConfig!.platformFeeRecipient = event.params.platformFeeRecipient;
+    auctionConfig!.save();
 }

@@ -24,7 +24,7 @@ import { loadDayFromEvent } from "./factory/Day.factory";
 export function handleMarketplaceDeployed(event: DigitalaxMarketplaceContractDeployed): void {
     let contract = DigitalaxMarketplaceContract.bind(event.address);
     let globalStats = loadOrCreateGarmentNFTGlobalStats();
-    globalStats.save();
+    globalStats!.save();
 }
 
 export function handleUpdateMarketplacePlatformFee(event: UpdateMarketplacePlatformFee): void {
@@ -89,7 +89,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
 
     day.save();
     history.save();
-    globalStats.save();
+    globalStats!.save();
 
     let offer = DigitalaxMarketplaceOffer.load(event.params.garmentCollectionId.toString());
     offer.amountSold = offer.amountSold.plus(ONE);

@@ -29,7 +29,7 @@ export function handleMarketplaceDeployed(
 ): void {
   let contract = DigitalaxModelMarketplaceV3Contract.bind(event.address);
   let globalStats = loadOrCreateModelGlobalStats();
-  globalStats.save();
+  globalStats!.save();
 }
 
 export function handleUpdateMarketplacePlatformFee(
@@ -107,9 +107,9 @@ export function handleOfferPurchased(event: OfferPurchased): void {
       history.rarity = collection.rarity;
       let weth = contract.wethERC20Token();
       history.monaPerEth = contract.lastOracleQuote(weth);
-    
+
       let day = loadDayFromEvent(event);
-    
+
       let globalStats = loadOrCreateDripGlobalStats();
 
       globalStats.totalMarketplaceSalesInUSD = globalStats.totalMarketplaceSalesInUSD.plus(
@@ -120,17 +120,17 @@ export function handleOfferPurchased(event: OfferPurchased): void {
       );
 
       globalStats.usdETHConversion = contract.lastOracleQuote(weth);
-    
+
       day.save();
       history.save();
-      globalStats.save();
-    
+      globalStats!.save();
+
       let offer = DigitalaxModelMarketplaceV3Offer.load(
         event.params.garmentCollectionId.toString()
       );
       offer.amountSold = offer.amountSold.plus(ONE);
       offer.save();
-    
+
       collection.valueSold = collection.valueSold.plus(
         onChainOffer.value.value0
       );

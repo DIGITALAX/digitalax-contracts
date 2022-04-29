@@ -22,7 +22,7 @@ import {store} from "@graphprotocol/graph-ts/index";
 //
 export function handleMarketplaceDeployed(event: DigitalaxMarketplaceContractDeployed): void {
     let globalStats = loadOrCreatePatronGlobalStats();
-    globalStats.save();
+    globalStats!.save();
 }
 
 export function handleUpdateMarketplaceDiscountToPayInErc20(event: UpdateMarketplaceDiscountToPayInErc20): void {
@@ -86,7 +86,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
 
     day.save();
     history.save();
-    globalStats.save();
+    globalStats!.save();
 
     let offer = PatronMarketplaceOffer.load(event.params.garmentCollectionId.toString());
     offer.amountSold = offer.amountSold.plus(ONE);

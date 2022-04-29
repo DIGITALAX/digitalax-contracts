@@ -31,7 +31,7 @@ export function handleMarketplaceDeployed(
 ): void {
   let contract = DigitalaxMarketplaceV3Contract.bind(event.address);
   let globalStats = loadOrCreateGarmentNFTV2GlobalStats();
-  globalStats.save();
+  globalStats!.save();
 }
 
 export function handleUpdateMarketplacePlatformFee(
@@ -132,7 +132,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
 
       day.save();
       history.save();
-      globalStats.save();
+      globalStats!.save();
 
       let offer = DigitalaxMarketplaceV3Offer.load(
         event.params.garmentCollectionId.toString()
@@ -192,7 +192,7 @@ export function handleOfferCancelled(event: OfferCancelled): void {
           offerValue.times(soldNumber)
       );
 
-      globalStats.save();
+      globalStats!.save();
 
       let offer = DigitalaxMarketplaceV3Offer.load(
           event.params.garmentCollectionId.toString()

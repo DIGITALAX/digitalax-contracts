@@ -24,7 +24,7 @@ import { loadDayFromEvent } from "./factory/SubscriptionDay.factory";
 export function handleMarketplaceDeployed(event: DigitalaxSubscriptionMarketplaceContractDeployed): void {
     let contract = DigitalaxSubscriptionMarketplaceContract.bind(event.address);
     let globalStats = loadOrCreateSubscriptionNFTGlobalStats();
-    globalStats.save();
+    globalStats!.save();
 }
 
 export function handleUpdateMarketplacePlatformFee(event: UpdateMarketplacePlatformFee): void {
@@ -99,7 +99,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
 
     day.save();
     history.save();
-    globalStats.save();
+    globalStats!.save();
 
     let offer = DigitalaxSubscriptionMarketplaceOffer.load(event.params.subscriptionCollectionId.toString());
     offer.amountSold = offer.amountSold.plus(ONE);

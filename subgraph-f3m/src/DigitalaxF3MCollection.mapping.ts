@@ -40,7 +40,7 @@ export function handleGarmentCollectionMinted(
               collectionData.value0[i].toString()
             );
             if (garmentToken) {
-              mintedGarments.push(garmentToken.id);
+              mintedGarments.push(garmentToken!.id);
             }
           }
         }

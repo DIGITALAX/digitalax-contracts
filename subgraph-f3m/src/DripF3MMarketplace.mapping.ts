@@ -23,7 +23,7 @@ import {store} from "@graphprotocol/graph-ts/index";
 export function handleMarketplaceDeployed(event: DigitalaxMarketplaceContractDeployed): void {
     let contract = DripMarketplaceContract.bind(event.address);
     let globalStats = loadOrCreateDripGlobalStats();
-    globalStats.save();
+    globalStats!.save();
 }
 
 export function handleUpdateMarketplaceDiscountToPayInErc20(event: UpdateMarketplaceDiscountToPayInErc20): void {
@@ -87,7 +87,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
 
     day.save();
     history.save();
-    globalStats.save();
+    globalStats!.save();
 
     let offer = DripF3MMarketplaceOffer.load(event.params.garmentCollectionId.toString());
     offer.amountSold = offer.amountSold.plus(ONE);

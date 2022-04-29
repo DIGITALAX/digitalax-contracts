@@ -468,17 +468,17 @@ type DigitalaxAccessControlsHistory @entity {
 type DigitalaxGarmentCollection @entity {
   id: ID!
   garmentAuctionID: BigInt!
-  garments: [DigitalaxGarment!]!
-  rarity: String!
-  valueSold: BigInt!
+  garments: [DigitalaxGarment!]
+  rarity: String
+  valueSold: BigInt
 }
 
 type DigitalaxGarmentV2Collection @entity {
   id: ID!
   garmentAuctionID: BigInt!
-  garments: [DigitalaxGarmentV2!]!
-  rarity: String!
-  valueSold: BigInt!
+  garments: [DigitalaxGarmentV2!]
+  rarity: String
+  valueSold: BigInt
   designer: DigitalaxDesigner
   developer: DigitalaxDeveloper
 }
