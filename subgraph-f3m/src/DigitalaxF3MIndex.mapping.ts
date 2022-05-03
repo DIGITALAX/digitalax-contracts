@@ -165,11 +165,11 @@ export function handleDesignerGroupAdded(event: DesignerGroupAdded): void {
         if (res.get("image_url")!.kind == JSONValueKind.STRING) {
           designer.image = res.get("image_url").toString();
         }
-        if (res.get("instagram").kind == JSONValueKind.STRING) {
-          designer.instagram = res.get("instagram").toString();
+        if (res.get("instagram")!.kind == JSONValueKind.STRING) {
+          designer.instagram = res.get("instagram")!.toString();
         }
-        if (res.get("twitter").kind == JSONValueKind.STRING) {
-          designer.twitter = res.get("twitter").toString();
+        if (res.get("twitter")!.kind == JSONValueKind.STRING) {
+          designer.twitter = res.get("twitter")!.toString();
         }
       }
     }

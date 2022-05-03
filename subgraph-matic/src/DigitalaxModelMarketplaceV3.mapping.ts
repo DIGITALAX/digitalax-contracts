@@ -131,10 +131,10 @@ export function handleOfferPurchased(event: OfferPurchased): void {
       offer!.amountSold = offer!.amountSold.plus(ONE);
       offer!.save();
 
-      collection!.valueSold = collection!.valueSold.plus(
+      collection.valueSold = collection.valueSold.plus(
         onChainOffer.value.value0
       );
-      collection!.save();
+      collection.save();
     }
   }
 }

@@ -85,8 +85,8 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     history.value = event.params.primarySalePrice;
     history.isPaidWithMona = event.params.paidInErc20;
     history.monaTransferredAmount = event.params.monaTransferredAmount;
-    history.bundleId = collection.bundleID;
-    history.rarity = collection.rarity;
+    history.bundleId = collection!.bundleID;
+    history.rarity = collection!.rarity;
     history.platformFee = event.params.platformFee;
 
     let day = loadDayFromEvent(event);
@@ -97,25 +97,27 @@ export function handleOfferPurchased(event: OfferPurchased): void {
         day!.totalMarketplaceVolumeInMona = day!.totalMarketplaceVolumeInMona.plus(history.monaTransferredAmount);
         history.discountToPayMona = event.params.discountToPayInERC20;
 
-    day.save();
+    day!.save();
     history.save();
     globalStats!.save();
 
     let offer = DigitalaxSubscriptionMarketplaceOffer.load(event.params.subscriptionCollectionId.toString());
-    offer.amountSold = offer.amountSold.plus(ONE);
-    offer.save();
+    if(offer) {
+        offer.amountSold = offer.amountSold.plus(ONE);
+        offer.save();
+    }
 
-    collection.valueSold = collection.valueSold.plus(event.params.primarySalePrice);
-    collection.save();
+    collection!.valueSold = collection!.valueSold.plus(event.params.primarySalePrice);
+    collection!.save();
 }
 
 export function handleOfferCancelled(event: OfferCancelled): void {
     let offer = DigitalaxSubscriptionMarketplaceOffer.load(event.params.bundleTokenId.toString());
     if (offer) {
-        offer.primarySalePrice = null;
-        offer.subscriptionCollection = null;
-        offer.startTime = null;
-        offer.endTime = null;
+        offer.primarySalePrice = ZERO;
+        offer.subscriptionCollection = '';
+        offer.startTime = ZERO;
+        offer.endTime = ZERO;
         offer.save();
     }
 }

@@ -85,7 +85,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
 
     globalStats.usdETHConversion = contract.lastOracleQuote(weth);
 
-    day.save();
+    day!.save();
     history.save();
     globalStats!.save();
 

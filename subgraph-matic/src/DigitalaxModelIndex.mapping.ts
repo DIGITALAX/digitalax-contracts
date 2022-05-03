@@ -70,19 +70,21 @@ export function handleCollectionGroupUpdated(
     collections.push(collectionId.toString());
   }
 
-  let digiBudngle = event.params.digiBundleCollection.toString();
+  let digiBundle = event.params.digiBundleCollection.toString();
 
-  collectionGroup.collections = collections;
-  collectionGroup.digiBundle = digiBudngle;
+  if(collectionGroup) {
+    collectionGroup.collections = collections;
+    collectionGroup.digiBundle = digiBundle;
 
-  collectionGroup.save();
+    collectionGroup.save();
+  }
 }
 
 export function handleDesignerGroupRemoved(event: DesignerGroupRemoved): void {
   let designer = DigitalaxModelDesigner.load(
     event.params._address.toHexString()
   );
-  let collectionIds = designer.collections;
+  let collectionIds = designer!.collections;
   for (let i = 0; i < collectionIds.length; i += 1) {
     let collectionId = collectionIds[i];
     let collection = DigitalaxModelCollection.load(collectionId.toString());
@@ -124,13 +126,13 @@ export function handleDesignerGroupAdded(event: DesignerGroupAdded): void {
           designer.description = res.get("description")!.toString();
         }
         if (res.get("image_url")!.kind == JSONValueKind.STRING) {
-          designer.image = res.get("image_url").toString();
+          designer.image = res.get("image_url")!.toString();
         }
-        if (res.get("instagram").kind == JSONValueKind.STRING) {
-          designer.instagram = res.get("instagram").toString();
+        if (res.get("instagram")!.kind == JSONValueKind.STRING) {
+          designer.instagram = res.get("instagram")!.toString();
         }
-        if (res.get("twitter").kind == JSONValueKind.STRING) {
-          designer.twitter = res.get("twitter").toString();
+        if (res.get("twitter")!.kind == JSONValueKind.STRING) {
+          designer.twitter = res.get("twitter")!.toString();
         }
       }
     }
@@ -140,7 +142,7 @@ export function handleDesignerGroupAdded(event: DesignerGroupAdded): void {
 
 export function handleModelGroupRemoved(event: ModelGroupRemoved): void {
   let designer = DigitalaxModel.load(event.params._address.toHexString());
-  let collectionIds = designer.collections;
+  let collectionIds = designer!.collections;
   for (let i = 0; i < collectionIds.length; i += 1) {
     let collectionId = collectionIds[i];
     let collection = DigitalaxModelCollection.load(collectionId.toString());
@@ -178,20 +180,20 @@ export function handleModelGroupAdded(event: ModelGroupAdded): void {
     if (data.isOk) {
       if (data.value.kind == JSONValueKind.OBJECT) {
         let res = data.value.toObject();
-        if (res.get("Model ID").kind == JSONValueKind.STRING) {
-          model.name = res.get("Model ID").toString();
+        if (res.get("Model ID")!.kind == JSONValueKind.STRING) {
+          model.name = res.get("Model ID")!.toString();
         }
         if (res.get("description")!.kind == JSONValueKind.STRING) {
           model.description = res.get("description")!.toString();
         }
         if (res.get("image_url")!.kind == JSONValueKind.STRING) {
-          model.image = res.get("image_url").toString();
+          model.image = res.get("image_url")!.toString();
         }
-        if (res.get("instagram").kind == JSONValueKind.STRING) {
-          model.instagram = res.get("instagram").toString();
+        if (res.get("instagram")!.kind == JSONValueKind.STRING) {
+          model.instagram = res.get("instagram")!.toString();
         }
-        if (res.get("twitter").kind == JSONValueKind.STRING) {
-          model.twitter = res.get("twitter").toString();
+        if (res.get("twitter")!.kind == JSONValueKind.STRING) {
+          model.twitter = res.get("twitter")!.toString();
         }
       }
     }

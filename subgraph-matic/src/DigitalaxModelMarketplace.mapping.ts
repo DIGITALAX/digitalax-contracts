@@ -98,8 +98,8 @@ export function handleOfferPurchased(event: OfferPurchased): void {
   history.buyer = event.params.buyer;
   history.isPaidWithMona = event.params.paidInErc20;
   history.monaTransferredAmount = event.params.monaTransferredAmount;
-  history.garmentAuctionId = collection.garmentAuctionID;
-  history.rarity = collection.rarity;
+  history.garmentAuctionId = collection!.garmentAuctionID;
+  history.rarity = collection!.rarity;
   history.platformFee = event.params.platformFee;
   history.monaPerEth = contract.lastOracleQuote();
 
@@ -107,39 +107,39 @@ export function handleOfferPurchased(event: OfferPurchased): void {
   let globalStats = loadOrCreateModelGlobalStats();
 
   if (history.isPaidWithMona) {
-    globalStats.totalMarketplaceSalesInMona = globalStats.totalMarketplaceSalesInMona.plus(
-      history.monaTransferredAmount
-    );
-    day.totalMarketplaceVolumeInMona = day.totalMarketplaceVolumeInMona.plus(
-      history.monaTransferredAmount
-    );
-    history.discountToPayMona = event.params.discountToPayInERC20;
-  } else {
-    globalStats.totalMarketplaceSalesInETH = globalStats.totalMarketplaceSalesInETH.plus(
-      history.value
-    );
-    day.totalMarketplaceVolumeInETH = day.totalMarketplaceVolumeInETH.plus(
-      history.value
-    );
-    history.discountToPayMona = ZERO;
+    globalStats!.totalMarketplaceSalesInMona = globalStats!.totalMarketplaceSalesInMona.plus(
+          history.monaTransferredAmount
+      );
+      day!.totalMarketplaceVolumeInMona = day!.totalMarketplaceVolumeInMona.plus(
+          history.monaTransferredAmount
+      );
+      history.discountToPayMona = event.params.discountToPayInERC20;
+    } else {
+      globalStats!.totalMarketplaceSalesInETH = globalStats!.totalMarketplaceSalesInETH.plus(
+          history.value
+      );
+      day!.totalMarketplaceVolumeInETH = day!.totalMarketplaceVolumeInETH.plus(
+          history.value
+      );
+      history.discountToPayMona = ZERO;
   }
 
-  globalStats.monaPerEth = contract.lastOracleQuote();
+  globalStats!.monaPerEth = contract.lastOracleQuote();
 
-  day.save();
-  history.save();
-  globalStats!.save();
+  day!.save();
+    history.save();
+    globalStats!.save();
 
   let offer = DigitalaxModelMarketplaceOffer.load(
     event.params.garmentCollectionId.toString()
-  );
-  offer.amountSold = offer.amountSold.plus(ONE);
-  offer.save();
+    );
+    offer!.amountSold = offer!.amountSold.plus(ONE);
+    offer!.save();
 
-  collection.valueSold = collection.valueSold.plus(
-    event.params.primarySalePrice
-  );
-  collection.save();
+    collection!.valueSold = collection!.valueSold.plus(
+        event.params.primarySalePrice
+    );
+    collection!.save();
 }
 
 export function handleOfferCancelled(event: OfferCancelled): void {

@@ -121,9 +121,9 @@ export function handleOfferPurchased(event: OfferPurchased): void {
 
       globalStats.usdETHConversion = contract.lastOracleQuote(weth);
 
-      day.save();
-      history.save();
-      globalStats!.save();
+      day!.save();
+    history.save();
+    globalStats!.save();
 
       let offer = DigitalaxCC0MarketplaceOffer.load(
         event.params.garmentCollectionId.toString()

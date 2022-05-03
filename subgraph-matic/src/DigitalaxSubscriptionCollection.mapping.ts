@@ -21,18 +21,22 @@ export function handleSubscriptionCollectionMinted(event: MintSubscriptionCollec
         let garmentToken = DigitalaxSubscription.load(collectionData.value0[i].toString());
         mintedGarments.push(garmentToken!.id);
     }
-    collection.garments = mintedGarments;
-    collection.rarity = event.params.rarity;
-    collection.bundleID = event.params.collectionId;
-    collection.valueSold = ZERO;
-    collection.save();
+    if(collection) {
+        collection.garments = mintedGarments;
+        collection.rarity = event.params.rarity;
+        collection.bundleID = event.params.collectionId;
+        collection.valueSold = ZERO;
+        collection.save();
+    }
 }
 
 
 export function handleSubscriptionCollectionBurned(event: BurnSubscriptionCollection): void {
     let collection = DigitalaxSubscriptionCollection.load(event.params.collectionId.toString());
-    collection.garments = null;
-    collection.rarity = null;
-    collection.bundleID = null;
-    collection.save();
+    if(collection) {
+        collection.garments = [];
+        collection.rarity = '';
+        collection.bundleID = ZERO;
+        collection.save();
+    }
 }

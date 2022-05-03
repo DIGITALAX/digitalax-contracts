@@ -84,17 +84,17 @@ export function handleCollectionGroupUpdated(
 
   let digiBudngle = event.params.digiBundleCollection.toString();
 
-  collectionGroup.auctions = auctions;
-  collectionGroup.collections = collections;
-  collectionGroup.digiBundle = digiBudngle;
+  collectionGroup!.auctions = auctions;
+  collectionGroup!.collections = collections;
+  collectionGroup!.digiBundle = digiBudngle;
 
-  collectionGroup.save();
+  collectionGroup!.save();
 }
 
 export function handleDesignerGroupRemoved(event: DesignerGroupRemoved): void {
   let designer = DigitalaxDesigner.load(event.params._address.toHexString());
-  let collectionIds = designer.collections;
-  let auctionIds = designer.auctions;
+  let collectionIds = designer!.collections;
+  let auctionIds = designer!.auctions;
   for (let i = 0; i < collectionIds.length; i += 1) {
     let collectionId = collectionIds[i];
     let collection = DigitalaxGarmentV2Collection.load(collectionId.toString());
@@ -156,13 +156,13 @@ export function handleDesignerGroupAdded(event: DesignerGroupAdded): void {
           designer.description = res.get("description")!.toString();
         }
         if (res.get("image_url")!.kind == JSONValueKind.STRING) {
-          designer.image = res.get("image_url").toString();
+          designer.image = res.get("image_url")!.toString();
         }
-        if (res.get("instagram").kind == JSONValueKind.STRING) {
-          designer.instagram = res.get("instagram").toString();
+        if (res.get("instagram")!.kind == JSONValueKind.STRING) {
+          designer.instagram = res.get("instagram")!.toString();
         }
-        if (res.get("twitter").kind == JSONValueKind.STRING) {
-          designer.twitter = res.get("twitter").toString();
+        if (res.get("twitter")!.kind == JSONValueKind.STRING) {
+          designer.twitter = res.get("twitter")!.toString();
         }
       }
     }
@@ -174,8 +174,8 @@ export function handleDeveloperGroupRemoved(
   event: DeveloperGroupRemoved
 ): void {
   let developer = DigitalaxDeveloper.load(event.params._address.toHexString());
-  let collectionIds = developer.collections;
-  let auctionIds = developer.auctions;
+  let collectionIds = developer!.collections;
+  let auctionIds = developer!.auctions;
   for (let i = 0; i < collectionIds.length; i += 1) {
     let collectionId = collectionIds[i];
     let collection = DigitalaxGarmentV2Collection.load(collectionId);
@@ -238,7 +238,7 @@ export function handleDeveloperGroupAdded(event: DesignerGroupAdded): void {
           developer.description = res.get("description")!.toString();
         }
         if (res.get("image_url")!.kind == JSONValueKind.STRING) {
-          developer.image = res.get("image_url").toString();
+          developer.image = res.get("image_url")!.toString();
         }
       }
     }
