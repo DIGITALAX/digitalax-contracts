@@ -128,13 +128,13 @@ export function handleOfferPurchased(event: OfferPurchased): void {
       let offer = DigitalaxCC0MarketplaceOffer.load(
         event.params.garmentCollectionId.toString()
       );
-      offer.amountSold = offer.amountSold.plus(ONE);
-      offer.save();
+      offer!.amountSold = offer!.amountSold.plus(ONE);
+      offer!.save();
 
-      collection.valueSold = collection.valueSold.plus(
+      collection!.valueSold = collection!.valueSold.plus(
         onChainOffer.value.value0
       );
-      collection.save();
+      collection!.save();
     }
   }
 }
@@ -157,8 +157,8 @@ export function handleOfferCancelled(event: OfferCancelled): void {
     event.params.bundleTokenId.toString()
   );
   if (offer) {
-    offer.primarySalePrice = null;
-    offer.garmentCollection = null;
+    offer.primarySalePrice = ZERO;
+    offer.garmentCollection = '';
     offer.save();
   }
 }

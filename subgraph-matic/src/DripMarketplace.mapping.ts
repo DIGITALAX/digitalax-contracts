@@ -28,8 +28,8 @@ export function handleMarketplaceDeployed(event: DigitalaxMarketplaceContractDep
 
 export function handleUpdateMarketplaceDiscountToPayInErc20(event: UpdateMarketplaceDiscountToPayInErc20): void {
     let offer = DripMarketplaceOffer.load(event.params.garmentCollectionId.toString());
-    offer.discountToPayERC20 = event.params.discount;
-    offer.save();
+    offer!.discountToPayERC20 = event.params.discount;
+    offer!.save();
 }
 
 export function handleOfferCreated(event: OfferCreated): void {
@@ -47,8 +47,8 @@ export function handleOfferCreated(event: OfferCreated): void {
 
 export function handleOfferPrimarySalePriceUpdated(event: UpdateOfferPrimarySalePrice): void {
     let offer = DripMarketplaceOffer.load(event.params.garmentCollectionId.toString());
-    offer.primarySalePrice = event.params.primarySalePrice;
-    offer.save();
+    offer!.primarySalePrice = event.params.primarySalePrice;
+    offer!.save();
 }
 
 export function handleOfferPurchased(event: OfferPurchased): void {
@@ -80,25 +80,25 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     let day = loadDayFromEvent(event);
     let globalStats = loadOrCreateDripGlobalStats();
 
-    globalStats.totalMarketplaceSalesInUSD = globalStats.totalMarketplaceSalesInUSD.plus(history.value);
-    day.totalMarketplaceVolumeInUSD = day.totalMarketplaceVolumeInUSD.plus(history.value);
+    globalStats!.totalMarketplaceSalesInUSD = globalStats!.totalMarketplaceSalesInUSD.plus(history.value);
+    day!.totalMarketplaceVolumeInUSD = day!.totalMarketplaceVolumeInUSD.plus(history.value);
 
     globalStats.usdETHConversion = contract.lastOracleQuote(weth);
 
-    day.save();
+    day!.save();
     history.save();
     globalStats!.save();
 
     let offer = DripMarketplaceOffer.load(event.params.garmentCollectionId.toString());
-    offer.amountSold = offer.amountSold.plus(ONE);
-    offer.save();
+    offer!.amountSold = offer!.amountSold.plus(ONE);
+    offer!.save();
 
-    collection.valueSold = collection.valueSold.plus(history.value);
-    collection.save();
+    collection!.valueSold = collection!.valueSold.plus(history.value);
+    collection!.save();
 }
 
 export function handleOfferCancelled(event: OfferCancelled): void {
     let offer = DripMarketplaceOffer.load(event.params.bundleTokenId.toString());
     store.remove('DripMarketplaceOffer', event.params.bundleTokenId.toString());
-    offer.save();
+    offer!.save();
 }

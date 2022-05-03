@@ -27,7 +27,7 @@ export function handleGarmentCollectionMinted(event: MintGarmentCollection): voi
                          if(collectionData.value0[i]) {
                             let garmentToken = DigitalaxGarmentV2.load(collectionData.value0[i].toString());
                             if (garmentToken) {
-                                mintedGarments.push(garmentToken!.id);
+                                mintedGarments.push(garmentToken.id);
                             }
                         }
                     }

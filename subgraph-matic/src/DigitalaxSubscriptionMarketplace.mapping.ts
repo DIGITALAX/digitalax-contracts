@@ -93,8 +93,8 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     let globalStats = loadOrCreateSubscriptionNFTGlobalStats();
 
     // if(history.isPaidWithMona){
-        globalStats.totalMarketplaceSalesInMona = globalStats.totalMarketplaceSalesInMona.plus(history.monaTransferredAmount);
-        day.totalMarketplaceVolumeInMona = day.totalMarketplaceVolumeInMona.plus(history.monaTransferredAmount);
+        globalStats!.totalMarketplaceSalesInMona = globalStats!.totalMarketplaceSalesInMona.plus(history.monaTransferredAmount);
+        day!.totalMarketplaceVolumeInMona = day!.totalMarketplaceVolumeInMona.plus(history.monaTransferredAmount);
         history.discountToPayMona = event.params.discountToPayInERC20;
 
     day.save();

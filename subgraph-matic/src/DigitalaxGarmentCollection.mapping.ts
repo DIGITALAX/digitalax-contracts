@@ -34,5 +34,5 @@ export function handleGarmentCollectionBurned(event: BurnGarmentCollection): voi
    // collection.garments = null;
 // collection.garmentAuctionID = null;
 //  collection.rarity = null;
-    collection.save();
+    collection!.save();
 }

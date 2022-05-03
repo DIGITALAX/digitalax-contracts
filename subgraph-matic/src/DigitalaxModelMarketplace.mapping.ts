@@ -147,8 +147,8 @@ export function handleOfferCancelled(event: OfferCancelled): void {
     event.params.bundleTokenId.toString()
   );
   if (offer) {
-    offer.primarySalePrice = null;
-    offer.garmentCollection = null;
+    offer.primarySalePrice = ZERO;
+    offer.garmentCollection = '';
     offer.save();
   }
 }

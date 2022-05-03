@@ -29,14 +29,18 @@ export function handleMarketplaceDeployed(event: DigitalaxMarketplaceContractDep
 
 export function handleUpdateMarketplacePlatformFee(event: UpdateMarketplacePlatformFee): void {
     let offer = DigitalaxMarketplaceOffer.load(event.params.garmentCollectionId.toString());
-    offer.marketplacePlatformFee = event.params.platformFee;
-    offer.save();
+    if(offer) {
+        offer.marketplacePlatformFee = event.params.platformFee;
+        offer.save();
+    }
 }
 
 export function handleUpdateMarketplaceDiscountToPayInErc20(event: UpdateMarketplaceDiscountToPayInErc20): void {
     let offer = DigitalaxMarketplaceOffer.load(event.params.garmentCollectionId.toString());
-    offer.discountToPayMona = event.params.discount;
-    offer.save();
+    if(offer) {
+        offer.discountToPayMona = event.params.discount;
+        offer.save();
+    }
 }
 
 export function handleOfferCreated(event: OfferCreated): void {
@@ -54,8 +58,10 @@ export function handleOfferCreated(event: OfferCreated): void {
 
 export function handleOfferPrimarySalePriceUpdated(event: UpdateOfferPrimarySalePrice): void {
     let offer = DigitalaxMarketplaceOffer.load(event.params.garmentCollectionId.toString());
-    offer.primarySalePrice = event.params.primarySalePrice;
-    offer.save();
+    if(offer) {
+        offer.primarySalePrice = event.params.primarySalePrice;
+        offer.save();
+    }
 }
 
 export function handleOfferPurchased(event: OfferPurchased): void {
@@ -70,37 +76,35 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     history.value = event.params.primarySalePrice;
     history.isPaidWithMona = event.params.paidInErc20;
     history.monaTransferredAmount = event.params.monaTransferredAmount;
-    history.garmentAuctionId = collection.garmentAuctionID;
-    history.rarity = collection.rarity;
+    history.garmentAuctionId = collection!.garmentAuctionID;
+    history.rarity = collection!.rarity;
     history.platformFee = event.params.platformFee;
 
     let day = loadDayFromEvent(event);
     let globalStats = loadOrCreateGarmentNFTGlobalStats();
 
     if(history.isPaidWithMona){
-        globalStats.totalMarketplaceSalesInMona = globalStats.totalMarketplaceSalesInMona.plus(history.monaTransferredAmount);
-        day.totalMarketplaceVolumeInMona = day.totalMarketplaceVolumeInMona.plus(history.monaTransferredAmount);
+        globalStats!.totalMarketplaceSalesInMona = globalStats!.totalMarketplaceSalesInMona.plus(history.monaTransferredAmount);
+        day!.totalMarketplaceVolumeInMona = day!.totalMarketplaceVolumeInMona.plus(history.monaTransferredAmount);
         history.discountToPayMona = event.params.discountToPayInERC20;
     } else {
-        globalStats.totalMarketplaceSalesInETH = globalStats.totalMarketplaceSalesInETH.plus(history.value);
-        day.totalMarketplaceVolumeInETH = day.totalMarketplaceVolumeInETH.plus(history.value);
+        globalStats!.totalMarketplaceSalesInETH = globalStats!.totalMarketplaceSalesInETH.plus(history.value);
+        day!.totalMarketplaceVolumeInETH = day!.totalMarketplaceVolumeInETH.plus(history.value);
         history.discountToPayMona = ZERO;
     }
 
-    day.save();
+    day!.save();
     history.save();
     globalStats!.save();
 
     let offer = DigitalaxMarketplaceOffer.load(event.params.garmentCollectionId.toString());
-    offer.amountSold = offer.amountSold.plus(ONE);
-    offer.save();
-    collection.valueSold = collection.valueSold.plus(event.params.primarySalePrice);
-    collection.save();
+    offer!.amountSold = offer!.amountSold.plus(ONE);
+    offer!.save();
+    collection!.valueSold = collection!.valueSold.plus(event.params.primarySalePrice);
+    collection!.save();
 }
 
 export function handleOfferCancelled(event: OfferCancelled): void {
     let offer = DigitalaxMarketplaceOffer.load(event.params.garmentTokenId.toString());
-    offer.primarySalePrice = null;
-    offer.garmentCollection = null;
-    offer.save();
+    offer!.save();
 }

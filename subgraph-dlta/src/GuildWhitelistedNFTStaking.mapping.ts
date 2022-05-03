@@ -140,16 +140,17 @@ export function handleUnstaked(event: Unstaked): void {
       newGarments.push(oldGarments[i]);
     }
   }
+  if(staker) {
+    let tryStakerWeight = weightContract.try_calcNewWhitelistedNFTOwnerWeight(
+        event.params.owner
+    );
+    if (!tryStakerWeight.reverted) {
+      staker.weight = tryStakerWeight.value;
+    }
 
-  let tryStakerWeight = weightContract.try_calcNewWhitelistedNFTOwnerWeight(
-    event.params.owner
-  );
-  if (!tryStakerWeight.reverted) {
-    staker.weight = tryStakerWeight.value;
+    staker.garments = newGarments;
+    staker.save();
   }
-
-  staker.garments = newGarments;
-  staker.save();
 }
 
 export function handleEmergencyUnstake(event: EmergencyUnstake): void {
@@ -170,15 +171,16 @@ export function handleEmergencyUnstake(event: EmergencyUnstake): void {
       newGarments.push(oldGarments[i]);
     }
   }
-
-  let tryStakerWeight = weightContract.try_calcNewWhitelistedNFTOwnerWeight(
-    event.params.user
-  );
-  if (!tryStakerWeight.reverted) {
-    staker.weight = tryStakerWeight.value;
+  if(staker) {
+    let tryStakerWeight = weightContract.try_calcNewWhitelistedNFTOwnerWeight(
+        event.params.user
+    );
+    if (!tryStakerWeight.reverted) {
+      staker.weight = tryStakerWeight.value;
+    }
+    staker.garments = newGarments;
+    staker.save();
   }
-  staker.garments = newGarments;
-  staker.save();
 }
 
 export function handleAddWhitelistedTokens(event: AddWhitelistedTokens): void {

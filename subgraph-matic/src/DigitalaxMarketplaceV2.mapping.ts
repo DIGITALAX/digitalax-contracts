@@ -99,8 +99,8 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     history.buyer = event.params.buyer;
     history.isPaidWithMona = event.params.paidInErc20;
     history.monaTransferredAmount = event.params.monaTransferredAmount;
-    history.garmentAuctionId = collection.garmentAuctionID;
-    history.rarity = collection.rarity;
+    history.garmentAuctionId = collection!.garmentAuctionID;
+    history.rarity = collection!.rarity;
     history.platformFee = event.params.platformFee;
     history.monaPerEth = contract.lastOracleQuote();
 
@@ -149,8 +149,8 @@ export function handleOfferCancelled(event: OfferCancelled): void {
     event.params.bundleTokenId.toString()
   );
   if (offer) {
-    offer.primarySalePrice = null;
-    offer.garmentCollection = null;
+    offer.primarySalePrice = ZERO;
+    offer.garmentCollection = '';
     offer.save();
   }
 }

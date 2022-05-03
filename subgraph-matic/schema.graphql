@@ -521,87 +521,87 @@ type DigitalaxOldNFTStaker @entity {
 
 type DigitalaxMarketplaceOffer @entity {
   id: ID!
-  garmentCollection: DigitalaxGarmentCollection!
-  primarySalePrice: BigInt!
-  startTime: BigInt!
-  amountSold: BigInt!
-  marketplacePlatformFee: BigInt!
-  discountToPayMona: BigInt!
+  garmentCollection: DigitalaxGarmentCollection
+  primarySalePrice: BigInt
+  startTime: BigInt
+  amountSold: BigInt
+  marketplacePlatformFee: BigInt
+  discountToPayMona: BigInt
 }
 
 type DigitalaxMarketplaceV2Offer @entity {
   id: ID!
-  garmentCollection: DigitalaxGarmentV2Collection!
-  primarySalePrice: BigInt!
-  startTime: BigInt!
-  endTime: BigInt!
-  amountSold: BigInt!
-  marketplacePlatformFee: BigInt!
-  discountToPayMona: BigInt!
+  garmentCollection: DigitalaxGarmentV2Collection
+  primarySalePrice: BigInt
+  startTime: BigInt
+  endTime: BigInt
+  amountSold: BigInt
+  marketplacePlatformFee: BigInt
+  discountToPayMona: BigInt
 }
 
 type DigitalaxMarketplaceV3Offer @entity {
   id: ID!
-  garmentCollection: DigitalaxGarmentV2Collection!
-  primarySalePrice: BigInt!
-  startTime: BigInt!
-  endTime: BigInt!
-  amountSold: BigInt!
-  marketplacePlatformFee: BigInt!
-  discountToPayMona: BigInt!
+  garmentCollection: DigitalaxGarmentV2Collection
+  primarySalePrice: BigInt
+  startTime: BigInt
+  endTime: BigInt
+  amountSold: BigInt
+  marketplacePlatformFee: BigInt
+  discountToPayMona: BigInt
 }
 
 type DigitalaxModelMarketplaceOffer @entity {
   id: ID!
-  garmentCollection: DigitalaxModelCollection!
-  primarySalePrice: BigInt!
-  startTime: BigInt!
-  endTime: BigInt!
-  amountSold: BigInt!
-  marketplacePlatformFee: BigInt!
-  discountToPayMona: BigInt!
+  garmentCollection: DigitalaxModelCollection
+  primarySalePrice: BigInt
+  startTime: BigInt
+  endTime: BigInt
+  amountSold: BigInt
+  marketplacePlatformFee: BigInt
+  discountToPayMona: BigInt
 }
 
 type DigitalaxModelMarketplaceV3Offer @entity {
   id: ID!
-  garmentCollection: DigitalaxModelCollection!
-  primarySalePrice: BigInt!
-  startTime: BigInt!
-  endTime: BigInt!
-  amountSold: BigInt!
-  marketplacePlatformFee: BigInt!
-  discountToPayMona: BigInt!
+  garmentCollection: DigitalaxModelCollection
+  primarySalePrice: BigInt
+  startTime: BigInt
+  endTime: BigInt
+  amountSold: BigInt
+  marketplacePlatformFee: BigInt
+  discountToPayMona: BigInt
 }
 
 type DigitalaxSubscriptionMarketplaceOffer @entity {
   id: ID!
-  subscriptionCollection: DigitalaxSubscriptionCollection!
-  primarySalePrice: BigInt!
-  startTime: BigInt!
-  endTime: BigInt!
-  amountSold: BigInt!
-  marketplacePlatformFee: BigInt!
-  discountToPayMona: BigInt!
+  subscriptionCollection: DigitalaxSubscriptionCollection
+  primarySalePrice: BigInt
+  startTime: BigInt
+  endTime: BigInt
+  amountSold: BigInt
+  marketplacePlatformFee: BigInt
+  discountToPayMona: BigInt
 }
 
 type DripMarketplaceOffer @entity {
   id: ID!
-  garmentCollection: DigitalaxGarmentV2Collection!
-  primarySalePrice: BigInt!
-  startTime: BigInt!
-  endTime: BigInt!
-  amountSold: BigInt!
-  discountToPayERC20: BigInt!
+  garmentCollection: DigitalaxGarmentV2Collection
+  primarySalePrice: BigInt
+  startTime: BigInt
+  endTime: BigInt
+  amountSold: BigInt
+  discountToPayERC20: BigInt
 }
 
 type PatronMarketplaceOffer @entity {
   id: ID!
-  garmentCollection: DigitalaxGarmentV2Collection!
-  primarySalePrice: BigInt!
-  startTime: BigInt!
-  endTime: BigInt!
-  amountSold: BigInt!
-  discountToPayERC20: BigInt!
+  garmentCollection: DigitalaxGarmentV2Collection
+  primarySalePrice: BigInt
+  startTime: BigInt
+  endTime: BigInt
+  amountSold: BigInt
+  discountToPayERC20: BigInt
 }
 
 type DigitalaxMarketplacePurchaseHistory @entity {
@@ -751,12 +751,12 @@ type PatronMarketplacePurchaseHistory @entity {
 
 type DigitalaxAuctionIndex @entity {
   id: ID!
-  garments: [DigitalaxGarment!]!
+  garments: [DigitalaxGarment!]
 }
 
 type DigitalaxAuctionV2Index @entity {
   id: ID!
-  garments: [DigitalaxGarmentV2!]!
+  garments: [DigitalaxGarmentV2!]
 }
 
 type DigitalaxDesigner @entity {
@@ -801,14 +801,14 @@ type DigitalaxDeveloper @entity {
 
 type DigitalaxDesignerV2Index @entity {
   id: ID!
-  garments: [DigitalaxGarmentV2!]!
-  infoUrl: String!
+  garments: [DigitalaxGarmentV2!]
+  infoUrl: String
 }
 
 type DigitalaxSubscriptionDesignerIndex @entity {
   id: ID!
-  garments: [DigitalaxSubscription!]!
-  infoUrl: String!
+  garments: [DigitalaxSubscription!]
+  infoUrl: String
 }
 
 type GDNMembershipNFT @entity {

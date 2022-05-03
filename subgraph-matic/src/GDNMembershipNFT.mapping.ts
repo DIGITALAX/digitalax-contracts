@@ -90,8 +90,8 @@ export function handleTransfer(event: Transfer): void {
     let gdnNft = GDNMembershipNFT.load(event.params.tokenId.toString());
     let owner = contract.try_ownerOf(event.params.tokenId);
     if (!owner.reverted) {
-      gdnNft.owner = owner.value;
+      gdnNft!.owner = owner.value;
     }
-    gdnNft.save();
+    gdnNft!.save();
   }
 }

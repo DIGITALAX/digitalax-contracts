@@ -121,24 +121,24 @@ export function handleOfferPurchased(event: OfferPurchased): void {
 
       let globalStats = loadOrCreateDripGlobalStats();
 
-      globalStats.totalMarketplaceSalesInUSD = globalStats.totalMarketplaceSalesInUSD.plus(
+      globalStats!.totalMarketplaceSalesInUSD = globalStats!.totalMarketplaceSalesInUSD.plus(
         history.value
       );
-      day.totalMarketplaceVolumeInUSD = day.totalMarketplaceVolumeInUSD.plus(
+      day!.totalMarketplaceVolumeInUSD = day!.totalMarketplaceVolumeInUSD.plus(
         history.value
       );
 
-      globalStats.usdETHConversion = contract.lastOracleQuote(weth);
+      globalStats!.usdETHConversion = contract.lastOracleQuote(weth);
 
-      day.save();
+      day!.save();
       history.save();
       globalStats!.save();
 
       let offer = DigitalaxMarketplaceV3Offer.load(
         event.params.garmentCollectionId.toString()
       );
-      offer.amountSold = offer.amountSold.plus(ONE);
-      offer.save();
+      offer!.amountSold = offer!.amountSold.plus(ONE);
+      offer!.save();
 
       collection.valueSold = collection.valueSold.plus(
         onChainOffer.value.value0
@@ -166,8 +166,8 @@ export function handleOfferCancelled(event: OfferCancelled): void {
       event.params.bundleTokenId.toString()
   );
   if (offer) {
-    offer.primarySalePrice = null;
-    offer.garmentCollection = null;
+    offer.primarySalePrice = ZERO;
+    offer.garmentCollection = '';
     offer.save();
   }
 }
@@ -188,7 +188,7 @@ export function handleOfferCancelled(event: OfferCancelled): void {
 
       let globalStats = loadOrCreateDripGlobalStats();
 
-      globalStats.totalMarketplaceSalesInUSD = globalStats.totalMarketplaceSalesInUSD.plus(
+      globalStats!.totalMarketplaceSalesInUSD = globalStats!.totalMarketplaceSalesInUSD.plus(
           offerValue.times(soldNumber)
       );
 
@@ -197,8 +197,8 @@ export function handleOfferCancelled(event: OfferCancelled): void {
       let offer = DigitalaxMarketplaceV3Offer.load(
           event.params.garmentCollectionId.toString()
       );
-      offer.amountSold = offer.amountSold.plus(soldNumber);
-      offer.save();
+      offer!.amountSold = offer!.amountSold.plus(soldNumber);
+      offer!.save();
 
       collection.valueSold = collection.valueSold.plus(
           offerValue.times(soldNumber)
