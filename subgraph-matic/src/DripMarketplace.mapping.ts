@@ -68,7 +68,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     let paymentToken = contract.paymentTokenHistory(event.params.bundleTokenId);
     history.paymentToken = paymentToken.toHexString();
     history.garmentCollectionId = event.params.garmentCollectionId;
-    history.rarity = collection.rarity;
+    history.rarity = collection!.rarity;
 
     history.value = offerData.value0; // USD value primary sale price
     history.shippingUsd = event.params.shippingAmount;
@@ -83,7 +83,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     globalStats!.totalMarketplaceSalesInUSD = globalStats!.totalMarketplaceSalesInUSD.plus(history.value);
     day!.totalMarketplaceVolumeInUSD = day!.totalMarketplaceVolumeInUSD.plus(history.value);
 
-    globalStats.usdETHConversion = contract.lastOracleQuote(weth);
+    globalStats!.usdETHConversion = contract.lastOracleQuote(weth);
 
     day!.save();
     history.save();

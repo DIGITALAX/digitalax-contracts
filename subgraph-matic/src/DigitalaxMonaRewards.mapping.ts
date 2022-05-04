@@ -12,55 +12,58 @@ export function handleDepositRevenueSharing(
   event: DepositRevenueSharing
 ): void {
   let marketplaceRevenue = loadOrCreateDigitalaxMarketplaceRevenue();
-  let week = BigInt.fromI32(604800);
-  if (marketplaceRevenue.week != event.params.week) {
-    marketplaceRevenue.week = event.params.week;
+  if(marketplaceRevenue) {
+    let week = BigInt.fromI32(604800);
+    if (marketplaceRevenue.week != event.params.week) {
+      marketplaceRevenue.week = event.params.week;
+    }
+
+    let monaTokenIndex = event.params.rewardTokens.findIndex((value) =>
+        value.equals(Address.fromHexString(monaTokenAddress))
+    );
+    if (monaTokenIndex == -1) return;
+
+    let rewardAmounts = event.params.rewardAmounts;
+
+    let monaTokenReward = rewardAmounts[monaTokenIndex];
+
+    marketplaceRevenue.weeklyMonaSharing = marketplaceRevenue.weeklyMonaSharing.plus(
+        event.params.weeklyMonaRevenueSharingPerSecond.times(week)
+    );
+    marketplaceRevenue.totalMonaSharing = marketplaceRevenue.totalMonaSharing.plus(
+        monaTokenReward
+    );
+
+    marketplaceRevenue.save();
   }
-
-  let monaTokenIndex = event.params.rewardTokens.findIndex((value) =>
-    value.equals(Address.fromHexString(monaTokenAddress))
-  );
-  if (monaTokenIndex == -1) return;
-
-  let rewardAmounts = event.params.rewardAmounts;
-
-  let monaTokenReward = rewardAmounts[monaTokenIndex];
-
-  marketplaceRevenue.weeklyMonaSharing = marketplaceRevenue.weeklyMonaSharing.plus(
-    event.params.weeklyMonaRevenueSharingPerSecond.times(week)
-  );
-  marketplaceRevenue.totalMonaSharing = marketplaceRevenue.totalMonaSharing.plus(
-    monaTokenReward
-  );
-
-  marketplaceRevenue.save();
 }
 
 export function handleWithdrawRevenueSharing(
   event: WithdrawRevenueSharing
 ): void {
   let marketplaceRevenue = loadOrCreateDigitalaxMarketplaceRevenue();
+  if(marketplaceRevenue) {
+    if (marketplaceRevenue.week != event.params.week) {
+      marketplaceRevenue.week = event.params.week;
+      marketplaceRevenue.weeklyMonaSharing = ZERO;
+    }
 
-  if (marketplaceRevenue.week != event.params.week) {
-    marketplaceRevenue.week = event.params.week;
-    marketplaceRevenue.weeklyMonaSharing = ZERO;
+    let monaTokenIndex = event.params.rewardTokens.findIndex((value) =>
+        value.equals(Address.fromHexString(monaTokenAddress))
+    );
+    if (monaTokenIndex == -1) return;
+
+    let rewardTokenAmounts = event.params.rewardTokenAmounts;
+
+    let monaTokenReward = rewardTokenAmounts[monaTokenIndex];
+
+    marketplaceRevenue.weeklyMonaSharing = marketplaceRevenue.weeklyMonaSharing.plus(
+        event.params.amount
+    );
+    marketplaceRevenue.totalMonaSharing = marketplaceRevenue.totalMonaSharing.minus(
+        monaTokenReward
+    );
+
+    marketplaceRevenue.save();
   }
-
-  let monaTokenIndex = event.params.rewardTokens.findIndex((value) =>
-    value.equals(Address.fromHexString(monaTokenAddress))
-  );
-  if (monaTokenIndex == -1) return;
-
-  let rewardTokenAmounts = event.params.rewardTokenAmounts;
-
-  let monaTokenReward = rewardTokenAmounts[monaTokenIndex];
-
-  marketplaceRevenue.weeklyMonaSharing = marketplaceRevenue.weeklyMonaSharing.plus(
-    event.params.amount
-  );
-  marketplaceRevenue.totalMonaSharing = marketplaceRevenue.totalMonaSharing.minus(
-    monaTokenReward
-  );
-
-  marketplaceRevenue.save();
 }

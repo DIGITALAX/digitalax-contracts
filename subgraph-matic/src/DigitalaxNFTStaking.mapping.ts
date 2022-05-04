@@ -48,29 +48,33 @@ export function handleUnstaked(event: Unstaked): void {
     let contract = DigitalaxNFTStakingContract.bind(event.address);
     let owner = event.params.owner.toHexString()
     let staker = DigitalaxNFTStaker.load(owner);
-    let currentStaked = contract.getStakedTokens(event.params.owner);
-    // Find garment and remove it
-    let updatedGarmentsStaked = new Array<string>();
-    for (let i = 0; i < currentStaked.length; i += 1) {
-        updatedGarmentsStaked.push(currentStaked[i].toString())
+    if(staker) {
+        let currentStaked = contract.getStakedTokens(event.params.owner);
+        // Find garment and remove it
+        let updatedGarmentsStaked = new Array<string>();
+        for (let i = 0; i < currentStaked.length; i += 1) {
+            updatedGarmentsStaked.push(currentStaked[i].toString())
+        }
+        staker.garments = updatedGarmentsStaked;
+        staker.save();
     }
-    staker.garments = updatedGarmentsStaked;
-    staker.save();
 }
 
 export function handleEmergencyUnstake(event: EmergencyUnstake): void {
     let contract = DigitalaxNFTStakingContract.bind(event.address);
     let owner = event.params.user.toHexString()
     let staker = DigitalaxNFTStaker.load(owner);
+    if(staker) {
 
-    let currentStaked = contract.getStakedTokens(event.params.user);
-    // Find garment and remove it
-    let updatedGarmentsStaked = new Array<string>();
-    for (let i = 0; i < currentStaked.length; i += 1) {
+        let currentStaked = contract.getStakedTokens(event.params.user);
+        // Find garment and remove it
+        let updatedGarmentsStaked = new Array<string>();
+        for (let i = 0; i < currentStaked.length; i += 1) {
             updatedGarmentsStaked.push(currentStaked[i].toString())
+        }
+        staker.garments = updatedGarmentsStaked;
+        staker.save();
     }
-    staker.garments = updatedGarmentsStaked;
-    staker.save();
 }
 
 // Only programmed for Models nft currently, if there are more nfts added to the pool this needs to be refactored.
@@ -82,14 +86,17 @@ export function handleStakedByNFT(event: StakedByNFT): void {
     let owner = event.params.owner.toHexString()
     let token = event.params.amount.toString();
     let staker = ModelNFTStaker.load(owner);
+
     if (staker == null) {
         staker = new ModelNFTStaker(owner);
         staker.garments = new Array<string>();
     }
-    let garmentsStaked = staker.garments;
-    garmentsStaked.push(token);
-    staker.garments = garmentsStaked;
-    staker.save();
+    if(staker) {
+        let garmentsStaked = staker.garments;
+        garmentsStaked.push(token);
+        staker.garments = garmentsStaked;
+        staker.save();
+    }
 }
 
 export function handleUnstakedByNFT(event: UnstakedByNFT): void {
@@ -99,14 +106,16 @@ export function handleUnstakedByNFT(event: UnstakedByNFT): void {
     let contract = DigitalaxNFTStakingContract.bind(event.address);
     let owner = event.params.owner.toHexString()
     let staker = ModelNFTStaker.load(owner);
-    let currentStaked = contract.getStakedTokens(event.params.owner);
-    // Find garment and remove it
-    let updatedGarmentsStaked = new Array<string>();
-    for (let i = 0; i < currentStaked.length; i += 1) {
-        updatedGarmentsStaked.push(currentStaked[i].toString())
+    if(staker) {
+        let currentStaked = contract.getStakedTokens(event.params.owner);
+        // Find garment and remove it
+        let updatedGarmentsStaked = new Array<string>();
+        for (let i = 0; i < currentStaked.length; i += 1) {
+            updatedGarmentsStaked.push(currentStaked[i].toString())
+        }
+        staker.garments = updatedGarmentsStaked;
+        staker.save();
     }
-    staker.garments = updatedGarmentsStaked;
-    staker.save();
 }
 
 export function handleEmergencyUnstakeByNFT(event: EmergencyUnstakeByNFT): void {
@@ -116,13 +125,14 @@ export function handleEmergencyUnstakeByNFT(event: EmergencyUnstakeByNFT): void 
     let contract = DigitalaxNFTStakingContract.bind(event.address);
     let owner = event.params.user.toHexString()
     let staker = DigitalaxNFTStaker.load(owner);
-
-    let currentStaked = contract.getStakedTokens(event.params.user);
-    // Find garment and remove it
-    let updatedGarmentsStaked = new Array<string>();
-    for (let i = 0; i < currentStaked.length; i += 1) {
+    if(staker) {
+        let currentStaked = contract.getStakedTokens(event.params.user);
+        // Find garment and remove it
+        let updatedGarmentsStaked = new Array<string>();
+        for (let i = 0; i < currentStaked.length; i += 1) {
             updatedGarmentsStaked.push(currentStaked[i].toString())
+        }
+        staker.garments = updatedGarmentsStaked;
+        staker.save();
     }
-    staker.garments = updatedGarmentsStaked;
-    staker.save();
 }

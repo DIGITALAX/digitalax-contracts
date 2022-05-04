@@ -162,7 +162,6 @@ export function handleTokenPriceSaleUpdated(
     garment = new DigitalaxGenesisV2(event.params._tokenId.toString());
     garment.ogHolder = contract.ogHolders(event.params._tokenId).toString();
     garment.primarySalePrice = contract.primarySalePrice(event.params._tokenId);
-    garment.owner = null;
     garment.animation = "";
     garment.name = "";
     garment.description = "";

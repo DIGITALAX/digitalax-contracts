@@ -27,27 +27,29 @@ export function handleMarketplaceDeployed(event: DigitalaxMarketplaceContractDep
 
 export function handleUpdateMarketplaceDiscountToPayInErc20(event: UpdateMarketplaceDiscountToPayInErc20): void {
     let offer = PatronMarketplaceOffer.load(event.params.garmentCollectionId.toString());
-    offer.discountToPayERC20 = event.params.discount;
-    offer.save();
+    offer!.discountToPayERC20 = event.params.discount;
+    offer!.save();
 }
 
 export function handleOfferCreated(event: OfferCreated): void {
     let contract = PatronMarketplaceContract.bind(event.address);
     let offer = new PatronMarketplaceOffer(event.params.garmentCollectionId.toString());
     let offerData = contract.getOffer(event.params.garmentCollectionId);
-    offer.primarySalePrice = offerData.value0;
-    offer.startTime = offerData.value1;
-    offer.endTime = offerData.value2;
-    offer.garmentCollection = event.params.garmentCollectionId.toString();
-    offer.amountSold = ZERO;
-    offer.discountToPayERC20 = offerData.value4;
-    offer.save();
+    if(offerData) {
+        offer.primarySalePrice = offerData.value0;
+        offer.startTime = offerData.value1;
+        offer.endTime = offerData.value2;
+        offer.garmentCollection = event.params.garmentCollectionId.toString();
+        offer.amountSold = ZERO;
+        offer.discountToPayERC20 = offerData.value4;
+        offer.save();
+    }
 }
 
 export function handleOfferPrimarySalePriceUpdated(event: UpdateOfferPrimarySalePrice): void {
     let offer = PatronMarketplaceOffer.load(event.params.garmentCollectionId.toString());
-    offer.primarySalePrice = event.params.primarySalePrice;
-    offer.save();
+    offer!.primarySalePrice = event.params.primarySalePrice;
+    offer!.save();
 }
 
 export function handleOfferPurchased(event: OfferPurchased): void {
@@ -67,7 +69,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     let paymentToken = contract.paymentTokenHistory(event.params.bundleTokenId);
     history.paymentToken = paymentToken.toHexString();
     history.garmentCollectionId = event.params.garmentCollectionId;
-    history.rarity = collection.rarity;
+    history.rarity = collection!.rarity;
 
     history.value = offerData.value0; // USD value primary sale price
     history.shippingUsd = event.params.shippingAmount;
@@ -79,25 +81,25 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     let day = loadDayFromEvent(event);
     let globalStats = loadOrCreatePatronGlobalStats();
 
-    globalStats.totalMarketplaceSalesInUSD = globalStats.totalMarketplaceSalesInUSD.plus(history.value);
-    day.totalMarketplaceVolumeInUSD = day.totalMarketplaceVolumeInUSD.plus(history.value);
+    globalStats!.totalMarketplaceSalesInUSD = globalStats!.totalMarketplaceSalesInUSD.plus(history.value);
+    day!.totalMarketplaceVolumeInUSD = day!.totalMarketplaceVolumeInUSD.plus(history.value);
 
-    globalStats.usdETHConversion = contract.lastOracleQuote(weth);
+    globalStats!.usdETHConversion = contract.lastOracleQuote(weth);
 
     day!.save();
     history.save();
     globalStats!.save();
 
     let offer = PatronMarketplaceOffer.load(event.params.garmentCollectionId.toString());
-    offer.amountSold = offer.amountSold.plus(ONE);
-    offer.save();
+    offer!.amountSold = offer!.amountSold.plus(ONE);
+    offer!.save();
 
-    collection.valueSold = collection.valueSold.plus(history.value);
-    collection.save();
+    collection!.valueSold = collection!.valueSold.plus(history.value);
+    collection!.save();
 }
 
 export function handleOfferCancelled(event: OfferCancelled): void {
     let offer = PatronMarketplaceOffer.load(event.params.bundleTokenId.toString());
     store.remove('PatronMarketplaceOffer', event.params.bundleTokenId.toString());
-    offer.save();
+    offer!.save();
 }

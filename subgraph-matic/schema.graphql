@@ -872,7 +872,7 @@ type W3FStaking @entity {
 type DigitalaxGenesisV2 @entity {
   id: ID!
   ogHolder: String!
-  owner: Bytes!
+  owner: Bytes
   primarySalePrice: BigInt!
   tokenUri: String!
   animation: String!

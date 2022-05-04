@@ -5,7 +5,7 @@ export function handleStaked(event: Staked): void {
   let monaStaking = loadOrCreateDigitalaxMonaStaking();
   let contract = DigitalaxMonaStakingContract.bind(event.address);
   let staked = contract.try_stakedValueTotalForPool()
-  if (!staked.reverted) {
+  if (!staked.reverted && monaStaking) {
     monaStaking.totalMonaStaked = staked.value;
     monaStaking.save();
   }
@@ -15,7 +15,7 @@ export function handleUnstaked(event: Unstaked): void {
   let monaStaking = loadOrCreateDigitalaxMonaStaking();
   let contract = DigitalaxMonaStakingContract.bind(event.address);
   let staked = contract.try_stakedValueTotalForPool()
-  if (!staked.reverted) {
+  if (!staked.reverted && monaStaking) {
     monaStaking.totalMonaStaked = staked.value;
     monaStaking.save();
   }
@@ -25,7 +25,7 @@ export function handleStakedLP(event: StakedLP): void {
   let monaStaking = loadOrCreateDigitalaxMonaStaking();
   let contract = DigitalaxMonaStakingContract.bind(event.address);
   let staked = contract.try_stakedValueTotalForPool()
-  if (!staked.reverted) {
+  if (!staked.reverted && monaStaking) {
     monaStaking.totalMonaStaked = staked.value;
     monaStaking.save();
   }
@@ -35,7 +35,7 @@ export function handleUnstakedLP(event: UnstakedLP): void {
   let monaStaking = loadOrCreateDigitalaxMonaStaking();
   let contract = DigitalaxMonaStakingContract.bind(event.address);
   let staked = contract.try_stakedValueTotalForPool()
-  if (!staked.reverted) {
+  if (!staked.reverted && monaStaking) {
     monaStaking.totalMonaStaked = staked.value;
     monaStaking.save();
   }

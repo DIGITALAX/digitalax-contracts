@@ -12,52 +12,54 @@ export function handleDepositRevenueSharing(
   event: DepositRevenueSharing
 ): void {
   let marketplaceRevenue = loadOrCreateDigitalaxMarketplaceRevenue();
+  if(marketplaceRevenue) {
+    if (marketplaceRevenue.week != event.params._week) {
+      marketplaceRevenue.week = event.params._week;
+      marketplaceRevenue.weeklyMonaSharing = ZERO;
+    }
 
-  if (marketplaceRevenue.week != event.params._week) {
-    marketplaceRevenue.week = event.params._week;
-    marketplaceRevenue.weeklyMonaSharing = ZERO;
+    let monaTokenIndex = event.params.rewardTokens.findIndex((value) =>
+        value.equals(Address.fromHexString(monaTokenAddress))
+    );
+    if (monaTokenIndex == -1) return;
+
+    let rewardAmounts = event.params.rewardAmounts;
+
+    let monaTokenReward = rewardAmounts[monaTokenIndex];
+
+    marketplaceRevenue.weeklyMonaSharing = monaTokenReward;
+    marketplaceRevenue.totalMonaSharing = marketplaceRevenue.totalMonaSharing.plus(
+        monaTokenReward
+    );
+
+    marketplaceRevenue.save();
   }
-
-  let monaTokenIndex = event.params.rewardTokens.findIndex((value) =>
-    value.equals(Address.fromHexString(monaTokenAddress))
-  );
-  if (monaTokenIndex == -1) return;
-
-  let rewardAmounts = event.params.rewardAmounts;
-
-  let monaTokenReward = rewardAmounts[monaTokenIndex];
-
-  marketplaceRevenue.weeklyMonaSharing = monaTokenReward;
-  marketplaceRevenue.totalMonaSharing = marketplaceRevenue.totalMonaSharing.plus(
-    monaTokenReward
-  );
-
-  marketplaceRevenue.save();
 }
 
 export function handleWithdrawRevenueSharing(
   event: WithdrawRevenueSharing
 ): void {
   let marketplaceRevenue = loadOrCreateDigitalaxMarketplaceRevenue();
+  if(marketplaceRevenue) {
+    if (marketplaceRevenue.week != event.params._week) {
+      marketplaceRevenue.week = event.params._week;
+      marketplaceRevenue.weeklyMonaSharing = ZERO;
+    }
 
-  if (marketplaceRevenue.week != event.params._week) {
-    marketplaceRevenue.week = event.params._week;
-    marketplaceRevenue.weeklyMonaSharing = ZERO;
+    let monaTokenIndex = event.params.rewardTokens.findIndex((value) =>
+        value.equals(Address.fromHexString(monaTokenAddress))
+    );
+    if (monaTokenIndex == -1) return;
+
+    let rewardAmounts = event.params.rewardTokenAmounts;
+
+    let monaTokenReward = rewardAmounts[monaTokenIndex];
+
+    marketplaceRevenue.weeklyMonaSharing = monaTokenReward;
+    marketplaceRevenue.totalMonaSharing = marketplaceRevenue.totalMonaSharing.minus(
+        monaTokenReward
+    );
+
+    marketplaceRevenue.save();
   }
-
-  let monaTokenIndex = event.params.rewardTokens.findIndex((value) =>
-    value.equals(Address.fromHexString(monaTokenAddress))
-  );
-  if (monaTokenIndex == -1) return;
-
-  let rewardAmounts = event.params.rewardTokenAmounts;
-
-  let monaTokenReward = rewardAmounts[monaTokenIndex];
-
-  marketplaceRevenue.weeklyMonaSharing = monaTokenReward;
-  marketplaceRevenue.totalMonaSharing = marketplaceRevenue.totalMonaSharing.minus(
-    monaTokenReward
-  );
-
-  marketplaceRevenue.save();
 }
