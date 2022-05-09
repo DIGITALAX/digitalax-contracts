@@ -53,8 +53,8 @@ export function handleChildCreated(event: ChildCreated): void {
             if (res.get("image_url")!.kind == JSONValueKind.STRING) {
               strand.image = res.get("image_url")!.toString();
             }
-            if (res.get("3D_File").kind == JSONValueKind.STRING) {
-              strand.animation = res.get("3D_File").toString();
+            if (res.get("3D_File")!.kind == JSONValueKind.STRING) {
+              strand.animation = res.get("3D_File")!.toString();
             }
             if (res.get("Animation")!.kind == JSONValueKind.STRING) {
               strand.animation = res.get("Animation")!.toString();
@@ -148,8 +148,8 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
               if (res.get("image_url")!.kind == JSONValueKind.STRING) {
                 strand.image = res.get("image_url")!.toString();
               }
-              if (res.get("3D_File").kind == JSONValueKind.STRING) {
-                strand.animation = res.get("3D_File").toString();
+              if (res.get("3D_File")!.kind == JSONValueKind.STRING) {
+                strand.animation = res.get("3D_File")!.toString();
               }
               if (res.get("Animation")!.kind == JSONValueKind.STRING) {
                 strand.animation = res.get("Animation")!.toString();
@@ -342,8 +342,8 @@ export function handleBatchTransfer(event: TransferBatch): void {
       childId.toString()
     );
     if (child) {
-      child!.totalSupply = contract.tokenTotalSupply(childId);
-      child!.save();
+      child.totalSupply = contract.tokenTotalSupply(childId);
+      child.save();
     }
   }
 

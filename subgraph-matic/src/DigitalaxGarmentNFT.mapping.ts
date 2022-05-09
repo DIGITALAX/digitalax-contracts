@@ -60,8 +60,10 @@ export function handleTransfer(event: Transfer): void {
               if (res.get("image")!.kind == JSONValueKind.STRING) {
                 garment.image = res.get("image")!.toString();
               }
-              if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
-                garment.animation = res.get("animation_url")!.toString();
+              if(res.get("animation_url")) {
+                if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
+                  garment.animation = res.get("animation_url")!.toString();
+                }
               }
               if (res.get("name")!.kind == JSONValueKind.STRING) {
                 garment.name = res.get("name")!.toString();
@@ -192,8 +194,8 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
   if (garment) {
     garment.tokenUri = event.params._tokenUri;
     garment.image = "";
-    garment.animation = "";
     garment.name = "";
+    garment.animation = "";
     garment.description = "";
     garment.external = "";
     garment.attributes = new Array<string>();
@@ -277,8 +279,8 @@ export function handleTokenPriceSaleUpdated(
     garment.image = "";
     garment.animation = "";
     garment.name = "";
-    garment.description = "";
     garment.external = "";
+    garment.description = "";
     garment.attributes = new Array<string>();
 
     garment.tokenUri = contract.tokenURI(event.params._tokenId);

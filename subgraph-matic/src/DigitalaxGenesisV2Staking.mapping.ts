@@ -52,8 +52,10 @@ export function handleUnstaked(event: Unstaked): void {
     for (let i = 0; i < currentStaked.length; i += 1) {
         updatedGarmentsStaked.push(currentStaked[i].toString())
     }
-    staker.garments = updatedGarmentsStaked;
-    staker.save();
+    if(staker) {
+        staker.garments = updatedGarmentsStaked;
+        staker.save();
+    }
 }
 
 export function handleEmergencyUnstake(event: EmergencyUnstake): void {
@@ -67,6 +69,8 @@ export function handleEmergencyUnstake(event: EmergencyUnstake): void {
     for (let i = 0; i < currentStaked.length; i += 1) {
             updatedGarmentsStaked.push(currentStaked[i].toString())
     }
-    staker.garments = updatedGarmentsStaked;
-    staker.save();
+    if(staker) {
+        staker.garments = updatedGarmentsStaked;
+        staker.save();
+    }
 }
