@@ -129,14 +129,20 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
           if (data.isOk) {
             if (data.value.kind == JSONValueKind.OBJECT) {
               let res = data.value.toObject();
-              if (res.get("image")!.kind == JSONValueKind.STRING) {
-                strand.image = res.get("image")!.toString();
+              if (res.get("image")){
+                if (res.get("image")!.kind == JSONValueKind.STRING) {
+                  strand.image = res.get("image")!.toString();
+                }
               }
-              if (res.get("Animation")!.kind == JSONValueKind.STRING) {
-                strand.animation = res.get("Animation")!.toString();
+              if (res.get("Animation")) {
+                if (res.get("Animation")!.kind == JSONValueKind.STRING) {
+                  strand.animation = res.get("Animation")!.toString();
+                }
               }
-              if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
-                strand.animation = res.get("animation_url")!.toString();
+              if (res.get("animation_url")) {
+                if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
+                  strand.animation = res.get("animation_url")!.toString();
+                }
               }
               if (res.get("name")!.kind == JSONValueKind.STRING) {
                 strand.name = res.get("name")!.toString();

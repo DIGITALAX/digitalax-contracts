@@ -62,8 +62,8 @@ export function handleTransfer(event: Transfer): void {
               }
               if(res.get("animation_url")) {
                 if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
-                  garment.animation = res.get("animation_url")!.toString();
-                }
+                garment.animation = res.get("animation_url")!.toString();
+              }
               }
               if (res.get("name")!.kind == JSONValueKind.STRING) {
                 garment.name = res.get("name")!.toString();

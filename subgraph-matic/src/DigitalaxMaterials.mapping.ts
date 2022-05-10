@@ -60,8 +60,10 @@ export function handleChildCreated(event: ChildCreated): void {
                 strand.animation = res.get("animation_url")!.toString();
               }
             }
-            if (res.get("name")!.kind == JSONValueKind.STRING) {
-              strand.name = res.get("name")!.toString();
+            if(res.get("name")) {
+              if (res.get("name")!.kind == JSONValueKind.STRING) {
+                strand.name = res.get("name")!.toString();
+              }
             }
             if (res.get("description")!.kind == JSONValueKind.STRING) {
               strand.description = res.get("description")!.toString();
