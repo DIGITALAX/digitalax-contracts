@@ -119,8 +119,16 @@ export function handleTransfer(event: Transfer): void {
               if (res.get("description")!.kind == JSONValueKind.STRING) {
                 garment.description = res.get("description")!.toString();
               }
-              if (res.get("external url")!.kind == JSONValueKind.STRING) {
-                garment.external = res.get("external url")!.toString();
+              if (res.get("external url")) {
+                if (res.get("external url")!.kind == JSONValueKind.STRING) {
+                  garment.external = res.get("external url")!.toString();
+                }
+
+              }
+              if (res.get("external_url")) {
+                if (res.get("external_url")!.kind == JSONValueKind.STRING) {
+                  garment.external = res.get("external_url")!.toString();
+                }
               }
               if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
                 let attributes = res.get("attributes")!.toArray();
@@ -329,9 +337,16 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
             if (res.get("description")!.kind == JSONValueKind.STRING) {
               garment.description = res.get("description")!.toString();
             }
-            if (res.get("external url")!.kind == JSONValueKind.STRING) {
-              garment.external = res.get("external url")!.toString();
-            }
+            if (res.get("external url")) {
+                if (res.get("external url")!.kind == JSONValueKind.STRING) {
+                  garment.external = res.get("external url")!.toString();
+                }
+              }
+            if (res.get("external_url")) {
+                if (res.get("external_url")!.kind == JSONValueKind.STRING) {
+                  garment.external = res.get("external_url")!.toString();
+                }
+              }
             if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
               let attributes = res.get("attributes")!.toArray();
               for (let i = 0; i < attributes.length; i += 1) {
@@ -455,8 +470,16 @@ export function handleTokenPriceSaleUpdated(
               if (res.get("description")!.kind == JSONValueKind.STRING) {
                 garment.description = res.get("description")!.toString();
               }
-              if (res.get("external url")!.kind == JSONValueKind.STRING) {
-                garment.external = res.get("external url")!.toString();
+              if (res.get("external url")) {
+                if (res.get("external url")!.kind == JSONValueKind.STRING) {
+                  garment.external = res.get("external url")!.toString();
+                }
+
+              }
+              if (res.get("external_url")) {
+                if (res.get("external_url")!.kind == JSONValueKind.STRING) {
+                  garment.external = res.get("external_url")!.toString();
+                }
               }
               if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
                 let attributes = res.get("attributes")!.toArray();

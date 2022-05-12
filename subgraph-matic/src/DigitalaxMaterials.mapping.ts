@@ -68,9 +68,17 @@ export function handleChildCreated(event: ChildCreated): void {
             if (res.get("description")!.kind == JSONValueKind.STRING) {
               strand.description = res.get("description")!.toString();
             }
-            if (res.get("external url")!.kind == JSONValueKind.STRING) {
-              strand.external = res.get("external url")!.toString();
-            }
+              if (res.get("external url")) {
+                if (res.get("external url")!.kind == JSONValueKind.STRING) {
+                  strand.external = res.get("external url")!.toString();
+                }
+
+              }
+              if (res.get("external_url")) {
+                if (res.get("external_url")!.kind == JSONValueKind.STRING) {
+                  strand.external = res.get("external_url")!.toString();
+                }
+              }
             if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
               let attributes = res.get("attributes")!.toArray();
               for (let i = 0; i < attributes.length; i += 1) {
@@ -149,8 +157,16 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
               if (res.get("description")!.kind == JSONValueKind.STRING) {
                 strand.description = res.get("description")!.toString();
               }
-              if (res.get("external url")!.kind == JSONValueKind.STRING) {
-                strand.external = res.get("external url")!.toString();
+              if (res.get("external url")) {
+                if (res.get("external url")!.kind == JSONValueKind.STRING) {
+                  strand.external = res.get("external url")!.toString();
+                }
+
+              }
+              if (res.get("external_url")) {
+                if (res.get("external_url")!.kind == JSONValueKind.STRING) {
+                  strand.external = res.get("external_url")!.toString();
+                }
               }
               if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
                 let attributes = res.get("attributes")!.toArray();
@@ -219,8 +235,8 @@ export function handleSingleTransfer(event: TransferSingle): void {
     let updatedChildren = new Array<string>();
 
     // Iterate all children currently owned
-    for (let j: number = 0; j < totalChildOwned; j++) {
-      let childTokenId = childrenOwned[j as i32];
+    for (let j = 0; j < totalChildOwned; j++) {
+      let childTokenId = childrenOwned[j];
 
       // For each ID being transferred
       let id: BigInt = event.params.id;
@@ -268,9 +284,9 @@ export function handleSingleTransfer(event: TransferSingle): void {
     // If we already have a child allocated to the collector
     if (isChildInList(compositeId, childrenOwned)) {
       // Iterate all children currently owned
-      for (let k: number = 0; k < totalChildOwned; k++) {
+      for (let k = 0; k < totalChildOwned; k++) {
         // Find the matching child
-        let currentChildId = childrenOwned[k as i32];
+        let currentChildId = childrenOwned[k];
         if (currentChildId.toString() == compositeId) {
           // Load collector and add to its balance
           let child = loadOrCreateDigitalaxChildOwner(
@@ -314,8 +330,8 @@ export function handleBatchTransfer(event: TransferBatch): void {
   let totalIdsTransferred = allIdsInBatch.length;
 
   // Model total supply - Ensure total supply is correct in cases of birthing or burning
-  for (let i: number = 0; i < totalIdsTransferred; i++) {
-    let childId: BigInt = allIdsInBatch[i as i32];
+  for (let i = 0; i < totalIdsTransferred; i++) {
+    let childId: BigInt = allIdsInBatch[i];
     let child: DigitalaxMaterial | null = DigitalaxMaterial.load(
       childId.toString()
     );
@@ -332,13 +348,13 @@ export function handleBatchTransfer(event: TransferBatch): void {
     let updatedChildren = new Array<string>();
 
     // Iterate all children currently owned
-    for (let j: number = 0; j < totalChildrenOwned; j++) {
-      let childTokenId = childrenOwned[j as i32];
+    for (let j = 0; j < totalChildrenOwned; j++) {
+      let childTokenId = childrenOwned[j];
 
       // For each ID being transferred
-      for (let k: number = 0; k < totalIdsTransferred; k++) {
-        let id: BigInt = allIdsInBatch[k as i32];
-        let amount: BigInt = allValuesInBatch[k as i32];
+      for (let k= 0; k < totalIdsTransferred; k++) {
+        let id: BigInt = allIdsInBatch[k];
+        let amount: BigInt = allValuesInBatch[k];
 
         // Expected child owner ID
         let compositeId = event.params.from.toHexString() + "-" + id.toString();
@@ -375,9 +391,9 @@ export function handleBatchTransfer(event: TransferBatch): void {
     let updatedChildren = new Array<string>();
 
     // for each ID being transferred
-    for (let j: number = 0; j < totalIdsTransferred; j++) {
-      let id: BigInt = allIdsInBatch[j as i32];
-      let amount: BigInt = allValuesInBatch[j as i32];
+    for (let j = 0; j < totalIdsTransferred; j++) {
+      let id: BigInt = allIdsInBatch[j];
+      let amount: BigInt = allValuesInBatch[j];
 
       // Expected child owner ID
       let compositeId = event.params.to.toHexString() + "-" + id.toString();
@@ -385,9 +401,9 @@ export function handleBatchTransfer(event: TransferBatch): void {
       // If we already have a child allocated to the collector
       if (isChildInList(compositeId, childrenOwned)) {
         // Iterate all children currently owned
-        for (let k: number = 0; k < totalChildOwned; k++) {
+        for (let k = 0; k < totalChildOwned; k++) {
           // Find the matching child
-          let currentChildId = childrenOwned[k as i32];
+          let currentChildId = childrenOwned[k];
           if (currentChildId == compositeId) {
             // Load collector and add to its balance
             let child = loadOrCreateDigitalaxChildOwner(

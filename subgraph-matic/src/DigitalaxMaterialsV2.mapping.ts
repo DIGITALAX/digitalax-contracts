@@ -31,10 +31,10 @@ export function handleChildCreated(event: ChildCreated): void {
   let strand = new DigitalaxMaterialV2(event.params.childId.toString());
   strand.tokenUri = contract.uri(event.params.childId);
 
-  strand.image = "";
-  strand.animation = "";
   strand.name = "";
+  strand.image = "";
   strand.description = "";
+  strand.animation = "";
   strand.external = "";
   strand.attributes = new Array<string>();
 
@@ -47,23 +47,48 @@ export function handleChildCreated(event: ChildCreated): void {
         if (data.isOk) {
           if (data.value.kind == JSONValueKind.OBJECT) {
             let res = data.value.toObject();
-            if (res.get("image_url")!.kind == JSONValueKind.STRING) {
-              strand.image = res.get("image_url")!.toString();
+            if (res.get("image_url")) {
+                if (res.get("image_url")!.kind == JSONValueKind.STRING) {
+                  strand.image = res.get("image_url")!.toString();
+                }
+              }
+            if (res.get("Animation")) {
+                if (res.get("Animation")!.kind == JSONValueKind.STRING) {
+                  strand.animation = res.get("Animation")!.toString();
+                }
+              }
+            if (res.get("animation_url")) {
+                if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
+                  strand.animation = res.get("animation_url")!.toString();
+                }
+              }
+            if (res.get("Designer ID")) {
+              if (res.get("Designer ID")!.kind == JSONValueKind.STRING) {
+                strand.name = res.get("Designer ID")!.toString();
+              }
             }
-            if (res.get("Animation")!.kind == JSONValueKind.STRING) {
-              strand.animation = res.get("Animation")!.toString();
+            if (res.get("Designer_ID")) {
+              if (res.get("Designer_ID")!.kind == JSONValueKind.STRING) {
+                strand.name = res.get("Designer_ID")!.toString();
+              }
             }
-            if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
-              strand.animation = res.get("animation_url")!.toString();
-            }
-            if (res.get("Designer ID")!.kind == JSONValueKind.STRING) {
-              strand.name = res.get("Designer ID")!.toString();
+            if (res.get("name")) {
+              if (res.get("name")!.kind == JSONValueKind.STRING) {
+                strand.name = res.get("name")!.toString();
+              }
             }
             if (res.get("description")!.kind == JSONValueKind.STRING) {
               strand.description = res.get("description")!.toString();
             }
-            if (res.get("external url")!.kind == JSONValueKind.STRING) {
-              strand.external = res.get("external url")!.toString();
+            if (res.get("external url")) {
+              if (res.get("external url")!.kind == JSONValueKind.STRING) {
+                strand.external = res.get("external url")!.toString();
+              }
+            }
+            if (res.get("external_url")) {
+              if (res.get("external_url")!.kind == JSONValueKind.STRING) {
+                strand.external = res.get("external_url")!.toString();
+              }
             }
             if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
               let attributes = res.get("attributes")!.toArray();
@@ -114,8 +139,8 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
 
     strand.tokenUri = contract.uri(childId);
 
-    strand.image = "";
     strand.animation = "";
+    strand.image = "";
     strand.name = "";
     strand.description = "";
     strand.external = "";
@@ -130,23 +155,33 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
           if (data.isOk) {
             if (data.value.kind == JSONValueKind.OBJECT) {
               let res = data.value.toObject();
-              if (res.get("image_url")!.kind == JSONValueKind.STRING) {
-                strand.image = res.get("image_url")!.toString();
+              if (res.get("image_url")) {
+                if (res.get("image_url")!.kind == JSONValueKind.STRING) {
+                  strand.image = res.get("image_url")!.toString();
+                }
               }
-              if (res.get("Animation")!.kind == JSONValueKind.STRING) {
-                strand.animation = res.get("Animation")!.toString();
+              if (res.get("Animation")) {
+                if (res.get("Animation")!.kind == JSONValueKind.STRING) {
+                  strand.animation = res.get("Animation")!.toString();
+                }
               }
-              if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
-                strand.animation = res.get("animation_url")!.toString();
+              if (res.get("animation_url")) {
+                if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
+                  strand.animation = res.get("animation_url")!.toString();
+                }
               }
+             if (res.get("Designer ID")) {
               if (res.get("Designer ID")!.kind == JSONValueKind.STRING) {
                 strand.name = res.get("Designer ID")!.toString();
               }
+            }
               if (res.get("description")!.kind == JSONValueKind.STRING) {
                 strand.description = res.get("description")!.toString();
               }
-              if (res.get("external_url")!.kind == JSONValueKind.STRING) {
-                strand.external = res.get("external_url")!.toString();
+              if (res.get("external_url")) {
+                if (res.get("external_url")!.kind == JSONValueKind.STRING) {
+                  strand.external = res.get("external_url")!.toString();
+                }
               }
               if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
                 let attributes = res.get("attributes")!.toArray();
@@ -216,8 +251,8 @@ export function handleSingleTransfer(event: TransferSingle): void {
     let updatedChildren = childrenOwned;
 
     // Iterate all children currently owned
-    for (let j: number = 0; j < totalChildOwned; j++) {
-      let childTokenId = childrenOwned[j as i32];
+    for (let j = 0; j < totalChildOwned; j++) {
+      let childTokenId = childrenOwned[j];
 
       // For each ID being transferred
       let id: BigInt = event.params.id;
@@ -239,7 +274,7 @@ export function handleSingleTransfer(event: TransferSingle): void {
 
         // keep track of child if balance positive
         if (child.amount.equals(ZERO)) {
-          updatedChildren.splice(j as i32, 1);
+          updatedChildren.splice(j, 1);
         }
       }
     }
@@ -265,9 +300,9 @@ export function handleSingleTransfer(event: TransferSingle): void {
     // If we already have a child allocated to the collector
     if (isChildInList(compositeId, childrenOwned)) {
       // Iterate all children currently owned
-      for (let k: number = 0; k < totalChildOwned; k++) {
+      for (let k = 0; k < totalChildOwned; k++) {
         // Find the matching child
-        let currentChildId = childrenOwned[k as i32];
+        let currentChildId = childrenOwned[k];
         if (currentChildId.toString() == compositeId) {
           let child = loadOrCreateDigitalaxChildV2Owner(
             event,
@@ -278,7 +313,7 @@ export function handleSingleTransfer(event: TransferSingle): void {
           child.amount = child.amount.plus(amount);
           child.save();
 
-          updatedChildren[k as i32] = child.id;
+          updatedChildren[k] = child.id;
         }
       }
     } else {

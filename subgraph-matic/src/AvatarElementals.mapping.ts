@@ -71,12 +71,16 @@ export function handleChildCreated(event: ChildCreated): void {
             if (res.get("description")!.kind == JSONValueKind.STRING) {
               strand.description = res.get("description")!.toString();
             }
-            if (res.get("external url")!.kind == JSONValueKind.STRING) {
-              strand.external = res.get("external url")!.toString();
-            }
-            if (res.get("external_url")!.kind == JSONValueKind.STRING) {
-              strand.external = res.get("external_url")!.toString();
-            }
+            if (res.get("external url")) {
+                if (res.get("external url")!.kind == JSONValueKind.STRING) {
+                  strand.external = res.get("external url")!.toString();
+                }
+              }
+            if (res.get("external_url")) {
+                if (res.get("external_url")!.kind == JSONValueKind.STRING) {
+                  strand.external = res.get("external_url")!.toString();
+                }
+              }
             if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
               let attributes = res.get("attributes")!.toArray();
               for (let i = 0; i < attributes.length; i += 1) {
@@ -160,17 +164,23 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
               if (res.get("name")!.kind == JSONValueKind.STRING) {
                 strand.name = res.get("name")!.toString();
               }
-              if (res.get("Designer ID")!.kind == JSONValueKind.STRING) {
-                strand.name = res.get("Designer ID")!.toString();
+              if (res.get("Designer ID")) {
+                if (res.get("Designer ID")!.kind == JSONValueKind.STRING) {
+                  strand.name = res.get("Designer ID")!.toString();
+                }
               }
               if (res.get("description")!.kind == JSONValueKind.STRING) {
                 strand.description = res.get("description")!.toString();
               }
-              if (res.get("external url")!.kind == JSONValueKind.STRING) {
-                strand.external = res.get("external url")!.toString();
+              if (res.get("external url")) {
+                if (res.get("external url")!.kind == JSONValueKind.STRING) {
+                  strand.external = res.get("external url")!.toString();
+                }
               }
-              if (res.get("external_url")!.kind == JSONValueKind.STRING) {
-                strand.external = res.get("external_url")!.toString();
+            if (res.get("external_url")) {
+                if (res.get("external_url")!.kind == JSONValueKind.STRING) {
+                  strand.external = res.get("external_url")!.toString();
+                }
               }
               if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
                 let attributes = res.get("attributes")!.toArray();
