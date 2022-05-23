@@ -158,7 +158,7 @@ contract DigitalaxMarketplaceV4 is BaseRelayRecipient {
     uint256 lastTokenId;
     address public designer;
 
-    uint public amountLeft;
+    uint public amountToSell;
 
     modifier nonReentrant() {
         // On the first call to nonReentrant, _notEntered will be true
@@ -209,7 +209,7 @@ contract DigitalaxMarketplaceV4 is BaseRelayRecipient {
 
         _status = _NOT_ENTERED;
         initialized = true;
-        amountLeft = 1000;
+        amountToSell = 1000;
         lastTokenId = 1;
         randomNumber = _randomNumber;
         designer = _designer;
@@ -241,6 +241,22 @@ contract DigitalaxMarketplaceV4 is BaseRelayRecipient {
             "Set designer: Sender must be admin"
         );
         designer = _designer;
+    }
+
+    function setAmountToSell(uint256 _amountToSell) external  {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "Set designer: Sender must be admin"
+        );
+        amountToSell = _amountToSell;
+    }
+
+    function setRandomNumber(uint256 _randomNumber) external  {
+        require(
+            accessControls.hasAdminRole(_msgSender()),
+            "Set designer: Sender must be admin"
+        );
+        randomNumber = _randomNumber;
     }
 
     // First uri is most rare, enter 5
@@ -287,22 +303,22 @@ contract DigitalaxMarketplaceV4 is BaseRelayRecipient {
 
     function mintRandomUri() internal returns (uint256) {
         string memory uri = '';
-        uint256 rand = random(string(abi.encodePacked(toString(lastTokenId  * randomNumber), toString(lastTokenId), lastTokenId * randomNumber))) + randomNumber + lastTokenId;
+        uint256 rand = random(string(abi.encodePacked(toString(lastTokenId  * randomNumber), toString(lastTokenId), lastTokenId * randomNumber))) + lastTokenId;
 
         uint256 randRarity1Full = random(string(abi.encodePacked("RarityOneTwoThree", toString(rand + lastTokenId + block.timestamp))));
 
-        uint256 randRarity1 = randRarity1Full % 21;
+        uint256 randRarity1 = randRarity1Full % 101;
 
-        if (randRarity1 > 14){
+        if (randRarity1 > 66){
             uri = uriStrings[4];
         }
-        else if(randRarity1 > 9){
+        else if(randRarity1 > 40){
             uri = uriStrings[3];
         }
-        else if(randRarity1 > 5){
+        else if(randRarity1 > 25){
             uri = uriStrings[2];
         }
-        else if(randRarity1 > 2){
+        else if(randRarity1 > 9){
             uri = uriStrings[1];
         } else {
             uri = uriStrings[0];
@@ -441,13 +457,12 @@ contract DigitalaxMarketplaceV4 is BaseRelayRecipient {
 //        );
         require(!offer.paused, "DigitalaxMarketplace.buyOffer: Can't purchase when paused");
 
-        require(offer.availableIndex < amountLeft.add(1), "Offer not available");
+        require(offer.availableIndex < amountToSell, "Offer not available");
         uint256 maxShare = 1000;
 
         // Ensure this contract is still approved to move the token
 
         offer.availableIndex = offer.availableIndex.add(1);
-
         uint256 bundleTokenId = mintRandomUri();
 
         require(_getNow() >= offer.startTime, "DigitalaxMarketplace.buyOffer: Purchase outside of the offer window");
@@ -485,13 +500,8 @@ contract DigitalaxMarketplaceV4 is BaseRelayRecipient {
 
         IERC20(_paymentToken).transferFrom(_msgSender(), platformFeeRecipient, amountOfERC20ToTransferAsFees);
 
-        offer.availableIndex = offer.availableIndex.add(1);
-        // Record the primary sale price for the garment
-
-        // TODO mint function returns token id
         garmentNft.setPrimarySalePrice(bundleTokenId, _estimateETHAmount(offer.primarySalePrice));
-        // Transfer the token to the purchaser
-       // garmentNft.safeTransferFrom(garmentNft.ownerOf(bundleTokenId), _msgSender(), bundleTokenId);
+
         lastPurchasedTime[0][_msgSender()] = _getNow();
 
         paymentTokenHistory[bundleTokenId] = _paymentToken;
@@ -705,7 +715,7 @@ contract DigitalaxMarketplaceV4 is BaseRelayRecipient {
     view
     returns (uint256 _primarySalePrice, uint256 _startTime, uint256 _endTime, uint256 _availableAmount, uint _platformFee, uint256 _discountToPayERC20) {
         Offer storage offer = offers[_garmentCollectionId];
-        uint256 availableAmount = garmentCollection.getSupply(_garmentCollectionId).sub(offer.availableIndex);
+        uint256 availableAmount = amountToSell.sub(offer.availableIndex);
         return (
             offer.primarySalePrice,
             offer.startTime,
@@ -763,7 +773,7 @@ contract DigitalaxMarketplaceV4 is BaseRelayRecipient {
             return true;
         }
 
-        uint256 availableAmount = amountLeft.sub(offer.availableIndex);
+        uint256 availableAmount = amountToSell.sub(offer.availableIndex);
         return availableAmount <= 0;
     }
 

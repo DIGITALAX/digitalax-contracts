@@ -90,31 +90,35 @@ export function handleChildCreated(event: ChildCreated): void {
                 strand.external = res.get("external_url")!.toString();
               }
             }
-            if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
-              let attributes = res.get("attributes")!.toArray();
-              for (let i = 0; i < attributes.length; i += 1) {
-                if (attributes[i].kind == JSONValueKind.OBJECT) {
-                  let attribute = attributes[i].toObject();
-                  let garmentAttribute = new GarmentAttribute(
-                    "materialv2-" + strand.id + i.toString()
-                  );
-                  // garmentAttribute.type = null;
-                    // garmentAttribute.value = null;
-
-                  if (
-                    attribute.get("trait_type")!.kind == JSONValueKind.STRING
-                  ) {
-                    garmentAttribute.type = attribute
-                        .get("trait_type")!
-                        .toString();
+            if(res.get("attributes")) {
+              if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
+                let attributes = res.get("attributes")!.toArray();
+                for (let i = 0; i < attributes.length; i += 1) {
+                  if (attributes[i].kind == JSONValueKind.OBJECT) {
+                    let attribute = attributes[i].toObject();
+                    log.info("debugging attribute{}", [attribute.get("trait_type")!.toString()]);
+                    let garmentAttribute = new GarmentAttribute(
+                        "materialv2-" + strand.id + i.toString()
+                    );
+                    if (attribute.get("trait_type")) {
+                      if (attribute.get("trait_type")!.kind == JSONValueKind.STRING) {
+                        if (attribute.get("trait_type")!.toString()) {
+                          garmentAttribute.type = attribute
+                              .get("trait_type")!
+                              .toString();
+                        }
+                      }
+                    }
+                    if (attribute.get("value")) {
+                      if (attribute.get("value")!.kind == JSONValueKind.STRING) {
+                        garmentAttribute.value = attribute.get("value")!.toString();
+                      }
+                    }
+                    garmentAttribute.save();
+                    let attrs = strand.attributes;
+                    attrs.push(garmentAttribute.id);
+                    strand.attributes = attrs;
                   }
-                  if (attribute.get("value")!.kind == JSONValueKind.STRING) {
-                    garmentAttribute.value = attribute.get("value")!.toString();
-                  }
-                  garmentAttribute.save();
-                  let attrs = strand.attributes;
-                  attrs.push(garmentAttribute.id);
-                  strand.attributes = attrs;
                 }
               }
             }
@@ -134,15 +138,15 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
 
   let childIds = event.params.childIds;
   for (let i = 0; i < event.params.childIds.length; i++) {
-    let childId: BigInt = childIds[i];
+    let childId = childIds[i];
     let strand = new DigitalaxMaterialV2(childId.toString());
 
     strand.tokenUri = contract.uri(childId);
 
     strand.animation = "";
-    strand.image = "";
     strand.name = "";
     strand.description = "";
+    strand.image = "";
     strand.external = "";
     strand.attributes = new Array<string>();
 
@@ -191,8 +195,6 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
                     let garmentAttribute = new GarmentAttribute(
                       "materialv2-" + strand.id + i.toString()
                     );
-                    // garmentAttribute.type = null;
-                    // garmentAttribute.value = null;
 
                     if (
                       attribute.get("trait_type")!.kind == JSONValueKind.STRING
@@ -232,111 +234,148 @@ export function handleSingleTransfer(event: TransferSingle): void {
   ]);
 
   // Ensure total supply is correct in cases of birthing or burning
-  let contract: DigitalaxMaterialsV2Contract = DigitalaxMaterialsV2Contract.bind(
+  let contract = DigitalaxMaterialsV2Contract.bind(
     event.address
   );
-  let childId: BigInt = event.params.id;
-  let childToken: DigitalaxMaterialV2 | null = DigitalaxMaterialV2.load(
+
+  let childId = event.params.id;
+  let childToken = DigitalaxMaterialV2.load(
     childId.toString()
   );
-  childToken!.totalSupply = contract.tokenTotalSupply(childId);
-  childToken!.save();
 
-  // Update "from" balances
+  if(childToken) {
+    childToken.totalSupply = contract.tokenTotalSupply(childId);
+    childToken.save();
+  }
+
+
+ // Update "from" balances
   if (!event.params.from.equals(ZERO_ADDRESS)) {
     let fromCollector = loadOrCreateDigitalaxCollectorV2(event.params.from);
+      log.info("8 handle single transfer of child ID {} and balance {}", [
+    event.params.id.toString(),
+    event.params.value.toString(),
+  ]);
+    if(fromCollector) {
+      let childrenOwned = fromCollector.childrenOwned;
+      let totalChildOwned = childrenOwned.length;
+      let updatedChildren = childrenOwned;
 
-    let childrenOwned = fromCollector.childrenOwned;
-    let totalChildOwned = childrenOwned.length;
-    let updatedChildren = childrenOwned;
+      // Iterate all children currently owned
+      if(totalChildOwned > 0) {
+        for (let j = 0; j < totalChildOwned; j++) {
+          let childTokenId = childrenOwned[j];
 
-    // Iterate all children currently owned
-    for (let j = 0; j < totalChildOwned; j++) {
-      let childTokenId = childrenOwned[j];
+          // For each ID being transferred
+          let id = event.params.id;
+          let amount = event.params.value;
 
-      // For each ID being transferred
-      let id: BigInt = event.params.id;
-      let amount: BigInt = event.params.value;
+          // Expected child owner ID
+          let compositeId = event.params.from.toHexString() + "-" + id.toString();
 
-      // Expected child owner ID
-      let compositeId = event.params.from.toHexString() + "-" + id.toString();
-
-      // Check that we have an entry for the child
-      if (childTokenId.toString() == compositeId) {
-        // Load collector and reduce balance
-        let child = loadOrCreateDigitalaxChildV2Owner(
-          event,
-          event.params.from,
-          id
-        );
-        child.amount = child.amount.minus(amount);
-        child.save();
-
-        // keep track of child if balance positive
-        if (child.amount.equals(ZERO)) {
-          updatedChildren.splice(j, 1);
+          // Check that we have an entry for the child
+          if (childTokenId.toString() == compositeId) {
+            // Load collector and reduce balance
+            let child = loadOrCreateDigitalaxChildV2Owner(
+                event,
+                event.params.from,
+                id
+            );
+            if (child) {
+              child.amount = child.amount.minus(amount);
+              child.save();
+            }
+            // keep track of child if balance positive
+            if (child.amount.equals(ZERO)) {
+              updatedChildren.splice(j, 1);
+            }
+          }
         }
       }
-    }
 
-    // assign the newly owned children
-    fromCollector.childrenOwned = updatedChildren;
-    fromCollector.save();
+      // assign the newly owned children
+      fromCollector.childrenOwned = updatedChildren;
+      fromCollector.save();
+    }
   }
 
   // Update "to" balances
   if (!event.params.to.equals(ZERO_ADDRESS)) {
+
     let toCollector = loadOrCreateDigitalaxCollectorV2(event.params.to);
-    let childrenOwned = toCollector.childrenOwned; // 0x123-123
-    let totalChildOwned = childrenOwned.length;
-    let updatedChildren = childrenOwned;
 
-    let id: BigInt = event.params.id;
-    let amount: BigInt = event.params.value;
+     if(toCollector) {
 
-    // Expected child owner ID
-    let compositeId = event.params.to.toHexString() + "-" + id.toString();
+      let childrenOwned = toCollector.childrenOwned; // 0x123-123
+      let totalChildOwned = childrenOwned.length;
+      let updatedChildren = toCollector.childrenOwned;
 
-    // If we already have a child allocated to the collector
-    if (isChildInList(compositeId, childrenOwned)) {
-      // Iterate all children currently owned
-      for (let k = 0; k < totalChildOwned; k++) {
-        // Find the matching child
-        let currentChildId = childrenOwned[k];
-        if (currentChildId.toString() == compositeId) {
-          let child = loadOrCreateDigitalaxChildV2Owner(
-            event,
-            event.params.to,
-            id
-          );
-          // Load collector and add to its balance
+      let id = event.params.id;
+      let amount = event.params.value;
+
+      // Expected child owner ID
+      let compositeId = event.params.to.toHexString() + "-" + id.toString();
+
+      // If we already have a child allocated to the collector
+      if (isChildInList(compositeId, childrenOwned)) {
+
+        // Iterate all children currently owned
+        for (let k = 0; k < totalChildOwned; k++) {
+
+          // Find the matching child
+          let currentChildId = childrenOwned[k];
+
+          if (currentChildId.toString() == compositeId) {
+
+            let child = loadOrCreateDigitalaxChildV2Owner(
+                event,
+                event.params.to,
+                id
+            );
+
+            // Load collector and add to its balance
+            child.amount = child.amount.plus(amount);
+            child.save();
+
+            // TODO REANALYZE THIS LINE OF CODE
+            // if(child && k < updatedChildren.length && updatedChildren[k] && child.id) {
+            //   updatedChildren[k] = child.id;
+            // }
+
+          }
+        }
+      } else {
+        // If we dont already own it, load and increment
+        let child = loadOrCreateDigitalaxChildV2Owner(event, event.params.to, id);
+        if(child) {
+
           child.amount = child.amount.plus(amount);
           child.save();
 
-          updatedChildren[k] = child.id;
+          // TODO REANALYZE THIS LINE OF CODE
+          // // keep track of child
+          // if(updatedChildren && updatedChildren.length > 0) {
+          //   updatedChildren.push(child.id);
+          // }
         }
       }
-    } else {
-      // If we dont already own it, load and increment
 
-      let child = loadOrCreateDigitalaxChildV2Owner(event, event.params.to, id);
-      child.amount = child.amount.plus(amount);
-      child.save();
-
-      // keep track of child
-      updatedChildren.push(child.id);
+      // assign the newly owned children
+       if(updatedChildren && updatedChildren.length > 0) {
+         toCollector.childrenOwned = updatedChildren;
+         toCollector.save();
+       }
     }
-
-    // assign the newly owned children
-    toCollector.childrenOwned = updatedChildren;
-    toCollector.save();
   }
 }
 
 export function handleBatchTransfer(event: TransferBatch): void {
-  log.info("handleBatchTransfer With Batch Size {}", [
-    BigInt.fromI32(event.params.values.length).toString(),
+      log.info("2 handle batch transfer of child ID {} and balance {}", [
+    "null", "null"
   ]);
+  // log.info("handleBatchTransfer With Batch Size {}", [
+  //   BigInt.fromI32(event.params.values.length).toString(),
+  // ]);
 
   // let contract: DigitalaxMaterialsV2Contract = DigitalaxMaterialsV2Contract.bind(
   //   event.address

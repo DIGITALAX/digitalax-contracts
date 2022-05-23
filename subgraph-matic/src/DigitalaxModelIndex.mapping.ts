@@ -119,20 +119,30 @@ export function handleDesignerGroupAdded(event: DesignerGroupAdded): void {
     if (data.isOk) {
       if (data.value.kind == JSONValueKind.OBJECT) {
         let res = data.value.toObject();
-        if (res.get("Designer ID")!.kind == JSONValueKind.STRING) {
-          designer.name = res.get("Designer ID")!.toString();
+        if (res.get("Designer ID")) {
+          if (res.get("Designer ID")!.kind == JSONValueKind.STRING) {
+            designer.name = res.get("Designer ID")!.toString();
+          }
         }
-        if (res.get("description")!.kind == JSONValueKind.STRING) {
-          designer.description = res.get("description")!.toString();
+        if (res.get("description")) {
+          if (res.get("description")!.kind == JSONValueKind.STRING) {
+            designer.description = res.get("description")!.toString();
+          }
         }
-        if (res.get("image_url")!.kind == JSONValueKind.STRING) {
-          designer.image = res.get("image_url")!.toString();
+        if (res.get("image_url")) {
+          if (res.get("image_url")!.kind == JSONValueKind.STRING) {
+            designer.image = res.get("image_url")!.toString();
+          }
         }
-        if (res.get("instagram")!.kind == JSONValueKind.STRING) {
-          designer.instagram = res.get("instagram")!.toString();
+        if (res.get("instagram")) {
+          if (res.get("instagram")!.kind == JSONValueKind.STRING) {
+            designer.instagram = res.get("instagram")!.toString();
+          }
         }
-        if (res.get("twitter")!.kind == JSONValueKind.STRING) {
-          designer.twitter = res.get("twitter")!.toString();
+        if (res.get("twitter")) {
+          if (res.get("twitter")!.kind == JSONValueKind.STRING) {
+            designer.twitter = res.get("twitter")!.toString();
+          }
         }
       }
     }
@@ -180,21 +190,31 @@ export function handleModelGroupAdded(event: ModelGroupAdded): void {
     if (data.isOk) {
       if (data.value.kind == JSONValueKind.OBJECT) {
         let res = data.value.toObject();
-        if (res.get("Model ID")!.kind == JSONValueKind.STRING) {
-          model.name = res.get("Model ID")!.toString();
-        }
-        if (res.get("description")!.kind == JSONValueKind.STRING) {
-          model.description = res.get("description")!.toString();
-        }
-        if (res.get("image_url")!.kind == JSONValueKind.STRING) {
-          model.image = res.get("image_url")!.toString();
-        }
-        if (res.get("instagram")!.kind == JSONValueKind.STRING) {
-          model.instagram = res.get("instagram")!.toString();
-        }
-        if (res.get("twitter")!.kind == JSONValueKind.STRING) {
-          model.twitter = res.get("twitter")!.toString();
-        }
+         if (res.get("Model ID")) {
+           if (res.get("Model ID")!.kind == JSONValueKind.STRING) {
+             model.name = res.get("Model ID")!.toString();
+           }
+         }
+         if (res.get("description")) {
+           if (res.get("description")!.kind == JSONValueKind.STRING) {
+             model.description = res.get("description")!.toString();
+           }
+         }
+         if (res.get("image_url")) {
+           if (res.get("image_url")!.kind == JSONValueKind.STRING) {
+             model.image = res.get("image_url")!.toString();
+           }
+         }
+         if (res.get("instagram")) {
+           if (res.get("instagram")!.kind == JSONValueKind.STRING) {
+             model.instagram = res.get("instagram")!.toString();
+           }
+         }
+         if (res.get("twitter")) {
+           if (res.get("twitter")!.kind == JSONValueKind.STRING) {
+             model.twitter = res.get("twitter")!.toString();
+           }
+         }
       }
     }
   }

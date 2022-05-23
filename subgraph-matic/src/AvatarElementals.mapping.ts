@@ -47,29 +47,45 @@ export function handleChildCreated(event: ChildCreated): void {
         if (data.isOk) {
           if (data.value.kind == JSONValueKind.OBJECT) {
             let res = data.value.toObject();
-            if (res.get("image")!.kind == JSONValueKind.STRING) {
-              strand.image = res.get("image")!.toString();
+            if (res.get("image")) {
+              if (res.get("image")!.kind == JSONValueKind.STRING) {
+                strand.image = res.get("image")!.toString();
+              }
             }
-            if (res.get("image_url")!.kind == JSONValueKind.STRING) {
-              strand.image = res.get("image_url")!.toString();
+            if (res.get("image_url")) {
+              if (res.get("image_url")!.kind == JSONValueKind.STRING) {
+                strand.image = res.get("image_url")!.toString();
+              }
             }
-            if (res.get("3D_File")!.kind == JSONValueKind.STRING) {
-              strand.animation = res.get("3D_File")!.toString();
+            if (res.get("3D_File")) {
+              if (res.get("3D_File")!.kind == JSONValueKind.STRING) {
+                strand.animation = res.get("3D_File")!.toString();
+              }
             }
-            if (res.get("Animation")!.kind == JSONValueKind.STRING) {
-              strand.animation = res.get("Animation")!.toString();
+            if (res.get("Animation")) {
+              if (res.get("Animation")!.kind == JSONValueKind.STRING) {
+                strand.animation = res.get("Animation")!.toString();
+              }
             }
-            if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
-              strand.animation = res.get("animation_url")!.toString();
+            if (res.get("animation_url")) {
+              if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
+                strand.animation = res.get("animation_url")!.toString();
+              }
             }
-            if (res.get("name")!.kind == JSONValueKind.STRING) {
-              strand.name = res.get("name")!.toString();
+            if (res.get("name")) {
+              if (res.get("name")!.kind == JSONValueKind.STRING) {
+                strand.name = res.get("name")!.toString();
+              }
             }
-            if (res.get("Designer ID")!.kind == JSONValueKind.STRING) {
-              strand.name = res.get("Designer ID")!.toString();
+            if (res.get("Designer ID")) {
+              if (res.get("Designer ID")!.kind == JSONValueKind.STRING) {
+                strand.name = res.get("Designer ID")!.toString();
+              }
             }
-            if (res.get("description")!.kind == JSONValueKind.STRING) {
-              strand.description = res.get("description")!.toString();
+            if (res.get("description")) {
+              if (res.get("description")!.kind == JSONValueKind.STRING) {
+                strand.description = res.get("description")!.toString();
+              }
             }
             if (res.get("external url")) {
                 if (res.get("external url")!.kind == JSONValueKind.STRING) {
@@ -81,31 +97,33 @@ export function handleChildCreated(event: ChildCreated): void {
                   strand.external = res.get("external_url")!.toString();
                 }
               }
-            if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
-              let attributes = res.get("attributes")!.toArray();
-              for (let i = 0; i < attributes.length; i += 1) {
-                if (attributes[i].kind == JSONValueKind.OBJECT) {
-                  let attribute = attributes[i].toObject();
-                  let garmentAttribute = new GarmentAttribute(
-                    "models-" + strand.id + i.toString()
-                  );
-                  // garmentAttribute.type = null;
+            if (res.get("attributes")) {
+              if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
+                let attributes = res.get("attributes")!.toArray();
+                for (let i = 0; i < attributes.length; i += 1) {
+                  if (attributes[i].kind == JSONValueKind.OBJECT) {
+                    let attribute = attributes[i].toObject();
+                    let garmentAttribute = new GarmentAttribute(
+                        "models-" + strand.id + i.toString()
+                    );
+                    // garmentAttribute.type = null;
                     // garmentAttribute.value = null;
 
-                  if (
-                    attribute.get("trait_type")!.kind == JSONValueKind.STRING
-                  ) {
-                    garmentAttribute.type = attribute
-                        .get("trait_type")!
-                        .toString();
+                    if (
+                        attribute.get("trait_type")!.kind == JSONValueKind.STRING
+                    ) {
+                      garmentAttribute.type = attribute
+                          .get("trait_type")!
+                          .toString();
+                    }
+                    if (attribute.get("value")!.kind == JSONValueKind.STRING) {
+                      garmentAttribute.value = attribute.get("value")!.toString();
+                    }
+                    garmentAttribute.save();
+                    let attrs = strand.attributes;
+                    attrs.push(garmentAttribute.id);
+                    strand.attributes = attrs;
                   }
-                  if (attribute.get("value")!.kind == JSONValueKind.STRING) {
-                    garmentAttribute.value = attribute.get("value")!.toString();
-                  }
-                  garmentAttribute.save();
-                  let attrs = strand.attributes;
-                  attrs.push(garmentAttribute.id);
-                  strand.attributes = attrs;
                 }
               }
             }
@@ -125,7 +143,7 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
 
   let childIds = event.params.childIds;
   for (let i = 0; i < event.params.childIds.length; i++) {
-    let childId: BigInt = childIds[i];
+    let childId = childIds[i];
     let strand = new AvatarElemental(childId.toString());
 
     strand.tokenUri = contract.uri(childId);
@@ -146,69 +164,85 @@ export function handleChildrenCreated(event: ChildrenCreated): void {
           if (data.isOk) {
             if (data.value.kind == JSONValueKind.OBJECT) {
               let res = data.value.toObject();
-              if (res.get("image")!.kind == JSONValueKind.STRING) {
-                strand.image = res.get("image")!.toString();
+              if (res.get("image")) {
+                if (res.get("image")!.kind == JSONValueKind.STRING) {
+                  strand.image = res.get("image")!.toString();
+                }
               }
-              if (res.get("image_url")!.kind == JSONValueKind.STRING) {
-                strand.image = res.get("image_url")!.toString();
+              if (res.get("image_url")) {
+                if (res.get("image_url")!.kind == JSONValueKind.STRING) {
+                  strand.image = res.get("image_url")!.toString();
+                }
               }
-              if (res.get("3D_File")!.kind == JSONValueKind.STRING) {
-                strand.animation = res.get("3D_File")!.toString();
+              if (res.get("3D_File")) {
+                if (res.get("3D_File")!.kind == JSONValueKind.STRING) {
+                  strand.animation = res.get("3D_File")!.toString();
+                }
               }
-              if (res.get("Animation")!.kind == JSONValueKind.STRING) {
-                strand.animation = res.get("Animation")!.toString();
+              if (res.get("Animation")) {
+                if (res.get("Animation")!.kind == JSONValueKind.STRING) {
+                  strand.animation = res.get("Animation")!.toString();
+                }
               }
-              if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
-                strand.animation = res.get("animation_url")!.toString();
+              if (res.get("animation_url")) {
+                if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
+                  strand.animation = res.get("animation_url")!.toString();
+                }
               }
-              if (res.get("name")!.kind == JSONValueKind.STRING) {
-                strand.name = res.get("name")!.toString();
+              if (res.get("name")) {
+                if (res.get("name")!.kind == JSONValueKind.STRING) {
+                  strand.name = res.get("name")!.toString();
+                }
               }
               if (res.get("Designer ID")) {
                 if (res.get("Designer ID")!.kind == JSONValueKind.STRING) {
                   strand.name = res.get("Designer ID")!.toString();
                 }
               }
-              if (res.get("description")!.kind == JSONValueKind.STRING) {
-                strand.description = res.get("description")!.toString();
+              if (res.get("description")) {
+                if (res.get("description")!.kind == JSONValueKind.STRING) {
+                  strand.description = res.get("description")!.toString();
+                }
               }
               if (res.get("external url")) {
                 if (res.get("external url")!.kind == JSONValueKind.STRING) {
                   strand.external = res.get("external url")!.toString();
                 }
               }
-            if (res.get("external_url")) {
+              if (res.get("external_url")) {
                 if (res.get("external_url")!.kind == JSONValueKind.STRING) {
                   strand.external = res.get("external_url")!.toString();
                 }
               }
-              if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
-                let attributes = res.get("attributes")!.toArray();
-                for (let i = 0; i < attributes.length; i += 1) {
-                  if (attributes[i].kind == JSONValueKind.OBJECT) {
-                    let attribute = attributes[i].toObject();
-                    let garmentAttribute = new GarmentAttribute(
-                      "models-" + strand.id + i.toString()
-                    );
-                    // garmentAttribute.type = null;
-                    // garmentAttribute.value = null;
+              if (res.get("attributes")) {
+                if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
+                  let attributes = res.get("attributes")!.toArray();
+                  for (let i = 0; i < attributes.length; i += 1) {
+                    if (attributes[i].kind == JSONValueKind.OBJECT) {
+                      let attribute = attributes[i].toObject();
+                      let garmentAttribute = new GarmentAttribute(
+                          "models-" + strand.id + i.toString()
+                      );
+                      // garmentAttribute.type = null;
+                      // garmentAttribute.value = null;
 
-                    if (
-                      attribute.get("trait_type")!.kind == JSONValueKind.STRING
-                    ) {
-                      garmentAttribute.type = attribute
-                        .get("trait_type")!
-                        .toString();
+                      if (
+                          attribute.get("trait_type")!.kind == JSONValueKind.STRING
+                      ) {
+                        garmentAttribute.type = attribute
+                            .get("trait_type")!
+                            .toString();
+                      }
+                      if (attribute.get("value")!.kind == JSONValueKind.STRING) {
+                        garmentAttribute.value = attribute
+                            .get("value")!
+                            .toString();
+                      }
+                      garmentAttribute.save();
+                      let attrs = strand.attributes;
+                      attrs.push(garmentAttribute.id);
+                      strand.attributes = attrs;
                     }
-                    if (attribute.get("value")!.kind == JSONValueKind.STRING) {
-                      garmentAttribute.value = attribute
-                        .get("value")!
-                        .toString();
-                    }
-                    garmentAttribute.save();
-                    let attrs = strand.attributes;
-                    attrs.push(garmentAttribute.id);
-                    strand.attributes = attrs;
                   }
                 }
               }
@@ -234,7 +268,7 @@ export function handleSingleTransfer(event: TransferSingle): void {
   let contract: AvatarElementalsContract = AvatarElementalsContract.bind(
     event.address
   );
-  let childId: BigInt = event.params.id;
+  let childId = event.params.id;
   let childToken: AvatarElemental | null = AvatarElemental.load(
     childId.toString()
   );
@@ -250,12 +284,12 @@ export function handleSingleTransfer(event: TransferSingle): void {
     let updatedChildren = childrenOwned;
 
     // Iterate all children currently owned
-    for (let j: number = 0; j < totalChildOwned; j++) {
-      let childTokenId = childrenOwned[j as i32];
+    for (let j = 0; j < totalChildOwned; j++) {
+      let childTokenId = childrenOwned[j];
 
       // For each ID being transferred
-      let id: BigInt = event.params.id;
-      let amount: BigInt = event.params.value;
+      let id = event.params.id;
+      let amount = event.params.value;
 
       // Expected child owner ID
       let compositeId = event.params.from.toHexString() + "-" + id.toString();
@@ -273,7 +307,7 @@ export function handleSingleTransfer(event: TransferSingle): void {
 
         // keep track of child if balance positive
         if (child.amount.equals(ZERO)) {
-          updatedChildren.splice(j as i32, 1);
+          updatedChildren.splice(j, 1);
         }
       }
     }
@@ -290,8 +324,8 @@ export function handleSingleTransfer(event: TransferSingle): void {
     let totalChildOwned = childrenOwned.length;
     let updatedChildren = childrenOwned;
 
-    let id: BigInt = event.params.id;
-    let amount: BigInt = event.params.value;
+    let id = event.params.id;
+    let amount = event.params.value;
 
     // Expected child owner ID
     let compositeId = event.params.to.toHexString() + "-" + id.toString();
@@ -299,9 +333,9 @@ export function handleSingleTransfer(event: TransferSingle): void {
     // If we already have a child allocated to the collector
     if (isChildInList(compositeId, childrenOwned)) {
       // Iterate all children currently owned
-      for (let k: number = 0; k < totalChildOwned; k++) {
+      for (let k = 0; k < totalChildOwned; k++) {
         // Find the matching child
-        let currentChildId = childrenOwned[k as i32];
+        let currentChildId = childrenOwned[k];
         if (currentChildId.toString() == compositeId) {
           let child = loadOrCreateDigitalaxChildV2Owner(
             event,
@@ -312,7 +346,7 @@ export function handleSingleTransfer(event: TransferSingle): void {
           child.amount = child.amount.plus(amount);
           child.save();
 
-          updatedChildren[k as i32] = child.id;
+          updatedChildren[k] = child.id;
         }
       }
     } else {
@@ -346,8 +380,8 @@ export function handleBatchTransfer(event: TransferBatch): void {
   let totalIdsTransferred = allIdsInBatch.length;
 
   // Model total supply - Ensure total supply is correct in cases of birthing or burning
-  for (let i: number = 0; i < totalIdsTransferred; i++) {
-    let childId: BigInt = allIdsInBatch[i as i32];
+  for (let i = 0; i < totalIdsTransferred; i++) {
+    let childId = allIdsInBatch[i];
     let child: AvatarElemental | null = AvatarElemental.load(
       childId.toString()
     );
@@ -366,13 +400,13 @@ export function handleBatchTransfer(event: TransferBatch): void {
     let updatedChildren = childrenOwned;
 
     // Iterate all children currently owned
-    for (let j: number = 0; j < totalChildrenOwned; j++) {
-      let childTokenId = childrenOwned[j as i32];
+    for (let j = 0; j < totalChildrenOwned; j++) {
+      let childTokenId = childrenOwned[j];
 
       // For each ID being transferred
-      for (let k: number = 0; k < totalIdsTransferred; k++) {
-        let id: BigInt = allIdsInBatch[k as i32];
-        let amount: BigInt = allValuesInBatch[k as i32];
+      for (let k = 0; k < totalIdsTransferred; k++) {
+        let id = allIdsInBatch[k];
+        let amount = allValuesInBatch[k];
 
         // Expected child owner ID
         let compositeId = event.params.from.toHexString() + "-" + id.toString();
@@ -390,7 +424,7 @@ export function handleBatchTransfer(event: TransferBatch): void {
 
           // keep track of child if balance positive
           if (child.amount.equals(ZERO)) {
-            updatedChildren.splice(j as i32, 1);
+            updatedChildren.splice(j, 1);
           }
         }
       }
@@ -409,9 +443,9 @@ export function handleBatchTransfer(event: TransferBatch): void {
     let updatedChildren = childrenOwned;
 
     // for each ID being transferred
-    for (let j: number = 0; j < totalIdsTransferred; j++) {
-      let id: BigInt = allIdsInBatch[j as i32];
-      let amount: BigInt = allValuesInBatch[j as i32];
+    for (let j = 0; j < totalIdsTransferred; j++) {
+      let id = allIdsInBatch[j];
+      let amount = allValuesInBatch[j];
 
       // Expected child owner ID
       let compositeId = event.params.to.toHexString() + "-" + id.toString();
@@ -419,9 +453,9 @@ export function handleBatchTransfer(event: TransferBatch): void {
       // If we already have a child allocated to the collector
       if (isChildInList(compositeId, childrenOwned)) {
         // Iterate all children currently owned
-        for (let k: number = 0; k < totalChildOwned; k++) {
+        for (let k = 0; k < totalChildOwned; k++) {
           // Find the matching child
-          let currentChildId = childrenOwned[k as i32];
+          let currentChildId = childrenOwned[k];
           if (currentChildId == compositeId) {
             // Load collector and add to its balance
             let child = loadOrCreateDigitalaxChildV2Owner(
@@ -432,7 +466,7 @@ export function handleBatchTransfer(event: TransferBatch): void {
             child.amount = child.amount.plus(amount);
             child.save();
 
-            updatedChildren[k as i32] = child.id;
+           // updatedChildren[k] = child.id;
           }
         }
       } else {
@@ -446,7 +480,7 @@ export function handleBatchTransfer(event: TransferBatch): void {
         child.save();
 
         // keep track of child
-        updatedChildren.push(child.id);
+      //  updatedChildren.push(child.id);
       }
     }
 

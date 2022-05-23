@@ -68,6 +68,9 @@ npx hardhat run --network matic scripts/auction_marketplace_deployment/52_v3_upg
 
 Flatten with
 sol-merger --export-plugin SPDXLicenseRemovePlugin "contracts/Nix.sol" ./flattened-new
+sol-merger --export-plugin SPDXLicenseRemovePlugin "contracts/DigitalaxMarketplaceV4.sol" ./flattened-new
 
 Oracle
 npx hardhat run --network matic scripts/auction_marketplace_deployment/99_update_oracles.js
+
+npx hardhat run --network matic scripts/auction_marketplace_deployment/101_deploy_v4.js

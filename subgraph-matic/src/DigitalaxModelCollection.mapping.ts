@@ -38,5 +38,7 @@ export function handleGarmentCollectionBurned(
  // collection.garments = null;
 // collection.garmentAuctionID = null;
 //  collection.rarity = null;
-  collection!.save();
+  if(collection) {
+    collection.save();
+  }
 }

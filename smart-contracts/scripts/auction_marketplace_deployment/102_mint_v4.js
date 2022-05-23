@@ -10,17 +10,22 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   const deployerAddress = await deployer.getAddress();
 
-  const V4_ADDRESS = "0x5394a69a126f3067a988906b57440a25e029abef";
+  const V4_ADDRESS = "0x1Af58038af9885551CA9D969A45Ea7Ea67f1794f";
     const v4 = new ethers.Contract(
       V4_ADDRESS,
       V4Artifact.abi,
       deployer
   );
 
-    for(let i = 0; i< 100 ; i++) {
-        const buy = await v4.buyOffer("0xeFd3D060dDcFed7903806503440db1089031AF3A",0,0);
-        await buy.wait();
-        console.log(`Purchased for the # ${i} time`);
+    for(let i = 0; i< 15 ; i++) {
+        try {
+            const buy = await v4.buyOffer("0xeFd3D060dDcFed7903806503440db1089031AF3A", 0, 0);
+            await buy.wait();
+            console.log(`Purchased for the # ${i} time`);
+        }
+        catch(e){
+            console.log(e);
+        }
     }
 }
 
