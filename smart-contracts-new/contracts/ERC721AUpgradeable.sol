@@ -7,6 +7,7 @@ pragma solidity ^0.8.4;
 import './IERC721AUpgradeable.sol';
 import {ERC721AStorage} from './ERC721AStorage.sol';
 import './ERC721A__Initializable.sol';
+import "./IERC1155.sol";
 
 /**
  * @dev ERC721 token receiver interface.
@@ -34,7 +35,7 @@ contract ERC721AUpgradeable is ERC721A__Initializable, IERC721AUpgradeable {
     using ERC721AStorage for ERC721AStorage.Layout;
     // Mask of an entry in packed address data.
     uint256 private constant BITMASK_ADDRESS_DATA_ENTRY = (1 << 64) - 1;
-
+    bytes4 private constant _INTERFACE_ID_ERC165 = 0x01ffc9a7;
     // The bit position of `numberMinted` in packed address data.
     uint256 private constant BITPOS_NUMBER_MINTED = 64;
 
@@ -115,18 +116,15 @@ contract ERC721AUpgradeable is ERC721A__Initializable, IERC721AUpgradeable {
         return ERC721AStorage.layout()._burnCounter;
     }
 
-    /**
-     * @dev See {IERC165-supportsInterface}.
-     */
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        // The interface IDs are constants representing the first 4 bytes of the XOR of
-        // all function selectors in the interface. See: https://eips.ethereum.org/EIPS/eip-165
-        // e.g. `bytes4(i.functionA.selector ^ i.functionB.selector ^ ...)`
         return
+            interfaceId == type(IERC1155).interfaceId ||
+            interfaceId == _INTERFACE_ID_ERC165 ||
             interfaceId == 0x01ffc9a7 || // ERC165 interface ID for ERC165.
             interfaceId == 0x80ac58cd || // ERC165 interface ID for ERC721.
-            interfaceId == 0x5b5e139f; // ERC165 interface ID for ERC721Metadata.
+            interfaceId == 0x5b5e139f; // ERC165 interface ID for ERC721Metadata.;
     }
+
 
     /**
      * @dev See {IERC721-balanceOf}.

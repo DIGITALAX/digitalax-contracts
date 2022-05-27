@@ -2,13 +2,12 @@ pragma solidity ^0.8.7;
 
 import "./extensions/ERC721AQueryableUpgradeable.sol";
 import "./IERC998ERC1155TopDown.sol";
+import "./OwnableUpgradeable.sol";
 import "./IDigitalaxMaterialsV2.sol";
-import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
-import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-contract ERC721A is ERC721AQueryableUpgradeable, IERC998ERC1155TopDown {
+contract ERC721A is ERC721AQueryableUpgradeable, IERC998ERC1155TopDown, OwnableUpgradeable {
 
     struct ChildNftInventory {
         uint256[] garmentTokenIds;
@@ -59,21 +58,24 @@ contract ERC721A is ERC721AQueryableUpgradeable, IERC998ERC1155TopDown {
     _safeMint(msg.sender, quantity);
   }
 
-  function burn(uint256 tokenId) public {
-        _burn(tokenId, true);
+  function burn(uint256 _tokenId) public {
+        _burn(_tokenId, true);
 
       // todo check
          // If there are any children tokens then send them as part of the burn
-        if (parentToChildMapping[_tokenId].length() > 0) {
+        if (parentToChildMapping[_tokenId].length > 0) {
             // Transfer children to the burner
             _extractAndTransferChildrenFromParent(_tokenId, _msgSender());
         }
     }
 
-  function supportsInterface(bytes4 interfaceId) public view override returns (bool) {
+  function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721AUpgradeable, IERC165) returns (bool) {
         return
             interfaceId == type(IERC1155).interfaceId ||
-            interfaceId == _INTERFACE_ID_ERC165;
+            interfaceId == _INTERFACE_ID_ERC165 ||
+            interfaceId == 0x01ffc9a7 || // ERC165 interface ID for ERC165.
+            interfaceId == 0x80ac58cd || // ERC165 interface ID for ERC721.
+            interfaceId == 0x5b5e139f; // ERC165 interface ID for ERC721Metadata.;
     }
 
     /**
@@ -140,6 +142,7 @@ contract ERC721A is ERC721AQueryableUpgradeable, IERC998ERC1155TopDown {
     function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _amount, bytes memory _data)
     virtual
     external
+    override
     returns (bytes4) {
         require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
 
@@ -166,6 +169,7 @@ contract ERC721A is ERC721AQueryableUpgradeable, IERC998ERC1155TopDown {
     function onERC1155BatchReceived(address _operator, address _from, uint256[] memory _ids, uint256[] memory _values, bytes memory _data)
     virtual
     external
+    override
     returns (bytes4) {
          require(_data.length == 32, "ERC998: data must contain the unique uint256 tokenId to transfer the child token to");
 
