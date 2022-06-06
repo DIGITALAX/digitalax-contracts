@@ -1,4 +1,4 @@
-specVersion: 0.0.2
+specVersion: 0.0.3
 description: Digitalax Smart Contract Indexing
 repository: https://github.com/DIGITALAX/digitalax-contracts/tree/main/subgraph
 schema:
@@ -13,7 +13,7 @@ dataSources:
       startBlock: {{DigitalaxF3MNFTStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -41,7 +41,7 @@ dataSources:
       startBlock: {{DigitalaxF3MMarketplaceStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - DigitalaxMarketplaceContractDeployed
@@ -81,7 +81,7 @@ dataSources:
       startBlock: {{DigitalaxF3MIndexStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - CollectionGroupAdded
@@ -115,11 +115,11 @@ dataSources:
     network: "{{network}}"
     source:
       address: "{{DigitalaxF3MCollectionAddress}}"
-      abi: DigitalaxF3MCollection
+      abi: DigitalaxF3MCollections
       startBlock: {{DigitalaxF3MCollectionStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - MintGarmentCollection

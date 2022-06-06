@@ -68,7 +68,7 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     let paymentToken = contract.paymentTokenHistory(event.params.bundleTokenId);
     history.paymentToken = paymentToken.toHexString();
     history.garmentCollectionId = event.params.garmentCollectionId;
-    history.rarity = collection.rarity;
+    history.rarity = collection!.rarity;
 
     history.value = offerData.value0; // USD value primary sale price
     history.shippingUsd = event.params.shippingAmount;
@@ -93,12 +93,12 @@ export function handleOfferPurchased(event: OfferPurchased): void {
     offer!.amountSold = offer!.amountSold.plus(ONE);
     offer!.save();
 
-    collection.valueSold = collection.valueSold.plus(history.value);
-    collection.save();
+    collection!.valueSold = collection!.valueSold.plus(history.value);
+    collection!.save();
 }
 
 export function handleOfferCancelled(event: OfferCancelled): void {
     let offer = DripF3MMarketplaceOffer.load(event.params.bundleTokenId.toString());
     store.remove('DripF3MMarketplaceOffer', event.params.bundleTokenId.toString());
-    offer.save();
+    offer!.save();
 }

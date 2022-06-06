@@ -154,20 +154,30 @@ export function handleDesignerGroupAdded(event: DesignerGroupAdded): void {
     if (data.isOk) {
       if (data.value.kind == JSONValueKind.OBJECT) {
         let res = data.value.toObject();
-        if (res.get("Resident ID").kind == JSONValueKind.STRING) {
-          resident.name = res.get("Resident ID").toString();
+        if (res.get("Resident ID")) {
+          if (res.get("Resident ID")!.kind == JSONValueKind.STRING) {
+            resident.name = res.get("Resident ID")!.toString();
+          }
         }
-        if (res.get("description")!.kind == JSONValueKind.STRING) {
-          resident.description = res.get("description")!.toString();
+        if (res.get("description")) {
+          if (res.get("description")!.kind == JSONValueKind.STRING) {
+            resident.description = res.get("description")!.toString();
+          }
         }
-        if (res.get("image_url")!.kind == JSONValueKind.STRING) {
-          resident.image = res.get("image_url").toString();
+        if (res.get("image_url")) {
+          if (res.get("image_url")!.kind == JSONValueKind.STRING) {
+            resident.image = res.get("image_url")!.toString();
+          }
         }
-        if (res.get("instagram").kind == JSONValueKind.STRING) {
-          resident.instagram = res.get("instagram").toString();
+        if (res.get("instagram")) {
+          if (res.get("instagram")!.kind == JSONValueKind.STRING) {
+            resident.instagram = res.get("instagram")!.toString();
+          }
         }
-        if (res.get("twitter").kind == JSONValueKind.STRING) {
-          resident.twitter = res.get("twitter").toString();
+        if (res.get("twitter")) {
+          if (res.get("twitter")!.kind == JSONValueKind.STRING) {
+            resident.twitter = res.get("twitter")!.toString();
+          }
         }
       }
     }

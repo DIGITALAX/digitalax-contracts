@@ -64,95 +64,111 @@ export function handleTransfer(event: Transfer): void {
           if (data.isOk) {
             if (data.value.kind == JSONValueKind.OBJECT) {
               let res = data.value.toObject();
-              if (res.get("image")!.kind == JSONValueKind.STRING) {
-                garment.image = res.get("image")!.toString();
-              }
-              if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
-                garment.animation = res.get("animation_url")!.toString();
-              }
-              for (let i = 1; i <= 4; i += 1) {
-              let iString = i.toString();
-              if (res.get("image_" + iString + "_url")) {
-                if (
-                    res.get("image_" + iString + "_url")!.kind ==
-                    JSONValueKind.STRING
-                ) {
-                  let additionalSource = new AdditionalSource(
-                      garment.id + "-image-" + i.toString()
-                  );
-                  additionalSource.type = "image";
-                  additionalSource.url = res
-                      .get("image_" + iString + "_url")!
-                      .toString();
-                  additionalSource.save();
-                  let additionalSources = garment.additionalSources;
-                  additionalSources!.push(additionalSource.id);
-                  garment.additionalSources = additionalSources;
+              if (res.get("image")) {
+                if (res.get("image")!.kind == JSONValueKind.STRING) {
+                  garment.image = res.get("image")!.toString();
                 }
               }
-              }
-              for (let i = 1; i <= 4; i += 1) {
-              let iString = i.toString();
-                if (
-                  res.get("animation_" + iString + "_url")!.kind ==
-                  JSONValueKind.STRING
-                ) {
-                  let additionalSource = new AdditionalSource(
-                    garment.id + "-animation-" + iString
-                  );
-                  additionalSource.type = "animation";
-                  additionalSource.url = res
-                    .get("animation_" + iString + "_url")!
-                    .toString()
-                  additionalSource.save();
-                  let additionalSources = garment.additionalSources;
-                  additionalSources!.push(additionalSource.id);
-                  garment.additionalSources = additionalSources;
+              if (res.get("animation_url")) {
+                if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
+                  garment.animation = res.get("animation_url")!.toString();
                 }
               }
-              if (res.get("name")!.kind == JSONValueKind.STRING) {
-                garment.name = res.get("name")!.toString();
+              for (let i = 1; i <= 4; i += 1) {
+                let iString = i.toString();
+                if (res.get("image_" + iString + "_url")) {
+                  if (
+                      res.get("image_" + iString + "_url")!.kind ==
+                      JSONValueKind.STRING
+                  ) {
+                    let additionalSource = new AdditionalSource(
+                        garment.id + "-image-" + i.toString()
+                    );
+                    additionalSource.type = "image";
+                    additionalSource.url = res
+                        .get("image_" + iString + "_url")!
+                        .toString();
+                    additionalSource.save();
+                    let additionalSources = garment.additionalSources;
+                    additionalSources!.push(additionalSource.id);
+                    garment.additionalSources = additionalSources;
+                  }
+                }
               }
-              if (res.get("description")!.kind == JSONValueKind.STRING) {
-                garment.description = res.get("description")!.toString();
+              for (let i = 1; i <= 4; i += 1) {
+                let iString = i.toString();
+                if (res.get("animation_" + iString + "_url")) {
+                  if (
+                      res.get("animation_" + iString + "_url")!.kind ==
+                      JSONValueKind.STRING
+                  ) {
+                    let additionalSource = new AdditionalSource(
+                        garment.id + "-animation-" + iString
+                    );
+                    additionalSource.type = "animation";
+                    additionalSource.url = res
+                        .get("animation_" + iString + "_url")!
+                        .toString()
+                    additionalSource.save();
+                    let additionalSources = garment.additionalSources;
+                    additionalSources!.push(additionalSource.id);
+                    garment.additionalSources = additionalSources;
+                  }
+                }
+              }
+              if (res.get("name")) {
+                if (res.get("name")!.kind == JSONValueKind.STRING) {
+                  garment.name = res.get("name")!.toString();
+                }
+              }
+              if (res.get("description")) {
+                if (res.get("description")!.kind == JSONValueKind.STRING) {
+                  garment.description = res.get("description")!.toString();
+                }
               }
               if (res.get("external url")) {
-                if (res.get("external url")!.kind == JSONValueKind.STRING) {
-                  garment.external = res.get("external url")!.toString();
+                if (res.get("external url")) {
+                  if (res.get("external url")!.kind == JSONValueKind.STRING) {
+                    garment.external = res.get("external url")!.toString();
+                  }
                 }
               }
               if (res.get("external_url")) {
-                if (res.get("external_url")!.kind == JSONValueKind.STRING) {
-                  garment.external = res.get("external_url")!.toString();
+                if (res.get("external_url")) {
+                  if (res.get("external_url")!.kind == JSONValueKind.STRING) {
+                    garment.external = res.get("external_url")!.toString();
+                  }
                 }
               }
-              if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
-                let attributes = res.get("attributes")!.toArray();
-                for (let i = 0; i < attributes.length; i += 1) {
-                  if (attributes[i].kind == JSONValueKind.OBJECT) {
-                    let attribute = attributes[i].toObject();
-                    let garmentAttribute = new GarmentAttribute(
-                      "digitalaxV2-" + garment.id + i.toString()
-                    );
-                    // garmentAttribute.type = null;
-                    // garmentAttribute.value = null;
+              if (res.get("attributes")){
+                if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
+                  let attributes = res.get("attributes")!.toArray();
+                  for (let i = 0; i < attributes.length; i += 1) {
+                    if (attributes[i].kind == JSONValueKind.OBJECT) {
+                      let attribute = attributes[i].toObject();
+                      let garmentAttribute = new GarmentAttribute(
+                          "digitalaxV2-" + garment.id + i.toString()
+                      );
+                      // garmentAttribute.type = null;
+                      // garmentAttribute.value = null;
 
-                    if (
-                      attribute.get("trait_type")!.kind == JSONValueKind.STRING
-                    ) {
-                      garmentAttribute.type = attribute
-                        .get("trait_type")!
-                        .toString();
+                      if (
+                          attribute.get("trait_type")!.kind == JSONValueKind.STRING
+                      ) {
+                        garmentAttribute.type = attribute
+                            .get("trait_type")!
+                            .toString();
+                      }
+                      if (attribute.get("value")!.kind == JSONValueKind.STRING) {
+                        garmentAttribute.value = attribute
+                            .get("value")!
+                            .toString();
+                      }
+                      garmentAttribute.save();
+                      let attrs = garment.attributes;
+                      attrs.push(garmentAttribute.id);
+                      garment.attributes = attrs;
                     }
-                    if (attribute.get("value")!.kind == JSONValueKind.STRING) {
-                      garmentAttribute.value = attribute
-                        .get("value")!
-                        .toString();
-                    }
-                    garmentAttribute.save();
-                    let attrs = garment.attributes;
-                    attrs.push(garmentAttribute.id);
-                    garment.attributes = attrs;
                   }
                 }
               }
@@ -233,14 +249,20 @@ export function handleChildReceived(event: ReceivedChild): void {
     event.params.toTokenId,
     event.params.childTokenId
   );
-  child.amount = child.amount.plus(event.params.amount);
-  child.save();
-
-  let children = garment!.children;
-  children.push(child.id);
-  garment!.children = children;
-
-  garment!.save();
+  if(child) {
+    child.amount = child.amount.plus(event.params.amount);
+    child.save();
+    if (garment) {
+      if (garment.children && child.id) {
+        let children = garment.children;
+        if(children) {
+          children.push(child.id);
+          garment.children = children;
+          garment.save();
+        }
+      }
+    }
+  }
 }
 
 export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
@@ -273,11 +295,15 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
         if (data.isOk) {
           if (data.value.kind == JSONValueKind.OBJECT) {
             let res = data.value.toObject();
-            if (res.get("image")!.kind == JSONValueKind.STRING) {
-              garment.image = res.get("image")!.toString();
+            if (res.get("image")) {
+              if (res.get("image")!.kind == JSONValueKind.STRING) {
+                garment.image = res.get("image")!.toString();
+              }
             }
-            if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
-              garment.animation = res.get("animation_url")!.toString();
+            if (res.get("animation_url")) {
+              if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
+                garment.animation = res.get("animation_url")!.toString();
+              }
             }
             for (let i = 1; i <= 4; i += 1) {
               let iString = i.toString();
@@ -302,64 +328,72 @@ export function handleUriUpdated(event: DigitalaxGarmentTokenUriUpdate): void {
             }
             for (let i = 1; i <= 4; i += 1) {
               let iString = i.toString();
-              if (
-                res.get("animation_" + iString + "_url")!.kind ==
-                JSONValueKind.STRING
-              ) {
-                let additionalSource = new AdditionalSource(
-                  garment.id + "-animation-" + iString
-                );
-                additionalSource.type = "animation";
-                additionalSource.url = res
-                  .get("animation_" + iString + "_url")!
-                    .toString()
-                additionalSource.save();
-                let additionalSources = garment.additionalSources;
-                additionalSources!.push(additionalSource.id);
-                garment.additionalSources = additionalSources;
-              }
-            }
-            if (res.get("name")!.kind == JSONValueKind.STRING) {
-              garment.name = res.get("name")!.toString();
-            }
-            if (res.get("description")!.kind == JSONValueKind.STRING) {
-              garment.description = res.get("description")!.toString();
-            }
-              if (res.get("external url")) {
-                if (res.get("external url")!.kind == JSONValueKind.STRING) {
-                  garment.external = res.get("external url")!.toString();
-                }
-              }
-              if (res.get("external_url")) {
-                if (res.get("external_url")!.kind == JSONValueKind.STRING) {
-                  garment.external = res.get("external_url")!.toString();
-                }
-              }
-            if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
-              let attributes = res.get("attributes")!.toArray();
-              for (let i = 0; i < attributes.length; i += 1) {
-                if (attributes[i].kind == JSONValueKind.OBJECT) {
-                  let attribute = attributes[i].toObject();
-                  let garmentAttribute = new GarmentAttribute(
-                    "digitalaxV2-" + garment.id + i.toString()
+              if (res.get("animation_" + iString + "_url")) {
+                if (
+                    res.get("animation_" + iString + "_url")!.kind ==
+                    JSONValueKind.STRING
+                ) {
+                  let additionalSource = new AdditionalSource(
+                      garment.id + "-animation-" + iString
                   );
-                  // garmentAttribute.type = null;
+                  additionalSource.type = "animation";
+                  additionalSource.url = res
+                      .get("animation_" + iString + "_url")!
+                      .toString()
+                  additionalSource.save();
+                  let additionalSources = garment.additionalSources;
+                  additionalSources!.push(additionalSource.id);
+                  garment.additionalSources = additionalSources;
+                }
+              }
+            }
+            if (res.get("name")) {
+              if (res.get("name")!.kind == JSONValueKind.STRING) {
+                garment.name = res.get("name")!.toString();
+              }
+            }
+            if (res.get("description")) {
+              if (res.get("description")!.kind == JSONValueKind.STRING) {
+                garment.description = res.get("description")!.toString();
+              }
+            }
+            if (res.get("external url")) {
+              if (res.get("external url")!.kind == JSONValueKind.STRING) {
+                garment.external = res.get("external url")!.toString();
+              }
+            }
+            if (res.get("external_url")) {
+              if (res.get("external_url")!.kind == JSONValueKind.STRING) {
+                garment.external = res.get("external_url")!.toString();
+              }
+            }
+            if (res.get("attributes")){
+              if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
+                let attributes = res.get("attributes")!.toArray();
+                for (let i = 0; i < attributes.length; i += 1) {
+                  if (attributes[i].kind == JSONValueKind.OBJECT) {
+                    let attribute = attributes[i].toObject();
+                    let garmentAttribute = new GarmentAttribute(
+                        "digitalaxV2-" + garment.id + i.toString()
+                    );
+                    // garmentAttribute.type = null;
                     // garmentAttribute.value = null;
 
-                  if (
-                    attribute.get("trait_type")!.kind == JSONValueKind.STRING
-                  ) {
-                    garmentAttribute.type = attribute
-                        .get("trait_type")!
-                        .toString();
+                    if (
+                        attribute.get("trait_type")!.kind == JSONValueKind.STRING
+                    ) {
+                      garmentAttribute.type = attribute
+                          .get("trait_type")!
+                          .toString();
+                    }
+                    if (attribute.get("value")!.kind == JSONValueKind.STRING) {
+                      garmentAttribute.value = attribute.get("value")!.toString();
+                    }
+                    garmentAttribute.save();
+                    let attrs = garment.attributes;
+                    attrs.push(garmentAttribute.id);
+                    garment.attributes = attrs;
                   }
-                  if (attribute.get("value")!.kind == JSONValueKind.STRING) {
-                    garmentAttribute.value = attribute.get("value")!.toString();
-                  }
-                  garmentAttribute.save();
-                  let attrs = garment.attributes;
-                  attrs.push(garmentAttribute.id);
-                  garment.attributes = attrs;
                 }
               }
             }
@@ -405,96 +439,108 @@ export function handleTokenPriceSaleUpdated(
           if (data.isOk) {
             if (data.value.kind == JSONValueKind.OBJECT) {
               let res = data.value.toObject();
-              if (res.get("image")!.kind == JSONValueKind.STRING) {
-                garment.image = res.get("image")!.toString();
-              }
-              if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
-                garment.animation = res.get("animation_url")!.toString();
-              }
-              for (let i = 1; i <= 4; i += 1) {
-              let iString = i.toString();
-              if (res.get("image_" + iString + "_url")) {
-                if (
-                    res.get("image_" + iString + "_url")!.kind ==
-                    JSONValueKind.STRING
-                ) {
-                  let additionalSource = new AdditionalSource(
-                      garment.id + "-image-" + i.toString()
-                  );
-                  additionalSource.type = "image";
-                  additionalSource.url = res
-                      .get("image_" + iString + "_url")!
-                      .toString();
-                  additionalSource.save();
-                  let additionalSources = garment.additionalSources;
-                  additionalSources!.push(additionalSource.id);
-                  garment.additionalSources = additionalSources;
+              if (res.get("image")) {
+                if (res.get("image")!.kind == JSONValueKind.STRING) {
+                  garment.image = res.get("image")!.toString();
                 }
               }
-              }
-              for (let i = 1; i <= 4; i += 1) {
-              let iString = i.toString();
-                if (
-                  res.get("animation_" + iString + "_url")!.kind ==
-                  JSONValueKind.STRING
-                ) {
-                  let additionalSource = new AdditionalSource(
-                    garment.id + "-animation-" + iString
-                  );
-                  additionalSource.type = "animation";
-                  additionalSource.url = res
-                    .get("animation_" + iString + "_url")!
-                    .toString()
-                  additionalSource.save();
-                  let additionalSources = garment.additionalSources;
-                  additionalSources!.push(additionalSource.id);
-                  garment.additionalSources = additionalSources;
+              if (res.get("animation_url")) {
+                if (res.get("animation_url")!.kind == JSONValueKind.STRING) {
+                  garment.animation = res.get("animation_url")!.toString();
                 }
               }
-              if (res.get("name")!.kind == JSONValueKind.STRING) {
-                garment.name = res.get("name")!.toString();
+              for (let i = 1; i <= 4; i += 1) {
+                let iString = i.toString();
+                if (res.get("image_" + iString + "_url")) {
+                  if (
+                      res.get("image_" + iString + "_url")!.kind ==
+                      JSONValueKind.STRING
+                  ) {
+                    let additionalSource = new AdditionalSource(
+                        garment.id + "-image-" + i.toString()
+                    );
+                    additionalSource.type = "image";
+                    additionalSource.url = res
+                        .get("image_" + iString + "_url")!
+                        .toString();
+                    additionalSource.save();
+                    let additionalSources = garment.additionalSources;
+                    additionalSources!.push(additionalSource.id);
+                    garment.additionalSources = additionalSources;
+                  }
+                }
               }
-              if (res.get("description")!.kind == JSONValueKind.STRING) {
-                garment.description = res.get("description")!.toString();
+              for (let i = 1; i <= 4; i += 1) {
+                let iString = i.toString();
+                if (
+                    res.get("animation_" + iString + "_url")) {
+                  if (
+                      res.get("animation_" + iString + "_url")!.kind ==
+                      JSONValueKind.STRING
+                  ) {
+                    let additionalSource = new AdditionalSource(
+                        garment.id + "-animation-" + iString
+                    );
+                    additionalSource.type = "animation";
+                    additionalSource.url = res
+                        .get("animation_" + iString + "_url")!
+                        .toString()
+                    additionalSource.save();
+                    let additionalSources = garment.additionalSources;
+                    additionalSources!.push(additionalSource.id);
+                    garment.additionalSources = additionalSources;
+                  }
+                }
+              }
+              if (res.get("name")) {
+                if (res.get("name")!.kind == JSONValueKind.STRING) {
+                  garment.name = res.get("name")!.toString();
+                }
+              }
+              if (res.get("description")) {
+                if (res.get("description")!.kind == JSONValueKind.STRING) {
+                  garment.description = res.get("description")!.toString();
+                }
               }
               if (res.get("external url")) {
                 if (res.get("external url")!.kind == JSONValueKind.STRING) {
                   garment.external = res.get("external url")!.toString();
                 }
-
               }
               if (res.get("external_url")) {
                 if (res.get("external_url")!.kind == JSONValueKind.STRING) {
                   garment.external = res.get("external_url")!.toString();
                 }
               }
-              if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
-                let attributes = res.get("attributes")!.toArray();
-                for (let i = 0; i < attributes.length; i += 1) {
-                  if (attributes[i].kind == JSONValueKind.OBJECT) {
-                    let attribute = attributes[i].toObject();
-                    let garmentAttribute = new GarmentAttribute(
-                      "digitalaxV2-" + garment.id + i.toString()
-                    );
-                    // garmentAttribute.type = null;
-                    // garmentAttribute.value = null;
+              if (res.get("attributes")){
+                if (res.get("attributes")!.kind == JSONValueKind.ARRAY) {
+                  let attributes = res.get("attributes")!.toArray();
+                  for (let i = 0; i < attributes.length; i += 1) {
+                    if (attributes[i].kind == JSONValueKind.OBJECT) {
+                      let attribute = attributes[i].toObject();
+                      let garmentAttribute = new GarmentAttribute(
+                          "digitalaxV2-" + garment.id + i.toString()
+                      );
+                      // garmentAttribute.type = null;
+                      // garmentAttribute.value = null;
 
-                    if (
-                      attribute.get("trait_type")!.kind == JSONValueKind.STRING
-                    ) {
-                      garmentAttribute.type = attribute
-                        .get("trait_type")!
-                        .toString();
+                      if (
+                          attribute.get("trait_type")!.kind == JSONValueKind.STRING
+                      ) {
+                        garmentAttribute.type = attribute
+                            .get("trait_type")!
+                            .toString();
+                      }
+                      if (attribute.get("value")!.kind == JSONValueKind.STRING) {
+                        garmentAttribute.value = attribute
+                            .get("value")!
+                            .toString();
+                      }
+                      garmentAttribute.save();
+                      let attrs = garment.attributes;
+                      attrs.push(garmentAttribute.id);
+                      garment.attributes = attrs;
                     }
-                    if (attribute.get("value")!.kind == JSONValueKind.STRING) {
-                      garmentAttribute.value = attribute
-                        .get("value")!
-                        .toString();
-                    }
-                    garmentAttribute.save();
-                    let attrs = garment.attributes;
-                    attrs.push(garmentAttribute.id);
-                    garment.attributes = attrs;
                   }
                 }
               }
