@@ -47,8 +47,8 @@ export function handleCollectionGroupAdded(event: CollectionGroupAdded): void {
 
   let digiBudngle = event.params.digiBundleCollection.toString();
 
-  collectionGroup.auctions = auctions;
   collectionGroup.collections = collections;
+  collectionGroup.auctions = auctions;
   collectionGroup.digiBundle = digiBudngle;
 
   collectionGroup.save();

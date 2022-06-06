@@ -33,6 +33,9 @@ interface ERC721A__IERC721ReceiverUpgradeable {
  */
 contract ERC721AUpgradeable is ERC721A__Initializable, IERC721AUpgradeable {
     using ERC721AStorage for ERC721AStorage.Layout;
+    /// @dev TokenID -> Primary Ether Sale Price in Wei
+    mapping(uint256 => uint256) public primarySalePrice;
+
     // Mask of an entry in packed address data.
     uint256 private constant BITMASK_ADDRESS_DATA_ENTRY = (1 << 64) - 1;
     bytes4 private constant _INTERFACE_ID_ERC165 = 0x01ffc9a7;
@@ -456,6 +459,10 @@ contract ERC721AUpgradeable is ERC721A__Initializable, IERC721AUpgradeable {
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
 
+    function _setPrimarySalePrice(uint256 _tokenId, uint256 _salePrice) internal {
+            primarySalePrice[_tokenId] = _salePrice;
+    }
+
     /**
      * @dev Mints `quantity` tokens and transfers them to `to`.
      *
@@ -727,7 +734,14 @@ contract ERC721AUpgradeable is ERC721A__Initializable, IERC721AUpgradeable {
         address to,
         uint256 startTokenId,
         uint256 quantity
-    ) internal virtual {}
+    ) internal virtual {
+        if(from == address(0)){
+            uint256 value = msg.value / quantity;
+            for(uint256 i=0; i<quantity; i++){
+                _setPrimarySalePrice(startTokenId + i, value);
+            }
+        }
+    }
 
     /**
      * @dev Returns the message sender (defaults to `msg.sender`).

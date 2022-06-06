@@ -7,8 +7,9 @@ import "./IDigitalaxMaterialsV2.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
+// Todo name
 contract ERC721A is ERC721AQueryableUpgradeable, IERC998ERC1155TopDown, OwnableUpgradeable {
-
+    using EnumerableSet for EnumerableSet.UintSet;
     struct ChildNftInventory {
         uint256[] garmentTokenIds;
         uint256[] garmentAmounts;
@@ -20,16 +21,15 @@ contract ERC721A is ERC721AQueryableUpgradeable, IERC998ERC1155TopDown, OwnableU
     /// @dev Child ERC1155 contract address
     IDigitalaxMaterialsV2 public childContract;
 
+    uint256 public currentSalePrice;
 
-    /// @dev TokenID -> Primary Ether Sale Price in Wei
-    mapping(uint256 => uint256) public primarySalePrice;
+    uint256 public maxTotalSupply;
+    uint256 public maxPerPurchase;
 
+    string public baseUri;
 
     /// @dev ERC721 Token ID -> ERC1155 ID -> Balance
     mapping(uint256 => mapping(uint256 => uint256)) private balances;
-
-    /// @dev ERC1155 ID -> ERC721 Token IDs that have a balance
-    mapping(uint256 => EnumerableSet.UintSet) private childToParentMapping;
 
     /// @dev ERC721 Token ID -> ERC1155 child IDs owned by the token ID
     mapping(uint256 => EnumerableSet.UintSet) private parentToChildMapping;
@@ -43,27 +43,37 @@ contract ERC721A is ERC721AQueryableUpgradeable, IERC998ERC1155TopDown, OwnableU
         uint256 _salePrice
     );
 
-
-
-
-  function initialize() initializerERC721A public {
-        __ERC721A_init('Something', 'SMTH');
-      __Ownable_init(); // todo figure out ownership
-
-      // todo set child contract
+  function initialize(string memory _symbol, string memory _name, IDigitalaxMaterialsV2 _childContract, uint256 _maxTotalSupply, uint256 _currentSalePrice) initializerERC721A public {
+        __ERC721A_init(_name, _symbol);
+        __Context_init();
+        __Ownable_init();
+        childContract = _childContract;
+        maxTotalSupply = _maxTotalSupply;
+        currentSalePrice = _currentSalePrice;
+        maxPerPurchase = 10; // Todo we need to confirm this value
   }
 
-  function mint(uint256 quantity) external payable {
-    // _safeMint's second argument now takes in a quantity, not a tokenId.
+  function teamMint(uint256 quantity) external onlyOwner {
+    require(totalSupply() + quantity <= maxTotalSupply, "No tokens left to mint");
     _safeMint(msg.sender, quantity);
+  }
+
+  function buy(uint256 quantity) external payable {
+    require(totalSupply() + quantity <= maxTotalSupply, "No tokens left to mint");
+    require(msg.value == (quantity * currentSalePrice), "Wrong amount of ETH sent to contract");
+    require(quantity > uint256(0), "Cannot buy 0");
+    require(quantity <= maxPerPurchase, "Cannot buy more than MAX per purchase");
+    _safeMint(msg.sender, quantity);
+
+   (bool success, ) = owner().call{ value: msg.value }("");
+   require(success, "Failed to widthdraw Ether");
   }
 
   function burn(uint256 _tokenId) public {
         _burn(_tokenId, true);
 
-      // todo check
          // If there are any children tokens then send them as part of the burn
-        if (parentToChildMapping[_tokenId].length > 0) {
+        if (parentToChildMapping[_tokenId].length() > 0) {
             // Transfer children to the burner
             _extractAndTransferChildrenFromParent(_tokenId, _msgSender());
         }
@@ -159,7 +169,6 @@ contract ERC721A is ERC721AQueryableUpgradeable, IERC998ERC1155TopDown, OwnableU
             "Cannot exceed max child token allocation"
         );
 
-        // todo check
         return IERC1155Receiver.onERC1155Received.selector;
     }
 
@@ -188,7 +197,6 @@ contract ERC721A is ERC721AQueryableUpgradeable, IERC998ERC1155TopDown, OwnableU
             "Cannot exceed max child token allocation"
         );
 
-        // todo check
         return IERC1155Receiver.onERC1155BatchReceived.selector;
     }
 
@@ -223,11 +231,30 @@ contract ERC721A is ERC721AQueryableUpgradeable, IERC998ERC1155TopDown, OwnableU
      @dev Only admin
      @param _maxChildrenPerToken uint256 the max children a token can hold
      */
-    function updateMaxChildrenPerToken(uint256 _maxChildrenPerToken) external {
-       // todo
-        // require(accessControls.hasAdminRole(_msgSender()), "DigitalaxGarmentNFT.updateMaxChildrenPerToken: Sender must be admin");
+    function updateMaxChildrenPerToken(uint256 _maxChildrenPerToken) external onlyOwner {
         maxChildrenPerToken = _maxChildrenPerToken;
     }
+
+    function updateChildContract(IDigitalaxMaterialsV2 _childContract) external onlyOwner {
+        childContract = _childContract;
+    }
+
+    function updateMaxTotalSupply(uint256 _maxTotalSupply) external onlyOwner {
+        maxTotalSupply = _maxTotalSupply;
+    }
+
+    function updateMaxPerPurchase(uint256 _maxPerPurchase) external onlyOwner {
+        maxPerPurchase = _maxPerPurchase;
+    }
+
+    function updateCurrentSalePrice(uint256 _currentSalePrice) external onlyOwner {
+        currentSalePrice = _currentSalePrice;
+    }
+
+    function updateBaseUri(string _baseUriString) external onlyOwner {
+        baseUri = _baseUriString;
+    }
+
  /////////////////////////
     // Internal and Private /
     /////////////////////////
@@ -254,29 +281,27 @@ contract ERC721A is ERC721AQueryableUpgradeable, IERC998ERC1155TopDown, OwnableU
         if (balances[_tokenId][_childTokenId] == 0) {
            parentToChildMapping[_tokenId].add(_childTokenId);
         }
-        balances[_tokenId][_childTokenId] = balances[_tokenId][_childTokenId].add(_amount);
+        balances[_tokenId][_childTokenId] = balances[_tokenId][_childTokenId] + _amount;
     }
 
     function _removeChild(uint256 _tokenId, address, uint256 _childTokenId, uint256 _amount) private {
         require(_amount != 0 || balances[_tokenId][_childTokenId] >= _amount, "ERC998: insufficient child balance for transfer");
-        balances[_tokenId][_childTokenId] = balances[_tokenId][_childTokenId].sub(_amount);
+        balances[_tokenId][_childTokenId] = balances[_tokenId][_childTokenId] - _amount;
         if (balances[_tokenId][_childTokenId] == 0) {
-            childToParentMapping[_childTokenId].remove(_tokenId);
             parentToChildMapping[_tokenId].remove(_childTokenId);
         }
     }
 
-    // todo check
-//
-//    function batchTokenURI(uint256[] memory tokenIds) external view returns (string[] memory) {
-//        uint256 length = tokenIds.length;
-//
-//        string[] memory _tokenUris = new string[](length);
-//        for( uint256 i; i< length; i++){
-//            _tokenUris[i] = _tokenURIs[tokenIds[i]];
-//        }
-//        return _tokenUris;
-//    }
+
+    function batchTokenURI(uint256[] memory tokenIds) external view returns (string[] memory) {
+        uint256 length = tokenIds.length;
+
+        string[] memory _tokenUris = new string[](length);
+        for( uint256 i; i< length; i++){
+            _tokenUris[i] = tokenURI(tokenIds[i]);
+        }
+        return _tokenUris;
+    }
 
     function batchPrimarySalePrice(uint256[] memory tokenIds) external view returns (uint256[] memory) {
         uint256 length = tokenIds.length;
@@ -287,4 +312,41 @@ contract ERC721A is ERC721AQueryableUpgradeable, IERC998ERC1155TopDown, OwnableU
         }
         return _primarySalePrices;
     }
+
+        /**
+     @notice Records the Ether price that a given token was sold for (in WEI)
+     @dev Only admin or a smart contract can call this method
+     @param _tokenIds The ID of the token being updated
+     @param _salePrices The primary Ether sale price in WEI
+     */
+    function batchSetPrimarySalePrice(uint256[] memory _tokenIds, uint256[] memory _salePrices) external onlyOwner {
+        require(
+            _tokenIds.length == _salePrices.length,
+            "BatchSetPrimarySalePrice: Must have equal length arrays"
+        );
+        for( uint256 i; i< _tokenIds.length; i++){
+            _setPrimarySalePrice(_tokenIds[i], _salePrices[i]);
+        }
+    }
+
+    function ownerWithdraw(address _address, uint256 _amount) onlyOwner external {
+        _withdraw(_address, _amount);
+    }
+
+    /**
+    * Helper method to allow ETH withdraws.
+    */
+    function _withdraw(address _address, uint256 _amount) internal {
+        (bool success, ) = _address.call{ value: _amount }("");
+        require(success, "Failed to widthdraw Ether");
+    }
+
+    function _baseURI() internal view override returns (string memory) {
+        return baseUri;
+    }
+
+
+    // contract can recieve Ether
+    receive() external payable { }
+
 }

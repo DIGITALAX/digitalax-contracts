@@ -4,7 +4,6 @@
 pragma solidity ^0.8.7;
 
 import "./ContextUpgradeable.sol";
-import "./Initializable.sol";
 
 /**
  * @dev Contract module which provides a basic access control mechanism, where
@@ -18,7 +17,7 @@ import "./Initializable.sol";
  * `onlyOwner`, which can be applied to your functions to restrict their use to
  * the owner.
  */
-abstract contract OwnableUpgradeable is Initializable, ContextUpgradeable {
+abstract contract OwnableUpgradeable is ContextUpgradeable {
     address private _owner;
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -26,11 +25,11 @@ abstract contract OwnableUpgradeable is Initializable, ContextUpgradeable {
     /**
      * @dev Initializes the contract setting the deployer as the initial owner.
      */
-    function __Ownable_init() internal onlyInitializing {
+    function __Ownable_init() internal {
         __Ownable_init_unchained();
     }
 
-    function __Ownable_init_unchained() internal onlyInitializing {
+    function __Ownable_init_unchained() internal {
         _transferOwnership(_msgSender());
     }
 

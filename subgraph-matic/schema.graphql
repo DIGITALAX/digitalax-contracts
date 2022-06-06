@@ -275,42 +275,42 @@ type DigitalaxBundle @entity {
 
 type DigitalaxChildOwner @entity {
   id: ID! # {parent-token-id-holder}-{child-token-id}
-  childId: BigInt! # the child token ID
-  owner: Bytes! # token owner
-  amount: BigInt!
-  contract: Bytes!
-  tokenUri: String!
-  token: DigitalaxMaterial!
+  childId: BigInt # the child token ID
+  owner: Bytes # token owner
+  amount: BigInt
+  contract: Bytes
+  tokenUri: String
+  token: DigitalaxMaterial
 }
 
 type DigitalaxChildV2Owner @entity {
   id: ID! # {parent-token-id-holder}-{child-token-id}
-  childId: BigInt! # the child token ID
-  owner: Bytes! # token owner
-  amount: BigInt!
-  contract: Bytes!
-  tokenUri: String!
-  token: DigitalaxMaterialV2!
+  childId: BigInt # the child token ID
+  owner: Bytes # token owner
+  amount: BigInt
+  contract: Bytes
+  tokenUri: String
+  token: DigitalaxMaterialV2
 }
 
 type DigitalaxChildModelOwner @entity {
   id: ID! # {parent-token-id-holder}-{child-token-id}
-  childId: BigInt! # the child token ID
-  owner: Bytes! # token owner
-  amount: BigInt!
-  contract: Bytes!
-  tokenUri: String!
-  token: DigitalaxModelMaterial!
+  childId: BigInt # the child token ID
+  owner: Bytes # token owner
+  amount: BigInt
+  contract: Bytes
+  tokenUri: String
+  token: DigitalaxModelMaterial
 }
 
 type DigitalaxBundleOwner @entity {
   id: ID! # {parent-token-id-holder}-{child-token-id}
-  childId: BigInt! # the child token ID
-  owner: Bytes! # token owner
-  amount: BigInt!
-  contract: Bytes!
-  tokenUri: String!
-  token: DigitalaxBundle!
+  childId: BigInt # the child token ID
+  owner: Bytes # token owner
+  amount: BigInt
+  contract: Bytes
+  tokenUri: String
+  token: DigitalaxBundle
 }
 
 type DigitalaxCollector @entity {

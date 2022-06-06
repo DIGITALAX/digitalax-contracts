@@ -17,10 +17,10 @@
     "@nomiclabs/hardhat-truffle5": "^2.0.0",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@nomiclabs/hardhat-web3": "^2.0.0",
-    "@openzeppelin/contracts": "^3.4.0",
-    "@openzeppelin/contracts-upgradeable": "^4.3.1",
-    "@openzeppelin/hardhat-upgrades": "^1.10.0",
-    "@openzeppelin/test-helpers": "^0.5.6",
+    "@openzeppelin/contracts": "^4.6.0",
+    "@openzeppelin/contracts-upgradeable": "^4.6.0",
+    "@openzeppelin/hardhat-upgrades": "^1.17.0",
+    "@openzeppelin/test-helpers": "^0.5.15",
     "@rarible/ethers-ethereum": "^0.12.64",
     "@rarible/sdk": "^0.8.45",
     "@rarible/test-provider": "^0.9.3",
@@ -30,6 +30,7 @@
     "chai": "^4.2.0",
     "coingecko-api-v3": "^0.0.13",
     "dotenv": "^8.2.0",
+    "erc721a-upgradeable": "^3.3.0",
     "ethereum-waffle": "^3.1.1",
     "ethers": "^5.6.5",
     "fs": "^0.0.1-security",
@@ -44,7 +45,8 @@
     "solidity-coverage": "^0.7.16",
     "tslib": "^2.3.1",
     "web3": "1.5.0",
-    "web3-provider-engine": "^16.0.3"
+    "web3-provider-engine": "^16.0.3",
+    "sol-merge": "^0.0.1"
   },
   "devDependencies": {
     "sol-merger": "^3.1.0"

@@ -47,8 +47,8 @@ export function handleTransfer(event: Transfer): void {
     garment.designer = garmentDesigner.id;
     garment.primarySalePrice = contract.primarySalePrice(event.params.tokenId);
     garment.children = new Array<string>();
-    garment.image = "";
     garment.name = "";
+    garment.image = "";
     garment.animation = "";
     garment.description = "";
     garment.external = "";

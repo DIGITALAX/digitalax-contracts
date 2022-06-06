@@ -415,55 +415,78 @@ export function handleBatchTransfer(event: TransferBatch): void {
     let totalChildOwned = childrenOwned.length;
     let updatedChildren = new Array<string>();
 
+    // NOTE: THIS HAS BEEN COMMENTED OUT FOR NOW TO ALLOW FOR SUBGRAPH TO PASS WITH UPGRADE
     // for each ID being transferred
-    for (let j = 0; j < totalIdsTransferred; j++) {
-      let id = allIdsInBatch[j];
-      let amount = allValuesInBatch[j];
-
-      // Expected child owner ID
-      let compositeId = event.params.to.toHexString() + "-" + id.toString();
-
-      // If we already have a child allocated to the collector
-      if (isChildInList(compositeId, childrenOwned)) {
-        // Iterate all children currently owned
-        if(childrenOwned.length > 0){
-        for (let k = 0; k < totalChildOwned; k++) {
-          // Find the matching child
-          log.info("breaking here {}", [
-            childrenOwned[0],
-          ]);
-          log.info("breaking here2 {}", [
-            k.toString(),
-          ]);
-          let currentChildId = childrenOwned[k];
-          if (currentChildId == compositeId) {
-            // Load collector and add to its balance
-            let child = loadOrCreateDigitalaxBundleOwner(
-                event,
-                event.params.to,
-                id
-            );
-            child.amount = child.amount.plus(amount);
-            child.save();
-
-            updatedChildren.push(child.id);
-          }
-        }
-      }
-      } else {
-        // If we dont already own it, load and increment
-        let child = loadOrCreateDigitalaxBundleOwner(
-          event,
-          event.params.to,
-          id
-        );
-        child.amount = child.amount.plus(amount);
-        child.save();
-
-        // keep track of child
-        updatedChildren.push(child.id);
-      }
-    }
+    // for (let j = 0; j < totalIdsTransferred; j++) {
+    //   if(allIdsInBatch.length == allValuesInBatch.length)
+    //     if (j < allIdsInBatch.length) {
+    //       let id = allIdsInBatch[j];
+    //       if (id) {
+    //         let amount = allValuesInBatch[j];
+    //         if (amount) {
+    //
+    //           // Expected child owner ID
+    //           let compositeId = event.params.to.toHexString() + "-" + id.toString();
+    //
+    //           // If we already have a child allocated to the collector
+    //           if (isChildInList(compositeId, childrenOwned)) {
+    //             // Iterate all children currently owned
+    //             if (childrenOwned.length > 0) {
+    //               for (let k = 0; k < totalChildOwned; k++) {
+    //                 // Find the matching child
+    //                 log.info("entering here {}", [
+    //                   '123',
+    //                 ]);
+    //
+    //                 //   Removing this piece
+    //                 if (childrenOwned[k]) {
+    //                   let currentChildId = childrenOwned[k];
+    //                   if (currentChildId == compositeId) {
+    //                     // Load collector and add to its balance
+    //                     let child = loadOrCreateDigitalaxBundleOwner(
+    //                         event,
+    //                         event.params.to,
+    //                         id
+    //                     );
+    //                     if (child) {
+    //                       if (child.id) {
+    //                         if (child.amount) {
+    //                           child.amount = child.amount.plus(amount);
+    //                           child.save();
+    //
+    //                           // keep track of child
+    //                           updatedChildren.push(child.id);
+    //                         }
+    //                       }
+    //                     }
+    //                   }
+    //                 }
+    //               }
+    //             }
+    //           } else {
+    //             // Might remove this piece
+    //             // If we dont already own it, load and increment
+    //             let child = loadOrCreateDigitalaxBundleOwner(
+    //                 event,
+    //                 event.params.to,
+    //                 id
+    //             );
+    //             if (child) {
+    //               if (child.id) {
+    //                 if (child.amount) {
+    //                   child.amount = child.amount.plus(amount);
+    //                   child.save();
+    //
+    //                   // keep track of child
+    //                   updatedChildren.push(child.id);
+    //                 }
+    //               }
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
 
     // assign the newly owned children
     toCollector.childrenOwned = updatedChildren;

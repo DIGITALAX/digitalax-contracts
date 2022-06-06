@@ -23,7 +23,12 @@ export function loadOrCreateDigitalaxBundleOwner(
         materialOwner.contract = event.address;
         materialOwner.tokenUri = childContract.uri(childTokenId);
         materialOwner.amount = ZERO;
-        materialOwner.token = DigitalaxBundle.load(childTokenId.toString())!.id.toString();
+        if(DigitalaxBundle.load(childTokenId.toString())){
+            if(DigitalaxBundle.load(childTokenId.toString())!.id) {
+                materialOwner.token = DigitalaxBundle.load(childTokenId.toString())!.id.toString();
+            }
+        }
+
     }
     materialOwner.save();
 
