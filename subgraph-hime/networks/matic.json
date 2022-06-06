@@ -1,0 +1,13 @@
+{
+  "network": "matic",
+  "DigitalaxHimeNFTAddress": "0xD96c1562a15349C4D8C90A247BcEDAc362606E84",
+  "DigitalaxHimeNFTStartBlock": 28509820,
+  "DigitalaxHimeCollectionAddress": "0xa03627333085Fe5f1B2aE78557e811970a9FC68D",
+  "DigitalaxHimeCollectionStartBlock": 28513214,
+  "DigitalaxHimeMarketplaceAddress": "0x878A1c0DF9326d420151043d6b60Fae60D00A6b1",
+  "DigitalaxHimeMarketplaceStartBlock": 28514434,
+  "DigitalaxHimeIndexAddress": "0x0fc66673ab5ff4322b31bd45906e071e87d9c4d3",
+  "DigitalaxHimeIndexStartBlock": 28513827,
+  "DigitalaxHimeAuctionAddress": "0x85d48c543c23d0385aba8caaddd1e91c00967f30",
+  "DigitalaxHimeAuctionStartBlock": 29037247
+}
