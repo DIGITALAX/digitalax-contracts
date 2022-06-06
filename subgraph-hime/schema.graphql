@@ -1,0 +1,208 @@
+type GarmentAttribute @entity {
+  id: ID!
+  type: String!
+  value: String!
+}
+
+type Day @entity {
+  id: ID!
+  totalBidValue: BigInt!
+  totalWithdrawalValue: BigInt!
+  totalNetBidActivity: BigInt!
+  totalMarketplaceVolumeInETH: BigInt!
+  totalMarketplaceVolumeInMona: BigInt!
+}
+
+type AdditionalSource @entity {
+  id: ID!
+  type: String!
+  url: String!
+}
+
+type DigitalaxHimeChildren @entity {
+  id: ID! # {parent-token-id}-{child-token-id}
+  parentId: BigInt! # parent token ID
+  childId: BigInt! # child token ID
+  amount: BigInt!
+  contract: Bytes!
+  tokenUri: String!
+  rarity: String!
+}
+
+type DigitalaxDesigner @entity {
+  id: ID!
+  name: String!
+  description: String!
+  image: String!
+  instagram: String
+  twitter: String
+  collections: [DigitalaxHimeNFTCollection!]!
+  auctions: [DigitalaxHimeAuction!]!
+}
+
+type DigitalaxDeveloper @entity {
+  id: ID!
+  name: String!
+  description: String!
+  image: String!
+  collections: [DigitalaxHimeNFTCollection!]!
+}
+
+type DigitalaxHimeNFTCollection @entity {
+  id: ID!
+  garments: [DigitalaxHimeNFT!]!
+  rarity: String!
+  valueSold: BigInt!
+  designer: DigitalaxDesigner
+}
+
+type DigitalaxHimeNFT @entity {
+  id: ID!
+  designer: String!
+  owner: Bytes!
+  primarySalePrice: BigInt!
+  tokenUri: String!
+  image: String!
+  animation: String!
+  name: String!
+  description: String!
+  external: String!
+  additionalSources: [AdditionalSource!]
+  attributes: [GarmentAttribute!]!
+  children: [DigitalaxHimeChildren!]!
+}
+
+type DigitalaxHimeAuctionContract @entity {
+  ## Global config
+  id: ID!
+  minBidIncrement: BigInt!
+  bidWithdrawalLockTime: BigInt!
+  platformFee: BigInt!
+  platformFeeRecipient: Bytes!
+  ## totals
+  totalSales: BigInt!
+}
+
+type DigitalaxHimeAuctionHistory @entity {
+  id: ID!
+  token: DigitalaxHimeNFT!
+  eventName: String!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  bidder: DigitalaxHimeCollector
+  value: BigInt
+}
+
+type DigitalaxHimeAuction @entity {
+  id: ID!
+
+  ## Auction setup
+  reservePrice: BigInt!
+  startTime: BigInt!
+  endTime: BigInt!
+  resulted: Boolean!
+  resultedTime: BigInt
+
+  ## Highest bidder
+  topBidder: DigitalaxHimeCollector
+  topBid: BigInt
+  lastBidTime: BigInt
+
+  ## Foreign key link to Garment, designer, history and contract
+  garment: DigitalaxHimeNFT!
+  designer: DigitalaxDesigner
+  history: DigitalaxHimeAuctionHistory!
+  contract: DigitalaxHimeAuctionContract!
+}
+
+type DigitalaxHimeCollectionGroup @entity {
+  id: ID!
+  auctions: [DigitalaxHimeAuction!]
+  collections: [DigitalaxHimeNFTCollection!]
+}
+
+type DigitalaxHimeDesigner @entity {
+  id: ID!
+  garments: [DigitalaxHimeNFT!]!
+  # sold
+}
+
+# Total support of all children
+type DigitalaxMaterialV2 @entity {
+  id: ID!
+  tokenUri: String!
+  totalSupply: BigInt!
+  image: String!
+  animation: String!
+  name: String!
+  description: String!
+  external: String!
+  attributes: [GarmentAttribute!]!
+}
+
+type DigitalaxHimeChildOwner @entity {
+  id: ID! # {parent-token-id-holder}-{child-token-id}
+  childId: BigInt! # the child token ID
+  owner: Bytes! # token owner
+  amount: BigInt!
+  contract: Bytes!
+  tokenUri: String!
+  token: DigitalaxMaterialV2!
+}
+
+type DigitalaxHimeCollector @entity {
+  id: ID!
+  parentsOwned: [DigitalaxHimeNFT!]! # only parents owned by the
+  childrenOwned: [DigitalaxHimeChildOwner!]! # only given children when a parent is burnt
+}
+
+type DigitalaxMarketplaceV3PurchaseHistory @entity {
+  id: ID!
+  eventName: String!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+  token: DigitalaxHimeNFT!
+  buyer: Bytes!
+  orderId: BigInt
+  value: BigInt! # USD Value
+  shippingUsd: BigInt!
+  paymentTokenTransferredAmount: BigInt!
+  paymentToken: Bytes!
+  garmentCollectionId: BigInt!
+  discountToPayERC20: BigInt!
+  platformFee: BigInt!
+  rarity: String!
+  usdEthExchange: BigInt! # Eth for every USD in wei at the time of the tx
+  usdPaymentTokenExchange: BigInt! # Payment Token for every USD in wei at the time of the tx
+}
+
+type DigitalaxHimeMarketplaceOffer @entity {
+  id: ID!
+  garmentCollection: DigitalaxHimeNFTCollection!
+  primarySalePrice: BigInt!
+  startTime: BigInt!
+  endTime: BigInt!
+  amountSold: BigInt!
+  marketplacePlatformFee: BigInt!
+  discountToPayMona: BigInt!
+}
+
+type DripDay @entity {
+  id: ID!
+  totalMarketplaceVolumeInUSD: BigInt!
+}
+
+type DripGlobalStat @entity {
+  id: ID!
+  totalMarketplaceSalesInUSD: BigInt! # USD value collected in WEI across all marketplace
+  usdETHConversion: BigInt! # USD FOR ETH IN WEI
+}
+
+type DigitalaxHimeGlobalStat @entity {
+  id: ID!
+  totalSalesValue: BigInt! # Eth value in WEI accross all successful auctions
+  totalActiveBidsValue: BigInt! # Eth value of the active aggregate bids across all in flight auctions
+  totalMarketplaceSalesInETH: BigInt! # Eth value collected in WEI across all marketplace
+  totalMarketplaceSalesInMona: BigInt! # Mona value collected in WEI across all marketplace
+  monaPerEth: BigInt! # Mona for every eth in wei
+}
