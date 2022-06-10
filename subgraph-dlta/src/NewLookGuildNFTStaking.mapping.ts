@@ -62,12 +62,12 @@ export function handleUnstaked(event: Unstaked): void {
     for (let i = 0; i < currentStaked.length; i += 1) {
         updatedGarmentsStaked.push(currentStaked[i].toString())
     }
-    staker.garments = updatedGarmentsStaked;
+    staker!.garments = updatedGarmentsStaked;
 
     let weightContract = NewLookGuildNFTStakingWeightContract.bind(Address.fromString(GuildNFTSTakingWeightV4Address));
     calculateWeights(weightContract,  event.block.timestamp, staker);
 
-    staker.save();
+    staker!.save();
 }
 
 export function handleEmergencyUnstake(event: EmergencyUnstake): void {
@@ -81,10 +81,10 @@ export function handleEmergencyUnstake(event: EmergencyUnstake): void {
     for (let i = 0; i < currentStaked.length; i += 1) {
             updatedGarmentsStaked.push(currentStaked[i].toString())
     }
-    staker.garments = updatedGarmentsStaked;
+    staker!.garments = updatedGarmentsStaked;
 
     let weightContract = NewLookGuildNFTStakingWeightContract.bind(Address.fromString(GuildNFTSTakingWeightV4Address));
     calculateWeights(weightContract,  event.block.timestamp, staker);
 
-    staker.save();
+    staker!.save();
 }

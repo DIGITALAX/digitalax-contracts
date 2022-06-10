@@ -52,17 +52,17 @@ export function calculateWeights(contract: NewGDNGuildNFTStakingWeightContract, 
     stakeWeightDay.lastTotalWeight = totalWeight;
     stakeWeightDay.save();
 
-    if(staker.weights.length > 0) {
-      let index = staker.weights.length - 1;
+    if(staker.weights && staker.weights!.length > 0) {
+      let index = staker.weights!.length - 1;
       let weights = staker.weights as Array<string>;
       let stakerWeight = weights[index];
       if(stakerWeight == weightId ) {
-        let dailyWeights = staker.weights;
-        dailyWeights[index] = stakeWeightDay.id; // Swap for this new one
+        let dailyWeights = staker.weights!;
+        dailyWeights[index]! = stakeWeightDay.id; // Swap for this new one
         staker.weights = dailyWeights;
       } else {
         // This day has not been published on before
-        let dailyWeights = staker.weights;
+        let dailyWeights = staker.weights!;
         dailyWeights.push(stakeWeightDay.id);
         staker.weights = dailyWeights;
       }
@@ -117,18 +117,18 @@ export function calculateWhitelistedWeights(contract: NewGDNGuildNFTStakingWeigh
     stakeWeightDay.lastDailyPersonalWeight = currentWeight;
     stakeWeightDay.lastTotalWeight = totalWeight;
     stakeWeightDay.save();
-    if(staker.weights.length > 0) {
-      let index = staker.weights.length - 1;
+    if(staker.weights!.length > 0) {
+      let index = staker.weights!.length - 1;
       let weights = staker.weights as Array<string>;
       let stakerWeight = weights[index];
       if(stakerWeight == weightId ) {
         let dailyWeights = staker.weights;
-        dailyWeights[index] = stakeWeightDay.id; // Swap for this new one
+        dailyWeights![index]! = stakeWeightDay.id; // Swap for this new one
         staker.weights = dailyWeights;
       } else {
         // This day has not been published on before
         let dailyWeights = staker.weights;
-        dailyWeights.push(stakeWeightDay.id);
+        dailyWeights!.push(stakeWeightDay.id);
         staker.weights = dailyWeights;
       }
     } else {

@@ -20,7 +20,6 @@ export function handleAppraiseGuildMember(event: AppraiseGuildMember): void {
   let lookStaker = NewLookNFTv2Staker.load(event.params.guildMember.toHexString());
   if (!lookStaker) {
     lookStaker = new NewLookNFTv2Staker(event.params.guildMember.toHexString());
-    lookStaker.garments = null;
     lookStaker.rewardsClaimed = ZERO;
     lookStaker.totalAppraisals = ZERO;
     lookStaker.totalStaked = ZERO;
@@ -66,7 +65,6 @@ export function handleWhitelistedNFTReaction(
   );
   if (!lookStaker) {
     lookStaker = new NewLookNFTv2Staker(event.transaction.from.toHexString());
-    lookStaker.garments = null;
     lookStaker.rewardsClaimed = ZERO;
     lookStaker.totalAppraisals = ZERO;
     lookStaker.totalStaked = ZERO;
@@ -95,7 +93,7 @@ export function handleWhitelistedNFTReaction(
     nftWeights.totalMetaverse = ZERO;
   }
 
-  lookStaker.totalAppraisals = lookStaker.totalAppraisals.plus(ONE);
+  lookStaker.totalAppraisals = lookStaker.totalAppraisals!.plus(ONE);
   let tryWeight = contract.try_calcNewOwnerWeight(event.transaction.from);
   if (!tryWeight.reverted) {
     lookStaker.weight = tryWeight.value;
@@ -103,7 +101,7 @@ export function handleWhitelistedNFTReaction(
   nftWeights.totalAppraisals = nftWeights.totalAppraisals.plus(ONE);
 
   if (event.params.reaction == "Favorite") {
-    lookStaker.totalFavourites = lookStaker.totalFavourites.plus(
+    lookStaker.totalFavourites = lookStaker.totalFavourites!.plus(
       event.params.quantity
     );
     nftWeights.totalFavourites = nftWeights.totalFavourites.plus(
@@ -111,7 +109,7 @@ export function handleWhitelistedNFTReaction(
     );
   }
   if (event.params.reaction == "Follow") {
-    lookStaker.totalFollowed = lookStaker.totalFollowed.plus(
+    lookStaker.totalFollowed = lookStaker.totalFollowed!.plus(
       event.params.quantity
     );
     nftWeights.totalFollowed = nftWeights.totalFollowed.plus(
@@ -119,7 +117,7 @@ export function handleWhitelistedNFTReaction(
     );
   }
   if (event.params.reaction == "Metaverse") {
-    lookStaker.totalMetaverse = lookStaker.totalMetaverse.plus(
+    lookStaker.totalMetaverse = lookStaker.totalMetaverse!.plus(
       event.params.quantity
     );
     nftWeights.totalMetaverse = nftWeights.totalMetaverse.plus(
@@ -127,7 +125,7 @@ export function handleWhitelistedNFTReaction(
     );
   }
   if (event.params.reaction == "Share") {
-    lookStaker.totalShare = lookStaker.totalShare.plus(event.params.quantity);
+    lookStaker.totalShare = lookStaker.totalShare!.plus(event.params.quantity);
     nftWeights.totalShare = nftWeights.totalShare.plus(event.params.quantity);
   }
   if (event.params.reaction == "Clap") {
@@ -144,7 +142,7 @@ export function handleWhitelistedNFTReaction(
 
     if (lookStaker.clapHistory) {
       let oldClapHistory = lookStaker.clapHistory;
-      oldClapHistory.push(newClap.id);
+      oldClapHistory!.push(newClap.id);
       lookStaker.clapHistory = oldClapHistory;
     } else {
       let clapHistory = new Array<string>();

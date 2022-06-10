@@ -82,17 +82,25 @@ export function handleStaked(event: Staked): void {
         if (data.isOk) {
           if (data.value.kind === JSONValueKind.OBJECT) {
             let res = data.value.toObject();
-            if (res.get("animation_url")!.kind === JSONValueKind.STRING) {
-              garment.animation = res.get("animation_url")!.toString();
+            if (res.get("animation_url")) {
+              if (res.get("animation_url")!.kind === JSONValueKind.STRING) {
+                garment.animation = res.get("animation_url")!.toString();
+              }
             }
-            if (res.get("description").kind === JSONValueKind.STRING) {
-              garment.description = res.get("description")!.toString();
+            if (res.get("description")) {
+              if (res.get("description")!.kind === JSONValueKind.STRING) {
+                garment.description = res.get("description")!.toString();
+              }
             }
-            if (res.get("name").kind === JSONValueKind.STRING) {
-              garment.name = res.get("name")!.toString();
+            if (res.get("name")) {
+              if (res.get("name")!.kind === JSONValueKind.STRING) {
+                garment.name = res.get("name")!.toString();
+              }
             }
-            if (res.get("image")!.kind == JSONValueKind.STRING) {
-              garment.image = res.get("image")!.toString();
+            if (res.get("image")) {
+              if (res.get("image")!.kind == JSONValueKind.STRING) {
+                garment.image = res.get("image")!.toString();
+              }
             }
           }
         }
@@ -129,7 +137,7 @@ export function handleUnstaked(event: Unstaked): void {
   let weightContract = GuildNFTStakingWeightV2Contract.bind(
     Address.fromString(GuildNFTSTakingWeightV2Address)
   );
-  let oldGarments = staker.garments;
+  let oldGarments = staker!.garments;
   let newGarments = new Array<string>();
   for (let i = 0; i < oldGarments.length; i += 1) {
     const newId = event.params.whitelistedNFT
@@ -160,7 +168,7 @@ export function handleEmergencyUnstake(event: EmergencyUnstake): void {
     Address.fromString(GuildNFTSTakingWeightV2Address)
   );
 
-  let oldGarments = staker.garments;
+  let oldGarments = staker!.garments;
   let newGarments = new Array<string>();
   for (let i = 0; i < oldGarments.length; i += 1) {
     const newId = event.params.whitelistedNFT

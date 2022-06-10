@@ -1,4 +1,4 @@
-specVersion: 0.0.2
+specVersion: 0.0.3
 description: Digitalax Smart Contract Indexing
 repository: https://github.com/DIGITALAX/digitalax-contracts/tree/main/subgraph
 schema:
@@ -13,7 +13,7 @@ dataSources:
       startBlock: 22518129
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -44,7 +44,7 @@ dataSources:
       startBlock: 23076858
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -75,7 +75,7 @@ dataSources:
       startBlock: 23077050
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -106,7 +106,7 @@ dataSources:
       startBlock: 16610377
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -135,7 +135,7 @@ dataSources:
       startBlock: 19359122
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -171,7 +171,7 @@ dataSources:
       startBlock: 22518133
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -207,7 +207,7 @@ dataSources:
       startBlock: 23076863
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -243,7 +243,7 @@ dataSources:
       startBlock: 23077051
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -279,7 +279,7 @@ dataSources:
       startBlock: 16153025
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -301,7 +301,7 @@ dataSources:
       startBlock: 19110219
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -321,7 +321,7 @@ dataSources:
       startBlock: 19110219
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -341,7 +341,7 @@ dataSources:
       startBlock: 19471997
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -361,7 +361,7 @@ dataSources:
       startBlock: 19359150
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - AppraiseGuildMember
@@ -384,7 +384,7 @@ dataSources:
       startBlock: 22518143
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - AppraiseGuildMember
@@ -407,7 +407,7 @@ dataSources:
       startBlock: 23076869
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - AppraiseGuildMember
@@ -430,7 +430,7 @@ dataSources:
       startBlock: 23077056
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - AppraiseGuildMember
