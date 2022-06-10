@@ -1,4 +1,4 @@
-specVersion: 0.0.2
+specVersion: 0.0.3
 description: Digitalax Smart Contract Indexing
 repository: https://github.com/DIGITALAX/digitalax-contracts/tree/main/subgraph
 schema:
@@ -13,7 +13,7 @@ dataSources:
       startBlock: {{NewPodeGuildNFTStakingStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -42,7 +42,7 @@ dataSources:
       startBlock: {{NewLookGuildNFTStakingStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -71,7 +71,7 @@ dataSources:
       startBlock: {{NewGDNGuildNFTStakingStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -165,7 +165,7 @@ dataSources:
       startBlock: {{NewPodeGuildWhitelistedNFTStakingStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -201,7 +201,7 @@ dataSources:
       startBlock: {{NewLookGuildWhitelistedNFTStakingStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -237,7 +237,7 @@ dataSources:
       startBlock: {{NewGDNGuildWhitelistedNFTStakingStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Staked
@@ -273,7 +273,7 @@ dataSources:
       startBlock: {{PodeNFTv2StartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -295,7 +295,7 @@ dataSources:
       startBlock: {{GDNMembershipStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -315,7 +315,7 @@ dataSources:
       startBlock: {{GDNDltaNFTStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -335,7 +335,7 @@ dataSources:
       startBlock: {{LookGoldenTicketStartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Transfer
@@ -355,7 +355,7 @@ dataSources:
       startBlock: {{GuildNFTStakingWeightV2StartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - AppraiseGuildMember
@@ -378,7 +378,7 @@ dataSources:
       startBlock: {{NewPodeGuildNFTStakingWeightV4StartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - AppraiseGuildMember
@@ -401,7 +401,7 @@ dataSources:
       startBlock: {{NewLookGuildNFTStakingWeightV4StartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - AppraiseGuildMember
@@ -424,7 +424,7 @@ dataSources:
       startBlock: {{NewGDNGuildNFTStakingWeightV4StartBlock}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - AppraiseGuildMember
