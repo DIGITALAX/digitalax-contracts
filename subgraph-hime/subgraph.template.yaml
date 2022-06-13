@@ -1,0 +1,184 @@
+specVersion: 0.0.2
+description: Digitalax Smart Contract Indexing
+repository: https://github.com/DIGITALAX/digitalax-contracts/tree/main/subgraph
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: DigitalaxHimeNFT
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxHimeNFTAddress}}"
+      abi: DigitalaxHimeNFT
+      startBlock: {{DigitalaxHimeNFTStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: DigitalaxHimeNFT
+          file: ./abis/DigitalaxHimeNFT.json
+        - name: DigitalaxMaterialsV2
+          file: ./abis/DigitalaxMaterialsV2.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: ReceivedChild(indexed address,indexed uint256,indexed address,uint256,uint256)
+          handler: handleChildReceived
+        - event: DigitalaxGarmentTokenUriUpdate(indexed uint256,string)
+          handler: handleUriUpdated
+        - event: TokenPrimarySalePriceSet(indexed uint256,uint256)
+          handler: handleTokenPriceSaleUpdated
+      file: ./src/DigitalaxHimeNFT.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxHimeMarketplace
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxHimeMarketplaceAddress}}"
+      abi: DigitalaxHimeMarketplace
+      startBlock: {{DigitalaxHimeMarketplaceStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - DigitalaxMarketplaceContractDeployed
+        - UpdateMarketplacePlatformFee
+        - UpdateMarketplaceDiscountToPayInErc20
+        - OfferCreated
+        - UpdateOfferPrimarySalePrice
+        - OfferPurchased
+        - OfferCancelled
+      abis:
+        - name: DigitalaxHimeMarketplace
+          file: ./abis/DigitalaxHimeMarketplace.json
+      eventHandlers:
+        - event: DigitalaxMarketplaceContractDeployed()
+          handler: handleMarketplaceDeployed
+        - event: UpdateMarketplacePlatformFee(indexed uint256,uint256)
+          handler: handleUpdateMarketplacePlatformFee
+        - event: UpdateMarketplaceDiscountToPayInErc20(indexed uint256,uint256)
+          handler: handleUpdateMarketplaceDiscountToPayInErc20
+        - event: OfferCreated(indexed uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleOfferCreated
+        - event: UpdateOfferPrimarySalePrice(indexed uint256,uint256)
+          handler: handleOfferPrimarySalePriceUpdated
+        - event: OfferPurchased(indexed uint256,indexed uint256,indexed address,uint256,uint256)
+          handler: handleOfferPurchased
+        - event: OfferPurchasedWithPaymentToken(indexed uint256,address,uint256,uint256)
+          handler: handleOfferPurchasedWithPaymentToken
+        - event: OfferCancelled(indexed uint256)
+          handler: handleOfferCancelled
+      file: ./src/DigitalaxHimeMarketplace.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxHimeIndex
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxHimeIndexAddress}}"
+      abi: DigitalaxHimeIndex
+      startBlock: {{DigitalaxHimeIndexStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - CollectionGroupAdded
+        - CollectionGroupRemoved
+        - CollectionGroupUpdated
+        - DesignerGroupAdded
+        - DesignerGroupRemoved
+        - DeveloperGroupAdded
+        - DeveloperGroupRemoved
+      abis:
+        - name: DigitalaxHimeIndex
+          file: ./abis/DigitalaxHimeIndex.json
+      eventHandlers:
+        - event: CollectionGroupAdded(indexed uint256,uint256[],uint256[],uint256)
+          handler: handleCollectionGroupAdded
+        - event: CollectionGroupRemoved(indexed uint256)
+          handler: handleCollectionGroupRemoved
+        - event: CollectionGroupUpdated(indexed uint256,uint256[],uint256[],uint256)
+          handler: handleCollectionGroupUpdated
+        - event: DesignerGroupAdded(address,string,uint256[],uint256[])
+          handler: handleDesignerGroupAdded
+        - event: DesignerGroupRemoved(address)
+          handler: handleDesignerGroupRemoved
+        - event: DeveloperGroupAdded(address,string,uint256[],uint256[])
+          handler: handleDeveloperGroupAdded
+        - event: DeveloperGroupRemoved(address)
+          handler: handleDeveloperGroupRemoved
+      file: ./src/DigitalaxHimeIndex.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxHimeCollection
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxHimeCollectionAddress}}"
+      abi: DigitalaxHimeCollection
+      startBlock: {{DigitalaxHimeCollectionStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - MintGarmentCollection
+        - BurnGarmentCollection
+      abis:
+        - name: DigitalaxHimeCollection
+          file: ./abis/DigitalaxHimeCollection.json
+      eventHandlers:
+        - event: MintGarmentCollection(uint256,uint256,string)
+          handler: handleGarmentCollectionMinted
+        - event: BurnGarmentCollection(uint256)
+          handler: handleGarmentCollectionBurned
+      file: ./src/DigitalaxHimeCollection.mapping.ts
+  - kind: ethereum/contract
+    name: DigitalaxHimeAuction
+    network: "{{network}}"
+    source:
+      address: "{{DigitalaxHimeAuctionAddress}}"
+      abi: DigitalaxHimeAuction
+      startBlock: {{DigitalaxHimeAuctionStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - AuctionCreated
+        - AuctionResulted
+        - AuctionCancelled
+        - BidPlaced
+        - BidWithdrawn
+        - BidRefunded
+      abis:
+        - name: DigitalaxHimeAuction
+          file: ./abis/DigitalaxHimeAuction.json
+      eventHandlers:
+        - event: AuctionCreated(indexed uint256)
+          handler: handleAuctionCreated
+        - event: DigitalaxAuctionContractDeployed()
+          handler: handleDigitalaxAuctionContractDeployed
+        - event: BidPlaced(indexed uint256,indexed address,uint256)
+          handler: handleBidPlaced
+        - event: BidWithdrawn(indexed uint256,indexed address,uint256)
+          handler: handleBidWithdrawn
+        - event: AuctionResulted(indexed uint256,indexed address,uint256)
+          handler: handleAuctionResulted
+        - event: AuctionCancelled(indexed uint256)
+          handler: handleAuctionCancelled
+        - event: UpdateBidWithdrawalLockTime(uint256)
+          handler: handleUpdateBidWithdrawalLockTime
+        - event: UpdateMinBidIncrement(uint256)
+          handler: handleUpdateMinBidIncrement
+        - event: UpdateAuctionReservePrice(indexed uint256,uint256)
+          handler: handleUpdateAuctionReservePrice
+        - event: UpdateAuctionStartTime(indexed uint256,uint256)
+          handler: handleUpdateAuctionStartTime
+        - event: UpdateAuctionEndTime(indexed uint256,uint256)
+          handler: handleUpdateAuctionEndTime
+        - event: UpdatePlatformFee(uint256)
+          handler: handleUpdatePlatformFee
+        - event: UpdatePlatformFeeRecipient(address)
+          handler: handleUpdatePlatformFeeRecipient
+      file: ./src/DigitalaxHimeAuction.mapping.ts
